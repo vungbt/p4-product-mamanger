@@ -1,175 +1,114 @@
-# P4 — Product Manager (React SPA)
+# P4 — Product Manager (Monorepo)
 
-> Tuần 5 · React Router · Call API · Custom Hook · **2 portal: Admin + End User**
+> Tuần 5 · React SPA · **Monorepo** (theo pattern [smart-connection-monorepo](https://github.com/vungbt/smart-connection-monorepo)) · Admin + Storefront
 
-Repo GitLab: https://gitlab.com/training2312930/p4-product-manager
+Repo: https://gitlab.com/training2312930/p4-product-manager
 
-**Mới vào?** Đọc [GETTING-STARTED.md](./GETTING-STARTED.md).
-
----
-
-## Tổng quan
-
-Ứng dụng quản lý & bán sản phẩm — **1 codebase, 2 portal tách route**:
-
-| Portal | Prefix route | Ai dùng | Quyền |
-|--------|--------------|---------|-------|
-| **Storefront** (End User) | `/`, `/shop`, `/cart`... | Khách hàng | Login, xem SP, mua hàng |
-| **Admin** | `/admin/*` | Quản trị | CRUD SP, stock, doanh thu |
-
-**End user không được** vào `/admin` và **không có quyền** thêm/sửa/xóa sản phẩm.
-
----
-
-## Portal 1 — End User (Storefront)
-
-### Auth
-- Login fake (email/password cứng hoặc mock — mentor cung cấp tài khoản mẫu)
-- Role: `user`
-- Sau login → redirect `/shop`
-
-### Chức năng
-1. **Đăng nhập / đăng xuất**
-2. **Xem danh sách sản phẩm** — lấy từ Fake API (chỉ đọc)
-3. **Chi tiết sản phẩm** (optional — có thể modal hoặc trang riêng)
-4. **Giỏ hàng** — thêm/bớt số lượng (state local hoặc localStorage)
-5. **Đặt hàng (checkout)** — gọi API tạo order (hoặc mock), trừ stock trên server
-6. **Không** truy cập được `/admin/*` — redirect + toast lỗi "Không có quyền"
-
----
-
-## Portal 2 — Admin
-
-### Auth
-- Login riêng hoặc chung form nhưng **check role `admin`**
-- Role: `admin`
-- Sau login → redirect `/admin/dashboard`
-
-### Chức năng
-1. **Dashboard**
-   - Tổng doanh thu (tính từ orders)
-   - Sản phẩm sắp hết hàng (stock ≤ ngưỡng, VD: 10)
-   - (Gợi ý) biểu đồ đơn giản hoặc bảng thống kê
-2. **CRUD Sản phẩm**
-   - Fields: `name`, `price`, `description`, `imageUrl`, `stock`
-   - List + search theo tên
-   - Create / Update / Delete qua Fake API
-3. **Quản lý stock** — hiển thị & cập nhật qua form sửa sản phẩm
-4. **Quản lý doanh thu** — xem danh sách orders + tổng tiền
-5. **Không** cho end user (`role: user`) vào admin — `ProtectedRoute` chặn
-
----
-
-## Yêu cầu kỹ thuật
-
-| Yêu cầu | Chi tiết |
-|---------|----------|
-| **React Router** | Tách layout Admin vs Storefront; nested routes |
-| **Protected Route** | Guard theo `role`: `admin` \| `user` |
-| **Fake API** | mockapi.io hoặc json-server — mentor setup endpoint |
-| **Custom Hook** | `useAuth`, `useProducts`, `useCart` (gợi ý) |
-| **Form** | Formik + Yup (admin form sản phẩm) |
-| **Toast** | react-toastify |
-| **TypeScript** | Product, Order, User, Role, CartItem... |
-| **Styling** | CSS Modules (`.module.scss`) |
-
-Logic **không** nhét hết vào page component — tách hook/service.
-
----
-
-## Cấu trúc thư mục gợi ý
+## Cấu trúc monorepo
 
 ```
-src/
-├── types/
-├── constants/          # ROUTES, ROLES, API_URL
-├── services/           # api client: products, orders, auth
-├── hooks/
-│   ├── useAuth.ts
-│   ├── useProducts.ts
-│   └── useCart.ts
-├── components/
-│   └── ui/             # Button, EmptyState...
-├── modules/
-│   ├── admin/
-│   │   ├── layout/
-│   │   ├── pages/
-│   │   │   ├── dashboard/
-│   │   │   ├── products/
-│   │   │   └── orders/
-│   │   └── components/
-│   └── storefront/
-│       ├── layout/
-│       ├── pages/
-│       │   ├── login/
-│       │   ├── shop/
-│       │   └── cart/
-│       └── components/
-├── routes/
-│   ├── index.tsx       # BrowserRouter + route config
-│   └── ProtectedRoute.tsx
-├── styles/
-├── App.tsx
-└── main.tsx
+p4-product-manager/
+├── apps/
+│   ├── api/          ← Express (mentor maintain — đã implement)
+│   └── web/          ← React Vite (học viên code ở đây)
+├── libs/
+│   └── shared/       ← Types dùng chung (@p4/shared)
+├── tsconfig.base.json
+├── pnpm-workspace.yaml
+└── turbo.json
 ```
+
+| Package | Path | Ai làm |
+|---------|------|--------|
+| **API** (Express) | `apps/api` | **Mentor** — đã implement sẵn |
+| **Web** (React) | `apps/web` | **Học viên** — chỉ làm FE |
+| **Shared types** | `libs/shared` | Dùng chung — không sửa trừ khi mentor cập nhật API |
+
+**Học viên không sửa `apps/api/`.** Đọc [apps/api/README.md](./apps/api/README.md) để biết endpoints.
 
 ---
 
-## Route map gợi ý
+## Tổng quan nghiệp vụ
 
-```
-/storefront
-  /login              → Login end user
-  /shop               → Danh sách SP (auth user)
-  /cart               → Giỏ hàng
+| Portal | Route | Quyền |
+|--------|-------|-------|
+| **Storefront** | `/login`, `/shop`, `/cart` | User: xem SP, mua hàng |
+| **Admin** | `/admin/*` | Admin: CRUD SP, dashboard, orders |
 
-/admin
-  /admin/login        → Login admin
-  /admin/dashboard    → Doanh thu + stock cảnh báo
-  /admin/products     → List + CRUD
-  /admin/products/new
-  /admin/products/:id/edit
-  /admin/orders       → Doanh thu / orders
-```
+End user **không** vào admin, **không** CRUD sản phẩm (API trả 403 nếu user gọi admin endpoints).
 
 ---
 
-## Fake Auth gợi ý
+## Chạy project
 
-```typescript
-// admin@demo.com / admin123 → role: admin
-// user@demo.com / user123  → role: user
+```bash
+pnpm install
+pnpm dev
 ```
 
-Lưu session: `localStorage` (token fake + role + user info).
+- API: http://localhost:3001
+- Web: http://localhost:5173 (proxy `/api` → API)
 
-`ProtectedRoute` đọc role → cho phép hoặc `<Navigate to="..." />`.
+Chi tiết: [GETTING-STARTED.md](./GETTING-STARTED.md)
+
+### Lint, format & commit
+
+```bash
+pnpm lint              # biome check toàn monorepo
+pnpm format            # biome format + fix
+```
+
+Pre-commit (Husky): tự format/lint file staged. Commit message theo [COMMIT_CONVENTION.md](./COMMIT_CONVENTION.md).
 
 ---
 
-## Thứ tự làm (gợi ý)
+## Học viên làm gì? (`apps/web`)
 
-1. Types + constants (Product, User, Role, routes)
-2. `services/` — fetch products từ API
-3. `useAuth` + login/logout + lưu session
-4. `ProtectedRoute` + route config cơ bản
-5. Admin: list + CRUD products
-6. Admin: dashboard (revenue, low stock)
-7. Storefront: shop list (read-only products)
-8. Storefront: cart + checkout
-9. Test: user login → không vào `/admin`; admin CRUD OK
+1. `use-auth` — login/logout gọi `/api/auth/login`, lưu token
+2. `protected-route` — guard theo role
+3. **Admin:** CRUD products, dashboard stats, orders list
+4. **Storefront:** shop, cart, checkout → `POST /api/orders`
+5. Gọi API qua `services/` — xem [API docs](./apps/api/README.md)
+
+Types: import từ `@p4/shared` hoặc `@/types/types`
+
+**Naming:** kebab-case cho mọi file trong `apps/web/src/`
+
+**Structure expect:** [apps/web/README.md](./apps/web/README.md) — routing, icons, modules (pattern base-react-antd + finder-work-web)
+
+---
+
+## Tech stack
+
+| Layer | Stack |
+|-------|-------|
+| Monorepo | pnpm workspaces + Turborepo |
+| Lint / Format | [Biome](https://biomejs.dev/) |
+| Git hooks | Husky + lint-staged + commitlint |
+| API | Node.js, Express, TypeScript |
+| Web | React, Vite, React Router, Formik, Yup, SCSS modules |
+
+---
+
+## Thứ tự làm (web)
+
+1. Types/constants + đọc API README
+2. `services/api-service` + `use-auth`
+3. Routes + `protected-route`
+4. Admin CRUD + dashboard
+5. Storefront shop + cart/checkout
+6. Test role guard (user không vào admin)
 
 ---
 
 ## Quy tắc
 
-- ❌ Không copy solution / AI làm hộ
-- ❌ End user **không** có UI/action CRUD sản phẩm
-- ✅ Commit từng feature: `feat(p4): admin product list`, `feat(p4): storefront cart`
-- ✅ Push GitLab sau mỗi milestone
+- ❌ Sửa `apps/api/`
+- ❌ AI làm hộ full solution
+- ✅ Commit: `feat(web): admin product list`
 
 ---
 
-## Liên hệ P6 (Next.js)
+## P6 Next.js
 
-Tuần 7 port **cùng nghiệp vụ** (Admin + Storefront) sang Next.js App Router.
+Tuần 7 port **apps/web** sang Next.js — vẫn dùng cùng Express API.

@@ -1,41 +1,96 @@
 # Bắt đầu — P4 Product Manager
 
-## 1. Clone & chạy
+## 1. Clone & cài
 
 ```bash
 git clone git@gitlab.com:training2312930/p4-product-manager.git
 cd p4-product-manager
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
-## 2. Fake API
+Mở http://localhost:5173
 
-Hỏi mentor URL mockapi.io / json-server. Cần endpoints gợi ý:
+## 2. Cấu trúc monorepo
 
-- `GET/POST/PUT/DELETE /products`
-- `GET/POST /orders`
-- (Optional) users — hoặc auth fake phía client
+```
+p4-product-manager/
+├── apps/
+│   ├── api/     ← Mentor maintain (Express) — KHÔNG SỬA
+│   └── web/     ← Học viên code ở đây
+├── libs/
+│   └── shared/  ← Types dùng chung (@p4/shared)
+├── tsconfig.base.json
+└── pnpm-workspace.yaml
+```
 
-## 3. Tài khoản demo (fake auth)
+Pattern tham khảo: [smart-connection-monorepo](https://github.com/vungbt/smart-connection-monorepo) (`apps/` + `libs/`).
+
+**Web structure:** [apps/web/README.md](./apps/web/README.md) — routing, icons, kebab-case naming.
+
+## 3. Làm việc hàng ngày
+
+```bash
+# Chạy cả API + Web
+pnpm dev
+
+# Chỉ web (cần API đang chạy)
+pnpm --filter @p4/web dev
+```
+
+Mở Cursor workspace: folder `apps/web/` hoặc root monorepo.
+
+### Lint & commit
+
+```bash
+pnpm lint      # kiểm tra biome
+pnpm format    # auto-fix format/lint
+```
+
+Mỗi commit phải theo [COMMIT_CONVENTION.md](./COMMIT_CONVENTION.md) — hook Husky sẽ chặn nếu sai format.
+
+## 4. Demo login (fake auth — scaffold)
+
+Trước khi học viên nối API thật, dùng tài khoản fake để xem structure:
+
+| Portal | URL | Username | Password |
+|--------|-----|----------|----------|
+| Storefront | `/login` | `user` | `user` |
+| Admin | `/admin/login` | `admin` | `admin` |
+
+Sau login: nav sidebar/header render từ `*.route-config.ts` (pattern mượn từ cms-do-an).
+
+## 5. API docs
+
+Đọc **[apps/api/README.md](./apps/api/README.md)** — endpoints, auth, body mẫu.
+
+Tài khoản demo:
 
 | Email | Password | Role |
 |-------|----------|------|
 | admin@demo.com | admin123 | admin |
 | user@demo.com | user123 | user |
 
-*(Định nghĩa trong `src/constants/` — trainee implement check trong `useAuth`)*
+## 6. Import types
 
-## 4. Hai portal
+```typescript
+import type { Product, User } from '@p4/shared';
+// hoặc
+import type { Product } from '@/types/types';
+```
 
-- Mở `/shop` — cần login **user**
-- Mở `/admin/dashboard` — cần login **admin**
-- User vào `/admin` → bị chặn
+## 7. Gọi API từ web
 
-## 5. Thứ tự code
+Base URL: `/api` (Vite proxy → localhost:3001)
 
-Đọc **Thứ tự làm** trong [README.md](./README.md).
+```typescript
+fetch('/api/products', {
+  headers: { Authorization: `Bearer ${token}` },
+});
+```
 
-## 6. Hỏi agent
+## 8. Hỏi agent
 
-`@README.md` + nói rõ portal (admin / storefront) và bước đang làm.
+`@apps/web/README.md` hoặc root README + nói rõ portal đang làm.
+
+**Nhắc agent:** không sửa `apps/api`, chỉ gợi ý FE.
