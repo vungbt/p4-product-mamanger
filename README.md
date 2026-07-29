@@ -124,7 +124,7 @@ src/
   /cart               → Giỏ hàng
 
 /admin
-  /admin/login        → Login admin (hoặc /login?portal=admin)
+  /admin/login        → Login admin
   /admin/dashboard    → Doanh thu + stock cảnh báo
   /admin/products     → List + CRUD
   /admin/products/new
@@ -137,7 +137,6 @@ src/
 ## Fake Auth gợi ý
 
 ```typescript
-// constants/mock-users.ts — mentor có thể đổi
 // admin@demo.com / admin123 → role: admin
 // user@demo.com / user123  → role: user
 ```
@@ -173,4 +172,4 @@ Lưu session: `localStorage` (token fake + role + user info).
 
 ## Liên hệ P6 (Next.js)
 
-Tuần 7 port **cùng nghiệp vụ** sang Next.js App Router — giữ API & role model tương tự.
+Tuần 7 port **cùng nghiệp vụ** (Admin + Storefront) sang Next.js App Router.
