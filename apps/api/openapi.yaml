@@ -1,0 +1,2253 @@
+openapi: 3.0.3
+info:
+  title: P4 Product Manager API
+  version: 1.0.0
+  description: |
+    REST API for the P4 Product Manager e-commerce demo (Express + Sequelize).
+
+    **Demo accounts**
+    - Admin: `admin@demo.com` / `admin123`
+    - User: `user@demo.com` / `user123`
+
+    **Response envelopes**
+    - Success: `{ data, message? }`
+    - Paginated: `{ data: [], meta: { page, pageSize, total, totalPages }, message? }`
+    - Error: `{ message, code?, extensions? }`
+
+    **Localization**
+    All routes under `/api` accept an optional `Accept-Language` header (e.g. `vi`, `en`)
+    to translate `message` and error strings.
+
+servers:
+  - url: http://localhost:3001
+    description: Local development
+  - url: https://p4-api.couponlinkh.com
+    description: Production
+
+tags:
+  - name: Health
+    description: Service health check
+  - name: Auth
+    description: Authentication and profile
+  - name: Products
+    description: Product catalog and reviews
+  - name: Categories
+    description: Product categories
+  - name: Coupons
+    description: Discount coupons
+  - name: Orders
+    description: Order lifecycle
+  - name: Payments
+    description: Mock payment simulation
+  - name: Refunds
+    description: Payment refunds
+  - name: Addresses
+    description: User shipping addresses
+  - name: Dashboard
+    description: Admin dashboard metrics
+  - name: Files
+    description: Cloudinary signed upload URLs
+
+security: []
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      operationId: login
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      operationId: refreshToken
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user profile
+      operationId: getMe
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    patch:
+      tags: [Auth]
+      summary: Update current user profile
+      operationId: updateMe
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileInput'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout and revoke refresh token(s)
+      operationId: logout
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LogoutResponse'
+
+  /api/products:
+    get:
+      tags: [Products]
+      summary: List products (public, paginated)
+      operationId: listProducts
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SearchQuery'
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by category ID
+      responses:
+        '200':
+          description: Product list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Product'
+    post:
+      tags: [Products]
+      summary: Create product (admin)
+      operationId: createProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/products/{id}:
+    get:
+      tags: [Products]
+      summary: Get product by ID
+      operationId: getProductById
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        '200':
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Products]
+      summary: Update product (admin)
+      operationId: updateProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInputPartial'
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Products]
+      summary: Delete product (admin)
+      operationId: deleteProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        '200':
+          description: Product deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Product'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/products/{id}/images:
+    post:
+      tags: [Products]
+      summary: Add product gallery image (admin)
+      operationId: addProductImage
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddProductImageInput'
+      responses:
+        '201':
+          description: Image added
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProductImage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/products/{id}/images/{imageId}:
+    delete:
+      tags: [Products]
+      summary: Remove product gallery image (admin)
+      operationId: removeProductImage
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/ProductId'
+        - $ref: '#/components/parameters/ProductImageId'
+      responses:
+        '200':
+          description: Image removed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProductImage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/products/{id}/reviews:
+    get:
+      tags: [Products]
+      summary: List reviews for a product
+      operationId: listProductReviews
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        '200':
+          description: Review list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Review'
+    post:
+      tags: [Products]
+      summary: Create a product review (user or admin)
+      operationId: createProductReview
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewInput'
+      responses:
+        '201':
+          description: Review created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Review'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/products/{id}/reviews/{reviewId}:
+    delete:
+      tags: [Products]
+      summary: Delete a product review (owner or admin)
+      operationId: deleteProductReview
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/ProductId'
+        - $ref: '#/components/parameters/ReviewId'
+      responses:
+        '200':
+          description: Review deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Review'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/categories:
+    get:
+      tags: [Categories]
+      summary: List all categories
+      operationId: listCategories
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Category list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Category'
+    post:
+      tags: [Categories]
+      summary: Create category (admin)
+      operationId: createCategory
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Category'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/categories/{id}:
+    get:
+      tags: [Categories]
+      summary: Get category by ID
+      operationId: getCategoryById
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '200':
+          description: Category detail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Category'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Categories]
+      summary: Update category (admin)
+      operationId: updateCategory
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInputPartial'
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Category'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Categories]
+      summary: Delete category (admin)
+      operationId: deleteCategory
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '200':
+          description: Category deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Category'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/coupons/preview:
+    post:
+      tags: [Coupons]
+      summary: Preview coupon discount (auth)
+      operationId: previewCoupon
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponPreviewRequest'
+      responses:
+        '200':
+          description: Discount preview
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CouponPreviewResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/coupons:
+    get:
+      tags: [Coupons]
+      summary: List all coupons (admin)
+      operationId: listCoupons
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Coupon list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Coupon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [Coupons]
+      summary: Create coupon (admin)
+      operationId: createCoupon
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponInput'
+      responses:
+        '201':
+          description: Coupon created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Coupon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/coupons/{id}:
+    put:
+      tags: [Coupons]
+      summary: Update coupon (admin)
+      operationId: updateCoupon
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CouponId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponInputPartial'
+      responses:
+        '200':
+          description: Coupon updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Coupon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Coupons]
+      summary: Delete coupon (admin)
+      operationId: deleteCoupon
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CouponId'
+      responses:
+        '200':
+          description: Coupon deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Coupon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/orders:
+    get:
+      tags: [Orders]
+      summary: List all orders (admin, paginated)
+      operationId: listOrders
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SearchQuery'
+      responses:
+        '200':
+          description: Order list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Order'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [Orders]
+      summary: Create order / checkout (user)
+      operationId: createOrder
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/orders/mine:
+    get:
+      tags: [Orders]
+      summary: List current user's orders (paginated)
+      operationId: listMyOrders
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: My orders
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Order'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get order by ID (owner or admin)
+      operationId: getOrderById
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/orders/{id}/shipment:
+    patch:
+      tags: [Orders]
+      summary: Update order shipment (admin)
+      operationId: updateOrderShipment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShipmentUpdateInput'
+      responses:
+        '200':
+          description: Shipment updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/orders/{id}/cancel:
+    post:
+      tags: [Orders]
+      summary: Cancel order (owner or admin)
+      operationId: cancelOrder
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          description: Order cancelled
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/orders/{id}/refunds:
+    post:
+      tags: [Orders]
+      summary: Create refund for order (admin)
+      operationId: createOrderRefund
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundCreateInput'
+      responses:
+        '201':
+          description: Refund created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Refund'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/payments/{id}/mock-pay:
+    get:
+      tags: [Payments]
+      summary: Simulate mock payment via redirect (GET)
+      operationId: mockPayGet
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/PaymentId'
+        - $ref: '#/components/parameters/PaymentSecret'
+      responses:
+        '200':
+          description: Payment confirmed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Payments]
+      summary: Simulate mock payment (POST)
+      operationId: mockPayPost
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/PaymentId'
+        - $ref: '#/components/parameters/PaymentSecret'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockPayBody'
+      responses:
+        '200':
+          description: Payment confirmed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/payments/webhook/mock:
+    post:
+      tags: [Payments]
+      summary: Simulate payment provider webhook
+      operationId: mockPaymentWebhook
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MockWebhookRequest'
+      responses:
+        '200':
+          description: Payment confirmed via webhook
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+
+  /api/payments/webhook/stripe:
+    post:
+      tags: [Payments]
+      summary: Stripe webhook (raw body + Stripe-Signature)
+      description: |
+        Handles `checkout.session.completed` (confirm paid) and `checkout.session.expired` (mark failed).
+        Requires `STRIPE_WEBHOOK_SECRET`. Do not send JSON from Scalar — use Stripe CLI.
+      operationId: stripePaymentWebhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Stripe Event payload
+      responses:
+        '200':
+          description: Acknowledged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  received:
+                    type: boolean
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/refunds:
+    get:
+      tags: [Refunds]
+      summary: List refunds (admin)
+      operationId: listRefunds
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - name: orderId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by order ID
+      responses:
+        '200':
+          description: Refund list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Refund'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/addresses:
+    get:
+      tags: [Addresses]
+      summary: List current user's addresses
+      operationId: listAddresses
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Address list
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Address'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Addresses]
+      summary: Create address
+      operationId: createAddress
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressInput'
+      responses:
+        '201':
+          description: Address created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Address'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/addresses/{id}:
+    put:
+      tags: [Addresses]
+      summary: Update address
+      operationId: updateAddress
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/AddressId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressInputPartial'
+      responses:
+        '200':
+          description: Address updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Address'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Addresses]
+      summary: Delete address
+      operationId: deleteAddress
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/AddressId'
+      responses:
+        '200':
+          description: Address deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Address'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/dashboard/stats:
+    get:
+      tags: [Dashboard]
+      summary: Get dashboard statistics (admin)
+      operationId: getDashboardStats
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DashboardStats'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/files/sign-upload-url:
+    get:
+      tags: [Files]
+      summary: Get signed Cloudinary upload URL (admin)
+      operationId: getSignUploadUrl
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: Original file name used to derive the public ID slug
+      responses:
+        '200':
+          description: Signed upload URL
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SignedUpload'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/files/sign-upload-urls:
+    get:
+      tags: [Files]
+      summary: Get multiple signed upload URLs (admin)
+      operationId: getSignUploadUrls
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - name: names
+          in: query
+          required: true
+          description: Comma-separated file names or repeated query values
+          schema:
+            oneOf:
+              - type: string
+                example: photo-a.jpg,photo-b.jpg
+              - type: array
+                items:
+                  type: string
+      responses:
+        '200':
+          description: Signed upload URLs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SignedUpload'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token from login or refresh
+
+  parameters:
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+        example: vi
+      description: Optional locale for translated messages
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    SearchQuery:
+      name: q
+      in: query
+      schema:
+        type: string
+        default: ''
+      description: Search keyword
+    ProductId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Product ID (string slug)
+    ProductImageId:
+      name: imageId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ReviewId:
+      name: reviewId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CategoryId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CouponId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    OrderId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PaymentId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Payment ID (same as order payment record)
+    PaymentSecret:
+      name: secret
+      in: query
+      schema:
+        type: string
+      description: Mock payment secret (also accepted in POST body)
+    AddressId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+          example: ok
+        service:
+          type: string
+          example: '@p4/api'
+
+    SuccessEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data: {}
+        message:
+          type: string
+
+    PaginatedEnvelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: {}
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+        message:
+          type: string
+
+    PaginationMeta:
+      type: object
+      required: [page, pageSize, total, totalPages]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+
+    ApiError:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        extensions:
+          type: object
+          additionalProperties: true
+
+    Role:
+      type: string
+      enum: [admin, user]
+
+    User:
+      type: object
+      required: [id, email, role]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/Role'
+        avatarId:
+          type: string
+          format: uuid
+          nullable: true
+        avatarUrl:
+          type: string
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@demo.com
+        password:
+          type: string
+          format: password
+          example: admin123
+
+    LoginResponse:
+      type: object
+      required: [token, refreshToken, user]
+      properties:
+        token:
+          type: string
+          description: JWT access token
+        refreshToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+
+    UpdateProfileInput:
+      type: object
+      properties:
+        imageStorageId:
+          type: string
+          description: Cloudinary public ID after client upload
+
+    MeResponse:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+
+    LogoutRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+
+    LogoutResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+          example: true
+
+    Category:
+      type: object
+      required: [id, name, slug, description]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+
+    CategoryInput:
+      type: object
+      required: [name, slug]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+
+    CategoryInputPartial:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+
+    ProductImage:
+      type: object
+      required: [id, fileId, url, sortOrder]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fileId:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        sortOrder:
+          type: integer
+          minimum: 0
+
+    Product:
+      type: object
+      required: [id, name, price, description, imageUrl, stock]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: integer
+          minimum: 0
+          description: Price in smallest currency unit
+        description:
+          type: string
+        imageUrl:
+          type: string
+        imageId:
+          type: string
+          format: uuid
+          nullable: true
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        category:
+          allOf:
+            - $ref: '#/components/schemas/Category'
+          nullable: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImage'
+        stock:
+          type: integer
+          minimum: 0
+
+    ProductInput:
+      type: object
+      required: [name, price, stock]
+      properties:
+        name:
+          type: string
+        price:
+          type: integer
+          minimum: 0
+        description:
+          type: string
+        stock:
+          type: integer
+          minimum: 0
+        imageStorageId:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        imageStorageIds:
+          type: array
+          items:
+            type: string
+
+    ProductInputPartial:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: integer
+          minimum: 0
+        description:
+          type: string
+        stock:
+          type: integer
+          minimum: 0
+        imageStorageId:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+
+    AddProductImageInput:
+      type: object
+      required: [imageStorageId]
+      properties:
+        imageStorageId:
+          type: string
+        sortOrder:
+          type: integer
+          minimum: 0
+
+    Review:
+      type: object
+      required: [id, productId, userId, rating, comment, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        productId:
+          type: string
+        userId:
+          type: string
+          format: uuid
+        userEmail:
+          type: string
+          format: email
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ReviewInput:
+      type: object
+      required: [rating]
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+
+    CouponType:
+      type: string
+      enum: [percent, fixed]
+
+    Coupon:
+      type: object
+      required: [id, code, type, value, minOrderAmount, usedCount, isActive]
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        type:
+          $ref: '#/components/schemas/CouponType'
+        value:
+          type: integer
+          minimum: 1
+        minOrderAmount:
+          type: integer
+          minimum: 0
+        maxDiscount:
+          type: integer
+          minimum: 0
+          nullable: true
+        usageLimit:
+          type: integer
+          minimum: 1
+          nullable: true
+        usedCount:
+          type: integer
+          minimum: 0
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+        isActive:
+          type: boolean
+
+    CouponInput:
+      type: object
+      required: [code, type, value]
+      properties:
+        code:
+          type: string
+        type:
+          $ref: '#/components/schemas/CouponType'
+        value:
+          type: integer
+          minimum: 1
+        minOrderAmount:
+          type: integer
+          minimum: 0
+        maxDiscount:
+          type: integer
+          minimum: 0
+          nullable: true
+        usageLimit:
+          type: integer
+          minimum: 1
+          nullable: true
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+        isActive:
+          type: boolean
+
+    CouponInputPartial:
+      type: object
+      properties:
+        code:
+          type: string
+        type:
+          $ref: '#/components/schemas/CouponType'
+        value:
+          type: integer
+          minimum: 1
+        minOrderAmount:
+          type: integer
+          minimum: 0
+        maxDiscount:
+          type: integer
+          minimum: 0
+          nullable: true
+        usageLimit:
+          type: integer
+          minimum: 1
+          nullable: true
+        startsAt:
+          type: string
+          format: date-time
+          nullable: true
+        endsAt:
+          type: string
+          format: date-time
+          nullable: true
+        isActive:
+          type: boolean
+
+    CouponPreviewRequest:
+      type: object
+      required: [code, subtotal]
+      properties:
+        code:
+          type: string
+        subtotal:
+          type: integer
+          minimum: 0
+
+    CouponPreviewResponse:
+      type: object
+      required: [coupon, discountAmount]
+      properties:
+        coupon:
+          $ref: '#/components/schemas/Coupon'
+        discountAmount:
+          type: integer
+          minimum: 0
+
+    OrderStatus:
+      type: string
+      enum: [pending, paid, shipping, completed, cancelled]
+
+    PaymentStatus:
+      type: string
+      enum: [pending, paid, failed]
+
+    ShipmentStatus:
+      type: string
+      enum: [pending, shipped, delivered, cancelled]
+
+    RefundStatus:
+      type: string
+      enum: [pending, completed, failed]
+
+    OrderItem:
+      type: object
+      required: [productId, productName, quantity, unitPrice]
+      properties:
+        productId:
+          type: string
+        productName:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        unitPrice:
+          type: integer
+          minimum: 0
+
+    ShippingAddressInput:
+      type: object
+      required: [fullName, phone, line1, city]
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+        line1:
+          type: string
+        city:
+          type: string
+
+    Payment:
+      type: object
+      required: [id, orderId, provider, amount, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+          enum: [mock, stripe]
+        amount:
+          type: integer
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        externalId:
+          type: string
+          nullable: true
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+        checkoutUrl:
+          type: string
+          description: Stripe hosted URL or relative mock-pay path when pending
+
+    Shipment:
+      type: object
+      required: [id, orderId, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/ShipmentStatus'
+        carrier:
+          type: string
+          nullable: true
+        trackingCode:
+          type: string
+          nullable: true
+        shippedAt:
+          type: string
+          format: date-time
+          nullable: true
+        deliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    OrderCouponInfo:
+      type: object
+      required: [code, discountAmount, couponId]
+      properties:
+        code:
+          type: string
+        discountAmount:
+          type: integer
+          minimum: 0
+        couponId:
+          type: string
+          format: uuid
+
+    Order:
+      type: object
+      required:
+        - id
+        - userId
+        - userEmail
+        - status
+        - items
+        - subtotal
+        - discountAmount
+        - shippingFee
+        - total
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        userEmail:
+          type: string
+          format: email
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        subtotal:
+          type: integer
+          minimum: 0
+        discountAmount:
+          type: integer
+          minimum: 0
+        shippingFee:
+          type: integer
+          minimum: 0
+        total:
+          type: integer
+          minimum: 0
+        shippingAddress:
+          allOf:
+            - $ref: '#/components/schemas/ShippingAddressInput'
+          nullable: true
+        payment:
+          allOf:
+            - $ref: '#/components/schemas/Payment'
+          nullable: true
+        shipment:
+          allOf:
+            - $ref: '#/components/schemas/Shipment'
+          nullable: true
+        coupon:
+          allOf:
+            - $ref: '#/components/schemas/OrderCouponInfo'
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    CheckoutRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId:
+                type: string
+              quantity:
+                type: integer
+                minimum: 1
+        addressId:
+          type: string
+          format: uuid
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddressInput'
+        shippingFee:
+          type: integer
+          minimum: 0
+        couponCode:
+          type: string
+
+    ShipmentUpdateInput:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ShipmentStatus'
+        carrier:
+          type: string
+        trackingCode:
+          type: string
+
+    Refund:
+      type: object
+      required: [id, paymentId, orderId, amount, status, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        paymentId:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/RefundStatus'
+        reason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    RefundCreateInput:
+      type: object
+      properties:
+        amount:
+          type: integer
+          minimum: 1
+          description: Defaults to full payment amount
+        reason:
+          type: string
+
+    MockPayBody:
+      type: object
+      properties:
+        secret:
+          type: string
+
+    MockWebhookRequest:
+      type: object
+      required: [paymentId, secret]
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        secret:
+          type: string
+
+    Address:
+      type: object
+      required: [id, userId, fullName, phone, line1, city, isDefault]
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        phone:
+          type: string
+        line1:
+          type: string
+        city:
+          type: string
+        isDefault:
+          type: boolean
+
+    AddressInput:
+      type: object
+      required: [fullName, phone, line1, city]
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+        line1:
+          type: string
+        city:
+          type: string
+        isDefault:
+          type: boolean
+
+    AddressInputPartial:
+      type: object
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+        line1:
+          type: string
+        city:
+          type: string
+        isDefault:
+          type: boolean
+
+    DashboardStats:
+      type: object
+      required: [totalRevenue, orderCount, lowStockProducts]
+      properties:
+        totalRevenue:
+          type: integer
+          minimum: 0
+        orderCount:
+          type: integer
+          minimum: 0
+        lowStockProducts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+
+    SignedUpload:
+      type: object
+      required: [uploadUrl, publicId]
+      properties:
+        uploadUrl:
+          type: string
+          format: uri
+        publicId:
+          type: string
+          description: Cloudinary public ID to pass as imageStorageId after upload

@@ -3,7 +3,8 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     ports:
-      - "127.0.0.1:5432:5432"
+      # Host 5433 — tránh conflict với coupon-linkh (5432) trên cùng VPS
+      - "127.0.0.1:5433:5432"
     environment:
       POSTGRES_DB: ${DATABASE_NAME:-p4_product_manager}
       POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
@@ -42,8 +43,14 @@ services:
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
       CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER:-p4-product-manager}
       CLOUDINARY_DOMAIN: ${CLOUDINARY_DOMAIN:-https://api.cloudinary.com/v1_1}
+      PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
       PAYMENT_MOCK_SECRET: ${PAYMENT_MOCK_SECRET:-p4-mock-pay-secret}
       DEFAULT_SHIPPING_FEE: ${DEFAULT_SHIPPING_FEE:-30000}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_CURRENCY: ${STRIPE_CURRENCY:-vnd}
+      CHECKOUT_SUCCESS_URL: ${CHECKOUT_SUCCESS_URL:-}
+      CHECKOUT_CANCEL_URL: ${CHECKOUT_CANCEL_URL:-}
       RUN_SEED: ${RUN_SEED:-false}
     depends_on:
       postgres:

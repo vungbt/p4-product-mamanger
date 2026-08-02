@@ -3,10 +3,11 @@ set -e
 
 # ===========================================
 # Deploy P4 Product Manager API — PRODUCTION
-# (FE trên Vercel — chỉ deploy postgres + api)
+# Cùng VPS với coupon-linkh (SSH host: couponlinkh)
+# FE trên Vercel — chỉ deploy postgres + api
 # ===========================================
 
-SERVER="${SERVER:-p4-api}"
+SERVER="${SERVER:-couponlinkh}"
 REMOTE_DIR="${REMOTE_DIR:-/root/apps/p4-product-manager}"
 ENV_FILE=".env.prod"
 PROJECT_NAME="p4-prod"
@@ -17,9 +18,10 @@ while [[ $# -gt 0 ]]; do
     --server) SERVER="$2"; shift 2 ;;
     --)       shift ;;
     --help)
-      echo "Usage: ./scripts/deploy.prod.sh [--server user@host]"
+      echo "Usage: ./scripts/deploy.prod.sh [--server user@host|ssh-alias]"
       echo ""
-      echo "Requires: .env.prod, SSH host alias or user@ip"
+      echo "Default SSH host: couponlinkh (same VPS as coupon-linkh)"
+      echo "Requires: .env.prod (copy from .env.prod.example)"
       exit 0
       ;;
     *) echo "Unknown option: $1"; exit 1 ;;
@@ -29,11 +31,12 @@ done
 echo "========================================"
 echo "  PRODUCTION Deploy (API + Postgres)"
 echo "  Server:  $SERVER"
+echo "  Remote:  $REMOTE_DIR"
 echo "========================================"
 echo ""
 
 if [[ ! -f "$ENV_FILE" ]]; then
-  echo "Missing $ENV_FILE — copy from .env.example and fill production values."
+  echo "Missing $ENV_FILE — copy from .env.prod.example and fill production values."
   exit 1
 fi
 
@@ -63,4 +66,6 @@ rm -f p4-api.tar.gz
 
 echo ""
 echo "==> PRODUCTION deploy complete!"
-echo "    API should be on port 3001 — point Vercel VITE_API_URL to this host."
+echo "    API: https://p4-api.couponlinkh.com  (health: /health)"
+echo "    Direct: http://140.82.33.237:3001  | Postgres host: 127.0.0.1:5433"
+echo "    Vercel VITE_API_URL=https://p4-api.couponlinkh.com"

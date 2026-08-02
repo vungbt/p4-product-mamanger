@@ -105,6 +105,14 @@ const products = [
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface) {
+    const [existing] = await queryInterface.sequelize.query(
+      `SELECT 1 FROM users WHERE email = 'admin@demo.com' LIMIT 1`,
+    );
+    if (existing.length > 0) {
+      console.log('Demo data already present — skip seed');
+      return;
+    }
+
     const now = new Date();
     const adminId = randomUUID();
     const userId = randomUUID();

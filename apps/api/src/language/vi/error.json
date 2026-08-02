@@ -32,5 +32,8 @@
   "order_not_cancellable": "Đơn không thể hủy",
   "file_not_found": "Không tìm thấy file",
   "file_still_in_use": "File vẫn đang được sử dụng",
-  "file_delete_failed": "Xóa file trên Cloudinary thất bại"
+  "file_delete_failed": "Xóa file trên Cloudinary thất bại",
+  "stripe_not_configured": "Chưa cấu hình Stripe",
+  "stripe_session_failed": "Không tạo được phiên thanh toán Stripe",
+  "stripe_webhook_invalid": "Webhook Stripe không hợp lệ"
 }

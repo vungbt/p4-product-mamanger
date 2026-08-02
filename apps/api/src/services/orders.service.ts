@@ -22,6 +22,7 @@ import {
 } from '@/sequelize/models/index.js';
 import { getAddressForUser } from '@/services/addresses.service.js';
 import { computeDiscount, findValidCouponByCode } from '@/services/coupons.service.js';
+import { createCheckoutSession } from '@/services/payments/stripe.service.js';
 import { BadRequest, Forbidden, NotFound } from '@/utils/errors/index.js';
 import { paginateSlice } from '@/utils/pagination.js';
 
@@ -43,6 +44,14 @@ type OrderEager = OrderModel & {
 };
 
 function toPayment(row: PaymentModel): Payment {
+  let checkoutUrl: string | undefined;
+  if (row.status === 'pending') {
+    if (row.checkoutUrl) {
+      checkoutUrl = row.checkoutUrl;
+    } else if (row.provider === 'mock') {
+      checkoutUrl = `/api/payments/${row.id}/mock-pay?secret=${env.payment.mockSecret}`;
+    }
+  }
   return {
     id: row.id,
     orderId: row.orderId,
@@ -51,10 +60,7 @@ function toPayment(row: PaymentModel): Payment {
     status: row.status,
     externalId: row.externalId,
     paidAt: row.paidAt ? row.paidAt.toISOString() : null,
-    checkoutUrl:
-      row.status === 'pending'
-        ? `/api/payments/${row.id}/mock-pay?secret=${env.payment.mockSecret}`
-        : undefined,
+    checkoutUrl,
   };
 }
 
@@ -198,7 +204,7 @@ export async function getOrderById(id: string, user?: User) {
 export async function createOrder(user: User, input: CheckoutInput) {
   const { addressId, shipping, shippingFee } = await resolveShipping(user, input);
 
-  return sequelize.transaction(async (transaction) => {
+  const created = await sequelize.transaction(async (transaction) => {
     const orderItems: OrderItem[] = [];
     let subtotal = 0;
 
@@ -284,13 +290,21 @@ export async function createOrder(user: User, input: CheckoutInput) {
       await couponRow.update({ usedCount: couponRow.usedCount + 1 }, { transaction });
     }
 
+    const paymentId = randomUUID();
+    const provider = env.payment.provider;
+
     await PaymentModel.create(
       {
+        id: paymentId,
         orderId: order.id,
-        provider: 'mock',
+        provider,
         amount: total,
         status: 'pending',
-        externalId: `mock_${randomUUID()}`,
+        externalId: provider === 'mock' ? `mock_${randomUUID()}` : null,
+        checkoutUrl:
+          provider === 'mock'
+            ? `/api/payments/${paymentId}/mock-pay?secret=${env.payment.mockSecret}`
+            : null,
       },
       { transaction },
     );
@@ -299,23 +313,45 @@ export async function createOrder(user: User, input: CheckoutInput) {
       include: orderInclude,
       transaction,
     })) as OrderEager;
-    return toOrder(full);
+    return { order: toOrder(full), paymentId, provider, total };
   });
-}
 
-/** Pay → commit reservations (stock already held) + shipment */
-export async function confirmMockPayment(paymentId: string, secret: string) {
-  if (secret !== env.payment.mockSecret) {
-    throw new Forbidden(errorKeys.forbidden);
+  if (created.provider === 'stripe') {
+    const session = await createCheckoutSession({
+      orderId: created.order.id,
+      paymentId: created.paymentId,
+      amount: created.total,
+      currency: env.payment.stripeCurrency,
+      description: `Order ${created.order.id}`,
+    });
+    await PaymentModel.update(
+      { externalId: session.sessionId, checkoutUrl: session.url },
+      { where: { id: created.paymentId } },
+    );
+    return getOrderById(created.order.id);
   }
 
+  return created.order;
+}
+
+/**
+ * Commit reserved stock + mark payment/order paid + create shipment.
+ * Idempotent when already paid (returns current order).
+ */
+export async function confirmPaid(paymentId: string) {
   return sequelize.transaction(async (transaction) => {
     const payment = await PaymentModel.findByPk(paymentId, {
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
     if (!payment) throw new NotFound(errorKeys.paymentNotFound);
-    if (payment.status === 'paid') throw new BadRequest(errorKeys.paymentAlreadyPaid);
+    if (payment.status === 'paid') {
+      const full = (await OrderModel.findByPk(payment.orderId, {
+        include: orderInclude,
+        transaction,
+      })) as OrderEager;
+      return toOrder(full);
+    }
 
     const order = await OrderModel.findByPk(payment.orderId, {
       transaction,
@@ -336,7 +372,7 @@ export async function confirmMockPayment(paymentId: string, secret: string) {
       {
         orderId: order.id,
         status: 'pending',
-        carrier: 'mock-express',
+        carrier: payment.provider === 'stripe' ? 'stripe' : 'mock-express',
         trackingCode: null,
       },
       { transaction },
@@ -348,6 +384,29 @@ export async function confirmMockPayment(paymentId: string, secret: string) {
     })) as OrderEager;
     return toOrder(full);
   });
+}
+
+/** Mock pay → same as confirmPaid after secret check */
+export async function confirmMockPayment(paymentId: string, secret: string) {
+  if (secret !== env.payment.mockSecret) {
+    throw new Forbidden(errorKeys.forbidden);
+  }
+  return confirmPaid(paymentId);
+}
+
+export async function confirmPaidByStripeSession(sessionId: string) {
+  const payment = await PaymentModel.findOne({ where: { externalId: sessionId } });
+  if (!payment) {
+    // Fallback: metadata.paymentId may be used by webhook caller
+    throw new NotFound(errorKeys.paymentNotFound);
+  }
+  return confirmPaid(payment.id);
+}
+
+export async function markPaymentFailedByStripeSession(sessionId: string) {
+  const payment = await PaymentModel.findOne({ where: { externalId: sessionId } });
+  if (!payment || payment.status === 'paid') return;
+  await payment.update({ status: 'failed' });
 }
 
 export async function cancelOrder(orderId: string, user: User) {

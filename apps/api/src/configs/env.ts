@@ -49,7 +49,15 @@ export const env = {
     },
   },
   payment: {
+    provider: (process.env.PAYMENT_PROVIDER === 'stripe' ? 'stripe' : 'mock') as 'mock' | 'stripe',
     mockSecret: process.env.PAYMENT_MOCK_SECRET || 'p4-mock-pay-secret',
     defaultShippingFee: Number(process.env.DEFAULT_SHIPPING_FEE || 30000),
+    stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+    stripeCurrency: (process.env.STRIPE_CURRENCY || 'vnd').toLowerCase(),
+    checkoutSuccessUrl:
+      process.env.CHECKOUT_SUCCESS_URL || 'http://localhost:5173/shop/orders/{ORDER_ID}?paid=1',
+    checkoutCancelUrl:
+      process.env.CHECKOUT_CANCEL_URL || 'http://localhost:5173/shop/cart?cancelled=1',
   },
 };

@@ -60,12 +60,14 @@ Scaffold còn fake username `user`/`admin` — học viên thay bằng API login
 
 ## 5. API docs
 
-[apps/api/README.md](./apps/api/README.md) — envelope `{ data, meta }`, paging, Docker.
+- OpenAPI UI (Scalar): http://localhost:3001/api/docs · prod https://p4-api.couponlinkh.com/api/docs
+- Spec: [apps/api/openapi.yaml](./apps/api/openapi.yaml)
+- Chi tiết envelope/paging: [apps/api/README.md](./apps/api/README.md)
 
 ## 6. Gọi API từ web
 
 - Local: `API_BASE_URL = '/api'` (Vite proxy)
-- Prod Vercel: set `VITE_API_URL=https://your-api-host` (không trailing slash)
+- Prod Vercel: set `VITE_API_URL=https://p4-api.couponlinkh.com` (không trailing slash, **không** thêm `/api`)
 
 ```typescript
 const res = await fetch(`${API_BASE_URL}/products?page=1&pageSize=10`);
@@ -76,8 +78,8 @@ const { data, meta } = await res.json();
 
 | Layer | Cách |
 |-------|------|
-| **Postgres + API** | Docker — `pnpm docker:build` / `pnpm deploy:prod` |
-| **FE** | Vercel — Root `apps/web`, Build `pnpm --filter @p4/web build`, Output `dist`, env `VITE_API_URL` |
+| **Postgres + API** | Cùng VPS coupon-linkh — `cp .env.prod.example .env.prod` rồi `./scripts/deploy.prod.sh` (SSH `couponlinkh`, API `:3001`, PG host `:5433`) |
+| **FE** | Vercel — Root `apps/web`, Build `pnpm --filter @p4/web build`, Output `dist`, env `VITE_API_URL=https://p4-api.couponlinkh.com` |
 
 SPA rewrite: [apps/web/vercel.json](./apps/web/vercel.json)
 

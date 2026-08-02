@@ -32,5 +32,8 @@
   "order_not_cancellable": "Order cannot be cancelled",
   "file_not_found": "File not found",
   "file_still_in_use": "File is still in use",
-  "file_delete_failed": "Failed to delete file on Cloudinary"
+  "file_delete_failed": "Failed to delete file on Cloudinary",
+  "stripe_not_configured": "Stripe is not configured",
+  "stripe_session_failed": "Failed to create Stripe Checkout Session",
+  "stripe_webhook_invalid": "Invalid Stripe webhook"
 }

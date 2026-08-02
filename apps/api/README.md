@@ -5,6 +5,11 @@
 Base URL (dev): `http://localhost:3001`  
 Web proxy: `/api` → API (cấu hình trong `apps/web/vite.config.ts`)
 
+### OpenAPI / docs
+
+- Spec: [`openapi.yaml`](./openapi.yaml) · raw: `GET /api/openapi.yaml`
+- UI (Scalar): [http://localhost:3001/api/docs](http://localhost:3001/api/docs) · prod: https://p4-api.couponlinkh.com/api/docs
+
 ---
 
 ## Structure
@@ -217,7 +222,7 @@ Create/update/delete trả `{ data: Product, message }`.
 | POST | `/api/orders` | ✅ | user |
 | PATCH | `/api/orders/:id/shipment` | ✅ | admin |
 
-Checkout tạo đơn **`pending`** + `payment` mock. Stock được **reserve** ngay.
+Checkout tạo đơn **`pending`** + `payment` theo `PAYMENT_PROVIDER` (`mock` | `stripe`). Stock được **reserve** ngay. Response có `payment.checkoutUrl` để FE redirect.
 
 ```json
 {
@@ -237,10 +242,24 @@ Checkout tạo đơn **`pending`** + `payment` mock. Stock được **reserve** 
 Cần `addressId` **hoặc** `shippingAddress`. Optional: `couponCode`, `shippingFee`.
 
 - Hủy: `POST /api/orders/:id/cancel` → release stock  
-- Thanh toán mock: mở `payment.checkoutUrl` hoặc `POST /api/payments/webhook/mock` → commit reservation + shipment  
-- Refund admin: `POST /api/orders/:id/refunds` → restock + cancel order  
+- **Mock** (`PAYMENT_PROVIDER=mock`): mở `payment.checkoutUrl` hoặc `POST /api/payments/webhook/mock` → commit reservation + shipment  
+- **Stripe** (`PAYMENT_PROVIDER=stripe`): redirect `payment.checkoutUrl` (Checkout Session); Stripe gọi `POST /api/payments/webhook/stripe` → cùng logic commit  
+- Refund admin: `POST /api/orders/:id/refunds` → restock + cancel order (chưa gọi Stripe Refund API)
 
 Admin shipment: `PATCH /api/orders/:id/shipment` `{ "status": "shipped", "trackingCode": "..." }`.
+
+### Stripe (mentor)
+
+Env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_CURRENCY` (mặc định `vnd`), `CHECKOUT_SUCCESS_URL` / `CHECKOUT_CANCEL_URL` (placeholder `{ORDER_ID}`).
+
+Local webhook:
+
+```bash
+stripe listen --forward-to localhost:3001/api/payments/webhook/stripe
+# copy whsec_... → STRIPE_WEBHOOK_SECRET
+```
+
+FE: sau `POST /api/orders` → `window.location = data.payment.checkoutUrl`.
 
 ### Extensions
 
@@ -300,15 +319,21 @@ Xem `libs/shared/src/index.ts` — FE import `@p4/shared` (`ApiSuccess`, `ApiPag
 
 ## Docker & deploy (mentor)
 
-Pattern giống coupon-linkh — **chỉ postgres + api** (FE trên Vercel).
+Pattern giống coupon-linkh — **chỉ postgres + api** (FE trên Vercel). Cùng VPS (`SSH couponlinkh`), compose project `p4-prod`, Postgres host `127.0.0.1:5433` (tránh đụng coupon `:5432`), API `:3001`.
 
 ```bash
-pnpm docker:dev          # Postgres local
-pnpm docker:build        # Build image p4-api:latest
-pnpm docker:up           # Prod-like compose (cần .env / image)
-pnpm deploy:prod         # Build + scp + remote up (cần .env.prod + SSH)
+cp .env.prod.example .env.prod   # điền secret
+pnpm docker:dev                  # Postgres local (dev)
+pnpm docker:build                # Build image p4-api:latest
+pnpm docker:up                   # Prod-like compose local
+pnpm deploy:prod                 # Build + scp + remote up (SSH couponlinkh)
+# hoặc: ./scripts/deploy.prod.sh
 ```
 
-Env: [.env.example](../../.env.example). Production: `.env.prod` (không commit).
+Smoke: `curl https://p4-api.couponlinkh.com/health` (nginx TLS → `127.0.0.1:3001`)
+
+Env: [.env.example](../../.env.example) · production template: [.env.prod.example](../../.env.prod.example). File `.env.prod` không commit.
 
 Entrypoint container: migrate → (optional `RUN_SEED=true`) → `node dist/index.js`.
+
+FE Vercel: `VITE_API_URL=https://p4-api.couponlinkh.com`

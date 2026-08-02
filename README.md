@@ -52,18 +52,26 @@ pnpm dev
 - API: http://localhost:3001 (Postgres + Sequelize)
 - Web: http://localhost:5173
 
-Chi tiết: [GETTING-STARTED.md](./GETTING-STARTED.md) · Docker/deploy: [apps/api/README.md](./apps/api/README.md)
+Chi tiết: [GETTING-STARTED.md](./GETTING-STARTED.md) · Docker/deploy: [apps/api/README.md](./apps/api/README.md) · OpenAPI UI: `/api/docs`
 
 ### Docker (mentor)
 
 ```bash
-pnpm docker:dev      # Postgres local
+pnpm docker:dev      # Postgres local (host 5432)
 pnpm docker:build    # image p4-api
 pnpm docker:up       # postgres + api
-pnpm deploy:prod     # build + deploy server (cần .env.prod)
 ```
 
-FE production: **Vercel** (`VITE_API_URL` trỏ API host).
+**Deploy production** — cùng VPS coupon-linkh (SSH `couponlinkh`), stack riêng `p4-prod` (Postgres host bind `127.0.0.1:5433`):
+
+```bash
+cp .env.prod.example .env.prod   # điền JWT, DB, CORS, Cloudinary…
+./scripts/deploy.prod.sh         # hoặc: pnpm deploy:prod
+```
+
+Smoke: `curl https://p4-api.couponlinkh.com/health` (nginx → `:3001`)
+
+FE production: **Vercel** — `VITE_API_URL=https://p4-api.couponlinkh.com`
 
 ### Lint, format & commit
 

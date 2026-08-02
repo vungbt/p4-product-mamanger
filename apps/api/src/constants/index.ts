@@ -34,4 +34,7 @@ export const errorKeys = {
   fileNotFound: 'file_not_found',
   fileStillInUse: 'file_still_in_use',
   fileDeleteFailed: 'file_delete_failed',
+  stripeNotConfigured: 'stripe_not_configured',
+  stripeSessionFailed: 'stripe_session_failed',
+  stripeWebhookInvalid: 'stripe_webhook_invalid',
 } as const;

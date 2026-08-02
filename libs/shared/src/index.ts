@@ -64,7 +64,7 @@ export interface OrderItem {
 
 export type OrderStatus = 'pending' | 'paid' | 'shipping' | 'completed' | 'cancelled';
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
-export type PaymentProvider = 'mock';
+export type PaymentProvider = 'mock' | 'stripe';
 export type ShipmentStatus = 'pending' | 'shipped' | 'delivered' | 'cancelled';
 export type CouponType = 'percent' | 'fixed';
 export type RefundStatus = 'pending' | 'completed' | 'failed';

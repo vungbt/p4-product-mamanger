@@ -6,6 +6,8 @@ import { StatusCodes } from 'http-status-codes';
 import morgan from 'morgan';
 import { env } from '@/configs/env.js';
 import { i18nMiddleware } from '@/configs/i18n.js';
+import { mountOpenApiDocs } from '@/configs/openapi-docs.js';
+import * as paymentsController from '@/controllers/payments.controller.js';
 import { baseMiddleware } from '@/middlewares/base.middleware.js';
 import { handleErrorApi, notFoundHandler } from '@/middlewares/error.middleware.js';
 import apiRouter from '@/routers/index.js';
@@ -18,6 +20,9 @@ async function main() {
 
   const app = express();
 
+  // Docs trước helmet — tránh CSP chặn Scalar UI
+  mountOpenApiDocs(app);
+
   if (env.isProd) {
     app.use(helmet());
   }
@@ -28,6 +33,17 @@ async function main() {
       credentials: true,
     }),
   );
+
+  // Stripe webhook needs raw body for signature verification
+  app.post(
+    '/api/payments/webhook/stripe',
+    express.raw({ type: 'application/json' }),
+    baseMiddleware,
+    (req, res, next) => {
+      void paymentsController.stripeWebhook(req, res, next);
+    },
+  );
+
   app.use(express.json({ limit: '1mb' }));
   app.use(morgan(env.isProd ? 'combined' : 'dev'));
   app.use(i18nMiddleware);

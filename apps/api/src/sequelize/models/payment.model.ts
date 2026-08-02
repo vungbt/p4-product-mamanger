@@ -1,6 +1,6 @@
 import { DataTypes, Model, type Optional, type Sequelize } from 'sequelize';
 
-export type PaymentProvider = 'mock';
+export type PaymentProvider = 'mock' | 'stripe';
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
 export interface PaymentAttributes {
@@ -10,6 +10,7 @@ export interface PaymentAttributes {
   amount: number;
   status: PaymentStatus;
   externalId: string | null;
+  checkoutUrl: string | null;
   paidAt: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
@@ -17,7 +18,7 @@ export interface PaymentAttributes {
 
 export type PaymentCreation = Optional<
   PaymentAttributes,
-  'id' | 'provider' | 'status' | 'externalId' | 'paidAt' | 'createdAt' | 'updatedAt'
+  'id' | 'provider' | 'status' | 'externalId' | 'checkoutUrl' | 'paidAt' | 'createdAt' | 'updatedAt'
 >;
 
 export class PaymentModel
@@ -30,6 +31,7 @@ export class PaymentModel
   declare amount: number;
   declare status: PaymentStatus;
   declare externalId: string | null;
+  declare checkoutUrl: string | null;
   declare paidAt: Date | null;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
@@ -49,7 +51,7 @@ export function initPaymentModel(sequelize: Sequelize) {
         field: 'order_id',
       },
       provider: {
-        type: DataTypes.ENUM('mock'),
+        type: DataTypes.ENUM('mock', 'stripe'),
         allowNull: false,
         defaultValue: 'mock',
       },
@@ -66,6 +68,11 @@ export function initPaymentModel(sequelize: Sequelize) {
         type: DataTypes.STRING,
         allowNull: true,
         field: 'external_id',
+      },
+      checkoutUrl: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: 'checkout_url',
       },
       paidAt: {
         type: DataTypes.DATE,

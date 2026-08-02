@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@10.9.0 --activate
 WORKDIR /app
 
@@ -23,6 +23,7 @@ COPY --from=build /app/package.json /app/pnpm-workspace.yaml ./
 COPY --from=build /app/apps/api/package.json ./apps/api/
 COPY --from=build /app/libs/shared/package.json ./libs/shared/
 COPY --from=build /app/apps/api/dist ./apps/api/dist
+COPY --from=build /app/apps/api/openapi.yaml ./apps/api/openapi.yaml
 COPY --from=build /app/apps/api/.sequelizerc ./apps/api/
 COPY --from=build /app/apps/api/src/sequelize ./apps/api/src/sequelize
 COPY --from=build /app/apps/api/src/language ./apps/api/src/language
