@@ -1,0 +1,15 @@
+{
+  "attribute": {
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "price": "Price",
+    "stock": "Stock",
+    "description": "Description",
+    "imageStorageId": "Cloudinary image id",
+    "items": "Items",
+    "productId": "Product ID",
+    "quantity": "Quantity"
+  },
+  "message": {}
+}

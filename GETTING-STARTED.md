@@ -6,6 +6,9 @@
 git clone git@gitlab.com:training2312930/p4-product-manager.git
 cd p4-product-manager
 pnpm install
+cp .env.example .env
+pnpm docker:dev          # Postgres
+pnpm --filter @p4/api db:migrate && pnpm --filter @p4/api db:seed
 pnpm dev
 ```
 
@@ -16,81 +19,68 @@ Mở http://localhost:5173
 ```
 p4-product-manager/
 ├── apps/
-│   ├── api/     ← Mentor maintain (Express) — KHÔNG SỬA
+│   ├── api/     ← Mentor maintain (Express + Sequelize) — KHÔNG SỬA
 │   └── web/     ← Học viên code ở đây
 ├── libs/
 │   └── shared/  ← Types dùng chung (@p4/shared)
+├── docker-compose.yml / docker-compose.dev.yml
 ├── tsconfig.base.json
 └── pnpm-workspace.yaml
 ```
 
-Pattern tham khảo: [smart-connection-monorepo](https://github.com/vungbt/smart-connection-monorepo) (`apps/` + `libs/`).
-
-**Web structure:** [apps/web/README.md](./apps/web/README.md) — routing, icons, kebab-case naming.
+**Web structure:** [apps/web/README.md](./apps/web/README.md)
 
 ## 3. Làm việc hàng ngày
 
 ```bash
-# Chạy cả API + Web
-pnpm dev
-
-# Chỉ web (cần API đang chạy)
-pnpm --filter @p4/web dev
+pnpm docker:dev   # nếu Postgres chưa chạy
+pnpm dev          # API + Web
+# hoặc
+pnpm dev:api      # :3001
+pnpm dev:web      # :5173
 ```
-
-Mở Cursor workspace: folder `apps/web/` hoặc root monorepo.
 
 ### Lint & commit
 
 ```bash
-pnpm lint      # kiểm tra biome
-pnpm format    # auto-fix format/lint
+pnpm lint
+pnpm format
 ```
 
-Mỗi commit phải theo [COMMIT_CONVENTION.md](./COMMIT_CONVENTION.md) — hook Husky sẽ chặn nếu sai format.
+Commit theo [COMMIT_CONVENTION.md](./COMMIT_CONVENTION.md).
 
-## 4. Demo login (fake auth — scaffold)
+## 4. Demo login
 
-Trước khi học viên nối API thật, dùng tài khoản fake để xem structure:
+| Portal | URL | Email (API) | Password |
+|--------|-----|-------------|----------|
+| Storefront | `/login` | user@demo.com | user123 |
+| Admin | `/admin/login` | admin@demo.com | admin123 |
 
-| Portal | URL | Username | Password |
-|--------|-----|----------|----------|
-| Storefront | `/login` | `user` | `user` |
-| Admin | `/admin/login` | `admin` | `admin` |
-
-Sau login: nav sidebar/header render từ `*.route-config.ts` (pattern mượn từ cms-do-an).
+Scaffold còn fake username `user`/`admin` — học viên thay bằng API login thật.
 
 ## 5. API docs
 
-Đọc **[apps/api/README.md](./apps/api/README.md)** — endpoints, auth, body mẫu.
+[apps/api/README.md](./apps/api/README.md) — envelope `{ data, meta }`, paging, Docker.
 
-Tài khoản demo:
+## 6. Gọi API từ web
 
-| Email | Password | Role |
-|-------|----------|------|
-| admin@demo.com | admin123 | admin |
-| user@demo.com | user123 | user |
-
-## 6. Import types
+- Local: `API_BASE_URL = '/api'` (Vite proxy)
+- Prod Vercel: set `VITE_API_URL=https://your-api-host` (không trailing slash)
 
 ```typescript
-import type { Product, User } from '@p4/shared';
-// hoặc
-import type { Product } from '@/types/types';
+const res = await fetch(`${API_BASE_URL}/products?page=1&pageSize=10`);
+const { data, meta } = await res.json();
 ```
 
-## 7. Gọi API từ web
+## 7. Deploy (mentor)
 
-Base URL: `/api` (Vite proxy → localhost:3001)
+| Layer | Cách |
+|-------|------|
+| **Postgres + API** | Docker — `pnpm docker:build` / `pnpm deploy:prod` |
+| **FE** | Vercel — Root `apps/web`, Build `pnpm --filter @p4/web build`, Output `dist`, env `VITE_API_URL` |
 
-```typescript
-fetch('/api/products', {
-  headers: { Authorization: `Bearer ${token}` },
-});
-```
+SPA rewrite: [apps/web/vercel.json](./apps/web/vercel.json)
 
 ## 8. Hỏi agent
 
-`@apps/web/README.md` hoặc root README + nói rõ portal đang làm.
-
-**Nhắc agent:** không sửa `apps/api`, chỉ gợi ý FE.
+`@apps/web/README.md` — **không sửa `apps/api`**, chỉ gợi ý FE.

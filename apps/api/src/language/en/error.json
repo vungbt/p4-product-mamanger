@@ -1,0 +1,19 @@
+{
+  "unauthorized": "Unauthorized",
+  "forbidden": "Forbidden",
+  "not_found": "Not found",
+  "invalid_token": "Invalid token",
+  "invalid_credentials": "Invalid credentials",
+  "product_not_found": "Product not found",
+  "invalid_quantity": "Invalid quantity",
+  "items_required": "Items are required",
+  "input_valid_error": "Validation failed",
+  "server_error": "Internal server error",
+  "invalid_pagination": "Invalid pagination query",
+  "cloudinary_not_configured": "Cloudinary is not configured",
+  "upload_file_required": "Image file is required",
+  "upload_invalid_type": "Only image files are allowed",
+  "upload_invalid_folder": "Invalid folder path",
+  "invalid_refresh_token": "Invalid refresh token",
+  "refresh_token_expired": "Refresh token expired"
+}

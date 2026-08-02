@@ -1,5 +1,5 @@
-// TODO: implement API client — đọc apps/api/README.md
-// Gợi ý: getAuthHeaders() từ localStorage token
+// API client — đọc apps/api/README.md (envelope { data, meta })
+// Base URL: constants.API_BASE_URL (VITE_API_URL trên Vercel)
 
 import { API_BASE_URL } from '@/constants/constants';
 

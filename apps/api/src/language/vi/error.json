@@ -1,0 +1,19 @@
+{
+  "unauthorized": "Chưa xác thực",
+  "forbidden": "Không có quyền truy cập",
+  "not_found": "Không tìm thấy",
+  "invalid_token": "Token không hợp lệ",
+  "invalid_credentials": "Email hoặc mật khẩu không đúng",
+  "product_not_found": "Không tìm thấy sản phẩm",
+  "invalid_quantity": "Số lượng không hợp lệ",
+  "items_required": "Cần ít nhất một sản phẩm",
+  "input_valid_error": "Dữ liệu không hợp lệ",
+  "server_error": "Lỗi máy chủ",
+  "invalid_pagination": "Tham số phân trang không hợp lệ",
+  "cloudinary_not_configured": "Chưa cấu hình Cloudinary",
+  "upload_file_required": "Cần chọn file ảnh",
+  "upload_invalid_type": "Chỉ chấp nhận file ảnh",
+  "upload_invalid_folder": "Folder không hợp lệ",
+  "invalid_refresh_token": "Refresh token không hợp lệ",
+  "refresh_token_expired": "Refresh token đã hết hạn"
+}

@@ -1,5 +1,7 @@
-// API base — Vite proxy /api → http://localhost:3001
-export const API_BASE_URL = '/api';
+// Dev: Vite proxy `/api` → localhost:3001. Prod (Vercel): set VITE_API_URL=https://your-api-host
+export const API_BASE_URL = import.meta.env.VITE_API_URL
+  ? `${String(import.meta.env.VITE_API_URL).replace(/\/$/, '')}/api`
+  : '/api';
 
 export const ROLES = {
   ADMIN: 'admin',

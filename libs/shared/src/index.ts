@@ -12,10 +12,18 @@ export interface Product {
   price: number;
   description: string;
   imageUrl: string;
+  imageId?: string | null;
   stock: number;
 }
 
-export type ProductInput = Omit<Product, 'id'>;
+export interface ProductInput {
+  name: string;
+  price: number;
+  description: string;
+  stock: number;
+  /** Cloudinary public_id (temp) sau khi upload qua signed URL */
+  imageStorageId?: string;
+}
 
 export interface OrderItem {
   productId: string;
@@ -40,7 +48,12 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
+  refreshToken: string;
   user: User;
+}
+
+export interface RefreshRequest {
+  refreshToken: string;
 }
 
 export interface DashboardStats {
@@ -49,6 +62,35 @@ export interface DashboardStats {
   lowStockProducts: Product[];
 }
 
+/** Query params for list endpoints */
+export interface PaginationQuery {
+  page: number;
+  pageSize: number;
+  q: string;
+}
+
+export interface PaginationMeta {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
+/** Standard success envelope */
+export interface ApiSuccess<T> {
+  data: T;
+  message?: string;
+}
+
+/** Standard paginated list envelope */
+export interface ApiPaginatedSuccess<T> {
+  data: T[];
+  meta: PaginationMeta;
+  message?: string;
+}
+
 export interface ApiError {
   message: string;
+  code?: string;
+  extensions?: Record<string, unknown>;
 }

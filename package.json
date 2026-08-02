@@ -4,11 +4,20 @@
   "type": "module",
   "scripts": {
     "dev": "turbo dev",
+    "dev:api": "pnpm --filter @p4/api dev",
+    "dev:web": "pnpm --filter @p4/web dev",
     "build": "turbo build",
     "lint": "biome check apps libs",
     "format": "biome check --write apps libs",
     "prepare": "husky",
-    "commitlint": "commitlint --edit"
+    "commitlint": "commitlint --edit",
+    "docker:dev": "docker compose -f docker-compose.dev.yml up -d",
+    "docker:dev:down": "docker compose -f docker-compose.dev.yml down",
+    "docker:build": "docker build -t p4-api:latest -f apps/api/Dockerfile .",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "deploy:prod": "bash scripts/deploy.prod.sh"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc}": [

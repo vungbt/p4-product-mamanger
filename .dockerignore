@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+**/dist
+.turbo
+.git
+.env
+.env.prod
+.env.local
+*.tar.gz
+*.log
+.DS_Store
+apps/web
+**/.turbo

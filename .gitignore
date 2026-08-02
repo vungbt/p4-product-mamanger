@@ -20,6 +20,10 @@ pnpm-debug.log*
 .env
 .env.local
 .env.*.local
+.env.prod
+
+# docker artifacts
+*.tar.gz
 
 # os / editor
 .DS_Store

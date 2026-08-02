@@ -1,29 +1,67 @@
+import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
-import authRouter from './routes/auth.js';
-import dashboardRouter from './routes/dashboard.js';
-import ordersRouter from './routes/orders.js';
-import productsRouter from './routes/products.js';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { env } from '@/configs/env.js';
+import { i18nMiddleware } from '@/configs/i18n.js';
+import { baseMiddleware } from '@/middlewares/base.middleware.js';
+import { handleErrorApi, notFoundHandler } from '@/middlewares/error.middleware.js';
+import apiRouter from '@/routers/index.js';
+import { sequelize } from '@/sequelize/models/index.js';
+import { logger } from '@/utils/logger.js';
 
-const app = express();
-const PORT = Number(process.env.PORT) || 3001;
+async function main() {
+  await sequelize.authenticate();
+  logger.info('[DB] Connection established');
 
-app.use(cors());
-app.use(express.json());
+  const app = express();
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: '@p4/api' });
-});
+  if (env.isProd) {
+    app.use(helmet());
+  }
+  app.use(compression());
+  app.use(
+    cors({
+      origin: env.corsOrigin,
+      credentials: true,
+    }),
+  );
+  app.use(express.json({ limit: '1mb' }));
+  app.use(morgan(env.isProd ? 'combined' : 'dev'));
+  app.use(i18nMiddleware);
 
-app.use('/api/auth', authRouter);
-app.use('/api/products', productsRouter);
-app.use('/api/orders', ordersRouter);
-app.use('/api/dashboard', dashboardRouter);
+  app.get('/health', (_req, res) => {
+    res.json({ status: 'ok', service: '@p4/api' });
+  });
 
-app.use((_req, res) => {
-  res.status(404).json({ message: 'Not found' });
-});
+  app.use('/api', baseMiddleware, apiRouter);
+  app.use(notFoundHandler);
+  app.use(handleErrorApi);
 
-app.listen(PORT, () => {
-  console.log(`@p4/api listening on http://localhost:${PORT}`);
+  const server = app.listen(env.port, () => {
+    logger.info(`@p4/api listening on http://localhost:${env.port}`);
+  });
+
+  const shutdown = async (signal: string) => {
+    logger.info(`${signal} received — shutting down`);
+    server.close(async () => {
+      try {
+        await sequelize.close();
+        logger.info('[DB] Connection closed');
+        process.exit(0);
+      } catch (err) {
+        logger.error('[DB] Close failed', err);
+        process.exit(1);
+      }
+    });
+  };
+
+  process.on('SIGTERM', () => void shutdown('SIGTERM'));
+  process.on('SIGINT', () => void shutdown('SIGINT'));
+}
+
+main().catch((err) => {
+  logger.error('[App] Failed to start:', err);
+  process.exit(1);
 });

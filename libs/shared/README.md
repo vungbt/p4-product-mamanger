@@ -3,7 +3,14 @@
 Types dùng chung giữa `apps/api` và `apps/web`.
 
 ```typescript
-import type { Product, User, Order } from '@p4/shared';
+import type {
+  Product,
+  User,
+  Order,
+  ApiSuccess,
+  ApiPaginatedSuccess,
+  PaginationMeta,
+} from '@p4/shared';
 ```
 
-Xem `src/index.ts`.
+API response: `ApiSuccess<T>` / `ApiPaginatedSuccess<T>` — xem `apps/api/README.md`.

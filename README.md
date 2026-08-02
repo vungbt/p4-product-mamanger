@@ -43,13 +43,27 @@ End user **không** vào admin, **không** CRUD sản phẩm (API trả 403 nế
 
 ```bash
 pnpm install
+cp .env.example .env
+pnpm docker:dev
+pnpm --filter @p4/api db:migrate && pnpm --filter @p4/api db:seed
 pnpm dev
 ```
 
-- API: http://localhost:3001
-- Web: http://localhost:5173 (proxy `/api` → API)
+- API: http://localhost:3001 (Postgres + Sequelize)
+- Web: http://localhost:5173
 
-Chi tiết: [GETTING-STARTED.md](./GETTING-STARTED.md)
+Chi tiết: [GETTING-STARTED.md](./GETTING-STARTED.md) · Docker/deploy: [apps/api/README.md](./apps/api/README.md)
+
+### Docker (mentor)
+
+```bash
+pnpm docker:dev      # Postgres local
+pnpm docker:build    # image p4-api
+pnpm docker:up       # postgres + api
+pnpm deploy:prod     # build + deploy server (cần .env.prod)
+```
+
+FE production: **Vercel** (`VITE_API_URL` trỏ API host).
 
 ### Lint, format & commit
 
