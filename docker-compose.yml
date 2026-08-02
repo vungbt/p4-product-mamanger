@@ -42,6 +42,8 @@ services:
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
       CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER:-p4-product-manager}
       CLOUDINARY_DOMAIN: ${CLOUDINARY_DOMAIN:-https://api.cloudinary.com/v1_1}
+      PAYMENT_MOCK_SECRET: ${PAYMENT_MOCK_SECRET:-p4-mock-pay-secret}
+      DEFAULT_SHIPPING_FEE: ${DEFAULT_SHIPPING_FEE:-30000}
       RUN_SEED: ${RUN_SEED:-false}
     depends_on:
       postgres:

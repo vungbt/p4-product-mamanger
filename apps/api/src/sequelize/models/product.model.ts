@@ -6,6 +6,7 @@ export interface ProductAttributes {
   price: number;
   description: string;
   imageId: string | null;
+  categoryId: string | null;
   stock: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -13,7 +14,7 @@ export interface ProductAttributes {
 
 export type ProductCreation = Optional<
   ProductAttributes,
-  'id' | 'imageId' | 'createdAt' | 'updatedAt'
+  'id' | 'imageId' | 'categoryId' | 'createdAt' | 'updatedAt'
 >;
 
 export class ProductModel
@@ -25,6 +26,7 @@ export class ProductModel
   declare price: number;
   declare description: string;
   declare imageId: string | null;
+  declare categoryId: string | null;
   declare stock: number;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
@@ -54,6 +56,11 @@ export function initProductModel(sequelize: Sequelize) {
         type: DataTypes.UUID,
         allowNull: true,
         field: 'image_id',
+      },
+      categoryId: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        field: 'category_id',
       },
       stock: {
         type: DataTypes.INTEGER,

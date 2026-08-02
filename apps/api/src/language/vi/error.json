@@ -15,5 +15,22 @@
   "upload_invalid_type": "Chỉ chấp nhận file ảnh",
   "upload_invalid_folder": "Folder không hợp lệ",
   "invalid_refresh_token": "Refresh token không hợp lệ",
-  "refresh_token_expired": "Refresh token đã hết hạn"
+  "refresh_token_expired": "Refresh token đã hết hạn",
+  "address_required": "Cần địa chỉ giao hàng",
+  "address_not_found": "Không tìm thấy địa chỉ",
+  "order_not_found": "Không tìm thấy đơn hàng",
+  "payment_not_found": "Không tìm thấy thanh toán",
+  "payment_already_paid": "Đơn đã thanh toán",
+  "order_not_payable": "Đơn không thể thanh toán",
+  "shipment_not_found": "Không tìm thấy vận đơn",
+  "invalid_shipment_status": "Trạng thái vận đơn không hợp lệ",
+  "category_not_found": "Không tìm thấy danh mục",
+  "coupon_not_found": "Không tìm thấy mã giảm giá",
+  "coupon_invalid": "Mã giảm giá không hợp lệ",
+  "review_exists": "Bạn đã đánh giá sản phẩm này",
+  "refund_invalid": "Không thể hoàn tiền",
+  "order_not_cancellable": "Đơn không thể hủy",
+  "file_not_found": "Không tìm thấy file",
+  "file_still_in_use": "File vẫn đang được sử dụng",
+  "file_delete_failed": "Xóa file trên Cloudinary thất bại"
 }

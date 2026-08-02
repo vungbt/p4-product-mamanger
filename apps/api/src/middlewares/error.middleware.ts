@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import { isAppError } from '@/utils/errors/index.js';
 import { logger } from '@/utils/logger.js';
 
@@ -18,14 +19,14 @@ export function handleErrorApi(err: unknown, req: Request, res: Response, _next:
   }
 
   logger.error('[api] Unexpected error:', err);
-  return res.status(500).json({
+  return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
     message: translateErrorMessage(req, 'server_error'),
     code: 'server_error',
   });
 }
 
 export function notFoundHandler(req: Request, res: Response) {
-  return res.status(404).json({
+  return res.status(StatusCodes.NOT_FOUND).json({
     message: translateErrorMessage(req, 'not_found'),
     code: 'not_found',
   });

@@ -15,5 +15,22 @@
   "upload_invalid_type": "Only image files are allowed",
   "upload_invalid_folder": "Invalid folder path",
   "invalid_refresh_token": "Invalid refresh token",
-  "refresh_token_expired": "Refresh token expired"
+  "refresh_token_expired": "Refresh token expired",
+  "address_required": "Shipping address is required",
+  "address_not_found": "Address not found",
+  "order_not_found": "Order not found",
+  "payment_not_found": "Payment not found",
+  "payment_already_paid": "Payment already completed",
+  "order_not_payable": "Order cannot be paid",
+  "shipment_not_found": "Shipment not found",
+  "invalid_shipment_status": "Invalid shipment status",
+  "category_not_found": "Category not found",
+  "coupon_not_found": "Coupon not found",
+  "coupon_invalid": "Coupon is invalid",
+  "review_exists": "You already reviewed this product",
+  "refund_invalid": "Refund not allowed",
+  "order_not_cancellable": "Order cannot be cancelled",
+  "file_not_found": "File not found",
+  "file_still_in_use": "File is still in use",
+  "file_delete_failed": "Failed to delete file on Cloudinary"
 }

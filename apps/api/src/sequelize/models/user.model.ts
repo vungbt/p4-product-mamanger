@@ -6,17 +6,19 @@ export interface UserAttributes {
   email: string;
   passwordHash: string;
   role: Role;
+  avatarId: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-export type UserCreation = Optional<UserAttributes, 'id' | 'createdAt' | 'updatedAt'>;
+export type UserCreation = Optional<UserAttributes, 'id' | 'avatarId' | 'createdAt' | 'updatedAt'>;
 
 export class UserModel extends Model<UserAttributes, UserCreation> implements UserAttributes {
   declare id: string;
   declare email: string;
   declare passwordHash: string;
   declare role: Role;
+  declare avatarId: string | null;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 }
@@ -42,6 +44,11 @@ export function initUserModel(sequelize: Sequelize) {
       role: {
         type: DataTypes.ENUM('admin', 'user'),
         allowNull: false,
+      },
+      avatarId: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        field: 'avatar_id',
       },
     },
     {

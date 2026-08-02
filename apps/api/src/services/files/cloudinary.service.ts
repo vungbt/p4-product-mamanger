@@ -65,3 +65,13 @@ export async function getResourceInfo(publicId: string) {
   assertConfigured();
   return cloudinary.api.resource(publicId);
 }
+
+/** Xóa asset trên Cloudinary — `not found` coi như đã sạch */
+export async function destroyResource(publicId: string) {
+  assertConfigured();
+  const result = await cloudinary.uploader.destroy(publicId, {
+    invalidate: true,
+    resource_type: 'image',
+  });
+  return result;
+}

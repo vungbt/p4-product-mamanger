@@ -1,7 +1,9 @@
+import { isCloudinaryConfigured } from '@/configs/cloudinary.js';
 import { errorKeys } from '@/constants/index.js';
-import { FileModel } from '@/sequelize/models/index.js';
+import { FileModel, ProductImageModel, ProductModel, UserModel } from '@/sequelize/models/index.js';
 import * as cloudinaryService from '@/services/files/cloudinary.service.js';
-import { BadRequest } from '@/utils/errors/index.js';
+import { BadRequest, NotFound } from '@/utils/errors/index.js';
+import { logger } from '@/utils/logger.js';
 
 function pickMetadata(resource: Record<string, unknown>) {
   const keys = ['format', 'resource_type', 'bytes', 'height', 'width'] as const;
@@ -23,7 +25,6 @@ export async function createFromStorageId(storageId: string) {
     const moved = await cloudinaryService.moveToAssets(storageId.trim());
     resource = moved as unknown as Record<string, unknown>;
   } catch {
-    // Đã ở assets hoặc rename fail → lấy info hiện tại
     resource = (await cloudinaryService.getResourceInfo(storageId.trim())) as unknown as Record<
       string,
       unknown
@@ -42,6 +43,65 @@ export async function createFromStorageId(storageId: string) {
     provider: 'cloudinary',
     metadata: pickMetadata(resource),
   });
+}
+
+export async function countFileReferences(fileId: string) {
+  const [asCover, asGallery, asAvatar] = await Promise.all([
+    ProductModel.count({ where: { imageId: fileId } }),
+    ProductImageModel.count({ where: { fileId } }),
+    UserModel.count({ where: { avatarId: fileId } }),
+  ]);
+  return asCover + asGallery + asAvatar;
+}
+
+/**
+ * Xóa file khỏi DB + Cloudinary khi không còn reference.
+ * `system` provider chỉ xóa DB.
+ */
+export async function deleteFile(fileId: string) {
+  const file = await FileModel.findByPk(fileId);
+  if (!file) {
+    throw new NotFound(errorKeys.fileNotFound);
+  }
+
+  const refs = await countFileReferences(fileId);
+  if (refs > 0) {
+    throw new BadRequest(errorKeys.fileStillInUse);
+  }
+
+  if (file.provider === 'cloudinary' && file.storageId) {
+    if (isCloudinaryConfigured()) {
+      try {
+        const result = await cloudinaryService.destroyResource(file.storageId);
+        const status = (result as { result?: string }).result;
+        if (status && status !== 'ok' && status !== 'not found') {
+          logger.warn('[files] Cloudinary destroy unexpected:', status, file.storageId);
+        }
+      } catch (error) {
+        logger.error('[files] Cloudinary destroy failed:', error);
+        throw new BadRequest(errorKeys.fileDeleteFailed);
+      }
+    } else {
+      logger.warn('[files] Skip Cloudinary destroy — not configured:', file.storageId);
+    }
+  }
+
+  await file.destroy();
+  return { ok: true as const, id: fileId };
+}
+
+/** Detach xong gọi hàm này — chỉ xóa khi orphan */
+export async function deleteFileIfUnreferenced(fileId: string | null | undefined) {
+  if (!fileId) return { deleted: false as const };
+  const refs = await countFileReferences(fileId);
+  if (refs > 0) return { deleted: false as const };
+  try {
+    await deleteFile(fileId);
+    return { deleted: true as const };
+  } catch (error) {
+    if (error instanceof NotFound) return { deleted: false as const };
+    throw error;
+  }
 }
 
 export function signUploadUrl(name?: string) {

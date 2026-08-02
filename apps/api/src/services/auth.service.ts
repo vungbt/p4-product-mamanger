@@ -1,14 +1,34 @@
-import type { LoginResponse, User } from '@p4/shared';
+import type { LoginResponse, UpdateProfileInput, User } from '@p4/shared';
 import bcrypt from 'bcryptjs';
 import { env } from '@/configs/env.js';
 import { errorKeys } from '@/constants/index.js';
-import { RefreshTokenModel, UserModel } from '@/sequelize/models/index.js';
+import { FileModel, RefreshTokenModel, UserModel } from '@/sequelize/models/index.js';
+import { createFromStorageId, deleteFileIfUnreferenced } from '@/services/files/files.service.js';
 import { Unauthorized } from '@/utils/errors/index.js';
 import { signAccessToken, verifyAccessToken } from '@/utils/jwt.js';
 import { generateRefreshToken, hashToken, refreshExpiresAt } from '@/utils/refresh-token.js';
 
-function toUser(row: UserModel): User {
-  return { id: row.id, email: row.email, role: row.role };
+type UserWithAvatar = UserModel & { avatar?: FileModel | null };
+
+const avatarInclude = {
+  model: FileModel,
+  as: 'avatar' as const,
+  attributes: ['id', 'url', 'storageId', 'provider'],
+};
+
+function toUser(row: UserWithAvatar): User {
+  return {
+    id: row.id,
+    email: row.email,
+    role: row.role,
+    avatarId: row.avatarId,
+    avatarUrl: row.avatar?.url ?? '',
+  };
+}
+
+async function loadUserById(id: string): Promise<User | undefined> {
+  const row = (await UserModel.findByPk(id, { include: [avatarInclude] })) as UserWithAvatar | null;
+  return row ? toUser(row) : undefined;
 }
 
 async function issueTokenPair(user: User): Promise<LoginResponse> {
@@ -24,7 +44,10 @@ async function issueTokenPair(user: User): Promise<LoginResponse> {
 }
 
 export async function validateCredentials(email: string, password: string): Promise<User> {
-  const row = await UserModel.findOne({ where: { email } });
+  const row = (await UserModel.findOne({
+    where: { email },
+    include: [avatarInclude],
+  })) as UserWithAvatar | null;
   if (!row || !(await bcrypt.compare(password, row.passwordHash))) {
     throw new Unauthorized(errorKeys.invalidCredentials);
   }
@@ -37,8 +60,7 @@ export function issueToken(user: User) {
 
 export async function findUserByToken(token: string): Promise<User | undefined> {
   const payload = verifyAccessToken(token);
-  const row = await UserModel.findByPk(payload.sub);
-  return row ? toUser(row) : undefined;
+  return loadUserById(payload.sub);
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
@@ -58,15 +80,15 @@ export async function refresh(refreshToken: string): Promise<LoginResponse> {
     throw new Unauthorized(errorKeys.refreshTokenExpired);
   }
 
-  const userRow = await UserModel.findByPk(row.userId);
-  if (!userRow) {
+  const user = await loadUserById(row.userId);
+  if (!user) {
     throw new Unauthorized(errorKeys.invalidRefreshToken);
   }
 
   row.revokedAt = new Date();
   await row.save();
 
-  return issueTokenPair(toUser(userRow));
+  return issueTokenPair(user);
 }
 
 export async function logout(options: { refreshToken?: string; userId?: string }) {
@@ -85,6 +107,26 @@ export async function logout(options: { refreshToken?: string; userId?: string }
   return { ok: true as const };
 }
 
-export function getMe(user: User) {
+export async function getMe(userId: string) {
+  const user = await loadUserById(userId);
+  if (!user) throw new Unauthorized(errorKeys.invalidToken);
+  return { user };
+}
+
+export async function updateProfile(userId: string, input: UpdateProfileInput) {
+  const row = await UserModel.findByPk(userId);
+  if (!row) throw new Unauthorized(errorKeys.invalidToken);
+
+  if (input.imageStorageId?.trim()) {
+    const previousAvatarId = row.avatarId;
+    const file = await createFromStorageId(input.imageStorageId.trim());
+    await row.update({ avatarId: file.id });
+    if (previousAvatarId && previousAvatarId !== file.id) {
+      await deleteFileIfUnreferenced(previousAvatarId);
+    }
+  }
+
+  const user = await loadUserById(userId);
+  if (!user) throw new Unauthorized(errorKeys.invalidToken);
   return { user };
 }

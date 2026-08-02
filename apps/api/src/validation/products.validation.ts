@@ -9,6 +9,7 @@ export const validateCreateProduct = (req: Request, res: Response, next: NextFun
       stock: 'required|integer|min:0',
       description: 'string',
       imageStorageId: 'string',
+      categoryId: 'string',
     },
   })(req, res, next);
 
@@ -20,5 +21,6 @@ export const validateUpdateProduct = (req: Request, res: Response, next: NextFun
       stock: 'integer|min:0',
       description: 'string',
       imageStorageId: 'string',
+      categoryId: 'string',
     },
   })(req, res, next);

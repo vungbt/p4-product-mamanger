@@ -158,7 +158,16 @@ Gửi access: `Authorization: Bearer <token>`
 
 → `{ data: { token, refreshToken, user } }` (cặp mới; token cũ bị revoke)
 
-### GET `/api/auth/me` — auth required → `{ data: { user } }`
+### GET `/api/auth/me` — auth required → `{ data: { user } }`  
+User có `avatarId`, `avatarUrl`.
+
+### PATCH `/api/auth/me` — auth required
+
+```json
+{ "imageStorageId": "p4-product-manager/temp/..." }
+```
+
+→ gán avatar (signed upload như product image). Trả `{ data: { user }, message }`.
 
 ### POST `/api/auth/logout`
 
@@ -198,24 +207,50 @@ Create/update/delete trả `{ data: Product, message }`.
 
 ---
 
-## Orders
+## Orders & checkout
 
 | Method | Path | Auth | Role |
 |--------|------|------|------|
-| GET | `/api/orders` | ✅ | admin (paginated) |
+| GET | `/api/orders` | ✅ | admin |
+| GET | `/api/orders/mine` | ✅ | user/admin |
+| GET | `/api/orders/:id` | ✅ | owner/admin |
 | POST | `/api/orders` | ✅ | user |
+| PATCH | `/api/orders/:id/shipment` | ✅ | admin |
 
-Checkout body (user):
+Checkout tạo đơn **`pending`** + `payment` mock. Stock được **reserve** ngay.
 
 ```json
 {
-  "items": [
-    { "productId": "p1", "quantity": 2 }
-  ]
+  "items": [{ "productId": "p1", "quantity": 2 }],
+  "addressId": "<uuid>",
+  "shippingAddress": {
+    "fullName": "Nguyen Van A",
+    "phone": "0901234567",
+    "line1": "123 Nguyen Hue",
+    "city": "HCM"
+  },
+  "shippingFee": 30000,
+  "couponCode": "SALE10"
 }
 ```
 
-→ Trừ stock, tạo order, trả `{ data: Order, message }`.
+Cần `addressId` **hoặc** `shippingAddress`. Optional: `couponCode`, `shippingFee`.
+
+- Hủy: `POST /api/orders/:id/cancel` → release stock  
+- Thanh toán mock: mở `payment.checkoutUrl` hoặc `POST /api/payments/webhook/mock` → commit reservation + shipment  
+- Refund admin: `POST /api/orders/:id/refunds` → restock + cancel order  
+
+Admin shipment: `PATCH /api/orders/:id/shipment` `{ "status": "shipped", "trackingCode": "..." }`.
+
+### Extensions
+
+| Resource | Endpoints chính |
+|----------|-----------------|
+| Categories | `GET/POST /api/categories`, admin CUD |
+| Product images | `POST/DELETE /api/products/:id/images` |
+| Coupons | admin CRUD + `POST /api/coupons/preview` |
+| Reviews | `GET/POST /api/products/:id/reviews` |
+| Refunds | `POST /api/orders/:id/refunds`, `GET /api/refunds` |
 
 ---
 
@@ -228,6 +263,8 @@ Flow giống next-chapter:
 3. Tạo/sửa product với `imageStorageId: publicId` → API rename `temp` → `assets`, lưu bảng `files`, gán `products.image_id`
 
 Batch: `GET /api/files/sign-upload-urls?names=a,b` → `{ data: [{ uploadUrl, publicId }, ...] }`
+
+Xóa file **không** expose API — service `deleteFile` / `deleteFileIfUnreferenced` được gọi nội bộ khi xóa gallery, xóa product, đổi avatar/cover (Cloudinary + DB).
 
 Env: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_FOLDER` (root; dùng `{folder}/temp` và `{folder}/assets`), optional `CLOUDINARY_DOMAIN`.
 

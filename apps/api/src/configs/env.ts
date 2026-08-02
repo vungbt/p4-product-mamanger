@@ -48,4 +48,8 @@ export const env = {
       return `${this.folder.replace(/^\/+|\/+$/g, '')}/assets`;
     },
   },
+  payment: {
+    mockSecret: process.env.PAYMENT_MOCK_SECRET || 'p4-mock-pay-secret',
+    defaultShippingFee: Number(process.env.DEFAULT_SHIPPING_FEE || 30000),
+  },
 };

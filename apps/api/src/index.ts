@@ -2,6 +2,7 @@ import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+import { StatusCodes } from 'http-status-codes';
 import morgan from 'morgan';
 import { env } from '@/configs/env.js';
 import { i18nMiddleware } from '@/configs/i18n.js';
@@ -32,7 +33,7 @@ async function main() {
   app.use(i18nMiddleware);
 
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', service: '@p4/api' });
+    res.status(StatusCodes.OK).json({ status: 'ok', service: '@p4/api' });
   });
 
   app.use('/api', baseMiddleware, apiRouter);

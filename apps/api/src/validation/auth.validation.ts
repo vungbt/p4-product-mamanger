@@ -15,3 +15,10 @@ export const validateRefreshBody = (req: Request, res: Response, next: NextFunct
       refreshToken: 'required|string',
     },
   })(req, res, next);
+
+export const validateUpdateProfileBody = (req: Request, res: Response, next: NextFunction) =>
+  validate({
+    rules: {
+      imageStorageId: 'string',
+    },
+  })(req, res, next);
