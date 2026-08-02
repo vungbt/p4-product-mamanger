@@ -1,35 +1,18 @@
 import { Outlet } from 'react-router-dom';
-import useAuth from '@/hooks/use-auth';
-import MenuLayout from '@/libraries/menu/menu.layout';
+import StorefrontFooter from './storefront-footer';
+import StorefrontHeader from './storefront-header';
 
 export default function StorefrontLayout() {
-  const { user, logout } = useAuth();
-
   return (
-    <div>
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '12px 24px',
-          borderBottom: '1px solid #ddd',
-        }}
-      >
-        <strong>Storefront</strong>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <MenuLayout portalName="storefront-portal" variant="horizontal" />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 14 }}>{user?.email}</span>
-          <button type="button" onClick={logout}>
-            Logout
-          </button>
-        </div>
-      </header>
-      <main style={{ padding: 24 }}>
+    <div
+      className="flex min-h-screen flex-col bg-neutral-bg text-neutral-text-primary"
+      data-portal="storefront"
+    >
+      <StorefrontHeader />
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
         <Outlet />
       </main>
+      <StorefrontFooter />
     </div>
   );
 }

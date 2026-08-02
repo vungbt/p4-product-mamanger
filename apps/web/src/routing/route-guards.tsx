@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { ROUTES } from '@/constants/constants';
@@ -6,9 +7,11 @@ import useAuth from '@/hooks/use-auth';
 import type { Role } from '@/types/types';
 
 function UnauthorizedRedirect({ to }: { to: string }) {
+  const { t } = useTranslation();
+
   useEffect(() => {
-    toast.error('Không có quyền truy cập');
-  }, []);
+    toast.error(t('auth.unauthorized'));
+  }, [t]);
 
   return <Navigate to={to} replace />;
 }

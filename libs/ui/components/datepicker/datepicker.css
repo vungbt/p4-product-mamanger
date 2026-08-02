@@ -1,0 +1,38 @@
+/* react-date-picker overrides */
+
+.react-date-picker {
+  display: block;
+  width: 100%;
+}
+
+/* Remove built-in border — our wrapper handles it */
+.react-date-picker__wrapper {
+  border: none !important;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+}
+
+/* Reset disabled background */
+.react-date-picker--disabled {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* Remove red invalid state */
+.react-date-picker__inputGroup__input:invalid {
+  background: none;
+}
+
+/* Align buttons */
+.react-date-picker__button {
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+}
+
+/* Calendar popup */
+.react-date-picker__calendar {
+  width: auto !important;
+  z-index: 50;
+}

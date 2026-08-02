@@ -22,7 +22,10 @@ p4-product-manager/
 │   ├── api/     ← Mentor maintain (Express + Sequelize) — KHÔNG SỬA
 │   └── web/     ← Học viên code ở đây
 ├── libs/
-│   └── shared/  ← Types dùng chung (@p4/shared)
+│   ├── shared/      ← Types (@p4/shared)
+│   ├── ui/          ← Design system (@p4/ui)
+│   ├── auth/        ← Auth (@p4/auth)
+│   └── api-client/  ← Axios + TanStack Query (@p4/api-client)
 ├── docker-compose.yml / docker-compose.dev.yml
 ├── tsconfig.base.json
 └── pnpm-workspace.yaml

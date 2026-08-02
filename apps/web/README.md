@@ -9,7 +9,30 @@
 | Monorepo `apps/` + `libs/` | [smart-connection-monorepo](https://github.com/vungbt/smart-connection-monorepo) |
 | Routing `config.route` + `master.route` | [base-react-antd](https://gitlab.com/vungbt1999/base-react-antd) |
 | Menu submenu + protected | [cms-do-an](https://gitlab.com/vungbt1999/cms-do-an) |
-| Icons `libraries/icons/` | [finder-work-web](https://github.com/vungbt/finder-work-web/tree/develop/src/libraries/icons) |
+| Icons `@p4/ui` | [enterprise-platform](https://github.com/vungbt/enterprise-platform) Lucide map |
+| UI + auth libs | [enterprise-platform](https://github.com/vungbt/enterprise-platform) → `@p4/ui`, `@p4/auth` |
+
+---
+
+## Shared libs
+
+```tsx
+import { Button, Input } from '@p4/ui';
+import { AuthProvider, useAuth } from '@p4/auth';
+import { useApiQuery, productKeys, ApiQueryProvider } from '@p4/api-client';
+```
+
+- `@p4/ui` — Tailwind components (theme CSS đã import trong `main.tsx`)
+- `@p4/auth` — `AuthProvider` / `useAuth` (hooks/contexts trong web chỉ re-export)
+- `@p4/api-client` — Axios + TanStack Query (`ApiQueryProvider` trong `app.tsx`)
+- SCSS Modules vẫn dùng được song song Tailwind
+- **i18n:** `react-i18next` — locales `src/i18n/locales/{vi,en}/common.json`, mặc định `vi`, switcher trên layout/login
+
+```tsx
+import { useTranslation } from 'react-i18next';
+const { t } = useTranslation();
+t('auth.loginSuccess');
+```
 
 ---
 
@@ -21,9 +44,9 @@ src/
 ├── main.tsx
 ├── constants/constants.ts
 ├── types/types.ts              ← re-export @p4/shared
-├── contexts/auth-context.tsx
+├── contexts/auth-context.tsx   ← re-export @p4/auth
 ├── hooks/
-│   ├── use-auth.ts
+│   ├── use-auth.ts             ← re-export @p4/auth
 │   ├── use-cart.ts
 │   └── use-products.ts
 ├── services/api-service.ts
@@ -35,11 +58,11 @@ src/
 │   └── routes/
 │       ├── admin.routes.tsx    # export IRoute[] admin portal
 │       └── storefront.routes.tsx
+├── i18n/
+│   ├── index.ts
+│   └── locales/{vi,en}/common.json
 ├── libraries/
-│   ├── icons/                  # 1 icon = 1 file kebab-case
-│   │   ├── index.tsx           # RenderIcon, IconName, Icons
-│   │   ├── graph.tsx
-│   │   └── ...
+│   ├── language-switcher.tsx
 │   └── menu/
 │       └── menu.layout.tsx     # menu + submenu từ RouteConfigs
 ├── modules/
@@ -51,7 +74,9 @@ src/
 │   └── storefront/
 │       ├── storefront-layout.tsx
 │       └── ...
-└── styles/global.scss
+├── styles/
+│   ├── global.scss
+│   └── tailwind.css
 ```
 
 ---
@@ -71,9 +96,9 @@ src/
   path: ROUTES.admin.products,
   name: 'admin-products',
   label: 'Products',
-  iconName: 'frame',           // libraries/icons
+  iconName: 'frame',           // @p4/ui IconName
   existSubMenu: true,
-  authority: ['admin'],        // portal level — master.route + route-guards
+  authority: ['admin'],        // portal/leaf — không set = public (shop/cart)
   loginPath: '/admin/login',
   routes: [
     { label: 'Danh sách', iconName: 'frame', ... },
@@ -92,7 +117,7 @@ Login page: `guestOnly` + `guestAuthority` + `guestRedirect`.
 1. Page → `modules/{portal}/{name}-page.tsx`
 2. Route → `routing/routes/{portal}.routes.tsx` (IRoute)
 3. Menu tự sync nếu có `label` + không `hideInMenu`
-4. Icon mới → copy vào `libraries/icons/` + đăng ký `index.tsx`
+4. Icon mới → đăng ký alias trong `libs/ui/components/icons/index.tsx` (`@p4/ui`)
 5. API call → `services/api-service.ts` + hook tương ứng
 
 ---

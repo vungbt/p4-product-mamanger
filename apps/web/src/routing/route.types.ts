@@ -1,12 +1,12 @@
+import { type IconName, RenderIcon } from '@p4/ui';
 import { type ComponentType, createElement, type LazyExoticComponent, type ReactNode } from 'react';
-import { type IconName, RenderIcon } from '@/libraries/icons';
 import type { Role } from '@/types/types';
 
 export interface IRoute {
   path: string;
   name: string;
   label?: string;
-  /** Icon name — tham khảo libraries/icons (pattern finder-work-web) */
+  /** Icon name — `@p4/ui` (Lucide aliases) */
   iconName?: IconName;
   /** Hoặc truyền ReactNode trực tiếp */
   icon?: ReactNode;
@@ -14,7 +14,7 @@ export interface IRoute {
   hideInMenu?: boolean;
   existSubMenu?: boolean;
   exact?: boolean;
-  /** Role được phép — portal protected */
+  /** Role được phép — portal hoặc leaf (VD: checkout). Không set = public */
   authority?: Role[];
   loginPath?: string;
   /** Trang login — redirect nếu đã đăng nhập đúng role */

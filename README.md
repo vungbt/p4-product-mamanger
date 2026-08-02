@@ -12,7 +12,10 @@ p4-product-manager/
 │   ├── api/          ← Express (mentor maintain — đã implement)
 │   └── web/          ← React Vite (học viên code ở đây)
 ├── libs/
-│   └── shared/       ← Types dùng chung (@p4/shared)
+│   ├── shared/       ← Types dùng chung (@p4/shared)
+│   ├── ui/           ← Design system (@p4/ui) — Tailwind components
+│   ├── auth/         ← AuthProvider / useAuth (@p4/auth)
+│   └── api-client/   ← Axios + TanStack Query (@p4/api-client)
 ├── tsconfig.base.json
 ├── pnpm-workspace.yaml
 └── turbo.json
@@ -23,6 +26,9 @@ p4-product-manager/
 | **API** (Express) | `apps/api` | **Mentor** — đã implement sẵn |
 | **Web** (React) | `apps/web` | **Học viên** — chỉ làm FE |
 | **Shared types** | `libs/shared` | Dùng chung — không sửa trừ khi mentor cập nhật API |
+| **UI** | `libs/ui` | Mentor maintain — import `@p4/ui` |
+| **Auth** | `libs/auth` | Mentor maintain — import `@p4/auth` |
+| **API client** | `libs/api-client` | Mentor maintain — import `@p4/api-client` |
 
 **Học viên không sửa `apps/api/`.** Đọc [apps/api/README.md](./apps/api/README.md) để biết endpoints.
 
@@ -32,7 +38,7 @@ p4-product-manager/
 
 | Portal | Route | Quyền |
 |--------|-------|-------|
-| **Storefront** | `/login`, `/shop`, `/cart` | User: xem SP, mua hàng |
+| **Storefront** | `/shop`, `/cart` public; `/login` khi checkout | Xem SP không cần login; đặt hàng cần user |
 | **Admin** | `/admin/*` | Admin: CRUD SP, dashboard, orders |
 
 End user **không** vào admin, **không** CRUD sản phẩm (API trả 403 nếu user gọi admin endpoints).

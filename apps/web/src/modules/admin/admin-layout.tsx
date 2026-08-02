@@ -1,25 +1,23 @@
 import { Outlet } from 'react-router-dom';
-import useAuth from '@/hooks/use-auth';
-import MenuLayout from '@/libraries/menu/menu.layout';
+import AdminHeader from './admin-header';
+import AdminSidebar from './admin-sidebar';
+import { AdminShellProvider } from './use-admin-shell';
 
 export default function AdminLayout() {
-  const { user, logout } = useAuth();
-
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <aside style={{ width: 220, padding: 16, borderRight: '1px solid #ddd' }}>
-        <h2>Admin</h2>
-        <p style={{ fontSize: 14, color: '#666' }}>{user?.email}</p>
-        <div style={{ marginTop: 16 }}>
-          <MenuLayout portalName="admin-portal" />
-        </div>
-        <button type="button" onClick={logout} style={{ marginTop: 24 }}>
-          Logout
-        </button>
-      </aside>
-      <main style={{ flex: 1, padding: 24 }}>
-        <Outlet />
-      </main>
-    </div>
+    <AdminShellProvider>
+      <div
+        className="flex min-h-screen bg-secondary-background text-neutral-black"
+        data-portal="admin"
+      >
+        <AdminSidebar />
+        <main className="flex max-h-screen min-w-0 flex-1 flex-col overflow-auto">
+          <AdminHeader />
+          <div className="min-h-[calc(100vh-4rem)] flex-1 px-8 py-6">
+            <Outlet />
+          </div>
+        </main>
+      </div>
+    </AdminShellProvider>
   );
 }

@@ -17,13 +17,12 @@ export const storefrontLoginRoute: IRoute = {
   hideInMenu: true,
 };
 
+/** Shop/cart public. Chỉ gắn `authority: ['user']` ở leaf cần login (VD: checkout). */
 export const storefrontPortalRoutes: IRoute[] = [
   {
     path: '/',
     name: 'storefront-portal',
     component: StorefrontLayout,
-    authority: ['user'],
-    loginPath: ROUTES.storefront.login,
     hideInMenu: true,
     routes: [
       {

@@ -1,0 +1,53 @@
+{
+  "app": {
+    "loading": "Loading...",
+    "admin": "Admin",
+    "storefront": "P4 Store",
+    "adminSubtitle": "Product Manager",
+    "brand": "P4 Store"
+  },
+  "common": {
+    "login": "Login",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password",
+    "loggingIn": "Signing in...",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
+  },
+  "auth": {
+    "adminTitle": "Admin Login",
+    "storefrontTitle": "Storefront Login",
+    "adminDemo": "Demo: admin / admin",
+    "storefrontDemo": "Demo: user / user",
+    "loginSuccess": "Logged in successfully",
+    "adminLoginSuccess": "Admin logged in successfully",
+    "loginFailed": "Login failed",
+    "invalidCredentials": "Invalid username or password",
+    "unauthorized": "Access denied"
+  },
+  "menu": {
+    "shop": "Shop",
+    "cart": "Cart",
+    "admin-dashboard": "Dashboard",
+    "admin-products": "Products",
+    "product-list": "List",
+    "product-new": "Create",
+    "product-edit": "Edit",
+    "admin-orders": "Orders"
+  },
+  "storefront": {
+    "footerTagline": "Simple shopping — clear management.",
+    "footerRights": "© {{year}} P4 Store. All rights reserved.",
+    "footerShop": "Shop",
+    "footerSupport": "Support",
+    "footerContact": "Contact",
+    "cart": "Cart"
+  },
+  "lang": {
+    "vi": "VI",
+    "en": "EN"
+  }
+}

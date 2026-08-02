@@ -1,0 +1,53 @@
+{
+  "app": {
+    "loading": "Đang tải...",
+    "admin": "Admin",
+    "storefront": "P4 Store",
+    "adminSubtitle": "Product Manager",
+    "brand": "P4 Store"
+  },
+  "common": {
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "username": "Tên đăng nhập",
+    "password": "Mật khẩu",
+    "loggingIn": "Đang đăng nhập...",
+    "settings": "Cài đặt",
+    "notifications": "Thông báo",
+    "collapseSidebar": "Thu gọn menu",
+    "expandSidebar": "Mở rộng menu"
+  },
+  "auth": {
+    "adminTitle": "Đăng nhập Admin",
+    "storefrontTitle": "Đăng nhập cửa hàng",
+    "adminDemo": "Demo: admin / admin",
+    "storefrontDemo": "Demo: user / user",
+    "loginSuccess": "Đăng nhập thành công",
+    "adminLoginSuccess": "Đăng nhập admin thành công",
+    "loginFailed": "Đăng nhập thất bại",
+    "invalidCredentials": "Sai tài khoản hoặc mật khẩu",
+    "unauthorized": "Không có quyền truy cập"
+  },
+  "menu": {
+    "shop": "Cửa hàng",
+    "cart": "Giỏ hàng",
+    "admin-dashboard": "Dashboard",
+    "admin-products": "Sản phẩm",
+    "product-list": "Danh sách",
+    "product-new": "Thêm mới",
+    "product-edit": "Chỉnh sửa",
+    "admin-orders": "Đơn hàng"
+  },
+  "storefront": {
+    "footerTagline": "Mua sắm đơn giản — quản lý rõ ràng.",
+    "footerRights": "© {{year}} P4 Store. All rights reserved.",
+    "footerShop": "Mua hàng",
+    "footerSupport": "Hỗ trợ",
+    "footerContact": "Liên hệ",
+    "cart": "Giỏ hàng"
+  },
+  "lang": {
+    "vi": "VI",
+    "en": "EN"
+  }
+}

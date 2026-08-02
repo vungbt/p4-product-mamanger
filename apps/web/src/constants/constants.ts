@@ -24,26 +24,5 @@ export const ROUTES = {
   },
 } as const;
 
-export const AUTH_STORAGE_KEY = 'p4_auth';
-
-/** Fake auth để demo structure — học viên thay bằng API thật */
-export const FAKE_AUTH = {
-  admin: {
-    username: 'admin',
-    password: 'admin',
-    user: {
-      id: '1',
-      email: 'admin@demo.com',
-      role: ROLES.ADMIN,
-    },
-  },
-  user: {
-    username: 'user',
-    password: 'user',
-    user: {
-      id: '2',
-      email: 'user@demo.com',
-      role: ROLES.USER,
-    },
-  },
-} as const;
+/** Re-export từ `@p4/auth` — trainee có thể import từ constants như cũ */
+export { AUTH_STORAGE_KEY, FAKE_AUTH } from '@p4/auth';

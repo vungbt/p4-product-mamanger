@@ -1,0 +1,21 @@
+/* P4 portal accents — vàng cam */
+
+[data-portal="admin"] {
+  --color-primary: #ea580c;
+  --color-primary-bg: #fff7ed;
+  --color-primary-hover: #f97316;
+  --color-primary-base: #ea580c;
+  --color-primary-clicked: #c2410c;
+  --color-primary-border: #fdba74;
+  /* page canvas ấm giống stay-fe secondary-bg */
+  --color-secondary-bg: #fff7ed;
+}
+
+[data-portal="storefront"] {
+  --color-primary: #ea580c;
+  --color-primary-bg: #fff7ed;
+  --color-primary-hover: #f97316;
+  --color-primary-base: #ea580c;
+  --color-primary-clicked: #c2410c;
+  --color-primary-border: #fdba74;
+}

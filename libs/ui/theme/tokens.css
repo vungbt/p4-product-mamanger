@@ -1,0 +1,86 @@
+:root {
+  /* Primary — vàng cam */
+  --color-primary: #ea580c;
+  --color-primary-bg: #fff7ed;
+  --color-primary-hover: #f97316;
+  --color-primary-base: #ea580c;
+  --color-primary-clicked: #c2410c;
+  --color-primary-border: #fdba74;
+
+  /* Secondary — slate accent */
+  --color-secondary: #475569;
+  --color-secondary-bg: #f1f5f9;
+  --color-secondary-hover: #64748b;
+  --color-secondary-base: #475569;
+  --color-secondary-clicked: #334155;
+  --color-secondary-border: #cbd5e1;
+
+  /* Neutral */
+  --color-neutral: #cbd5e1;
+  --color-neutral-white: #ffffff;
+  --color-neutral-table-header: #f8fafc;
+  --color-neutral-bg: #f1f5f9;
+  --color-neutral-divider: #e2e8f0;
+  --color-neutral-disable: #94a3b8;
+  --color-neutral-border: #e2e8f0;
+  --color-neutral-placeholder: #94a3b8;
+  --color-neutral-text-secondary: #64748b;
+  --color-neutral-text-primary: #1e293b;
+  --color-neutral-black: #0f172a;
+
+  /* Pending — amber (tách primary orange) */
+  --color-pending: #ca8a04;
+  --color-pending-bg: #fefce8;
+  --color-pending-base: #ca8a04;
+  --color-pending-border: #fde047;
+
+  /* Error */
+  --color-error: #dc2626;
+  --color-error-bg: #fef2f2;
+  --color-error-base: #dc2626;
+  --color-error-border: #fca5a5;
+
+  /* Success */
+  --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
+  --color-success-base: #16a34a;
+  --color-success-border: #86efac;
+
+  /* Info — sky, tách primary cam */
+  --color-info: #0284c7;
+  --color-info-bg: #f0f9ff;
+  --color-info-base: #0284c7;
+  --color-info-border: #7dd3fc;
+
+  /* Font */
+  --font-primary: "Plus Jakarta Sans", system-ui, sans-serif;
+
+  /* Font sizes */
+  --size-48: 48px;
+  --size-40: 40px;
+  --size-36: 36px;
+  --size-32: 32px;
+  --size-28: 28px;
+  --size-24: 24px;
+  --size-20: 20px;
+  --size-18: 18px;
+  --size-17: 17px;
+  --size-16: 16px;
+  --size-15: 15px;
+  --size-14: 14px;
+  --size-13: 13px;
+  --size-12: 12px;
+  --size-10: 10px;
+  --size-8: 8px;
+
+  /* Line heights */
+  --lineHeight-64: 64px;
+  --lineHeight-56: 56px;
+  --lineHeight-48: 48px;
+  --lineHeight-40: 40px;
+  --lineHeight-32: 32px;
+  --lineHeight-24: 24px;
+  --lineHeight-20: 20px;
+  --lineHeight-16: 16px;
+  --lineHeight-12: 12px;
+}

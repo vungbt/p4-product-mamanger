@@ -1,10 +1,14 @@
-import { type FormEvent, useState } from 'react';
+import { Button, Input, InputPassword } from '@p4/ui';
+import { type ChangeEvent, type FormEvent, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { ROUTES } from '@/constants/constants';
 import useAuth from '@/hooks/use-auth';
+import LanguageSwitcher from '@/libraries/language-switcher';
 
 export default function StorefrontLoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
   const [username, setUsername] = useState('user');
@@ -17,46 +21,44 @@ export default function StorefrontLoginPage() {
 
     try {
       await login(username, password, 'storefront');
-      toast.success('Đăng nhập thành công');
+      toast.success(t('auth.loginSuccess'));
       navigate(ROUTES.storefront.shop, { replace: true });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Đăng nhập thất bại');
+      const message =
+        error instanceof Error
+          ? t(error.message, { defaultValue: t('auth.loginFailed') })
+          : t('auth.loginFailed');
+      toast.error(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 360, margin: '48px auto', padding: 24 }}>
-      <h1>Storefront Login</h1>
-      <p>
-        Demo: <code>user / user</code>
-      </p>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 12 }}>
-          <label>
-            Username
-            <input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={{ display: 'block', width: '100%', marginTop: 4 }}
-            />
-          </label>
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <label>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ display: 'block', width: '100%', marginTop: 4 }}
-            />
-          </label>
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Đang đăng nhập...' : 'Login'}
-        </button>
+    <div className="mx-auto mt-12 max-w-sm space-y-4 p-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-title-2 font-semibold text-neutral-text-primary">
+          {t('auth.storefrontTitle')}
+        </h1>
+        <LanguageSwitcher />
+      </div>
+      <p className="text-14 text-neutral-text-secondary">{t('auth.storefrontDemo')}</p>
+      <form className="space-y-3" onSubmit={handleSubmit}>
+        <Input
+          label={t('common.username')}
+          value={username}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
+          autoComplete="username"
+        />
+        <InputPassword
+          label={t('common.password')}
+          value={password}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+          autoComplete="current-password"
+        />
+        <Button type="submit" loading={loading} className="w-full">
+          {loading ? t('common.loggingIn') : t('common.login')}
+        </Button>
       </form>
     </div>
   );

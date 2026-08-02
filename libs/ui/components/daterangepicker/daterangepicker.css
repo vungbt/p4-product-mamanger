@@ -1,0 +1,26 @@
+/* Range highlight between start and end */
+.react-calendar--selectRange .react-calendar__tile--hover {
+  background-color: var(--color-primary-bg) !important;
+  border-radius: 0 !important;
+}
+
+.react-calendar__tile--rangeStart {
+  background: var(--color-primary) !important;
+  color: white !important;
+  border-radius: 50% 0 0 50% !important;
+}
+
+.react-calendar__tile--rangeEnd {
+  background: var(--color-primary) !important;
+  color: white !important;
+  border-radius: 0 50% 50% 0 !important;
+}
+
+.react-calendar__tile--rangeStart.react-calendar__tile--rangeEnd {
+  border-radius: 50% !important;
+}
+
+.react-calendar__tile--rangeBetween {
+  background-color: var(--color-primary-bg) !important;
+  border-radius: 0 !important;
+}

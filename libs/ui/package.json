@@ -1,0 +1,51 @@
+{
+  "name": "@p4/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./components/index.ts",
+  "types": "./components/index.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./components/index.ts",
+      "import": "./components/index.ts",
+      "default": "./components/index.ts"
+    },
+    "./theme/*": "./theme/*",
+    "./tailwind.preset": "./tailwind.preset.ts",
+    "./tailwind.preset.cjs": "./tailwind.preset.cjs",
+    "./lib/*": "./lib/*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "@szhsin/react-menu": "^4.5.1",
+    "@tanstack/react-form": "^1.28.4",
+    "@tanstack/react-table": "^8.21.3",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.35.0",
+    "lucide-react": "^0.511.0",
+    "react": "^19.2.7",
+    "react-calendar": "^5.1.0",
+    "react-clock": "^5.1.0",
+    "react-date-picker": "^12.0.1",
+    "react-dom": "^19.2.7",
+    "react-paginate": "^8.3.0",
+    "react-select": "^5.10.2",
+    "react-tabs": "^6.1.0",
+    "react-time-picker": "^8.0.2",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.3.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~6.0.2"
+  }
+}
