@@ -34,4 +34,6 @@ const { data, isLoading } = useApiQuery<ApiPaginatedSuccess<Product>>({
 
 - Base URL: gọi `configureApiClient({ baseURL })` từ web (`API_BASE_URL`)
 - `Authorization` + `Accept-Language` (từ `p4_locale`)
-- 401 → `POST /auth/refresh` một lần rồi retry
+- Chủ động refresh trước khi access token hết hạn 60 giây và khi tab active trở lại
+- 401 → `POST /auth/refresh` một lần rồi retry (fallback)
+- Các request đồng thời dùng chung một refresh; session mới được đồng bộ với `AuthProvider`

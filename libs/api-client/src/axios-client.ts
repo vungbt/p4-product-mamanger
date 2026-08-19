@@ -1,4 +1,4 @@
-import { AUTH_STORAGE_KEY } from '@p4/auth';
+import { type AuthSession, clearAuthSession, readAuthSession, writeAuthSession } from '@p4/auth';
 import type { ApiError, LoginResponse } from '@p4/shared';
 import axios, {
   type AxiosError,
@@ -24,12 +24,6 @@ export type ListParams<T = unknown> = T & {
   q?: string;
 };
 
-type AuthSessionStorage = {
-  token?: string;
-  refreshToken?: string;
-  user?: unknown;
-};
-
 type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
 let apiBaseURL = '/api';
@@ -40,30 +34,12 @@ export function configureApiClient(options: { baseURL: string }) {
   instance.defaults.baseURL = apiBaseURL;
 }
 
-function readSession(): AuthSessionStorage | null {
-  try {
-    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as AuthSessionStorage;
-  } catch {
-    return null;
-  }
-}
-
-function writeSession(session: AuthSessionStorage) {
-  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
-}
-
-function clearSession() {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
-}
-
 export function getAccessToken(): string | null {
-  return readSession()?.token ?? null;
+  return readAuthSession()?.token ?? null;
 }
 
 export function getRefreshToken(): string | null {
-  return readSession()?.refreshToken ?? null;
+  return readAuthSession()?.refreshToken ?? null;
 }
 
 export const instance = axios.create({
@@ -104,9 +80,9 @@ instance.interceptors.request.use(
   (error: AxiosError) => Promise.reject(normalizeAxiosError(error as AxiosError<ApiError>)),
 );
 
-let refreshPromise: Promise<string | null> | null = null;
+let refreshPromise: Promise<AuthSession | null> | null = null;
 
-async function refreshAccessToken(): Promise<string | null> {
+async function performRefresh(): Promise<AuthSession | null> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;
 
@@ -115,18 +91,32 @@ async function refreshAccessToken(): Promise<string | null> {
       refreshToken,
     });
     const next = data.data;
-    const prev = readSession() ?? {};
-    writeSession({
-      ...prev,
+    const session: AuthSession = {
       token: next.token,
       refreshToken: next.refreshToken,
       user: next.user,
-    });
-    return next.token;
+    };
+    writeAuthSession(session);
+    return session;
   } catch {
-    clearSession();
+    clearAuthSession();
     return null;
   }
+}
+
+export function refreshAuthSession(): Promise<AuthSession | null> {
+  refreshPromise ??= performRefresh().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
+}
+
+export async function revokeAuthSession(session: AuthSession): Promise<void> {
+  await axios.post(
+    `${apiBaseURL}/auth/logout`,
+    { refreshToken: session.refreshToken },
+    { headers: { Authorization: `Bearer ${session.token}` } },
+  );
 }
 
 instance.interceptors.response.use(
@@ -137,14 +127,11 @@ instance.interceptors.response.use(
 
     if (status === 401 && original && !original._retry) {
       original._retry = true;
-      refreshPromise ??= refreshAccessToken().finally(() => {
-        refreshPromise = null;
-      });
-      const token = await refreshPromise;
-      if (token) {
+      const nextSession = await refreshAuthSession();
+      if (nextSession) {
         original.headers = {
           ...original.headers,
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${nextSession.token}`,
         } as AxiosRequestHeaders;
         return instance.request(original);
       }

@@ -102,13 +102,15 @@ Pre-commit (Husky): tự format/lint file staged. Commit message theo [COMMIT_CO
 2. `protected-route` — guard theo role
 3. **Admin:** CRUD products, dashboard stats, orders list
 4. **Storefront:** shop, cart, checkout → `POST /api/orders`
-5. Gọi API qua `services/` — xem [API docs](./apps/api/README.md)
+5. Gọi API qua `@p4/api-client`; hook riêng đặt cạnh page, hook dùng chung đặt trong `src/hooks` — xem [API docs](./apps/api/README.md)
 
 Types: import từ `@p4/shared` hoặc `@/types/types`
 
 **Naming:** kebab-case cho mọi file trong `apps/web/src/`
 
 **Structure expect:** [apps/web/README.md](./apps/web/README.md) — routing, icons, modules (pattern base-react-antd + finder-work-web)
+
+Page được tổ chức theo feature: `modules/{portal}/{feature}/page.tsx`. Component, hook và type chỉ dùng trong một feature phải đặt cùng folder với page; không đưa vào `src/hooks` hoặc `libraries` cho tới khi thật sự được dùng chéo.
 
 ---
 
@@ -127,7 +129,7 @@ Types: import từ `@p4/shared` hoặc `@/types/types`
 ## Thứ tự làm (web)
 
 1. Types/constants + đọc API README
-2. `services/api-service` + `use-auth`
+2. `@p4/api-client` + `use-auth`
 3. Routes + `protected-route`
 4. Admin CRUD + dashboard
 5. Storefront shop + cart/checkout

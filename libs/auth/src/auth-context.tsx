@@ -1,12 +1,24 @@
 import type { Role, User } from '@p4/shared';
-import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { AUTH_STORAGE_KEY } from './fake-auth';
+import {
+  type AuthSession,
+  clearAuthSession,
+  getTokenExpiresAt,
+  readAuthSession,
+  subscribeAuthSession,
+  writeAuthSession,
+} from './session-store';
 
-export type AuthSession = {
-  token: string;
-  refreshToken?: string;
-  user: User;
-};
+const REFRESH_EARLY_MS = 60_000;
 
 export type AuthPortal = 'admin' | 'storefront';
 
@@ -25,16 +37,6 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function readSession(storageKey: string): AuthSession | null {
-  try {
-    const raw = localStorage.getItem(storageKey);
-    if (!raw) return null;
-    return JSON.parse(raw) as AuthSession;
-  } catch {
-    return null;
-  }
-}
-
 function assertPortalRole(user: User, portal: AuthPortal) {
   if (portal === 'admin' && user.role !== 'admin') {
     throw new Error('auth.unauthorized');
@@ -51,6 +53,10 @@ export type AuthProviderProps = {
   onLogin: (email: string, password: string) => Promise<AuthSession>;
   /** POST /api/auth/google — storefront */
   onGoogleLogin?: (credential: string) => Promise<AuthSession>;
+  /** Refresh session dùng chung với API interceptor. */
+  onRefresh?: () => Promise<AuthSession | null>;
+  /** Revoke refresh token phía server; local session được xóa ngay. */
+  onLogout?: (session: AuthSession) => Promise<void>;
 };
 
 export function AuthProvider({
@@ -58,21 +64,53 @@ export function AuthProvider({
   storageKey = AUTH_STORAGE_KEY,
   onLogin,
   onGoogleLogin,
+  onRefresh,
+  onLogout,
 }: AuthProviderProps) {
-  const [session, setSession] = useState<AuthSession | null>(() => readSession(storageKey));
+  const [session, setSession] = useState<AuthSession | null>(() => readAuthSession(storageKey));
+
+  useEffect(() => subscribeAuthSession(setSession, storageKey), [storageKey]);
 
   const persistSession = useCallback(
     (nextSession: AuthSession) => {
-      localStorage.setItem(storageKey, JSON.stringify(nextSession));
-      setSession(nextSession);
+      writeAuthSession(nextSession, storageKey);
     },
     [storageKey],
   );
 
   const logout = useCallback(() => {
-    localStorage.removeItem(storageKey);
-    setSession(null);
-  }, [storageKey]);
+    const current = readAuthSession(storageKey);
+    clearAuthSession(storageKey);
+    if (current && onLogout) void onLogout(current).catch(() => undefined);
+  }, [onLogout, storageKey]);
+
+  useEffect(() => {
+    if (!session?.refreshToken || !onRefresh) return;
+
+    const expiresAt = getTokenExpiresAt(session.token);
+    if (!expiresAt) return;
+
+    const refreshIfNeeded = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (expiresAt - Date.now() <= REFRESH_EARLY_MS) void onRefresh();
+    };
+    const delay = Math.max(0, expiresAt - Date.now() - REFRESH_EARLY_MS);
+    const timer = window.setTimeout(refreshIfNeeded, delay);
+
+    const handleFocus = () => refreshIfNeeded();
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') refreshIfNeeded();
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    refreshIfNeeded();
+
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [onRefresh, session?.refreshToken, session?.token]);
 
   const login = useCallback(
     async (email: string, password: string, portal: AuthPortal) => {

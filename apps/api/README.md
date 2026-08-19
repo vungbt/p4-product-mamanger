@@ -16,20 +16,41 @@ Web proxy: `/api` → API (cấu hình trong `apps/web/vite.config.ts`)
 
 ```
 src/
-├── index.ts
+├── index.ts          # DB connection, HTTP server, graceful shutdown
+├── app.ts            # Express app, global middleware, health/docs/webhook
+├── modules/
+│   ├── index.ts      # Mount toàn bộ feature router
+│   ├── addresses/
+│   ├── auth/
+│   ├── categories/
+│   ├── coupons/
+│   ├── dashboard/
+│   ├── files/
+│   ├── orders/
+│   ├── payments/
+│   ├── products/
+│   ├── refunds/
+│   └── reviews/
+│
+│   # Mỗi feature chứa các file cần thiết:
+│   # <feature>.router.ts
+│   # <feature>.controller.ts
+│   # <feature>.service.ts
+│   # <feature>.validation.ts (nếu có request body cần validate)
+│
+├── shared/
+│   └── validation.ts # Validator middleware dùng chung
 ├── configs/          # env (DATABASE_*, CORS, PORT)
 ├── constants/
-├── routers/
-├── controllers/
-├── services/
 ├── middlewares/      # base (jsonApi), auth, pagination, error
-├── validation/
 ├── sequelize/        # models, migrations, seeders
 ├── utils/            # errors, pagination
 └── types/
 ```
 
-Flow: `Router → baseMiddleware (res.jsonApi) → Middleware → Validation → Controller → Service → Sequelize/Postgres`
+Flow: `app.ts → modules/index.ts → Feature router → Middleware → Feature validation → Feature controller → Feature service → Sequelize/Postgres`
+
+Code được tổ chức theo **feature module**, không chia ngang thành các thư mục controller/service/router dùng chung. Một thay đổi nghiệp vụ nên nằm trong module sở hữu domain đó. Chỉ hạ tầng dùng chung mới đặt ngoài `modules/`.
 
 Import alias: `@/*` → `src/*`.
 
@@ -67,7 +88,9 @@ Scripts: `db:migrate` · `db:seed` · `db:reset`
 ## i18n & validation
 
 - Header `Accept-Language: vi|en` (hoặc `?lang=vi`)
-- Body validate bằng **validatorjs** (`validation/*.ts`)
+- Body validate bằng **validatorjs** (`modules/<feature>/<feature>.validation.ts`)
+- Router chỉ gắn validation middleware; rule không viết trực tiếp trong router/controller
+- Validation middleware dùng chung: `shared/validation.ts`
 - Error validation:
 
 ```json
@@ -181,6 +204,22 @@ User có `avatarId`, `avatarUrl`.
 ```
 
 → gán avatar (signed upload như product image). Trả `{ data: { user }, message }`.
+
+### PATCH `/api/auth/password` — auth required
+
+Tài khoản Google chưa có mật khẩu:
+
+```json
+{ "newPassword": "secret123" }
+```
+
+Tài khoản đã có mật khẩu:
+
+```json
+{ "currentPassword": "old-secret", "newPassword": "new-secret" }
+```
+
+Sau khi cập nhật, API revoke toàn bộ refresh token cũ và trả một `LoginResponse` mới. User có trường `hasPassword` để FE hiển thị “Thiết lập mật khẩu” hoặc “Đổi mật khẩu”. Nhờ đó tài khoản Google có thể đăng nhập bằng email/password; tài khoản email có cùng email vẫn tự liên kết khi đăng nhập Google.
 
 ### POST `/api/auth/logout`
 

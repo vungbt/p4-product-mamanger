@@ -7,6 +7,7 @@ export interface User {
   displayName?: string | null;
   avatarId?: string | null;
   avatarUrl?: string;
+  hasPassword?: boolean;
 }
 
 export interface UpdateProfileInput {
@@ -199,6 +200,11 @@ export interface LoginResponse {
 
 export interface RefreshRequest {
   refreshToken: string;
+}
+
+export interface UpdatePasswordInput {
+  currentPassword?: string;
+  newPassword: string;
 }
 
 export interface DashboardStats {

@@ -1,7 +1,7 @@
 import type { Role } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { errorKeys } from '@/constants/index.js';
-import { findUserByToken } from '@/services/auth.service.js';
+import { findUserByToken } from '@/modules/auth/auth.service.js';
 import { Forbidden, Unauthorized } from '@/utils/errors/index.js';
 
 export async function authRequired(req: Request, _res: Response, next: NextFunction) {

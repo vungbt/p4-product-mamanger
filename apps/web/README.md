@@ -47,8 +47,7 @@ src/
 ├── contexts/auth-context.tsx   ← re-export @p4/auth
 ├── hooks/
 │   ├── use-auth.ts             ← re-export @p4/auth
-│   ├── use-cart.ts
-│   └── use-products.ts
+│   └── use-products.ts         ← dùng chung storefront + admin
 ├── services/api-service.ts
 ├── routing/                    ← KHÔNG dùng folder routes/ rải file
 │   ├── route.types.ts          # IRoute: authority, existSubMenu, iconName…
@@ -67,13 +66,20 @@ src/
 │       └── menu.layout.tsx     # menu + submenu từ RouteConfigs
 ├── modules/
 │   ├── admin/
-│   │   ├── admin-layout.tsx
-│   │   ├── admin-login-page.tsx
-│   │   ├── admin-dashboard-page.tsx
-│   │   └── ...
+│   │   ├── layout/             # layout.tsx, header, sidebar, hook nội bộ
+│   │   ├── login/page.tsx
+│   │   ├── dashboard/page.tsx
+│   │   ├── products/page.tsx
+│   │   └── orders/page.tsx
 │   └── storefront/
-│       ├── storefront-layout.tsx
-│       └── ...
+│       ├── layout/             # layout.tsx, header, footer
+│       ├── login/page.tsx
+│       ├── register/page.tsx
+│       ├── password/page.tsx
+│       ├── shop/page.tsx
+│       └── cart/
+│           ├── page.tsx
+│           └── use-cart.ts     # chỉ cart dùng nên đặt cạnh page
 ├── styles/
 │   ├── global.scss
 │   └── tailwind.css
@@ -83,9 +89,23 @@ src/
 
 ## Naming convention
 
-- **Kebab-case** mọi file/folder: `admin-login-page.tsx`, `use-auth.ts`
-- **Module pages:** `{feature}-page.tsx` hoặc sau này `{feature}.screen.tsx` khi mentor chuẩn hóa tiếp
+- **Kebab-case** mọi file/folder: `order-detail`, `use-cart.ts`
+- **Module pages:** `modules/{portal}/{feature}/page.tsx`
+- Hook/component chỉ dùng trong một feature phải đặt cạnh `page.tsx`
+- `src/hooks` chỉ chứa hook dùng chung từ hai feature/portal trở lên
 - **Import alias:** `@/constants/constants`, `@/types/types`, `@/hooks/use-auth`
+
+Ví dụ feature có logic riêng:
+
+```text
+modules/storefront/cart/
+├── page.tsx              # route entry của feature
+├── use-cart.ts           # state/hook chỉ cart sử dụng
+├── cart-item.tsx         # component chỉ cart sử dụng
+└── cart.types.ts         # type nội bộ nếu cần
+```
+
+Không tạo barrel `index.ts` chỉ để re-export page. Route lazy-import trực tiếp `.../{feature}/page` để dependency rõ ràng và giữ code splitting theo page.
 
 ---
 
@@ -114,11 +134,14 @@ Login page: `guestOnly` + `guestAuthority` + `guestRedirect`.
 
 ## Thêm feature mới (checklist)
 
-1. Page → `modules/{portal}/{name}-page.tsx`
-2. Route → `routing/routes/{portal}.routes.tsx` (IRoute)
-3. Menu tự sync nếu có `label` + không `hideInMenu`
-4. Icon mới → đăng ký alias trong `libs/ui/components/icons/index.tsx` (`@p4/ui`)
-5. API call → `services/api-service.ts` + hook tương ứng
+1. Page → `modules/{portal}/{feature}/page.tsx`
+2. Hook/component riêng → đặt trong cùng feature folder
+3. Route → `routing/routes/{portal}.routes.tsx` (IRoute)
+4. Menu tự sync nếu có `label` + không `hideInMenu`
+5. Icon mới → đăng ký alias trong `libs/ui/components/icons/index.tsx` (`@p4/ui`)
+6. Hook gọi API chỉ đưa vào `src/hooks` khi thật sự được nhiều feature sử dụng
+
+Khi một hook từ feature bắt đầu được feature thứ hai sử dụng, mới chuyển nó lên `src/hooks` và cập nhật import. Không đưa hook lên global trước chỉ vì có thể sẽ tái sử dụng.
 
 ---
 

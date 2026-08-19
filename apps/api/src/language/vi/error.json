@@ -4,6 +4,7 @@
   "not_found": "Không tìm thấy",
   "invalid_token": "Token không hợp lệ",
   "invalid_credentials": "Email hoặc mật khẩu không đúng",
+  "current_password_invalid": "Mật khẩu hiện tại không đúng",
   "product_not_found": "Không tìm thấy sản phẩm",
   "invalid_quantity": "Số lượng không hợp lệ",
   "items_required": "Cần ít nhất một sản phẩm",

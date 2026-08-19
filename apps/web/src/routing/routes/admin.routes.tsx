@@ -2,11 +2,11 @@ import { lazy } from 'react';
 import { ROUTES } from '@/constants/constants';
 import type { IRoute } from '@/routing/route.types';
 
-const AdminLoginScreen = lazy(() => import('@/modules/admin/admin-login-page'));
-const AdminDashboardScreen = lazy(() => import('@/modules/admin/admin-dashboard-page'));
-const AdminProductsScreen = lazy(() => import('@/modules/admin/admin-products-page'));
-const AdminOrdersScreen = lazy(() => import('@/modules/admin/admin-orders-page'));
-const AdminLayout = lazy(() => import('@/modules/admin/admin-layout'));
+const AdminLoginScreen = lazy(() => import('@/modules/admin/login/page'));
+const AdminDashboardScreen = lazy(() => import('@/modules/admin/dashboard/page'));
+const AdminProductsScreen = lazy(() => import('@/modules/admin/products/page'));
+const AdminOrdersScreen = lazy(() => import('@/modules/admin/orders/page'));
+const AdminLayout = lazy(() => import('@/modules/admin/layout/layout'));
 
 export const adminLoginRoute: IRoute = {
   path: ROUTES.admin.login,

@@ -12,6 +12,7 @@ export const ROUTES = {
   storefront: {
     login: '/login',
     register: '/register',
+    password: '/account/password',
     shop: '/shop',
     cart: '/cart',
   },

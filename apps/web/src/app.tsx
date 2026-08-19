@@ -1,4 +1,10 @@
-import { ApiQueryProvider, axiosClient, configureApiClient } from '@p4/api-client';
+import {
+  ApiQueryProvider,
+  axiosClient,
+  configureApiClient,
+  refreshAuthSession,
+  revokeAuthSession,
+} from '@p4/api-client';
 import type { AuthSession } from '@p4/auth';
 import type { LoginResponse } from '@p4/shared';
 import { BrowserRouter } from 'react-router-dom';
@@ -66,7 +72,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <ApiQueryProvider enableDevtools={import.meta.env.DEV}>
-        <AuthProvider onLogin={loginWithApi} onGoogleLogin={loginWithGoogleApi}>
+        <AuthProvider
+          onLogin={loginWithApi}
+          onGoogleLogin={loginWithGoogleApi}
+          onRefresh={refreshAuthSession}
+          onLogout={revokeAuthSession}
+        >
           <MasterRoutes routes={RouteConfigs} />
           <ToastContainer position="top-right" autoClose={3000} />
         </AuthProvider>

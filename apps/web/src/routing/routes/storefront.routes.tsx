@@ -2,13 +2,12 @@ import { lazy } from 'react';
 import { ROUTES } from '@/constants/constants';
 import type { IRoute } from '@/routing/route.types';
 
-const StorefrontLoginScreen = lazy(() => import('@/modules/storefront/storefront-login-page'));
-const StorefrontRegisterScreen = lazy(
-  () => import('@/modules/storefront/storefront-register-page'),
-);
-const ShopScreen = lazy(() => import('@/modules/storefront/shop-page'));
-const CartScreen = lazy(() => import('@/modules/storefront/cart-page'));
-const StorefrontLayout = lazy(() => import('@/modules/storefront/storefront-layout'));
+const StorefrontLoginScreen = lazy(() => import('@/modules/storefront/login/page'));
+const StorefrontRegisterScreen = lazy(() => import('@/modules/storefront/register/page'));
+const StorefrontPasswordScreen = lazy(() => import('@/modules/storefront/password/page'));
+const ShopScreen = lazy(() => import('@/modules/storefront/shop/page'));
+const CartScreen = lazy(() => import('@/modules/storefront/cart/page'));
+const StorefrontLayout = lazy(() => import('@/modules/storefront/layout/layout'));
 
 export const storefrontLoginRoute: IRoute = {
   path: ROUTES.storefront.login,
@@ -27,6 +26,14 @@ export const storefrontRegisterRoute: IRoute = {
   guestOnly: true,
   guestAuthority: ['user'],
   guestRedirect: ROUTES.storefront.shop,
+  hideInMenu: true,
+};
+
+export const storefrontPasswordRoute: IRoute = {
+  path: ROUTES.storefront.password,
+  name: 'storefront-password',
+  component: StorefrontPasswordScreen,
+  authority: ['user'],
   hideInMenu: true,
 };
 

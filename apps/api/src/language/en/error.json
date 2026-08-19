@@ -4,6 +4,7 @@
   "not_found": "Not found",
   "invalid_token": "Invalid token",
   "invalid_credentials": "Invalid credentials",
+  "current_password_invalid": "Current password is incorrect",
   "product_not_found": "Product not found",
   "invalid_quantity": "Invalid quantity",
   "items_required": "Items are required",

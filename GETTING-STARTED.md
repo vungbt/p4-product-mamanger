@@ -59,7 +59,7 @@ Commit theo [COMMIT_CONVENTION.md](./COMMIT_CONVENTION.md).
 | Storefront | `/login` | user@demo.com | user123 |
 | Admin | `/admin/login` | admin@demo.com | admin123 |
 
-Scaffold còn fake username `user`/`admin` — học viên thay bằng API login thật.
+Login hiện gọi API thật, lưu access/refresh token và tự refresh session trước khi access token hết hạn.
 
 ## 5. API docs
 
@@ -76,6 +76,17 @@ Scaffold còn fake username `user`/`admin` — học viên thay bằng API login
 const res = await fetch(`${API_BASE_URL}/products?page=1&pageSize=10`);
 const { data, meta } = await res.json();
 ```
+
+Trong source ứng dụng, ưu tiên `@p4/api-client` thay vì gọi `fetch` trực tiếp. Tổ chức page theo feature:
+
+```text
+apps/web/src/modules/{portal}/{feature}/
+├── page.tsx
+├── use-feature.ts        # chỉ tạo khi feature cần
+└── feature-component.tsx # component nội bộ
+```
+
+Hook chỉ dùng trong feature đặt cạnh `page.tsx`; chỉ hook dùng chung từ hai feature trở lên mới đặt trong `apps/web/src/hooks`.
 
 ## 7. Deploy (mentor)
 

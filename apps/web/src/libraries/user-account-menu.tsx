@@ -1,6 +1,8 @@
 import { Avatar, cn } from '@p4/ui';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { ROUTES } from '@/constants/constants';
 import useAuth from '@/hooks/use-auth';
 
 type UserAccountMenuProps = {
@@ -67,6 +69,14 @@ export default function UserAccountMenu({ className }: UserAccountMenuProps) {
             </p>
             <p className="truncate text-12 text-neutral-text-secondary">{user.email}</p>
           </div>
+          <Link
+            to={ROUTES.storefront.password}
+            role="menuitem"
+            className="block w-full px-3 py-2.5 text-left text-13 text-neutral-text-primary transition-colors hover:bg-neutral-background"
+            onClick={() => setOpen(false)}
+          >
+            {user.hasPassword ? t('auth.changePassword') : t('auth.setPassword')}
+          </Link>
           <button
             type="button"
             role="menuitem"

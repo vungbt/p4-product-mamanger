@@ -8,6 +8,7 @@ export const errorKeys = {
   notFound: 'not_found',
   productNotFound: 'product_not_found',
   invalidCredentials: 'invalid_credentials',
+  currentPasswordInvalid: 'current_password_invalid',
   invalidQuantity: 'invalid_quantity',
   itemsRequired: 'items_required',
   invalidPagination: 'invalid_pagination',

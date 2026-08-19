@@ -204,6 +204,36 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /api/auth/password:
+    patch:
+      tags: [Auth]
+      summary: Set or change the current user's password
+      operationId: updatePassword
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordInput'
+      responses:
+        '200':
+          description: Password updated and a new token pair issued
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /api/auth/logout:
     post:
       tags: [Auth]
@@ -1563,7 +1593,7 @@ components:
 
     User:
       type: object
-      required: [id, email, role]
+      required: [id, email, role, hasPassword]
       properties:
         id:
           type: string
@@ -1579,6 +1609,8 @@ components:
           nullable: true
         avatarUrl:
           type: string
+        hasPassword:
+          type: boolean
 
     LoginRequest:
       type: object
@@ -1618,6 +1650,19 @@ components:
         imageStorageId:
           type: string
           description: Cloudinary public ID after client upload
+
+    UpdatePasswordInput:
+      type: object
+      required: [newPassword]
+      properties:
+        currentPassword:
+          type: string
+          format: password
+          description: Required when the account already has a password
+        newPassword:
+          type: string
+          format: password
+          minLength: 6
 
     MeResponse:
       type: object
