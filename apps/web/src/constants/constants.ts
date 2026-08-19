@@ -11,6 +11,7 @@ export const ROLES = {
 export const ROUTES = {
   storefront: {
     login: '/login',
+    register: '/register',
     shop: '/shop',
     cart: '/cart',
   },

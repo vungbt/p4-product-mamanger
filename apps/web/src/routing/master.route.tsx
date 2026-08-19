@@ -1,14 +1,43 @@
+import { RenderIcon } from '@p4/ui';
 import { type ComponentType, type LazyExoticComponent, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { ROUTES } from '@/constants/constants';
+import BrandLogo from '@/libraries/brand-logo';
 import type { IRoute } from '@/routing/route.types';
 import { flattenRouteElements } from '@/routing/route.types';
 import { GuestRoute, ProtectedRoute } from '@/routing/route-guards';
 
 function PageLoading() {
   const { t } = useTranslation();
-  return <p style={{ padding: 16 }}>{t('app.loading')}</p>;
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex min-h-screen items-center justify-center overflow-hidden bg-primary-background px-6"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="pointer-events-none absolute -left-24 top-1/3 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-warning/15 blur-3xl" />
+
+      <div className="relative flex w-full max-w-xs flex-col items-center rounded-3xl border border-white/70 bg-neutral-white/75 px-8 py-9 text-center shadow-2xl shadow-primary/10 backdrop-blur-xl">
+        <BrandLogo variant="header" height={34} />
+
+        <div className="relative mt-8 flex h-14 w-14 items-center justify-center">
+          <div className="absolute inset-0 rounded-full border border-primary/20" />
+          <div className="absolute inset-0 motion-safe:animate-ping rounded-full border border-primary/20" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/25">
+            <RenderIcon name="loading" className="!h-5 !w-5 motion-safe:animate-spin" />
+          </div>
+        </div>
+
+        <p className="mt-5 text-14 font-medium text-neutral-text-primary">{t('app.loading')}</p>
+        <div className="mt-4 h-1 w-24 overflow-hidden rounded-full bg-primary/10">
+          <div className="h-full w-1/2 rounded-full bg-primary motion-safe:animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function LazyPage({ component: Page }: { component: LazyExoticComponent<ComponentType<object>> }) {

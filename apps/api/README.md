@@ -155,6 +155,14 @@ Gửi access: `Authorization: Bearer <token>`
 - Access JWT: `JWT_SECRET` / `JWT_EXPIRES_IN` (mặc định `15m`)
 - Refresh: opaque, hash lưu DB, TTL `REFRESH_TOKEN_EXPIRES_IN` (mặc định `7d`), **rotation** mỗi lần refresh
 
+### POST `/api/auth/google`
+
+Storefront only. Body: `{ "credential": "<Google ID token>" }` (GIS).
+
+Cần `GOOGLE_CLIENT_ID` trong `.env`. Find-or-create user `role=user` theo `google_id` / email.
+
+→ `{ data: { token, refreshToken, user } }`
+
 ### POST `/api/auth/refresh`
 
 ```json

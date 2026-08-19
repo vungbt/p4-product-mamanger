@@ -37,4 +37,6 @@ export const errorKeys = {
   stripeNotConfigured: 'stripe_not_configured',
   stripeSessionFailed: 'stripe_session_failed',
   stripeWebhookInvalid: 'stripe_webhook_invalid',
+  googleNotConfigured: 'google_not_configured',
+  googleTokenInvalid: 'google_token_invalid',
 } as const;

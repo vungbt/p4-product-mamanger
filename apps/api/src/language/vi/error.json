@@ -35,5 +35,7 @@
   "file_delete_failed": "Xóa file trên Cloudinary thất bại",
   "stripe_not_configured": "Chưa cấu hình Stripe",
   "stripe_session_failed": "Không tạo được phiên thanh toán Stripe",
-  "stripe_webhook_invalid": "Webhook Stripe không hợp lệ"
+  "stripe_webhook_invalid": "Webhook Stripe không hợp lệ",
+  "google_not_configured": "Chưa cấu hình Google Client ID",
+  "google_token_invalid": "Token Google không hợp lệ"
 }

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as authController from '@/controllers/auth.controller.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import {
+  validateGoogleLoginBody,
   validateLoginBody,
   validateRefreshBody,
   validateUpdateProfileBody,
@@ -10,6 +11,7 @@ import {
 const router = Router();
 
 router.post('/login', validateLoginBody, authController.login);
+router.post('/google', validateGoogleLoginBody, authController.loginGoogle);
 router.post('/refresh', validateRefreshBody, authController.refresh);
 router.get('/me', authRequired, authController.me);
 router.patch('/me', authRequired, validateUpdateProfileBody, authController.updateMe);

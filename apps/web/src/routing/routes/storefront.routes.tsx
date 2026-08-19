@@ -3,6 +3,9 @@ import { ROUTES } from '@/constants/constants';
 import type { IRoute } from '@/routing/route.types';
 
 const StorefrontLoginScreen = lazy(() => import('@/modules/storefront/storefront-login-page'));
+const StorefrontRegisterScreen = lazy(
+  () => import('@/modules/storefront/storefront-register-page'),
+);
 const ShopScreen = lazy(() => import('@/modules/storefront/shop-page'));
 const CartScreen = lazy(() => import('@/modules/storefront/cart-page'));
 const StorefrontLayout = lazy(() => import('@/modules/storefront/storefront-layout'));
@@ -11,6 +14,16 @@ export const storefrontLoginRoute: IRoute = {
   path: ROUTES.storefront.login,
   name: 'storefront-login',
   component: StorefrontLoginScreen,
+  guestOnly: true,
+  guestAuthority: ['user'],
+  guestRedirect: ROUTES.storefront.shop,
+  hideInMenu: true,
+};
+
+export const storefrontRegisterRoute: IRoute = {
+  path: ROUTES.storefront.register,
+  name: 'storefront-register',
+  component: StorefrontRegisterScreen,
   guestOnly: true,
   guestAuthority: ['user'],
   guestRedirect: ROUTES.storefront.shop,
@@ -40,6 +53,7 @@ export const storefrontPortalRoutes: IRoute[] = [
         iconName: 'briefcase',
         component: CartScreen,
         exact: true,
+        hideInMenu: true,
       },
     ],
   },

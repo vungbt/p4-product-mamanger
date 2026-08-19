@@ -77,6 +77,12 @@ cp .env.prod.example .env.prod   # điền JWT, DB, CORS, Cloudinary…
 
 Smoke: `curl https://p4-api.couponlinkh.com/health` (nginx → `:3001`)
 
+**Soi DB prod từ máy local** (Postgres chỉ bind `127.0.0.1` trên VPS):
+
+```bash
+pnpm db:tunnel   # giữ terminal mở → IDE: 127.0.0.1:5433 + creds .env.prod
+```
+
 FE production: **Vercel** — `VITE_API_URL=https://p4-api.couponlinkh.com`
 
 ### Lint, format & commit

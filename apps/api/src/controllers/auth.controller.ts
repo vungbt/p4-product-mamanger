@@ -14,6 +14,16 @@ export async function login(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export async function loginGoogle(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { credential } = req.body as { credential: string };
+    const body = await authService.loginWithGoogle(credential);
+    return res.jsonApi(StatusCodes.OK, { data: body });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export async function refresh(req: Request, res: Response, next: NextFunction) {
   try {
     const { refreshToken } = req.body as { refreshToken: string };

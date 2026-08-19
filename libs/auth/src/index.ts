@@ -2,6 +2,7 @@ export {
   type AuthPortal,
   AuthProvider,
   type AuthProviderProps,
+  type AuthSession,
   useAuth,
   useAuthContext,
 } from './auth-context';

@@ -35,5 +35,7 @@
   "file_delete_failed": "Failed to delete file on Cloudinary",
   "stripe_not_configured": "Stripe is not configured",
   "stripe_session_failed": "Failed to create Stripe Checkout Session",
-  "stripe_webhook_invalid": "Invalid Stripe webhook"
+  "stripe_webhook_invalid": "Invalid Stripe webhook",
+  "google_not_configured": "Google Client ID is not configured",
+  "google_token_invalid": "Invalid Google token"
 }

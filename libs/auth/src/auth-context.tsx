@@ -1,8 +1,8 @@
 import type { Role, User } from '@p4/shared';
 import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from 'react';
-import { AUTH_STORAGE_KEY, FAKE_AUTH, type FakeAuthAccounts } from './fake-auth';
+import { AUTH_STORAGE_KEY } from './fake-auth';
 
-type AuthSession = {
+export type AuthSession = {
   token: string;
   refreshToken?: string;
   user: User;
@@ -17,7 +17,9 @@ type AuthContextValue = {
   role: Role | null;
   isAdmin: boolean;
   isUser: boolean;
-  login: (username: string, password: string, portal: AuthPortal) => Promise<void>;
+  login: (email: string, password: string, portal: AuthPortal) => Promise<void>;
+  /** Storefront only — credential = Google ID token */
+  loginWithGoogle: (credential: string, portal?: AuthPortal) => Promise<void>;
   logout: () => void;
 };
 
@@ -33,19 +35,39 @@ function readSession(storageKey: string): AuthSession | null {
   }
 }
 
+function assertPortalRole(user: User, portal: AuthPortal) {
+  if (portal === 'admin' && user.role !== 'admin') {
+    throw new Error('auth.unauthorized');
+  }
+  if (portal === 'storefront' && user.role !== 'user') {
+    throw new Error('auth.unauthorized');
+  }
+}
+
 export type AuthProviderProps = {
   children: ReactNode;
   storageKey?: string;
-  accounts?: FakeAuthAccounts;
+  /** POST /api/auth/login — bắt buộc cho password login */
+  onLogin: (email: string, password: string) => Promise<AuthSession>;
+  /** POST /api/auth/google — storefront */
+  onGoogleLogin?: (credential: string) => Promise<AuthSession>;
 };
 
-// TODO: thay fake login bằng gọi POST /api/auth/login
 export function AuthProvider({
   children,
   storageKey = AUTH_STORAGE_KEY,
-  accounts = FAKE_AUTH,
+  onLogin,
+  onGoogleLogin,
 }: AuthProviderProps) {
   const [session, setSession] = useState<AuthSession | null>(() => readSession(storageKey));
+
+  const persistSession = useCallback(
+    (nextSession: AuthSession) => {
+      localStorage.setItem(storageKey, JSON.stringify(nextSession));
+      setSession(nextSession);
+    },
+    [storageKey],
+  );
 
   const logout = useCallback(() => {
     localStorage.removeItem(storageKey);
@@ -53,23 +75,31 @@ export function AuthProvider({
   }, [storageKey]);
 
   const login = useCallback(
-    async (username: string, password: string, portal: AuthPortal) => {
-      const account = portal === 'admin' ? accounts.admin : accounts.user;
+    async (email: string, password: string, portal: AuthPortal) => {
+      const nextSession = await onLogin(email.trim(), password);
+      assertPortalRole(nextSession.user, portal);
+      persistSession(nextSession);
+    },
+    [onLogin, persistSession],
+  );
 
-      if (username !== account.username || password !== account.password) {
-        throw new Error('auth.invalidCredentials');
+  const loginWithGoogle = useCallback(
+    async (credential: string, portal: AuthPortal = 'storefront') => {
+      if (portal !== 'storefront') {
+        throw new Error('auth.googleAdminNotAllowed');
+      }
+      if (!credential.trim()) {
+        throw new Error('auth.googleFailed');
+      }
+      if (!onGoogleLogin) {
+        throw new Error('auth.googleFailed');
       }
 
-      const nextSession: AuthSession = {
-        token: `fake_${account.user.id}`,
-        refreshToken: `fake_refresh_${account.user.id}`,
-        user: account.user,
-      };
-
-      localStorage.setItem(storageKey, JSON.stringify(nextSession));
-      setSession(nextSession);
+      const nextSession = await onGoogleLogin(credential);
+      assertPortalRole(nextSession.user, 'storefront');
+      persistSession(nextSession);
     },
-    [accounts, storageKey],
+    [onGoogleLogin, persistSession],
   );
 
   const value = useMemo<AuthContextValue>(() => {
@@ -84,9 +114,10 @@ export function AuthProvider({
       isAdmin: role === 'admin',
       isUser: role === 'user',
       login,
+      loginWithGoogle,
       logout,
     };
-  }, [session, login, logout]);
+  }, [session, login, loginWithGoogle, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

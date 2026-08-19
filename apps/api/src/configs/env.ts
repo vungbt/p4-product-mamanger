@@ -3,8 +3,9 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// apps/api/src/configs → monorepo root .env
 dotenv.config({
-  path: path.resolve(__dirname, '../../../.env'),
+  path: path.resolve(__dirname, '../../../../.env'),
   quiet: true,
 });
 
@@ -59,5 +60,11 @@ export const env = {
       process.env.CHECKOUT_SUCCESS_URL || 'http://localhost:5173/shop/orders/{ORDER_ID}?paid=1',
     checkoutCancelUrl:
       process.env.CHECKOUT_CANCEL_URL || 'http://localhost:5173/shop/cart?cancelled=1',
+  },
+  google: {
+    /** Đọc lúc runtime — restart API sau khi sửa .env */
+    get clientId() {
+      return process.env.GOOGLE_CLIENT_ID || '';
+    },
   },
 };

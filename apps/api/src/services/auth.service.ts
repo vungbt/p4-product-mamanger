@@ -5,6 +5,7 @@ import { errorKeys } from '@/constants/index.js';
 import { FileModel, RefreshTokenModel, UserModel } from '@/sequelize/models/index.js';
 import { createFromStorageId, deleteFileIfUnreferenced } from '@/services/files/files.service.js';
 import { Unauthorized } from '@/utils/errors/index.js';
+import { verifyGoogleIdToken } from '@/utils/google-id-token.js';
 import { signAccessToken, verifyAccessToken } from '@/utils/jwt.js';
 import { generateRefreshToken, hashToken, refreshExpiresAt } from '@/utils/refresh-token.js';
 
@@ -21,8 +22,10 @@ function toUser(row: UserWithAvatar): User {
     id: row.id,
     email: row.email,
     role: row.role,
+    displayName: row.displayName,
     avatarId: row.avatarId,
-    avatarUrl: row.avatar?.url ?? '',
+    // File upload ưu tiên hơn URL Google/external
+    avatarUrl: row.avatar?.url || row.avatarUrl || '',
   };
 }
 
@@ -48,7 +51,7 @@ export async function validateCredentials(email: string, password: string): Prom
     where: { email },
     include: [avatarInclude],
   })) as UserWithAvatar | null;
-  if (!row || !(await bcrypt.compare(password, row.passwordHash))) {
+  if (!row?.passwordHash || !(await bcrypt.compare(password, row.passwordHash))) {
     throw new Unauthorized(errorKeys.invalidCredentials);
   }
   return toUser(row);
@@ -66,6 +69,55 @@ export async function findUserByToken(token: string): Promise<User | undefined> 
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const user = await validateCredentials(email, password);
   return issueTokenPair(user);
+}
+
+export async function loginWithGoogle(credential: string): Promise<LoginResponse> {
+  const identity = await verifyGoogleIdToken(credential);
+
+  let row = (await UserModel.findOne({
+    where: { googleId: identity.googleId },
+    include: [avatarInclude],
+  })) as UserWithAvatar | null;
+
+  if (!row) {
+    row = (await UserModel.findOne({
+      where: { email: identity.email },
+      include: [avatarInclude],
+    })) as UserWithAvatar | null;
+
+    if (row) {
+      await row.update({
+        googleId: identity.googleId,
+        displayName: identity.name || row.displayName,
+        avatarUrl: identity.picture || row.avatarUrl,
+      });
+      await row.reload({ include: [avatarInclude] });
+    } else {
+      row = (await UserModel.create({
+        email: identity.email,
+        googleId: identity.googleId,
+        displayName: identity.name || null,
+        avatarUrl: identity.picture || null,
+        passwordHash: null,
+        role: 'user',
+      })) as UserWithAvatar;
+      await row.reload({ include: [avatarInclude] });
+    }
+  } else {
+    // Đồng bộ tên/ảnh Google khi login lại
+    await row.update({
+      displayName: identity.name || row.displayName,
+      avatarUrl: identity.picture || row.avatarUrl,
+    });
+    await row.reload({ include: [avatarInclude] });
+  }
+
+  // Google login chỉ dành cho storefront user
+  if (row.role !== 'user') {
+    throw new Unauthorized(errorKeys.googleTokenInvalid);
+  }
+
+  return issueTokenPair(toUser(row));
 }
 
 export async function refresh(refreshToken: string): Promise<LoginResponse> {

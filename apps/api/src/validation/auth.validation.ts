@@ -9,6 +9,13 @@ export const validateLoginBody = (req: Request, res: Response, next: NextFunctio
     },
   })(req, res, next);
 
+export const validateGoogleLoginBody = (req: Request, res: Response, next: NextFunction) =>
+  validate({
+    rules: {
+      credential: 'required|string',
+    },
+  })(req, res, next);
+
 export const validateRefreshBody = (req: Request, res: Response, next: NextFunction) =>
   validate({
     rules: {

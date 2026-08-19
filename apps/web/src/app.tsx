@@ -1,4 +1,6 @@
-import { ApiQueryProvider, configureApiClient } from '@p4/api-client';
+import { ApiQueryProvider, axiosClient, configureApiClient } from '@p4/api-client';
+import type { AuthSession } from '@p4/auth';
+import type { LoginResponse } from '@p4/shared';
 import { BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { API_BASE_URL } from '@/constants/constants';
@@ -9,11 +11,62 @@ import 'react-toastify/dist/ReactToastify.css';
 
 configureApiClient({ baseURL: API_BASE_URL });
 
+function getApiErrorMessage(error: unknown, fallback: string) {
+  if (error && typeof error === 'object' && 'message' in error) {
+    const message = String((error as { message?: string }).message);
+    if (message) return message;
+  }
+  return fallback;
+}
+
+async function loginWithApi(email: string, password: string): Promise<AuthSession> {
+  try {
+    const envelope = await axiosClient.post<
+      { email: string; password: string },
+      { data: LoginResponse }
+    >('/auth/login', { email, password }, { authorization: false });
+    return envelope.data;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'auth.loginFailed'));
+  }
+}
+
+async function loginWithGoogleApi(credential: string): Promise<AuthSession> {
+  try {
+    const envelope = await axiosClient.post<{ credential: string }, { data: LoginResponse }>(
+      '/auth/google',
+      { credential },
+      { authorization: false },
+    );
+    const session = envelope.data;
+
+    if (!session.user.avatarUrl) {
+      try {
+        const [, payload] = credential.split('.');
+        if (payload) {
+          const json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as {
+            picture?: string;
+          };
+          if (json.picture) {
+            session.user = { ...session.user, avatarUrl: json.picture };
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    return session;
+  } catch (error) {
+    throw new Error(getApiErrorMessage(error, 'auth.googleFailed'));
+  }
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <ApiQueryProvider enableDevtools={import.meta.env.DEV}>
-        <AuthProvider>
+        <AuthProvider onLogin={loginWithApi} onGoogleLogin={loginWithGoogleApi}>
           <MasterRoutes routes={RouteConfigs} />
           <ToastContainer position="top-right" autoClose={3000} />
         </AuthProvider>
