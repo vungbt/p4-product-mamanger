@@ -60,6 +60,7 @@ export const tokens = {
   },
   font: {
     primary: 'var(--font-primary)',
+    mono: 'var(--font-mono)',
   },
   fontSize: {
     8: 'var(--size-8)',

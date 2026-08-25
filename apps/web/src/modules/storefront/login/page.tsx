@@ -1,8 +1,20 @@
-import { Button, Form, FormField, FormSubmit, Input, InputPassword, useAppForm, z } from '@p4/ui';
+import {
+  Button,
+  Divider,
+  Form,
+  FormField,
+  FormSubmit,
+  Input,
+  InputPassword,
+  toastError,
+  toastInfo,
+  toastSuccess,
+  useAppForm,
+  z,
+} from '@p4/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { ROUTES } from '@/constants/constants';
 import useAuth from '@/hooks/use-auth';
 import BrandLogo from '@/libraries/brand-logo';
@@ -46,14 +58,14 @@ export default function StorefrontLoginPage() {
     onSubmit: async ({ value }) => {
       try {
         await login(value.email, value.password, 'storefront');
-        toast.success(t('auth.loginSuccess'));
+        toastSuccess(t('auth.loginSuccess'));
         navigate(ROUTES.storefront.shop, { replace: true });
       } catch (error) {
         const message =
           error instanceof Error
             ? t(error.message, { defaultValue: t('auth.loginFailed') })
             : t('auth.loginFailed');
-        toast.error(message);
+        toastError(message);
       }
     },
   });
@@ -174,7 +186,7 @@ export default function StorefrontLoginPage() {
                 <button
                   type="button"
                   className="absolute right-0 top-0 z-10 text-13 font-medium text-primary hover:text-primary-clicked"
-                  onClick={() => toast.info(t('auth.forgotPasswordSoon'))}
+                  onClick={() => toastInfo(t('auth.forgotPasswordSoon'))}
                 >
                   {t('auth.forgotPassword')}
                 </button>
@@ -211,7 +223,7 @@ export default function StorefrontLoginPage() {
 
             <div className="relative my-5">
               <div className="absolute inset-0 flex items-center" aria-hidden>
-                <div className="w-full border-t border-neutral-border" />
+                <Divider />
               </div>
               <div className="relative flex justify-center">
                 <span className="bg-neutral-white px-3 text-12 font-medium uppercase tracking-[0.14em] text-neutral-text-secondary">
@@ -222,7 +234,7 @@ export default function StorefrontLoginPage() {
 
             <GoogleLoginButton
               onSuccess={() => {
-                toast.success(t('auth.loginSuccess'));
+                toastSuccess(t('auth.loginSuccess'));
                 navigate(ROUTES.storefront.shop, { replace: true });
               }}
             />

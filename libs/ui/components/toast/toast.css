@@ -1,0 +1,41 @@
+/* Theo docs/design/p4-product-manager-design.html (Phần A · Toast).
+   Sonner tự định nghĩa --success-bg/--warning-bg/... trong
+   [data-sonner-toaster][data-sonner-theme='light'|'dark'] (2 attribute selector — specificity
+   0,2,0). Override ở [data-sonner-toaster] đơn (0,1,0) sẽ bị đè dù CSS của mình load sau, vì
+   cascade so specificity trước, không phải thứ tự import — nên PHẢI có !important trên từng
+   biến để thắng theo importance bất kể specificity. "warning" trong sonner ánh xạ với "pending"
+   của mình. */
+[data-sonner-toaster] {
+  --success-bg: var(--color-success-bg) !important;
+  --success-border: var(--color-success-border) !important;
+  --success-text: var(--color-success) !important;
+
+  --error-bg: var(--color-error-bg) !important;
+  --error-border: var(--color-error-border) !important;
+  --error-text: var(--color-error) !important;
+
+  --warning-bg: var(--color-pending-bg) !important;
+  --warning-border: var(--color-pending-border) !important;
+  --warning-text: var(--color-pending) !important;
+
+  --info-bg: var(--color-info-bg) !important;
+  --info-border: var(--color-info-border) !important;
+  --info-text: var(--color-info) !important;
+}
+
+[data-sonner-toast] {
+  border-radius: 12px !important;
+  padding: 11px 13px !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+[data-sonner-toast] [data-title] {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+}
+
+[data-sonner-toast] [data-icon] {
+  margin: 0 !important;
+}

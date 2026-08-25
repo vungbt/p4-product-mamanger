@@ -4,7 +4,7 @@ import { type ReactNode, useState } from 'react';
 
 export type ApiQueryProviderProps = {
   children: ReactNode;
-  /** Bật React Query Devtools (dev) */
+  /** Enable React Query Devtools (dev) */
   enableDevtools?: boolean;
 };
 

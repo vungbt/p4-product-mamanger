@@ -1,4 +1,4 @@
-// TODO: Dashboard — tổng doanh thu, SP low stock, (optional) chart đơn giản
+// TODO: Dashboard — total revenue, low-stock products, (optional) simple chart
 
 export default function AdminDashboardPage() {
   return <div>Admin Dashboard</div>;

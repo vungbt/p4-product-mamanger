@@ -1,11 +1,20 @@
 import { axiosClient } from '@p4/api-client';
 import { type AuthSession, writeAuthSession } from '@p4/auth';
 import type { LoginResponse, UpdatePasswordInput } from '@p4/shared';
-import { Button, Form, FormField, FormSubmit, InputPassword, useAppForm, z } from '@p4/ui';
+import {
+  Button,
+  Form,
+  FormField,
+  FormSubmit,
+  InputPassword,
+  toastError,
+  toastSuccess,
+  useAppForm,
+  z,
+} from '@p4/ui';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { ROUTES } from '@/constants/constants';
 import useAuth from '@/hooks/use-auth';
 import BrandLogo from '@/libraries/brand-logo';
@@ -31,7 +40,7 @@ export default function StorefrontPasswordPage() {
     defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
     onSubmit: async ({ value }) => {
       if (value.newPassword !== value.confirmPassword) {
-        toast.error(t('auth.passwordMismatch'));
+        toastError(t('auth.passwordMismatch'));
         return;
       }
 
@@ -45,14 +54,14 @@ export default function StorefrontPasswordPage() {
           body,
         );
         writeAuthSession(response.data as AuthSession);
-        toast.success(t('auth.passwordUpdated'));
+        toastSuccess(t('auth.passwordUpdated'));
         navigate(ROUTES.storefront.shop, { replace: true });
       } catch (error) {
         const message =
           error && typeof error === 'object' && 'message' in error
             ? String((error as { message?: string }).message)
             : t('auth.passwordUpdateFailed');
-        toast.error(message);
+        toastError(message);
       }
     },
   });

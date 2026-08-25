@@ -1,0 +1,33 @@
+/* Range highlight between start and end */
+.react-calendar--selectRange .react-calendar__tile--hover {
+  background-color: var(--color-primary-bg) !important;
+  /* react-calendar's own default tile text color is a muted gray — without an explicit
+     override here it barely shows on the light `primary-bg` preview fill. */
+  color: var(--color-neutral-text-primary) !important;
+  border-radius: 0 !important;
+}
+
+.react-calendar__tile--rangeStart {
+  background: var(--color-primary) !important;
+  color: white !important;
+  border-radius: 50% 0 0 50% !important;
+}
+
+.react-calendar__tile--rangeEnd {
+  background: var(--color-primary) !important;
+  color: white !important;
+  border-radius: 0 50% 50% 0 !important;
+}
+
+.react-calendar__tile--rangeStart.react-calendar__tile--rangeEnd {
+  border-radius: 50% !important;
+}
+
+.react-calendar__tile--rangeBetween {
+  background-color: var(--color-primary-bg) !important;
+  /* Same fix as `--hover` above: give the "in-between" days explicit dark text so they
+     stay readable on the light tint background instead of falling back to react-calendar's
+     own muted default. */
+  color: var(--color-neutral-text-primary) !important;
+  border-radius: 0 !important;
+}

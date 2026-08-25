@@ -6,6 +6,7 @@
     "dev": "turbo dev",
     "dev:api": "pnpm --filter @p4/api dev",
     "dev:web": "pnpm --filter @p4/web dev",
+    "storybook": "pnpm --filter @p4/ui storybook",
     "build": "turbo build",
     "lint": "biome check apps libs",
     "format": "biome check --write apps libs",

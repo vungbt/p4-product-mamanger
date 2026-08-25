@@ -1,7 +1,7 @@
 import type React from 'react';
 import type { ReactNode } from 'react';
 import { Tabs as ReactTabs, Tab, TabList, TabPanel } from 'react-tabs';
-import { cn } from '../../lib/utils';
+import { cn } from '../../helpers/utils';
 import { type IconName, RenderIcon } from '../icons';
 
 export type TabItem = {
@@ -131,6 +131,6 @@ const tabsSizeClasses = {
 
 const tabItemSizeClasses = {
   small: { line: 'text-14 py-2', card: 'text-14 py-1 px-2 rounded-tl-md rounded-tr-md' },
-  middle: { line: 'text-14 py-3', card: 'text-14 py-2 px-4 rounded-tl-lg rounded-tr-lg' },
+  middle: { line: 'text-16 py-3', card: 'text-16 py-2 px-4 rounded-tl-lg rounded-tr-lg' },
   large: { line: 'text-16 py-4', card: 'text-16 py-3 px-4 rounded-tl-lg rounded-tr-lg' },
 };

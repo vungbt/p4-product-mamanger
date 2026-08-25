@@ -8,16 +8,16 @@ export interface IRoute {
   label?: string;
   /** Icon name — `@p4/ui` (Lucide aliases) */
   iconName?: IconName;
-  /** Hoặc truyền ReactNode trực tiếp */
+  /** Or pass a ReactNode directly */
   icon?: ReactNode;
   component: LazyExoticComponent<ComponentType<object>>;
   hideInMenu?: boolean;
   existSubMenu?: boolean;
   exact?: boolean;
-  /** Role được phép — portal hoặc leaf (VD: checkout). Không set = public */
+  /** Allowed roles — portal or leaf (e.g. checkout). Unset = public */
   authority?: Role[];
   loginPath?: string;
-  /** Trang login — redirect nếu đã đăng nhập đúng role */
+  /** Login page — redirect if already logged in with the correct role */
   guestOnly?: boolean;
   guestAuthority?: Role[];
   guestRedirect?: string;
@@ -38,7 +38,7 @@ function resolveRouteIcon(route: IRoute): ReactNode | undefined {
   return undefined;
 }
 
-/** Flatten menu từ IRoute tree (support submenu) */
+/** Flatten menu from the IRoute tree (supports submenu) */
 export function buildMenuItems(routes: IRoute[] = []): MenuItem[] {
   const items: MenuItem[] = [];
 
@@ -71,13 +71,13 @@ export function buildMenuItems(routes: IRoute[] = []): MenuItem[] {
   return items;
 }
 
-/** Lấy menu routes của portal từ RouteConfigs */
+/** Get a portal's menu routes from RouteConfigs */
 export function getPortalMenuRoutes(configs: IRoute[], portalName: string): IRoute[] {
   const portal = configs.find((r) => r.name === portalName);
   return portal?.routes ?? [];
 }
 
-/** Flatten route paths cho RR v7 (submenu → sibling routes) */
+/** Flatten route paths for RR v7 (submenu → sibling routes) */
 export function flattenRouteElements(routes: IRoute[]): IRoute[] {
   const result: IRoute[] = [];
 

@@ -62,21 +62,22 @@ src/
 │   └── locales/{vi,en}/common.json
 ├── libraries/
 │   ├── language-switcher.tsx
-│   └── menu/
-│       └── menu.layout.tsx     # menu + submenu từ RouteConfigs
+│   ├── user-account-menu.tsx
+│   └── brand-logo.tsx
 ├── modules/
 │   ├── admin/
-│   │   ├── layout/             # layout.tsx, header, sidebar, hook nội bộ
+│   │   ├── layout/             # layout.tsx, header.tsx, sidebar.tsx, use-admin-breadcrumbs.ts
 │   │   ├── login/page.tsx
 │   │   ├── dashboard/page.tsx
 │   │   ├── products/page.tsx
 │   │   └── orders/page.tsx
 │   └── storefront/
-│       ├── layout/             # layout.tsx, header, footer
+│       ├── layout/             # layout.tsx, header.tsx, footer.tsx
 │       ├── login/page.tsx
 │       ├── register/page.tsx
 │       ├── password/page.tsx
-│       ├── shop/page.tsx
+│       ├── home/page.tsx       # route `/` — tách riêng khỏi shop
+│       ├── shop/page.tsx       # route `/shop`
 │       └── cart/
 │           ├── page.tsx
 │           └── use-cart.ts     # chỉ cart dùng nên đặt cạnh page
@@ -148,7 +149,7 @@ Khi một hook từ feature bắt đầu được feature thứ hai sử dụng,
 ## Không làm
 
 - ❌ Sửa `apps/api/`
-- ❌ Hardcode nav trong layout — dùng `MenuLayout` + `RouteConfigs`
+- ❌ Hardcode nav trong layout — dùng `Sidebar`/`Header` (`@p4/ui`) + `RouteConfigs` (map `RouteConfigs` → props của module, xem `modules/*/layout/sidebar.tsx`)
 - ❌ Tách routing thành nhiều file rời (page-suspense, lazy-pages riêng…)
 
 Xem [GETTING-STARTED.md](../../GETTING-STARTED.md) · API: [../api/README.md](../api/README.md)

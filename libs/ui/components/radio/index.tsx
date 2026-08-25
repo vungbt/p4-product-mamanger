@@ -1,5 +1,5 @@
 import type React from 'react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../helpers/utils';
 
 export interface RadioProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: React.ReactNode;
@@ -141,8 +141,8 @@ const optionClasses = {
     },
     middle: {
       root: 'flex items-center gap-1',
-      circle: 'w-4 h-4 rounded-full border border-solid peer-checked:border-[5px]',
-      label: 'text-14 px-1',
+      circle: 'w-[18px] h-[18px] rounded-full border border-solid peer-checked:border-[5px]', // theo design (Form controls · Radio)
+      label: 'text-16 px-1',
     },
     large: {
       root: 'flex items-center gap-1',
@@ -161,7 +161,7 @@ const optionClasses = {
       root: 'flex items-center gap-1',
       circle: '',
       label:
-        'text-14 px-4 py-1 border border-solid border-neutral group-last:rounded-tr-md group-last:rounded-br-md group-first:rounded-tl-md group-first:rounded-bl-md group-first:border-r-0 group-last:border-l-0',
+        'text-16 px-4 py-1 border border-solid border-neutral group-last:rounded-tr-md group-last:rounded-br-md group-first:rounded-tl-md group-first:rounded-bl-md group-first:border-r-0 group-last:border-l-0',
     },
     large: {
       root: 'flex items-center gap-1',
@@ -171,6 +171,3 @@ const optionClasses = {
     },
   },
 };
-
-export * from './radio-button-group';
-export * from './radio-group';

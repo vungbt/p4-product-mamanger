@@ -134,7 +134,8 @@ export default function MasterRoutes({ routes }: { routes: IRoute[] }) {
   return (
     <Routes>
       {routes.map((route) => renderRouteConfig(route))}
-      <Route path="/" element={<Navigate to={ROUTES.storefront.shop} replace />} />
+      {/* `/` is now a real route (storefront Home, see storefront.routes.tsx) — only truly
+          unmatched paths fall back here. */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

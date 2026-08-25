@@ -1,4 +1,4 @@
-// Re-export @p4/api-client — trainee có thể import từ đây hoặc từ `@p4/api-client`
+// Re-export @p4/api-client — trainees can import from here or from `@p4/api-client`
 export {
   axiosClient,
   categoryKeys,

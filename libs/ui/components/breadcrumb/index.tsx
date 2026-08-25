@@ -1,5 +1,5 @@
 import type { MouseEventHandler, ReactNode } from 'react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../helpers/utils';
 
 export type BreadcrumbItem = {
   key?: string | number;
@@ -32,7 +32,7 @@ export function Breadcrumb({
 }: BreadcrumbProps) {
   return (
     <nav aria-label="breadcrumb" className={className}>
-      <ol className="m-0 flex list-none items-center p-0 text-14">
+      <ol className="m-0 flex list-none items-center p-0 text-16">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           const node = itemRender?.(item, isLast) ?? renderDefaultItem(item, isLast, itemClassName);

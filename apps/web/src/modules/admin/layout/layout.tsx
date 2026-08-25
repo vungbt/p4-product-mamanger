@@ -1,11 +1,11 @@
+import { CollapsibleShellProvider } from '@p4/ui';
 import { Outlet } from 'react-router-dom';
 import AdminHeader from './header';
 import AdminSidebar from './sidebar';
-import { AdminShellProvider } from './use-admin-shell';
 
 export default function AdminLayout() {
   return (
-    <AdminShellProvider>
+    <CollapsibleShellProvider>
       <div
         className="flex min-h-screen bg-secondary-background text-neutral-black"
         data-portal="admin"
@@ -18,6 +18,6 @@ export default function AdminLayout() {
           </div>
         </main>
       </div>
-    </AdminShellProvider>
+    </CollapsibleShellProvider>
   );
 }

@@ -1,7 +1,7 @@
 import { forwardRef, type InputHTMLAttributes } from 'react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../helpers/utils';
 import { getIconSize, getPlaceholderTextClass, type Size } from '../common';
-import { FormLabel } from '../form/form-label';
+import { FormLabel } from '../form-label';
 import { type IconName, RenderIcon } from '../icons';
 
 export type InputProps = {
@@ -30,7 +30,7 @@ export type InputProps = {
 
 const sizeClasses: Record<Size, string> = {
   small: 'px-2 py-1 text-14',
-  middle: 'min-h-10 px-4 py-2 text-14',
+  middle: 'min-h-10 px-4 py-2 text-16',
   large: 'px-6 py-3 text-16',
 };
 
@@ -59,7 +59,7 @@ const colorClasses = {
   },
   error: {
     solid: 'bg-error-bg border-error focus:border-error-base',
-    outline: 'bg-transparent border-error focus:border-error-base',
+    outline: 'bg-error-bg border-error focus:border-error-base', // per design: an error input always has a light pink background
     subtle: 'bg-error-bg border-error-bg focus:border-error',
     ghost: 'bg-transparent border border-dashed border-error hover:bg-error-bg',
   },
@@ -70,9 +70,12 @@ const colorClasses = {
     ghost: 'text-pending bg-transparent border border-dashed border-pending hover:bg-pending-bg',
   },
   neutral: {
-    solid: 'bg-neutral-bg border-neutral text-neutral-text-primary focus:border-primary-border',
-    outline: 'bg-transparent border-neutral text-neutral-text-primary focus:border-primary-border',
-    subtle: 'bg-neutral-bg border-neutral-bg text-neutral-text-primary focus:border-primary-border',
+    solid:
+      'bg-neutral-bg border-neutral text-neutral-text-primary focus:border-primary focus:shadow-focus-ring',
+    outline:
+      'bg-transparent border-neutral-border text-neutral-text-primary focus:border-primary focus:shadow-focus-ring',
+    subtle:
+      'bg-neutral-bg border-neutral-bg text-neutral-text-primary focus:border-primary focus:shadow-focus-ring',
     ghost:
       'text-neutral-text-primary bg-transparent border border-dashed border-primary-border hover:bg-neutral-bg',
   },

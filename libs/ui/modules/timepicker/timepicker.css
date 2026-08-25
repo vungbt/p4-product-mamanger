@@ -1,0 +1,53 @@
+/* react-time-picker overrides */
+
+.react-time-picker {
+  display: block;
+  width: 100%;
+}
+
+/* Remove built-in border — our wrapper handles it */
+.react-time-picker__wrapper {
+  border: none !important;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+}
+
+/* Reset disabled background */
+.react-time-picker--disabled {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* Remove red invalid state */
+.react-time-picker__inputGroup__input:invalid {
+  background: none;
+}
+
+/* Từng ô giờ/phút mặc định có outline xanh dương của trình duyệt khi focus — lệch hẳn theme
+   cam/neutral của mình. Bỏ outline, thay bằng tint nhẹ theo `primary` khi đang gõ. */
+.react-time-picker__inputGroup__input {
+  outline: none;
+  border-radius: 3px;
+  transition: background-color 0.15s ease-linear;
+}
+
+.react-time-picker__inputGroup__input:focus {
+  background-color: var(--color-primary-bg);
+  color: var(--color-primary-clicked);
+}
+
+/* Align buttons */
+.react-time-picker__button {
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+}
+
+/* Clock popup */
+.react-time-picker__clock {
+  border-radius: 8px;
+  border: 1px solid var(--color-neutral) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+}

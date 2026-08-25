@@ -7,5 +7,13 @@
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["components/**/*", "lib/**/*", "theme/**/*", "global.d.ts"]
+  "include": [
+    "components/**/*",
+    "modules/**/*",
+    "helpers/**/*",
+    "theme/**/*",
+    "hooks/**/*",
+    "index.ts",
+    "global.d.ts"
+  ]
 }

@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>P4 Store</title>
     <meta name="theme-color" content="#ea580c" />
+    <script>
+      // Chống FOUC: set class .dark trên <html> TRƯỚC khi React mount,
+      // theo đúng key/logic của libs/ui/theme/use-dark-mode.ts (STORAGE_KEY = 'p4-theme').
+      (function () {
+        try {
+          var stored = localStorage.getItem('p4-theme');
+          var isDark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.classList.toggle('dark', isDark);
+        } catch (e) {}
+      })();
+    </script>
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />

@@ -1,5 +1,5 @@
-// TODO: trainee implement CRUD — dùng @p4/api-client
-// Ví dụ:
+// TODO: trainee implement CRUD — use @p4/api-client
+// Example:
 // const { data, isLoading } = useApiQuery<ApiPaginatedSuccess<Product>>({
 //   endpoint: '/products',
 //   params: { page: 1, pageSize: 20 },

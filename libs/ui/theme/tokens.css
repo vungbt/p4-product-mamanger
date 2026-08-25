@@ -1,5 +1,5 @@
 :root {
-  /* Primary — vàng cam */
+  /* Primary — orange accent */
   --color-primary: #ea580c;
   --color-primary-bg: #fff7ed;
   --color-primary-hover: #f97316;
@@ -28,32 +28,44 @@
   --color-neutral-text-primary: #1e293b;
   --color-neutral-black: #0f172a;
 
-  /* Pending — amber (tách primary orange) */
+  /* Pending — amber (kept distinct from primary orange) */
   --color-pending: #ca8a04;
   --color-pending-bg: #fefce8;
+  --color-pending-hover: #eab308;
   --color-pending-base: #ca8a04;
+  --color-pending-clicked: #a16207;
   --color-pending-border: #fde047;
 
   /* Error */
   --color-error: #dc2626;
   --color-error-bg: #fef2f2;
+  --color-error-hover: #ef4444;
   --color-error-base: #dc2626;
+  --color-error-clicked: #b91c1c;
   --color-error-border: #fca5a5;
 
   /* Success */
   --color-success: #16a34a;
   --color-success-bg: #f0fdf4;
+  --color-success-hover: #22c55e;
   --color-success-base: #16a34a;
+  --color-success-clicked: #15803d;
   --color-success-border: #86efac;
 
-  /* Info — sky, tách primary cam */
+  /* Info — sky accent (kept distinct from primary orange) */
   --color-info: #0284c7;
   --color-info-bg: #f0f9ff;
+  --color-info-hover: #0ea5e9;
   --color-info-base: #0284c7;
+  --color-info-clicked: #0369a1;
   --color-info-border: #7dd3fc;
 
   /* Font */
   --font-primary: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Focus ring — per docs/design/p4-product-manager-design.html (Form controls · Focus) */
+  --color-primary-focus-ring: #fed7aa;
 
   /* Font sizes */
   --size-48: 48px;
@@ -83,4 +95,75 @@
   --lineHeight-20: 20px;
   --lineHeight-16: 16px;
   --lineHeight-12: 12px;
+}
+
+/* Dark mode — per docs/design/p4-product-manager-design.html (Section A · Dark mode).
+   Invert the background, brighten the base color by one step to keep contrast >= 4.5:1.
+   Every derived bg/hover/clicked/border variant is overridden below using the standard
+   Tailwind shade scale for each hue, extending the original design spec so no role falls
+   back to its (invisible-on-dark) light-mode value. */
+.dark {
+  /* Neutral */
+  --color-neutral: #475569;
+  --color-neutral-bg: #0f172a;
+  --color-neutral-white: #1e293b;
+  --color-neutral-table-header: #1e293b;
+  --color-neutral-divider: #334155;
+  --color-neutral-disable: #475569;
+  --color-neutral-border: #334155;
+  --color-neutral-placeholder: #64748b;
+  --color-neutral-text-secondary: #94a3b8;
+  --color-neutral-text-primary: #f1f5f9;
+  --color-neutral-black: #f1f5f9;
+
+  /* Primary — orange accent */
+  --color-primary: #f97316;
+  --color-primary-bg: #7c2d12;
+  --color-primary-hover: #fb923c;
+  --color-primary-base: #f97316;
+  --color-primary-clicked: #ea580c;
+  --color-primary-border: #9a3412;
+
+  /* Secondary — slate accent */
+  --color-secondary: #cbd5e1;
+  --color-secondary-bg: #0f172a;
+  --color-secondary-hover: #e2e8f0;
+  --color-secondary-base: #cbd5e1;
+  --color-secondary-clicked: #94a3b8;
+  --color-secondary-border: #334155;
+
+  /* Pending — amber (kept distinct from primary orange) */
+  --color-pending: #fbbf24;
+  --color-pending-bg: #78350f;
+  --color-pending-hover: #fcd34d;
+  --color-pending-base: #fbbf24;
+  --color-pending-clicked: #f59e0b;
+  --color-pending-border: #92400e;
+
+  /* Error */
+  --color-error: #f87171;
+  --color-error-bg: #7f1d1d;
+  --color-error-hover: #fca5a5;
+  --color-error-base: #f87171;
+  --color-error-clicked: #ef4444;
+  --color-error-border: #991b1b;
+
+  /* Success */
+  --color-success: #4ade80;
+  --color-success-bg: #14532d;
+  --color-success-hover: #86efac;
+  --color-success-base: #4ade80;
+  --color-success-clicked: #22c55e;
+  --color-success-border: #166534;
+
+  /* Info — sky accent (kept distinct from primary orange) */
+  --color-info: #38bdf8;
+  --color-info-bg: #0c4a6e;
+  --color-info-hover: #7dd3fc;
+  --color-info-base: #38bdf8;
+  --color-info-clicked: #0ea5e9;
+  --color-info-border: #075985;
+
+  /* Focus ring — brightened so it stays visible against the dark canvas */
+  --color-primary-focus-ring: #c2410c;
 }

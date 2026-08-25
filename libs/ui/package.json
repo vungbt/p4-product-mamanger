@@ -3,19 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./components/index.ts",
-  "types": "./components/index.ts",
+  "main": "./index.ts",
+  "types": "./index.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./components/index.ts",
-      "import": "./components/index.ts",
-      "default": "./components/index.ts"
+      "types": "./index.ts",
+      "import": "./index.ts",
+      "default": "./index.ts"
     },
     "./theme/*": "./theme/*",
     "./tailwind.preset": "./tailwind.preset.ts",
     "./tailwind.preset.cjs": "./tailwind.preset.cjs",
-    "./lib/*": "./lib/*"
+    "./helpers/*": "./helpers/*"
   },
   "peerDependencies": {
     "react": "^19.0.0",
@@ -46,6 +46,18 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "tailwindcss": "^3.4.17",
-    "typescript": "~6.0.2"
+    "typescript": "~6.0.2",
+    "storybook": "^10.5.10",
+    "@storybook/react-vite": "^10.5.10",
+    "@storybook/addon-a11y": "^10.5.10",
+    "@storybook/addon-docs": "^10.5.10",
+    "@vitejs/plugin-react": "^6.0.3",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "vite": "^8.1.1"
+  },
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   }
 }

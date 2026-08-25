@@ -49,13 +49,13 @@ function assertPortalRole(user: User, portal: AuthPortal) {
 export type AuthProviderProps = {
   children: ReactNode;
   storageKey?: string;
-  /** POST /api/auth/login — bắt buộc cho password login */
+  /** POST /api/auth/login — required for password login */
   onLogin: (email: string, password: string) => Promise<AuthSession>;
   /** POST /api/auth/google — storefront */
   onGoogleLogin?: (credential: string) => Promise<AuthSession>;
-  /** Refresh session dùng chung với API interceptor. */
+  /** Refresh session, shared with the API interceptor. */
   onRefresh?: () => Promise<AuthSession | null>;
-  /** Revoke refresh token phía server; local session được xóa ngay. */
+  /** Revoke the refresh token server-side; the local session is cleared immediately. */
   onLogout?: (session: AuthSession) => Promise<void>;
 };
 
@@ -166,5 +166,5 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
-/** Alias tương thích scaffold cũ */
+/** Alias kept for compatibility with the old scaffold */
 export const useAuthContext = useAuth;

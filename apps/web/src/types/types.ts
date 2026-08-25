@@ -1,4 +1,4 @@
-// Re-export types từ shared package (khớp API mentor cung cấp)
+// Re-export types from the shared package (matches the API the mentor provided)
 export type {
   ApiError,
   DashboardStats,

@@ -2,7 +2,7 @@ import type { Role, User } from '@p4/shared';
 
 export const AUTH_STORAGE_KEY = 'p4_auth';
 
-/** Fake auth để demo structure — thay bằng API thật */
+/** Fake auth to demo the structure — replace with the real API */
 export const FAKE_AUTH = {
   admin: {
     username: 'admin',

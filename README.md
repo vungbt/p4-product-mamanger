@@ -4,6 +4,8 @@
 
 Repo: https://gitlab.com/training2312930/p4-product-manager
 
+Design: [docs/design/p4-product-manager-design.html](./docs/design/p4-product-manager-design.html)
+
 ## Cấu trúc monorepo
 
 ```
@@ -122,7 +124,7 @@ Page được tổ chức theo feature: `modules/{portal}/{feature}/page.tsx`. C
 | Lint / Format | [Biome](https://biomejs.dev/) |
 | Git hooks | Husky + lint-staged + commitlint |
 | API | Node.js, Express, TypeScript |
-| Web | React, Vite, React Router, Formik, Yup, SCSS modules |
+| Web | React, Vite, React Router, @tanstack/react-form + Zod (qua `@p4/ui` Form), SCSS modules |
 
 ---
 

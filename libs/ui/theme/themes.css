@@ -1,4 +1,4 @@
-/* P4 portal accents — vàng cam */
+/* P4 portal accents — orange accent */
 
 [data-portal="admin"] {
   --color-primary: #ea580c;
@@ -7,7 +7,7 @@
   --color-primary-base: #ea580c;
   --color-primary-clicked: #c2410c;
   --color-primary-border: #fdba74;
-  /* page canvas ấm giống stay-fe secondary-bg */
+  /* Warm page canvas, matching stay-fe's secondary-bg */
   --color-secondary-bg: #fff7ed;
 }
 
@@ -18,4 +18,26 @@
   --color-primary-base: #ea580c;
   --color-primary-clicked: #c2410c;
   --color-primary-border: #fdba74;
+}
+
+/* Dark mode — direct declarations on [data-portal] win over inherited `.dark` values, so the
+   light-mode overrides above need their own dark-aware counterpart here (matching the `.dark`
+   role values in tokens.css) or the admin/storefront canvas stays stuck in its light colors. */
+.dark [data-portal="admin"] {
+  --color-primary: #f97316;
+  --color-primary-bg: #7c2d12;
+  --color-primary-hover: #fb923c;
+  --color-primary-base: #f97316;
+  --color-primary-clicked: #ea580c;
+  --color-primary-border: #9a3412;
+  --color-secondary-bg: #0f172a;
+}
+
+.dark [data-portal="storefront"] {
+  --color-primary: #f97316;
+  --color-primary-bg: #7c2d12;
+  --color-primary-hover: #fb923c;
+  --color-primary-base: #f97316;
+  --color-primary-clicked: #ea580c;
+  --color-primary-border: #9a3412;
 }

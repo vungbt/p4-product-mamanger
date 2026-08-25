@@ -21,7 +21,7 @@
     "paths": {
       "@p4/shared": ["../../libs/shared/src/index.ts"],
       "@p4/auth": ["../../libs/auth/src/index.ts"],
-      "@p4/ui": ["../../libs/ui/components/index.ts"],
+      "@p4/ui": ["../../libs/ui/index.ts"],
       "@p4/api-client": ["../../libs/api-client/src/index.tsx"],
       "@/*": ["./src/*"]
     }

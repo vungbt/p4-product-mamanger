@@ -1,8 +1,20 @@
-import { Button, Form, FormField, FormSubmit, Input, InputPassword, useAppForm, z } from '@p4/ui';
+import {
+  Button,
+  Divider,
+  Form,
+  FormField,
+  FormSubmit,
+  Input,
+  InputPassword,
+  toastError,
+  toastInfo,
+  toastSuccess,
+  useAppForm,
+  z,
+} from '@p4/ui';
 import { useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { ROUTES } from '@/constants/constants';
 import BrandLogo from '@/libraries/brand-logo';
 import GoogleLoginButton from '@/libraries/google-login-button';
@@ -32,11 +44,11 @@ export default function StorefrontRegisterPage() {
     },
     onSubmit: async ({ value }) => {
       if (value.password !== value.confirmPassword) {
-        toast.error(t('auth.passwordMismatch'));
+        toastError(t('auth.passwordMismatch'));
         return;
       }
 
-      toast.info(t('auth.registerSoon'));
+      toastInfo(t('auth.registerSoon'));
     },
   });
 
@@ -136,7 +148,7 @@ export default function StorefrontRegisterPage() {
 
             <div className="relative my-5">
               <div className="absolute inset-0 flex items-center" aria-hidden>
-                <div className="w-full border-t border-neutral-border" />
+                <Divider />
               </div>
               <div className="relative flex justify-center">
                 <span className="bg-neutral-white px-3 text-12 font-medium uppercase tracking-[0.14em] text-neutral-text-secondary">
@@ -147,7 +159,7 @@ export default function StorefrontRegisterPage() {
 
             <GoogleLoginButton
               onSuccess={() => {
-                toast.success(t('auth.loginSuccess'));
+                toastSuccess(t('auth.loginSuccess'));
                 navigate(ROUTES.storefront.shop, { replace: true });
               }}
             />

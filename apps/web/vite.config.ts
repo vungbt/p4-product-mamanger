@@ -24,7 +24,7 @@ export default defineConfig({
       },
       {
         find: '@p4/ui',
-        replacement: path.resolve(__dirname, '../../libs/ui/components/index.ts'),
+        replacement: path.resolve(__dirname, '../../libs/ui/index.ts'),
       },
       {
         find: '@',

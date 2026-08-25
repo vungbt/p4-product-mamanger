@@ -1,5 +1,5 @@
 import type React from 'react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../helpers/utils';
 import { RenderIcon } from '../icons';
 
 export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
@@ -46,7 +46,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
       <input type="checkbox" className="peer hidden" {...reset} />
       <span
         className={cn(
-          'relative inline-flex items-center justify-center border border-solid bg-white transition-all ease-linear',
+          'relative inline-flex items-center justify-center border border-solid bg-neutral-white transition-all ease-linear',
           sizeClass.box,
           colorClass.box,
           customClasses?.box,
@@ -55,6 +55,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         {shouldShowIcon && (
           <RenderIcon
             name={indeterminate ? 'minus' : 'check-v2'}
+            strokeWidth={3}
             className={cn(sizeClass.icon, colorClass.icon)}
           />
         )}
@@ -70,19 +71,20 @@ const sizeClasses = {
     root: 'gap-1',
     box: 'w-3 h-3 rounded',
     label: 'text-14 px-2',
-    icon: '!w-2 !h-2 max-w-2 max-h-2',
+    // !w-2 is too small relative to the box, making the check stroke thin/blurry — bumped up for a crisper look.
+    icon: '!w-2.5 !h-2.5 max-w-2.5 max-h-2.5',
   },
   middle: {
     root: 'gap-1',
-    box: 'w-4 h-4 rounded',
-    label: 'text-14 px-2',
-    icon: '!w-2 !h-2 max-w-2 max-h-2',
+    box: 'w-[18px] h-[18px] rounded-[5px]', // per docs/design/p4-product-manager-design.html (Form controls · Checkbox)
+    label: 'text-16 px-2',
+    icon: '!w-3 !h-3 max-w-3 max-h-3',
   },
   large: {
     root: 'gap-1',
     box: 'w-5 h-5 rounded',
     label: 'text-16 px-2',
-    icon: '!w-2 !h-2 max-w-2 max-h-2',
+    icon: '!w-3.5 !h-3.5 max-w-3.5 max-h-3.5',
   },
 };
 

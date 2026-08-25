@@ -7,13 +7,12 @@ import {
 } from '@p4/api-client';
 import type { AuthSession } from '@p4/auth';
 import type { LoginResponse } from '@p4/shared';
+import { Toaster } from '@p4/ui';
 import { BrowserRouter } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import { API_BASE_URL } from '@/constants/constants';
 import { AuthProvider } from '@/contexts/auth-context';
 import RouteConfigs from '@/routing/config.route';
 import MasterRoutes from '@/routing/master.route';
-import 'react-toastify/dist/ReactToastify.css';
 
 configureApiClient({ baseURL: API_BASE_URL });
 
@@ -79,7 +78,7 @@ export default function App() {
           onLogout={revokeAuthSession}
         >
           <MasterRoutes routes={RouteConfigs} />
-          <ToastContainer position="top-right" autoClose={3000} />
+          <Toaster position="top-right" duration={3000} />
         </AuthProvider>
       </ApiQueryProvider>
     </BrowserRouter>

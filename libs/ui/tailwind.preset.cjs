@@ -17,6 +17,7 @@ module.exports = {
       boxShadow: {
         md: '0px 8px 12px rgba(234, 88, 12, 0.12)',
         border: '0px 0px 0px 1px rgba(234, 88, 12, 1), 0px 0px 0px 2px rgba(234, 88, 12, 0.2)',
+        'focus-ring': '0 0 0 3px var(--color-primary-focus-ring)',
       },
     },
     colors: {
@@ -57,25 +58,33 @@ module.exports = {
       pending: {
         DEFAULT: 'var(--color-pending)',
         bg: 'var(--color-pending-bg)',
+        hover: 'var(--color-pending-hover)',
         base: 'var(--color-pending-base)',
+        clicked: 'var(--color-pending-clicked)',
         border: 'var(--color-pending-border)',
       },
       error: {
         DEFAULT: 'var(--color-error)',
         bg: 'var(--color-error-bg)',
+        hover: 'var(--color-error-hover)',
         base: 'var(--color-error-base)',
+        clicked: 'var(--color-error-clicked)',
         border: 'var(--color-error-border)',
       },
       success: {
         DEFAULT: 'var(--color-success)',
         bg: 'var(--color-success-bg)',
+        hover: 'var(--color-success-hover)',
         base: 'var(--color-success-base)',
+        clicked: 'var(--color-success-clicked)',
         border: 'var(--color-success-border)',
       },
       info: {
         DEFAULT: 'var(--color-info)',
         bg: 'var(--color-info-bg)',
+        hover: 'var(--color-info-hover)',
         base: 'var(--color-info-base)',
+        clicked: 'var(--color-info-clicked)',
         border: 'var(--color-info-border)',
       },
     },
@@ -116,9 +125,22 @@ module.exports = {
       'caption-1': ['12px', '16px'],
       'caption-2': ['10px', '16px'],
       'caption-3': ['8px', '12px'],
+
+      /* Dense UI scale (admin/storefront app screens) — theo docs/design/p4-product-manager-design.html (Phần A · Typography) */
+      'ui-stat': ['30px', { lineHeight: '38px', fontWeight: '800', letterSpacing: '-0.02em' }],
+      'ui-h1': ['26px', { lineHeight: '34px', fontWeight: '800', letterSpacing: '-0.02em' }],
+      'ui-h2': ['19px', { lineHeight: '26px', fontWeight: '800' }],
+      'ui-h3': ['15px', { lineHeight: '20px', fontWeight: '800' }],
+      'ui-body': ['13.5px', { lineHeight: '20px', fontWeight: '500' }],
+      'ui-body-strong': ['13.5px', { lineHeight: '20px', fontWeight: '700' }],
+      'ui-label': ['12.5px', { lineHeight: '16px', fontWeight: '700' }],
+      'ui-caption': ['12px', { lineHeight: '16px', fontWeight: '500' }],
+      'ui-overline': ['11px', { lineHeight: '14px', fontWeight: '700', letterSpacing: '0.06em' }],
+      'ui-mono': ['12.5px', { lineHeight: '18px', fontWeight: '700' }],
     },
     fontFamily: {
-      primary: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+      primary: 'var(--font-primary)',
+      mono: 'var(--font-mono)',
     },
   },
 };

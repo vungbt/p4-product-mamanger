@@ -2,14 +2,14 @@ export type Size = 'small' | 'middle' | 'large';
 
 /** Placeholder font size matches typed text (`sizeClasses`) so it is not smaller than 13px. */
 export const getPlaceholderTextClass = (size: Size): string => {
-  if (size === 'large') return 'placeholder:text-16';
-  return 'placeholder:text-14';
+  if (size === 'small') return 'placeholder:text-14';
+  return 'placeholder:text-16';
 };
 
 /** Same scale as {@link getPlaceholderTextClass}, for react-select `styles.placeholder`. */
 export const getPlaceholderFontSizeVar = (size: Size): string => {
-  if (size === 'large') return 'var(--size-16)';
-  return 'var(--size-14)';
+  if (size === 'small') return 'var(--size-14)';
+  return 'var(--size-16)';
 };
 
 export const getIconSize = (size: Size): string => {

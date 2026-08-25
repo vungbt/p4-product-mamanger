@@ -92,7 +92,7 @@ export const queryKeysFactory = <T, TListQueryType = unknown, TDetailQueryType =
   return queryKeyFactory;
 };
 
-/** Query keys thường dùng trong P4 */
+/** Query keys commonly used in P4 */
 export const productKeys = queryKeysFactory<
   'products',
   { page?: number; pageSize?: number; q?: string }

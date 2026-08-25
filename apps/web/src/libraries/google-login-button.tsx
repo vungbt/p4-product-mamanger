@@ -1,7 +1,6 @@
-import { Button, cn } from '@p4/ui';
+import { Button, cn, toastError, toastInfo } from '@p4/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'react-toastify';
 import useAuth from '@/hooks/use-auth';
 
 const GIS_SCRIPT = 'https://accounts.google.com/gsi/client';
@@ -115,7 +114,7 @@ export default function GoogleLoginButton({
             ? t(error.message, { defaultValue: t('auth.googleFailed') })
             : error.message;
         }
-        toast.error(message);
+        toastError(message);
       } finally {
         setLoading(false);
       }
@@ -164,7 +163,7 @@ export default function GoogleLoginButton({
         }
       })
       .catch(() => {
-        if (!cancelled) toast.error(t('auth.googleFailed'));
+        if (!cancelled) toastError(t('auth.googleFailed'));
       });
 
     return () => {
@@ -180,7 +179,7 @@ export default function GoogleLoginButton({
     </span>
   );
 
-  // Chưa cấu hình Client ID → không fake, báo cấu hình
+  // No Client ID configured → don't fake it, show a configuration notice instead
   if (!GOOGLE_CLIENT_ID) {
     return (
       <Button
@@ -189,14 +188,14 @@ export default function GoogleLoginButton({
         color="neutral"
         size="large"
         className={cn('w-full', className)}
-        onClick={() => toast.info(t('auth.googleNotConfigured'))}
+        onClick={() => toastInfo(t('auth.googleNotConfigured'))}
       >
         {label}
       </Button>
     );
   }
 
-  // Custom skin + Google iframe trong suốt phủ lên (click vẫn đi qua GIS)
+  // Custom skin with a transparent Google iframe overlaid on top (clicks still pass through to GIS)
   return (
     <div className={cn('relative w-full', className)}>
       <Button

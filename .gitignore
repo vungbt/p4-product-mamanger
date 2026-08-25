@@ -9,6 +9,7 @@ yarn.lock
 # build
 dist/
 *.tsbuildinfo
+storybook-static/
 
 # turbo / logs
 .turbo/
@@ -33,3 +34,6 @@ pnpm-debug.log*
 
 # local tooling
 .tmp-img/
+
+# scratch — files staged for manual deletion (AI tooling can't delete directly)
+_to_delete/

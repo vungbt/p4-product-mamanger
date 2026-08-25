@@ -14,14 +14,11 @@
     "@p4/auth": "workspace:*",
     "@p4/shared": "workspace:*",
     "@p4/ui": "workspace:*",
-    "formik": "^2.4.6",
     "i18next": "^26.3.6",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-i18next": "^17.0.11",
-    "react-router-dom": "^7.6.2",
-    "react-toastify": "^11.0.5",
-    "yup": "^1.6.1"
+    "react-router-dom": "^7.6.2"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",

@@ -10,6 +10,7 @@ export const ROLES = {
 
 export const ROUTES = {
   storefront: {
+    home: '/',
     login: '/login',
     register: '/register',
     password: '/account/password',
@@ -26,5 +27,5 @@ export const ROUTES = {
   },
 } as const;
 
-/** Re-export từ `@p4/auth` — trainee có thể import từ constants như cũ */
+/** Re-exported from `@p4/auth` so trainees can keep importing from constants as before */
 export { AUTH_STORAGE_KEY, FAKE_AUTH } from '@p4/auth';

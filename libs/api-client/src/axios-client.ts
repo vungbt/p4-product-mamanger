@@ -28,7 +28,7 @@ type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
 let apiBaseURL = '/api';
 
-/** Gọi 1 lần từ apps/web (main/app) — baseURL ví dụ `/api` hoặc `https://host/api` */
+/** Call once from apps/web (main/app) — baseURL example: `/api` or `https://host/api` */
 export function configureApiClient(options: { baseURL: string }) {
   apiBaseURL = options.baseURL.replace(/\/$/, '');
   instance.defaults.baseURL = apiBaseURL;
@@ -167,7 +167,7 @@ export async function getHeader(headerConf: HeaderConf = {}): Promise<AxiosReque
   return headers as AxiosRequestHeaders;
 }
 
-/** Response interceptor đã unwrap `response.data` (envelope API). */
+/** Response interceptor has already unwrapped `response.data` (the API envelope). */
 export const axiosClient = {
   async get<ReqType, ResType>(url: string, params?: ReqType, headerConf?: HeaderConf) {
     const headers = await getHeader(headerConf);

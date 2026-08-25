@@ -7,13 +7,15 @@ import {
   Input,
   InputPassword,
   RenderIcon,
+  toastError,
+  toastInfo,
+  toastSuccess,
   useAppForm,
   z,
 } from '@p4/ui';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { ROUTES } from '@/constants/constants';
 import useAuth from '@/hooks/use-auth';
 import BrandLogo from '@/libraries/brand-logo';
@@ -58,14 +60,14 @@ export default function AdminLoginPage() {
         } else {
           localStorage.removeItem(REMEMBER_KEY);
         }
-        toast.success(t('auth.adminLoginSuccess'));
+        toastSuccess(t('auth.adminLoginSuccess'));
         navigate(ROUTES.admin.dashboard, { replace: true });
       } catch (error) {
         const message =
           error instanceof Error
             ? t(error.message, { defaultValue: t('auth.loginFailed') })
             : t('auth.loginFailed');
-        toast.error(message);
+        toastError(message);
       }
     },
   });
@@ -118,7 +120,7 @@ export default function AdminLoginPage() {
               <button
                 type="button"
                 className="absolute right-0 top-0 z-10 text-13 font-medium text-primary hover:text-primary-clicked"
-                onClick={() => toast.info(t('auth.forgotPasswordSoon'))}
+                onClick={() => toastInfo(t('auth.forgotPasswordSoon'))}
               >
                 {t('auth.forgotPasswordShort')}
               </button>

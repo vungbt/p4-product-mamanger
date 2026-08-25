@@ -1,31 +1,26 @@
-export { cn } from '../lib/utils';
+// Barrel for `components/` alone — simple, single-concern components that don't orchestrate multiple
+// parts or wrap a heavy external lib. Don't cross-export `modules/`/`hooks/` here — those two groups
+// have their own barrels (`modules/index.ts`, `hooks/index.ts`), combined together in `libs/ui/index.ts` (root).
 export * from './avatar';
 export * from './box';
 export * from './breadcrumb';
 export * from './button';
 export * from './checkbox';
 export * from './common';
-export * from './datepicker';
-export * from './daterangepicker';
 export * from './divider';
-export * from './drawer';
 export * from './empty';
-export * from './form/form';
-export * from './form/form-error-message';
-export * from './form/form-field';
-export * from './form/form-label';
+export * from './form-error-message';
+export * from './form-label';
 export * from './icon-button';
 export * from './icons';
 export * from './input';
 export * from './input-password';
 export * from './menu';
-export * from './modal';
 export * from './pagination';
 export * from './radio';
-export * from './select';
-export * from './table';
 export * from './tabs';
 export * from './tag';
 export * from './textarea';
-export * from './timepicker';
+export * from './theme-toggle';
 export * from './toast';
+export * from './user-chip';
