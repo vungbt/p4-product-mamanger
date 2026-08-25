@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>P4 Design System — Components & Modules</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #ea580c;
+      --color-primary-bg: #fff7ed;
+      --color-primary-hover: #f97316;
+      --color-primary-base: #ea580c;
+      --color-primary-clicked: #c2410c;
+      --color-primary-border: #fdba74;
+      --color-secondary: #475569;
+      --color-secondary-bg: #f1f5f9;
+      --color-secondary-hover: #64748b;
+      --color-secondary-base: #475569;
+      --color-secondary-clicked: #334155;
+      --color-secondary-border: #cbd5e1;
+      --color-neutral: #cbd5e1;
+      --color-neutral-white: #ffffff;
+      --color-neutral-bg: #f1f5f9;
+      --color-neutral-divider: #e2e8f0;
+      --color-neutral-disable: #94a3b8;
+      --color-neutral-border: #e2e8f0;
+      --color-neutral-placeholder: #94a3b8;
+      --color-neutral-text-secondary: #64748b;
+      --color-neutral-text-primary: #1e293b;
+      --color-neutral-black: #0f172a;
+      --color-error: #dc2626;
+      --color-error-bg: #fef2f2;
+      --color-error-border: #fca5a5;
+      --color-success: #16a34a;
+      --color-success-bg: #f0fdf4;
+      --color-success-border: #86efac;
+      --color-info: #0284c7;
+      --color-info-bg: #f0f9ff;
+      --color-info-border: #7dd3fc;
+      --color-pending: #ca8a04;
+      --color-pending-bg: #fefce8;
+      --color-pending-border: #fde047;
+      --color-primary-focus-ring: #fed7aa;
+      --font-primary: "Plus Jakarta Sans", system-ui, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-primary);
+      background: var(--color-neutral-bg);
+      color: var(--color-neutral-text-primary);
+      line-height: 1.6;
+    }
+
+    /* Layout */
+    .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+    .header { background: var(--color-neutral-black); color: #fff; padding: 48px 24px; text-align: center; }
+    .header h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.02em; }
+    .header p { margin-top: 12px; font-size: 15px; opacity: 0.75; max-width: 600px; margin-inline: auto; }
+
+    /* Navigation */
+    .nav { background: #fff; border-bottom: 1px solid var(--color-neutral-border); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; gap: 4px; overflow-x: auto; }
+    .nav a { padding: 14px 16px; font-size: 13px; font-weight: 700; color: var(--color-neutral-text-secondary); text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+    .nav a:hover { color: var(--color-primary); }
+    .nav a.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+
+    /* Sections */
+    .section { margin-top: 48px; }
+    .section-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .section-desc { font-size: 14px; color: var(--color-neutral-text-secondary); margin-bottom: 32px; }
+
+    /* Cards */
+    .card { background: #fff; border: 1px solid var(--color-neutral-border); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+    .card-title { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+    .card-subtitle { font-size: 13px; color: var(--color-neutral-text-secondary); margin-bottom: 20px; }
+
+    /* Component rows */
+    .demo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .demo-row-label { font-size: 12px; font-weight: 700; color: var(--color-neutral-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; width: 100%; margin-bottom: 4px; }
+    .demo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+
+    /* ===== TOKENS ===== */
+    .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    .color-swatch { border-radius: 12px; overflow: hidden; border: 1px solid var(--color-neutral-border); }
+    .color-swatch-block { height: 64px; }
+    .color-swatch-info { padding: 10px 12px; background: #fff; }
+    .color-swatch-name { font-size: 12px; font-weight: 700; }
+    .color-swatch-value { font-size: 11px; color: var(--color-neutral-text-secondary); font-family: ui-monospace, monospace; }
+
+    /* Typography */
+    .type-row { margin-bottom: 16px; display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--color-neutral-divider); padding-bottom: 12px; }
+    .type-label { font-size: 11px; font-weight: 700; color: var(--color-neutral-text-secondary); min-width: 100px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .type-sample { flex: 1; }
+
+    /* ===== COMPONENTS ===== */
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border: 1px solid transparent; border-radius: 8px; font-weight: 700; cursor: pointer;
+      transition: all 0.15s; font-family: var(--font-primary); text-decoration: none;
+    }
+    .btn-sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
+    .btn-md { height: 40px; padding: 0 16px; font-size: 13.5px; }
+    .btn-lg { height: 44px; padding: 0 20px; font-size: 14px; }
+    .btn-primary { background: var(--color-primary); color: #fff; }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-outline { background: #fff; border-color: var(--color-primary); color: var(--color-primary); }
+    .btn-outline:hover { background: var(--color-primary-bg); }
+    .btn-subtle { background: var(--color-primary-bg); border-color: var(--color-primary-border); color: var(--color-primary-clicked); }
+    .btn-ghost { background: transparent; color: var(--color-primary); }
+    .btn-ghost:hover { background: var(--color-primary-bg); }
+    .btn-neutral { background: #fff; border-color: var(--color-neutral-border); color: var(--color-neutral-text-primary); }
+    .btn-neutral:hover { background: var(--color-neutral-bg); }
+    .btn-error { background: var(--color-error); color: #fff; }
+    .btn-error:hover { background: #ef4444; }
+    .btn-success { background: var(--color-success); color: #fff; }
+    .btn-disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Icon Button */
+    .icon-btn {
+      display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+      border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all 0.15s; position: relative;
+    }
+    .icon-btn-circle { border-radius: 50%; }
+    .icon-btn svg { width: 20px; height: 20px; }
+    .icon-btn-default { color: var(--color-neutral-text-secondary); }
+    .icon-btn-default:hover { background: var(--color-primary-bg); color: var(--color-primary); }
+    .icon-btn-outline { border-color: var(--color-neutral-border); color: var(--color-secondary); }
+    .icon-btn-outline:hover { background: var(--color-neutral-bg); }
+    .icon-btn .badge { position: absolute; top: -5px; right: -5px; background: var(--color-error); color: #fff; font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+
+    /* Input */
+    .input-wrap { position: relative; width: 100%; }
+    .input {
+      width: 100%; border: 1px solid var(--color-neutral-border); border-radius: 8px;
+      font-size: 14px; font-family: var(--font-primary); color: var(--color-neutral-text-primary);
+      background: #fff; outline: none; transition: all 0.15s;
+    }
+    .input::placeholder { color: var(--color-neutral-placeholder); }
+    .input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-focus-ring); }
+    .input-sm { height: 32px; padding: 0 8px; font-size: 14px; }
+    .input-md { height: 40px; padding: 0 16px; font-size: 16px; }
+    .input-lg { height: 44px; padding: 0 24px; font-size: 16px; }
+    .input-icon { padding-left: 40px; }
+    .input-icon-el { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--color-neutral-placeholder); pointer-events: none; }
+    .input-icon-el svg { width: 18px; height: 18px; }
+    .input-error { border-color: var(--color-error); background: var(--color-error-bg); }
+    .input-error:focus { border-color: var(--color-error); box-shadow: 0 0 0 3px #fecaca; }
+    .field-label { font-size: 14px; font-weight: 600; margin-bottom: 6px; display: block; }
+    .field-label .required { color: var(--color-error); margin-left: 2px; }
+    .field-error { font-size: 13px; color: var(--color-error); margin-top: 4px; }
+
+    /* Checkbox */
+    .checkbox-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .checkbox-box { width: 18px; height: 18px; border: 1.5px solid var(--color-neutral); border-radius: 5px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .checkbox-box.checked { background: var(--color-primary); border-color: var(--color-primary); }
+    .checkbox-box.checked svg { color: #fff; }
+    .checkbox-box svg { width: 12px; height: 12px; color: transparent; }
+    .checkbox-label { font-size: 14px; }
+
+    /* Tag */
+    .tag {
+      display: inline-flex; align-items: center; gap: 4px; border-radius: 9999px;
+      padding: 3px 10px; font-size: 11.5px; font-weight: 700; border: 1px solid;
+    }
+    .tag-primary { color: var(--color-primary); background: #ea580c1a; border-color: #ea580c4d; }
+    .tag-success { color: var(--color-success); background: #16a34a1a; border-color: #16a34a4d; }
+    .tag-error { color: var(--color-error); background: #dc26261a; border-color: #dc26264d; }
+    .tag-pending { color: var(--color-pending); background: #ca8a041a; border-color: #ca8a044d; }
+    .tag-info { color: var(--color-info); background: #0284c71a; border-color: #0284c74d; }
+    .tag-neutral { color: var(--color-neutral-text-primary); background: var(--color-neutral-bg); border-color: var(--color-neutral-border); }
+
+    /* Pagination */
+    .pagination { display: flex; align-items: center; gap: 6px; }
+    .page-item { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--color-neutral-border); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; background: #fff; }
+    .page-item:hover { background: var(--color-primary-bg); border-color: var(--color-primary-hover); color: var(--color-primary); }
+    .page-item.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; font-weight: 700; }
+    .page-item.disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Avatar */
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-bg); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; overflow: hidden; }
+    .avatar-sm { width: 32px; height: 32px; font-size: 12px; }
+    .avatar-lg { width: 48px; height: 48px; font-size: 16px; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* UserChip */
+    .user-chip { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+    .user-chip:hover { background: var(--color-neutral-bg); }
+    .user-chip-info { line-height: 1.3; }
+    .user-chip-name { font-size: 13px; font-weight: 700; }
+    .user-chip-role { font-size: 11px; color: var(--color-neutral-text-secondary); }
+
+    /* Divider */
+    .divider { height: 1px; background: var(--color-neutral-divider); width: 100%; }
+
+    /* Toast */
+    .toast { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 600; border: 1px solid; }
+    .toast-success { background: var(--color-success-bg); color: var(--color-success); border-color: var(--color-success-border); }
+    .toast-error { background: var(--color-error-bg); color: var(--color-error); border-color: var(--color-error-border); }
+    .toast-info { background: var(--color-info-bg); color: var(--color-info); border-color: var(--color-info-border); }
+
+    /* ===== MODULES ===== */
+    /* Sidebar */
+    .sidebar-demo { width: 260px; background: #fff; border-radius: 16px; border: 1px solid var(--color-neutral-border); overflow: hidden; }
+    .sidebar-brand { padding: 16px; border-bottom: 2px solid var(--color-primary); }
+    .sidebar-brand-inner { display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--color-primary-bg); border-radius: 8px; }
+    .sidebar-brand-text h3 { font-size: 14px; font-weight: 600; }
+    .sidebar-brand-text p { font-size: 12px; color: var(--color-neutral-text-secondary); }
+    .sidebar-nav { padding: 12px; }
+    .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; font-size: 13.5px; font-weight: 500; color: var(--color-neutral-text-secondary); cursor: pointer; transition: all 0.15s; margin-bottom: 2px; }
+    .sidebar-item:hover { background: var(--color-primary-bg); color: var(--color-primary); }
+    .sidebar-item.active { background: var(--color-primary-bg); color: var(--color-primary); font-weight: 700; }
+    .sidebar-item svg { width: 18px; height: 18px; }
+
+    /* Header */
+    .header-demo { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: #fff; border-radius: 12px; border: 1px solid var(--color-neutral-border); }
+    .header-logo { font-size: 20px; font-weight: 800; color: var(--color-primary); }
+    .header-nav { display: flex; gap: 24px; }
+    .header-nav a { font-size: 14px; font-weight: 600; color: var(--color-neutral-text-secondary); text-decoration: none; }
+    .header-nav a.active { color: var(--color-primary); }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+
+    /* Admin Header */
+    .admin-header-demo { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: #fff; border-radius: 12px; border: 1px solid var(--color-neutral-border); }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .breadcrumb-item { color: var(--color-neutral-text-secondary); }
+    .breadcrumb-sep { color: var(--color-neutral-placeholder); }
+    .breadcrumb-item.current { color: var(--color-neutral-text-primary); font-weight: 700; }
+
+    /* Table */
+    .table-demo { width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; border: 1px solid var(--color-neutral-border); }
+    .table-demo th { background: var(--color-neutral-bg); text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-neutral-text-secondary); }
+    .table-demo td { padding: 14px 16px; font-size: 13.5px; border-top: 1px solid var(--color-neutral-divider); }
+    .table-demo tr:hover td { background: var(--color-primary-bg); }
+
+    /* Modal */
+    .modal-demo { background: #fff; border-radius: 20px; padding: 32px; max-width: 440px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); border: 1px solid var(--color-neutral-border); }
+    .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .modal-desc { font-size: 14px; color: var(--color-neutral-text-secondary); margin-bottom: 24px; }
+    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+
+    /* Footer */
+    .footer-demo { background: var(--color-neutral-black); color: #fff; border-radius: 16px; padding: 40px 32px 24px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+    .footer-brand h3 { font-size: 20px; font-weight: 800; color: var(--color-primary); }
+    .footer-brand p { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+    .footer-links h4 { font-size: 13px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .footer-links a { display: block; font-size: 13px; color: rgba(255,255,255,0.6); text-decoration: none; margin-bottom: 8px; }
+    .footer-links a:hover { color: var(--color-primary); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; font-size: 12px; color: rgba(255,255,255,0.4); }
+
+    /* Form Module */
+    .form-demo { max-width: 400px; }
+    .form-field { margin-bottom: 20px; }
+
+    /* Search Input */
+    .search-input { position: relative; }
+    .search-input input { padding-left: 40px; padding-right: 12px; }
+    .search-input .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--color-neutral-placeholder); }
+    .search-input .search-icon svg { width: 18px; height: 18px; }
+
+    /* ===== PAGE MODULES ===== */
+    .page-preview { border: 2px solid var(--color-neutral-border); border-radius: 16px; overflow: hidden; background: #fff; }
+    .page-preview-header { background: var(--color-neutral-black); color: #fff; padding: 12px 16px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
+    .page-preview-body { padding: 24px; min-height: 200px; }
+    .page-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+    .page-tag-todo { background: var(--color-pending-bg); color: var(--color-pending); }
+    .page-tag-done { background: var(--color-success-bg); color: var(--color-success); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .footer-grid { grid-template-columns: 1fr; }
+      .color-grid { grid-template-columns: repeat(2, 1fr); }
+      .demo-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>P4 Design System</h1>
+  <p>Components & Modules reference — Toàn bộ UI elements dùng trong P4 Product Manager</p>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#tokens">Tokens</a>
+    <a href="#typography">Typography</a>
+    <a href="#buttons">Buttons</a>
+    <a href="#inputs">Inputs</a>
+    <a href="#input-number">InputNumber</a>
+    <a href="#switch">Switch</a>
+    <a href="#input-otp">OTP</a>
+    <a href="#tags">Tags</a>
+    <a href="#pagination">Pagination</a>
+    <a href="#feedback">Feedback</a>
+    <a href="#sidebar">Sidebar</a>
+    <a href="#header">Header</a>
+    <a href="#table">Table</a>
+    <a href="#modal">Modal</a>
+    <a href="#footer">Footer</a>
+    <a href="#pages">Pages</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- ===== A. DESIGN TOKENS ===== -->
+  <section class="section" id="tokens">
+    <h2 class="section-title">A. Design Tokens — Colors</h2>
+    <p class="section-desc">Bảng màu chính của hệ thống. Mỗi role có 6 biến thể: DEFAULT, bg, hover, base, clicked, border.</p>
+
+    <div class="card">
+      <div class="card-title">Primary — Orange</div>
+      <div class="card-subtitle">Accent chính, dùng cho CTA, active states, brand</div>
+      <div class="color-grid">
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#ea580c"></div><div class="color-swatch-info"><div class="color-swatch-name">Primary</div><div class="color-swatch-value">#ea580c</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#fff7ed"></div><div class="color-swatch-info"><div class="color-swatch-name">Background</div><div class="color-swatch-value">#fff7ed</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#f97316"></div><div class="color-swatch-info"><div class="color-swatch-name">Hover</div><div class="color-swatch-value">#f97316</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#c2410c"></div><div class="color-swatch-info"><div class="color-swatch-name">Clicked</div><div class="color-swatch-value">#c2410c</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#fdba74"></div><div class="color-swatch-info"><div class="color-swatch-name">Border</div><div class="color-swatch-value">#fdba74</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#fed7aa"></div><div class="color-swatch-info"><div class="color-swatch-name">Focus Ring</div><div class="color-swatch-value">#fed7aa</div></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Semantic Colors</div>
+      <div class="card-subtitle">Error, Success, Info, Pending/Warning</div>
+      <div class="color-grid">
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#dc2626"></div><div class="color-swatch-info"><div class="color-swatch-name">Error</div><div class="color-swatch-value">#dc2626</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#fef2f2"></div><div class="color-swatch-info"><div class="color-swatch-name">Error BG</div><div class="color-swatch-value">#fef2f2</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#16a34a"></div><div class="color-swatch-info"><div class="color-swatch-name">Success</div><div class="color-swatch-value">#16a34a</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#f0fdf4"></div><div class="color-swatch-info"><div class="color-swatch-name">Success BG</div><div class="color-swatch-value">#f0fdf4</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#0284c7"></div><div class="color-swatch-info"><div class="color-swatch-name">Info</div><div class="color-swatch-value">#0284c7</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#f0f9ff"></div><div class="color-swatch-info"><div class="color-swatch-name">Info BG</div><div class="color-swatch-value">#f0f9ff</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#ca8a04"></div><div class="color-swatch-info"><div class="color-swatch-name">Pending</div><div class="color-swatch-value">#ca8a04</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#fefce8"></div><div class="color-swatch-info"><div class="color-swatch-name">Pending BG</div><div class="color-swatch-value">#fefce8</div></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Neutral Scale</div>
+      <div class="card-subtitle">Text, borders, backgrounds, disabled states</div>
+      <div class="color-grid">
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#0f172a"></div><div class="color-swatch-info"><div class="color-swatch-name">Black</div><div class="color-swatch-value">#0f172a</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#1e293b"></div><div class="color-swatch-info"><div class="color-swatch-name">Text Primary</div><div class="color-swatch-value">#1e293b</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#64748b"></div><div class="color-swatch-info"><div class="color-swatch-name">Text Secondary</div><div class="color-swatch-value">#64748b</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#94a3b8"></div><div class="color-swatch-info"><div class="color-swatch-name">Placeholder</div><div class="color-swatch-value">#94a3b8</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#e2e8f0"></div><div class="color-swatch-info"><div class="color-swatch-name">Border</div><div class="color-swatch-value">#e2e8f0</div></div></div>
+        <div class="color-swatch"><div class="color-swatch-block" style="background:#f1f5f9"></div><div class="color-swatch-info"><div class="color-swatch-name">BG</div><div class="color-swatch-value">#f1f5f9</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TYPOGRAPHY ===== -->
+  <section class="section" id="typography">
+    <h2 class="section-title">B. Typography</h2>
+    <p class="section-desc">Font: Plus Jakarta Sans. Scale từ heading đến caption.</p>
+
+    <div class="card">
+      <div class="type-row"><span class="type-label">Heading 1</span><span class="type-sample" style="font-size:48px;font-weight:800;line-height:64px;letter-spacing:-0.02em">Product Manager</span></div>
+      <div class="type-row"><span class="type-label">Heading 2</span><span class="type-sample" style="font-size:40px;font-weight:800;line-height:56px;letter-spacing:-0.02em">Dashboard</span></div>
+      <div class="type-row"><span class="type-label">Heading 3</span><span class="type-sample" style="font-size:36px;font-weight:800;line-height:56px">All Products</span></div>
+      <div class="type-row"><span class="type-label">Heading 4</span><span class="type-sample" style="font-size:32px;font-weight:800;line-height:48px">Orders List</span></div>
+      <div class="type-row"><span class="type-label">Heading 5</span><span class="type-sample" style="font-size:28px;font-weight:800;line-height:40px">Đăng nhập</span></div>
+      <div class="type-row"><span class="type-label">Title 1</span><span class="type-sample" style="font-size:24px;font-weight:700;line-height:32px">Cart Summary</span></div>
+      <div class="type-row"><span class="type-label">Title 2</span><span class="type-sample" style="font-size:20px;font-weight:700;line-height:24px">Thông tin giao hàng</span></div>
+      <div class="type-row"><span class="type-label">UI Stat</span><span class="type-sample" style="font-size:30px;font-weight:800;line-height:38px;letter-spacing:-0.02em">₫12,500,000</span></div>
+      <div class="type-row"><span class="type-label">UI Body</span><span class="type-sample" style="font-size:13.5px;font-weight:500;line-height:20px">Sản phẩm đang được xử lý và sẽ sớm được giao.</span></div>
+      <div class="type-row"><span class="type-label">UI Label</span><span class="type-sample" style="font-size:12.5px;font-weight:700;line-height:16px">Tên sản phẩm</span></div>
+      <div class="type-row"><span class="type-label">UI Caption</span><span class="type-sample" style="font-size:12px;font-weight:500;line-height:16px;color:var(--color-neutral-text-secondary)">Cập nhật lần cuối: 2 giờ trước</span></div>
+      <div class="type-row"><span class="type-label">UI Overline</span><span class="type-sample" style="font-size:11px;font-weight:700;line-height:14px;letter-spacing:0.06em;text-transform:uppercase;color:var(--color-primary)">Featured Collection</span></div>
+    </div>
+  </section>
+
+  <!-- ===== BUTTONS ===== -->
+  <section class="section" id="buttons">
+    <h2 class="section-title">C. Buttons</h2>
+    <p class="section-desc">6 colors × 6 variants × 3 sizes. Có icon trái/phải, loading state.</p>
+
+    <div class="card">
+      <div class="card-title">Button — Sizes</div>
+      <div class="demo-row">
+        <button class="btn btn-sm btn-primary">Small</button>
+        <button class="btn btn-md btn-primary">Medium</button>
+        <button class="btn btn-lg btn-primary">Large</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Button — Variants (Primary)</div>
+      <div class="demo-row">
+        <button class="btn btn-md btn-primary">Solid</button>
+        <button class="btn btn-md btn-outline">Outline</button>
+        <button class="btn btn-md btn-subtle">Subtle</button>
+        <button class="btn btn-md btn-ghost">Ghost</button>
+        <button class="btn btn-md btn-neutral">Neutral</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Button — Colors</div>
+      <div class="demo-row">
+        <button class="btn btn-md btn-primary">Primary</button>
+        <button class="btn btn-md btn-error">Error</button>
+        <button class="btn btn-md btn-success">Success</button>
+        <button class="btn btn-md" style="background:var(--color-secondary);color:#fff">Secondary</button>
+        <button class="btn btn-md" style="background:var(--color-pending);color:#fff">Pending</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Button — States</div>
+      <div class="demo-row">
+        <button class="btn btn-md btn-primary">Normal</button>
+        <button class="btn btn-md btn-primary" style="background:var(--color-primary-hover)">Hover</button>
+        <button class="btn btn-md btn-primary" style="background:var(--color-primary-clicked)">Active</button>
+        <button class="btn btn-md btn-primary btn-disabled">Disabled</button>
+        <button class="btn btn-md btn-primary" style="cursor:not-allowed">⟳ Loading...</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">IconButton</div>
+      <div class="card-subtitle">40×40px, shape: circle/square, có badge support</div>
+      <div class="demo-row">
+        <button class="icon-btn icon-btn-default icon-btn-circle">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button class="icon-btn icon-btn-default">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg>
+        </button>
+        <button class="icon-btn icon-btn-outline">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="badge">3</span>
+        </button>
+        <button class="icon-btn icon-btn-outline" style="color:var(--color-error)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== INPUTS ===== -->
+  <section class="section" id="inputs">
+    <h2 class="section-title">D. Form Controls</h2>
+    <p class="section-desc">Input, InputPassword, Checkbox, Select, Textarea — với focus ring orange.</p>
+
+    <div class="card">
+      <div class="card-title">Input — Sizes & States</div>
+      <div style="max-width:400px; display:flex; flex-direction:column; gap:16px;">
+        <div>
+          <label class="field-label">Email<span class="required">*</span></label>
+          <div class="input-wrap">
+            <span class="input-icon-el"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+            <input class="input input-md input-icon" placeholder="admin@demo.com">
+          </div>
+        </div>
+        <div>
+          <label class="field-label">Password<span class="required">*</span></label>
+          <input class="input input-md" type="password" placeholder="••••••••">
+        </div>
+        <div>
+          <label class="field-label">Error State</label>
+          <input class="input input-md input-error" value="invalid@" >
+          <div class="field-error">Email không hợp lệ</div>
+        </div>
+        <div>
+          <label class="field-label">Small</label>
+          <input class="input input-sm" placeholder="Small input">
+        </div>
+        <div>
+          <label class="field-label">Large</label>
+          <input class="input input-lg" placeholder="Large input">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Checkbox</div>
+      <div class="demo-row">
+        <label class="checkbox-wrap">
+          <span class="checkbox-box"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="checkbox-label">Unchecked</span>
+        </label>
+        <label class="checkbox-wrap">
+          <span class="checkbox-box checked"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="checkbox-label">Checked</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Search Input</div>
+      <div style="max-width:360px;">
+        <div class="search-input input-wrap">
+          <span class="search-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+          <input class="input input-md input-icon" placeholder="Tìm sản phẩm...">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== INPUT NUMBER ===== -->
+  <section class="section" id="input-number">
+    <h2 class="section-title">D2. Input Number (+/−)</h2>
+    <p class="section-desc">Stepper input với nút tăng/giảm. Dùng cho quantity (cart, stock). 3 sizes, 6 colors.</p>
+
+    <div class="card">
+      <div class="card-title">Sizes</div>
+      <div class="demo-row" style="gap:24px;">
+        <!-- Small -->
+        <div>
+          <div class="demo-row-label">Small</div>
+          <div style="display:inline-flex;align-items:center;border:1px solid var(--color-neutral-border);border-radius:8px;height:32px;overflow:hidden;">
+            <button style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-neutral-text-secondary);cursor:pointer;border-right:1px solid var(--color-neutral-border);font-size:16px;font-weight:700;">−</button>
+            <span style="width:40px;text-align:center;font-size:14px;font-weight:600;">2</span>
+            <button style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-neutral-text-secondary);cursor:pointer;border-left:1px solid var(--color-neutral-border);font-size:16px;font-weight:700;">+</button>
+          </div>
+        </div>
+        <!-- Middle -->
+        <div>
+          <div class="demo-row-label">Middle</div>
+          <div style="display:inline-flex;align-items:center;border:1px solid var(--color-neutral-border);border-radius:8px;height:40px;overflow:hidden;">
+            <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-neutral-text-secondary);cursor:pointer;border-right:1px solid var(--color-neutral-border);font-size:18px;font-weight:700;">−</button>
+            <span style="width:48px;text-align:center;font-size:16px;font-weight:600;">5</span>
+            <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-neutral-text-secondary);cursor:pointer;border-left:1px solid var(--color-neutral-border);font-size:18px;font-weight:700;">+</button>
+          </div>
+        </div>
+        <!-- Large -->
+        <div>
+          <div class="demo-row-label">Large</div>
+          <div style="display:inline-flex;align-items:center;border:1px solid var(--color-neutral-border);border-radius:8px;height:44px;overflow:hidden;">
+            <button style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-neutral-text-secondary);cursor:pointer;border-right:1px solid var(--color-neutral-border);font-size:20px;font-weight:700;">−</button>
+            <span style="width:56px;text-align:center;font-size:16px;font-weight:600;">10</span>
+            <button style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-neutral-text-secondary);cursor:pointer;border-left:1px solid var(--color-neutral-border);font-size:20px;font-weight:700;">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Colors & States</div>
+      <div class="demo-row" style="gap:24px;flex-wrap:wrap;">
+        <!-- Primary -->
+        <div>
+          <div class="demo-row-label">Primary</div>
+          <div style="display:inline-flex;align-items:center;border:1px solid var(--color-primary);border-radius:8px;height:40px;overflow:hidden;">
+            <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-primary);cursor:pointer;border-right:1px solid var(--color-primary);font-size:18px;font-weight:700;">−</button>
+            <span style="width:48px;text-align:center;font-size:16px;font-weight:600;">3</span>
+            <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-primary);cursor:pointer;border-left:1px solid var(--color-primary);font-size:18px;font-weight:700;">+</button>
+          </div>
+        </div>
+        <!-- Error -->
+        <div>
+          <div class="demo-row-label">Error</div>
+          <div style="display:inline-flex;align-items:center;border:1px solid var(--color-error);border-radius:8px;height:40px;overflow:hidden;">
+            <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-error);cursor:pointer;border-right:1px solid var(--color-error);font-size:18px;font-weight:700;">−</button>
+            <span style="width:48px;text-align:center;font-size:16px;font-weight:600;">0</span>
+            <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-error);cursor:pointer;border-left:1px solid var(--color-error);font-size:18px;font-weight:700;">+</button>
+          </div>
+          <div style="font-size:13px;color:var(--color-error);margin-top:4px;">Số lượng không hợp lệ</div>
+        </div>
+        <!-- Disabled -->
+        <div>
+          <div class="demo-row-label">Disabled</div>
+          <div style="display:inline-flex;align-items:center;border:1px solid var(--color-neutral-border);border-radius:8px;height:40px;overflow:hidden;opacity:0.5;cursor:not-allowed;">
+            <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-neutral-text-secondary);cursor:not-allowed;border-right:1px solid var(--color-neutral-border);font-size:18px;font-weight:700;">−</button>
+            <span style="width:48px;text-align:center;font-size:16px;font-weight:600;">1</span>
+            <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-neutral-text-secondary);cursor:not-allowed;border-left:1px solid var(--color-neutral-border);font-size:18px;font-weight:700;">+</button>
+          </div>
+        </div>
+        <!-- Min reached -->
+        <div>
+          <div class="demo-row-label">Min reached (−disabled)</div>
+          <div style="display:inline-flex;align-items:center;border:1px solid var(--color-neutral-border);border-radius:8px;height:40px;overflow:hidden;">
+            <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-neutral-text-secondary);cursor:not-allowed;border-right:1px solid var(--color-neutral-border);font-size:18px;font-weight:700;opacity:0.4;">−</button>
+            <span style="width:48px;text-align:center;font-size:16px;font-weight:600;">1</span>
+            <button style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--color-neutral-text-secondary);cursor:pointer;border-left:1px solid var(--color-neutral-border);font-size:18px;font-weight:700;">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SWITCH ===== -->
+  <section class="section" id="switch">
+    <h2 class="section-title">D3. Switch</h2>
+    <p class="section-desc">Toggle on/off. Track oval + thumb circle. Focus ring khi keyboard focus. Có label left/right.</p>
+
+    <div class="card">
+      <div class="card-title">Sizes</div>
+      <div class="demo-row" style="gap:32px;">
+        <!-- Small OFF -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="position:relative;display:inline-flex;width:32px;height:18px;background:var(--color-neutral-border);border-radius:9px;">
+            <span style="position:absolute;left:2px;top:2px;width:14px;height:14px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);transition:transform 0.2s;"></span>
+          </span>
+          <span style="font-size:14px;font-weight:500;">Small OFF</span>
+        </div>
+        <!-- Middle ON -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="position:relative;display:inline-flex;width:40px;height:22px;background:var(--color-primary);border-radius:11px;">
+            <span style="position:absolute;left:2px;top:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);transform:translateX(18px);"></span>
+          </span>
+          <span style="font-size:14px;font-weight:500;">Middle ON</span>
+        </div>
+        <!-- Large OFF -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="position:relative;display:inline-flex;width:48px;height:26px;background:var(--color-neutral-border);border-radius:13px;">
+            <span style="position:absolute;left:2px;top:2px;width:22px;height:22px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);"></span>
+          </span>
+          <span style="font-size:16px;font-weight:500;">Large OFF</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Colors (ON state)</div>
+      <div class="demo-row" style="gap:24px;flex-wrap:wrap;">
+        <!-- Primary -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="position:relative;display:inline-flex;width:40px;height:22px;background:var(--color-primary);border-radius:11px;">
+            <span style="position:absolute;left:2px;top:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);transform:translateX(18px);"></span>
+          </span>
+          <span style="font-size:13px;font-weight:600;">Primary</span>
+        </div>
+        <!-- Success -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="position:relative;display:inline-flex;width:40px;height:22px;background:var(--color-success);border-radius:11px;">
+            <span style="position:absolute;left:2px;top:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);transform:translateX(18px);"></span>
+          </span>
+          <span style="font-size:13px;font-weight:600;">Success</span>
+        </div>
+        <!-- Error -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="position:relative;display:inline-flex;width:40px;height:22px;background:var(--color-error);border-radius:11px;">
+            <span style="position:absolute;left:2px;top:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);transform:translateX(18px);"></span>
+          </span>
+          <span style="font-size:13px;font-weight:600;">Error</span>
+        </div>
+        <!-- Pending -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="position:relative;display:inline-flex;width:40px;height:22px;background:var(--color-pending);border-radius:11px;">
+            <span style="position:absolute;left:2px;top:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);transform:translateX(18px);"></span>
+          </span>
+          <span style="font-size:13px;font-weight:600;">Pending</span>
+        </div>
+        <!-- Secondary -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="position:relative;display:inline-flex;width:40px;height:22px;background:var(--color-secondary);border-radius:11px;">
+            <span style="position:absolute;left:2px;top:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);transform:translateX(18px);"></span>
+          </span>
+          <span style="font-size:13px;font-weight:600;">Secondary</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">States</div>
+      <div class="demo-row" style="gap:32px;">
+        <!-- Disabled OFF -->
+        <div style="display:flex;align-items:center;gap:10px;opacity:0.5;">
+          <span style="position:relative;display:inline-flex;width:40px;height:22px;background:var(--color-neutral-border);border-radius:11px;">
+            <span style="position:absolute;left:2px;top:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);"></span>
+          </span>
+          <span style="font-size:13px;font-weight:500;">Disabled OFF</span>
+        </div>
+        <!-- Disabled ON -->
+        <div style="display:flex;align-items:center;gap:10px;opacity:0.5;">
+          <span style="position:relative;display:inline-flex;width:40px;height:22px;background:var(--color-primary);border-radius:11px;">
+            <span style="position:absolute;left:2px;top:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);transform:translateX(18px);"></span>
+          </span>
+          <span style="font-size:13px;font-weight:500;">Disabled ON</span>
+        </div>
+        <!-- Focus ring -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="position:relative;display:inline-flex;width:40px;height:22px;background:var(--color-primary);border-radius:11px;box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--color-primary-focus-ring);">
+            <span style="position:absolute;left:2px;top:2px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,0.1);transform:translateX(18px);"></span>
+          </span>
+          <span style="font-size:13px;font-weight:500;">Focused</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== INPUT OTP ===== -->
+  <section class="section" id="input-otp">
+    <h2 class="section-title">D4. Input OTP</h2>
+    <p class="section-desc">Multi-slot OTP/PIN input. Paste support, auto-advance, mask mode. 3 sizes.</p>
+
+    <div class="card">
+      <div class="card-title">Sizes & States</div>
+      <div style="display:flex;flex-direction:column;gap:24px;">
+        <!-- Middle - Empty -->
+        <div>
+          <div class="demo-row-label">Middle — Empty (placeholder ○)</div>
+          <div style="display:flex;gap:8px;">
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--color-neutral-placeholder);">○</div>
+          </div>
+        </div>
+
+        <!-- Middle - Partially filled + focus -->
+        <div>
+          <div class="demo-row-label">Middle — Partially filled (slot 4 focused)</div>
+          <div style="display:flex;gap:8px;">
+            <div style="width:40px;height:44px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">4</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">2</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">9</div>
+            <div style="width:40px;height:44px;border:2px solid var(--color-primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;box-shadow:0 0 0 3px var(--color-primary-focus-ring);">|</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--color-neutral-placeholder);">○</div>
+          </div>
+        </div>
+
+        <!-- Middle - Complete -->
+        <div>
+          <div class="demo-row-label">Middle — Complete</div>
+          <div style="display:flex;gap:8px;">
+            <div style="width:40px;height:44px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">4</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">2</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">9</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">8</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">5</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">1</div>
+          </div>
+        </div>
+
+        <!-- Masked -->
+        <div>
+          <div class="demo-row-label">Middle — Masked (PIN mode)</div>
+          <div style="display:flex;gap:8px;">
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-text-secondary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;">•</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-text-secondary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;">•</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-text-secondary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;">•</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-text-secondary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;">•</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--color-neutral-placeholder);">○</div>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div>
+          <div class="demo-row-label">Error State</div>
+          <div style="display:flex;gap:8px;">
+            <div style="width:40px;height:44px;border:1px solid var(--color-error);background:var(--color-error-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">1</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-error);background:var(--color-error-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">2</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-error);background:var(--color-error-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">3</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-error);background:var(--color-error-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">4</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-error);background:var(--color-error-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">5</div>
+            <div style="width:40px;height:44px;border:1px solid var(--color-error);background:var(--color-error-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">6</div>
+          </div>
+          <div style="font-size:13px;color:var(--color-error);margin-top:6px;">Mã OTP không đúng. Vui lòng thử lại.</div>
+        </div>
+
+        <!-- Small 4 digits -->
+        <div>
+          <div class="demo-row-label">Small — 4 digits</div>
+          <div style="display:flex;gap:6px;">
+            <div style="width:32px;height:36px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:32px;height:36px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:32px;height:36px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:32px;height:36px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--color-neutral-placeholder);">○</div>
+          </div>
+        </div>
+
+        <!-- Large -->
+        <div>
+          <div class="demo-row-label">Large</div>
+          <div style="display:flex;gap:10px;">
+            <div style="width:48px;height:52px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">7</div>
+            <div style="width:48px;height:52px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">3</div>
+            <div style="width:48px;height:52px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">8</div>
+            <div style="width:48px;height:52px;border:1px solid var(--color-primary-border);background:var(--color-primary-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">2</div>
+            <div style="width:48px;height:52px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--color-neutral-placeholder);">○</div>
+            <div style="width:48px;height:52px;border:1px solid var(--color-neutral-border);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--color-neutral-placeholder);">○</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TAGS ===== -->
+  <section class="section" id="tags">
+    <h2 class="section-title">E. Tags / Badges</h2>
+    <p class="section-desc">Pill shape, 10% opacity background, 30% border. Dùng cho status, category labels.</p>
+
+    <div class="card">
+      <div class="demo-row">
+        <span class="tag tag-primary">Pending</span>
+        <span class="tag tag-success">Paid</span>
+        <span class="tag tag-info">Shipping</span>
+        <span class="tag tag-error">Cancelled</span>
+        <span class="tag tag-pending">Low Stock</span>
+        <span class="tag tag-neutral">Default</span>
+      </div>
+      <div class="demo-row" style="margin-top:12px">
+        <span class="tag tag-success">● Completed</span>
+        <span class="tag tag-primary">Admin</span>
+        <span class="tag tag-info">User</span>
+        <span class="tag tag-error">Out of Stock</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PAGINATION ===== -->
+  <section class="section" id="pagination">
+    <h2 class="section-title">F. Pagination</h2>
+    <p class="section-desc">34×34px per item, rounded-lg, active = primary solid.</p>
+
+    <div class="card">
+      <div class="pagination">
+        <span class="page-item disabled">‹</span>
+        <span class="page-item active">1</span>
+        <span class="page-item">2</span>
+        <span class="page-item">3</span>
+        <span class="page-item">4</span>
+        <span class="page-item">5</span>
+        <span class="page-item" style="border:none;width:auto;padding:0 4px;color:var(--color-neutral-placeholder)">...</span>
+        <span class="page-item">12</span>
+        <span class="page-item">›</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FEEDBACK ===== -->
+  <section class="section" id="feedback">
+    <h2 class="section-title">G. Feedback — Toast & Divider</h2>
+
+    <div class="card">
+      <div class="card-title">Toast Notifications</div>
+      <div style="display:flex; flex-direction:column; gap:12px; max-width:400px;">
+        <div class="toast toast-success">✓ Sản phẩm đã được tạo thành công</div>
+        <div class="toast toast-error">✕ Dữ liệu không hợp lệ</div>
+        <div class="toast toast-info">ℹ Tính năng sẽ sớm ra mắt</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Divider</div>
+      <p style="font-size:14px; margin-bottom:12px;">Content trên</p>
+      <div class="divider"></div>
+      <p style="font-size:14px; margin-top:12px;">Content dưới</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Avatar & UserChip</div>
+      <div class="demo-row">
+        <span class="avatar avatar-sm">A</span>
+        <span class="avatar">VB</span>
+        <span class="avatar avatar-lg">P4</span>
+        <div class="user-chip">
+          <span class="avatar avatar-sm">A</span>
+          <div class="user-chip-info">
+            <div class="user-chip-name">admin@demo.com</div>
+            <div class="user-chip-role">Admin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SIDEBAR ===== -->
+  <section class="section" id="sidebar">
+    <h2 class="section-title">H. Sidebar (Admin)</h2>
+    <p class="section-desc">Collapsible, icon-only mode, sections + footer UserChip.</p>
+
+    <div class="card" style="display:flex;gap:24px;flex-wrap:wrap;">
+      <div class="sidebar-demo">
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-inner">
+            <span class="avatar avatar-sm" style="background:var(--color-primary);color:#fff;font-size:16px;font-weight:800">P4</span>
+            <div class="sidebar-brand-text">
+              <h3>Admin Panel</h3>
+              <p>Product Manager</p>
+            </div>
+          </div>
+        </div>
+        <div class="sidebar-nav">
+          <div class="sidebar-item active">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            Dashboard
+          </div>
+          <div class="sidebar-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+            Products
+          </div>
+          <div class="sidebar-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            Orders
+          </div>
+        </div>
+      </div>
+
+      <!-- Collapsed version -->
+      <div class="sidebar-demo" style="width:72px;">
+        <div class="sidebar-brand" style="padding:12px 8px;">
+          <div style="display:flex;justify-content:center;">
+            <span class="avatar avatar-sm" style="background:var(--color-primary);color:#fff;font-size:14px;font-weight:800">P4</span>
+          </div>
+        </div>
+        <div class="sidebar-nav" style="padding:8px;">
+          <div class="sidebar-item active" style="justify-content:center;padding:10px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          </div>
+          <div class="sidebar-item" style="justify-content:center;padding:10px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
+          </div>
+          <div class="sidebar-item" style="justify-content:center;padding:10px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== HEADER ===== -->
+  <section class="section" id="header">
+    <h2 class="section-title">I. Headers</h2>
+
+    <div class="card">
+      <div class="card-title">Storefront Header</div>
+      <div class="card-subtitle">Logo + nav + search + actions (cart, theme, lang, user)</div>
+      <div class="header-demo">
+        <div class="header-logo">P4 Store</div>
+        <div class="header-nav">
+          <a href="#" class="active">Home</a>
+          <a href="#">Shop</a>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn icon-btn-default" style="width:36px;height:36px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+          </button>
+          <button class="btn btn-sm btn-primary">Login</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Admin Header</div>
+      <div class="card-subtitle">Collapse toggle + breadcrumbs + actions (theme, lang, bell, user chip)</div>
+      <div class="admin-header-demo">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <button class="icon-btn icon-btn-default" style="width:36px;height:36px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+          </button>
+          <div class="breadcrumb">
+            <span class="breadcrumb-item">Admin</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-item current">Products</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn icon-btn-outline" style="width:36px;height:36px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="badge">3</span>
+          </button>
+          <div class="user-chip" style="padding:4px 8px;">
+            <span class="avatar avatar-sm">A</span>
+            <div class="user-chip-info">
+              <div class="user-chip-name">admin@demo.com</div>
+              <div class="user-chip-role">Admin</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TABLE ===== -->
+  <section class="section" id="table">
+    <h2 class="section-title">J. Table</h2>
+    <p class="section-desc">Wrap @tanstack/react-table. Header bg neutral, hover row = primary-bg.</p>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="table-demo">
+        <thead>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Giá</th>
+            <th>Tồn kho</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600">Áo Thun Basic</td>
+            <td>₫250,000</td>
+            <td>45</td>
+            <td><span class="tag tag-success">In Stock</span></td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="icon-btn icon-btn-outline" style="width:32px;height:32px;border-radius:6px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button>
+                <button class="icon-btn" style="width:32px;height:32px;border-radius:6px;color:var(--color-error);"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Giày Sneaker Pro</td>
+            <td>₫1,200,000</td>
+            <td style="color:var(--color-error);font-weight:700">3</td>
+            <td><span class="tag tag-pending">Low Stock</span></td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="icon-btn icon-btn-outline" style="width:32px;height:32px;border-radius:6px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button>
+                <button class="icon-btn" style="width:32px;height:32px;border-radius:6px;color:var(--color-error);"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Túi Tote Canvas</td>
+            <td>₫350,000</td>
+            <td>0</td>
+            <td><span class="tag tag-error">Out of Stock</span></td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="icon-btn icon-btn-outline" style="width:32px;height:32px;border-radius:6px;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></button>
+                <button class="icon-btn" style="width:32px;height:32px;border-radius:6px;color:var(--color-error);"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== MODAL ===== -->
+  <section class="section" id="modal">
+    <h2 class="section-title">K. Modal & Drawer</h2>
+
+    <div class="card">
+      <div class="card-title">Confirm Delete Modal</div>
+      <div style="display:flex;justify-content:center;padding:24px;background:rgba(0,0,0,0.04);border-radius:12px;">
+        <div class="modal-demo">
+          <div class="modal-title">Xóa sản phẩm?</div>
+          <div class="modal-desc">Bạn có chắc muốn xóa <strong>Áo Thun Basic</strong>? Hành động này không thể hoàn tác.</div>
+          <div class="modal-actions">
+            <button class="btn btn-md btn-neutral">Hủy</button>
+            <button class="btn btn-md btn-error">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <section class="section" id="footer">
+    <h2 class="section-title">L. Footer (Storefront)</h2>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="footer-demo">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <h3>P4 Store</h3>
+            <p>Thời trang hiện đại, chất lượng vượt trội cho cuộc sống năng động.</p>
+          </div>
+          <div class="footer-links">
+            <h4>Cửa hàng</h4>
+            <a href="#">Shop</a>
+            <a href="#">Giỏ hàng</a>
+          </div>
+          <div class="footer-links">
+            <h4>Hỗ trợ</h4>
+            <a href="#">Liên hệ</a>
+            <a href="#">FAQ</a>
+          </div>
+        </div>
+        <div class="footer-bottom">© 2026 P4 Store. All rights reserved.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PAGE MODULES ===== -->
+  <section class="section" id="pages">
+    <h2 class="section-title">M. Page Modules — Task cho học viên</h2>
+    <p class="section-desc">Mỗi page là một task. Xanh = đã implement, vàng = cần làm.</p>
+
+    <div class="demo-grid">
+      <!-- Done pages -->
+      <div class="page-preview">
+        <div class="page-preview-header">Admin Login <span class="page-tag page-tag-done">✓ Done</span></div>
+        <div class="page-preview-body" style="background:var(--color-primary-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+          <span class="avatar" style="width:48px;height:48px;font-size:18px">P4</span>
+          <div style="width:80%;height:12px;background:var(--color-neutral-border);border-radius:6px;"></div>
+          <div style="width:80%;height:36px;background:#fff;border:1px solid var(--color-neutral-border);border-radius:8px;"></div>
+          <div style="width:80%;height:36px;background:#fff;border:1px solid var(--color-neutral-border);border-radius:8px;"></div>
+          <div style="width:80%;height:36px;background:var(--color-primary);border-radius:8px;"></div>
+        </div>
+      </div>
+
+      <div class="page-preview">
+        <div class="page-preview-header">Storefront Login <span class="page-tag page-tag-done">✓ Done</span></div>
+        <div class="page-preview-body" style="display:flex;">
+          <div style="flex:1;background:var(--color-neutral-black);border-radius:0;"></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;">
+            <div style="width:70%;height:10px;background:var(--color-neutral-border);border-radius:4px;"></div>
+            <div style="width:90%;height:30px;background:#fff;border:1px solid var(--color-neutral-border);border-radius:6px;"></div>
+            <div style="width:90%;height:30px;background:#fff;border:1px solid var(--color-neutral-border);border-radius:6px;"></div>
+            <div style="width:90%;height:30px;background:var(--color-primary);border-radius:6px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-preview">
+        <div class="page-preview-header">Admin Layout <span class="page-tag page-tag-done">✓ Done</span></div>
+        <div class="page-preview-body" style="display:flex;padding:0;">
+          <div style="width:60px;background:var(--color-neutral-white);border-right:1px solid var(--color-neutral-border);padding:8px;display:flex;flex-direction:column;gap:6px;align-items:center;">
+            <div style="width:24px;height:24px;background:var(--color-primary);border-radius:6px;"></div>
+            <div style="width:24px;height:24px;background:var(--color-primary-bg);border-radius:6px;"></div>
+            <div style="width:24px;height:24px;background:var(--color-neutral-bg);border-radius:6px;"></div>
+          </div>
+          <div style="flex:1;padding:12px;">
+            <div style="height:20px;background:var(--color-neutral-bg);border-radius:4px;margin-bottom:12px;"></div>
+            <div style="height:80px;background:var(--color-neutral-bg);border-radius:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TODO pages -->
+      <div class="page-preview">
+        <div class="page-preview-header">Dashboard <span class="page-tag page-tag-todo">TODO</span></div>
+        <div class="page-preview-body" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;height:50px;background:var(--color-primary-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:var(--color-primary);">₫12.5M</div>
+            <div style="flex:1;height:50px;background:var(--color-info-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:var(--color-info);">48</div>
+          </div>
+          <div style="height:60px;background:var(--color-neutral-bg);border-radius:8px;border:1px solid var(--color-neutral-border);"></div>
+        </div>
+      </div>
+
+      <div class="page-preview">
+        <div class="page-preview-header">Products List <span class="page-tag page-tag-todo">TODO</span></div>
+        <div class="page-preview-body" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div style="flex:1;height:28px;background:var(--color-neutral-bg);border:1px solid var(--color-neutral-border);border-radius:6px;"></div>
+            <div style="width:60px;height:28px;background:var(--color-primary);border-radius:6px;"></div>
+          </div>
+          <div style="height:24px;background:var(--color-neutral-bg);border-radius:4px;"></div>
+          <div style="height:24px;background:#fff;border:1px solid var(--color-neutral-divider);border-radius:4px;"></div>
+          <div style="height:24px;background:#fff;border:1px solid var(--color-neutral-divider);border-radius:4px;"></div>
+          <div style="height:24px;background:#fff;border:1px solid var(--color-neutral-divider);border-radius:4px;"></div>
+        </div>
+      </div>
+
+      <div class="page-preview">
+        <div class="page-preview-header">Product Form <span class="page-tag page-tag-todo">TODO</span></div>
+        <div class="page-preview-body" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="height:60px;background:var(--color-neutral-bg);border:2px dashed var(--color-neutral-border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--color-neutral-placeholder);">Upload Image</div>
+          <div style="height:28px;background:#fff;border:1px solid var(--color-neutral-border);border-radius:6px;"></div>
+          <div style="height:28px;background:#fff;border:1px solid var(--color-neutral-border);border-radius:6px;"></div>
+          <div style="height:32px;background:var(--color-primary);border-radius:8px;"></div>
+        </div>
+      </div>
+
+      <div class="page-preview">
+        <div class="page-preview-header">Orders List <span class="page-tag page-tag-todo">TODO</span></div>
+        <div class="page-preview-body" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:6px;">
+            <span class="tag tag-success" style="font-size:9px;padding:2px 6px;">Paid</span>
+            <span class="tag tag-pending" style="font-size:9px;padding:2px 6px;">Pending</span>
+            <span class="tag tag-info" style="font-size:9px;padding:2px 6px;">Shipping</span>
+          </div>
+          <div style="height:20px;background:var(--color-neutral-bg);border-radius:4px;"></div>
+          <div style="height:20px;background:#fff;border:1px solid var(--color-neutral-divider);border-radius:4px;"></div>
+          <div style="height:20px;background:#fff;border:1px solid var(--color-neutral-divider);border-radius:4px;"></div>
+          <div style="height:20px;background:#fff;border:1px solid var(--color-neutral-divider);border-radius:4px;"></div>
+        </div>
+      </div>
+
+      <div class="page-preview">
+        <div class="page-preview-header">Shop <span class="page-tag page-tag-todo">TODO</span></div>
+        <div class="page-preview-body" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:var(--color-neutral-bg);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;">
+            <div style="height:50px;background:var(--color-neutral-border);border-radius:6px;"></div>
+            <div style="height:8px;background:var(--color-neutral-border);border-radius:3px;width:80%;"></div>
+            <div style="font-size:11px;font-weight:700;color:var(--color-primary);">₫250,000</div>
+          </div>
+          <div style="background:var(--color-neutral-bg);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;">
+            <div style="height:50px;background:var(--color-neutral-border);border-radius:6px;"></div>
+            <div style="height:8px;background:var(--color-neutral-border);border-radius:3px;width:60%;"></div>
+            <div style="font-size:11px;font-weight:700;color:var(--color-primary);">₫1,200,000</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-preview">
+        <div class="page-preview-header">Cart & Checkout <span class="page-tag page-tag-todo">TODO</span></div>
+        <div class="page-preview-body" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--color-neutral-bg);border-radius:8px;">
+            <div style="width:32px;height:32px;background:var(--color-neutral-border);border-radius:6px;"></div>
+            <div style="flex:1"><div style="height:8px;background:var(--color-neutral-border);border-radius:3px;width:70%;"></div></div>
+            <div style="font-size:10px;font-weight:700;">×2</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--color-neutral-bg);border-radius:8px;">
+            <div style="width:32px;height:32px;background:var(--color-neutral-border);border-radius:6px;"></div>
+            <div style="flex:1"><div style="height:8px;background:var(--color-neutral-border);border-radius:3px;width:50%;"></div></div>
+            <div style="font-size:10px;font-weight:700;">×1</div>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;"><span>Total</span><span style="color:var(--color-primary)">₫1,700,000</span></div>
+          <div style="height:32px;background:var(--color-primary);border-radius:8px;"></div>
+        </div>
+      </div>
+
+      <div class="page-preview">
+        <div class="page-preview-header">Home / Landing <span class="page-tag page-tag-todo">TODO</span></div>
+        <div class="page-preview-body" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="height:70px;background:linear-gradient(135deg, var(--color-primary-bg), var(--color-primary-border));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--color-primary);">Hero Banner</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+            <div style="height:40px;background:var(--color-neutral-bg);border-radius:6px;"></div>
+            <div style="height:40px;background:var(--color-neutral-bg);border-radius:6px;"></div>
+            <div style="height:40px;background:var(--color-neutral-bg);border-radius:6px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer style="text-align:center;padding:40px;font-size:12px;color:var(--color-neutral-text-secondary);">
+  P4 Product Manager Design System · Generated from <code>libs/ui</code> source · Open <code>docs/design/p4-product-manager-design.html</code> for full mockup
+</footer>
+
+</body>
+</html>
