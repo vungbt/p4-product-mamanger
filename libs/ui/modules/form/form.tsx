@@ -19,7 +19,7 @@ type AppFormWrapperProps = {
     AppForm: ComponentType<{ children?: ReactNode }>;
     handleSubmit: () => void;
   };
-  schema?: Record<string, z.ZodTypeAny>;
+  schema?: Record<string, z.ZodType>;
   validators?: Record<string, FieldValidators>;
   className?: string;
   children: ReactNode;
@@ -42,8 +42,8 @@ export function useFormValidatorsContext() {
   return useContext(formValidatorsContext);
 }
 
-export function createZodFieldValidators(schema: Record<string, z.ZodTypeAny>) {
-  const validateWith = (schemaRule: z.ZodTypeAny) => {
+export function createZodFieldValidators(schema: Record<string, z.ZodType>) {
+  const validateWith = (schemaRule: z.ZodType) => {
     return ({ value }: { value: unknown }) => {
       const result = schemaRule.safeParse(value);
       return result.success ? undefined : result.error.issues[0]?.message;
