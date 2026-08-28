@@ -6,6 +6,7 @@ import { InputPassword } from '../../components/input-password';
 import { Textarea } from '../../components/textarea';
 import { DatePicker } from '../datepicker/datepicker';
 import { type DateRange, DateRangePicker } from '../daterangepicker/daterangepicker';
+import { Editor } from '../editor';
 import { RadioGroup } from '../radio-group';
 import { Select, type SelectOption } from '../select/select';
 import { TimePicker } from '../timepicker/timepicker';
@@ -60,6 +61,7 @@ function AllFieldTypesDemo() {
     defaultValues: {
       name: '',
       bio: '',
+      description: '',
       category: '',
       priority: 'medium',
       agree: false,
@@ -76,6 +78,7 @@ function AllFieldTypesDemo() {
   const schema = {
     name: v.pipe(v.string(), v.minLength(1, 'Vui lòng nhập tên')),
     bio: v.pipe(v.string(), v.maxLength(200, 'Tối đa 200 ký tự')),
+    description: v.pipe(v.string(), v.minLength(1, 'Vui lòng nhập mô tả chi tiết')),
     category: v.pipe(v.string(), v.minLength(1, 'Vui lòng chọn danh mục')),
     agree: v.pipe(
       v.boolean(),
@@ -99,6 +102,10 @@ function AllFieldTypesDemo() {
 
       <FormField name="bio" label="Giới thiệu">
         <Textarea placeholder="Vài dòng giới thiệu…" rows={3} />
+      </FormField>
+
+      <FormField name="description" label="Mô tả chi tiết" required>
+        <Editor placeholder="Nhập mô tả chi tiết…" minHeight={140} />
       </FormField>
 
       <FormField name="agree" label="Điều khoản">

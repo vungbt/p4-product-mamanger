@@ -6,7 +6,6 @@ export * from './box';
 export * from './breadcrumb';
 export * from './button';
 export * from './carousel';
-export * from './carousel';
 export * from './checkbox';
 export * from './common';
 export * from './divider';
