@@ -17,13 +17,13 @@ chromatic:
     - cd libs/ui
     - npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --auto-accept-changes --exit-zero-on-changes --no-interactive 2>&1 | tee /tmp/chromatic.log
     - STORYBOOK_URL=$(grep -oE 'https://[a-z0-9]+-[a-z0-9]+\.chromatic\.com/' /tmp/chromatic.log | head -1)
-    - echo "STORYBOOK_URL=$STORYBOOK_URL" >> /tmp/chromatic.env
-    - echo "Storybook deployed to $STORYBOOK_URL"
+    - echo "STORYBOOK_URL=$STORYBOOK_URL" > chromatic.env
+    - echo "📖 Storybook Preview → $STORYBOOK_URL"
   after_script:
     - |
-      if [ -f /tmp/chromatic.env ]; then
-        . /tmp/chromatic.env
-        if [ -n "$STORYBOOK_URL" ] && [ -n "$CI_MERGE_REQUEST_IID" ] && [ -n "$GITLAB_TOKEN" ]; then
+      if [ -f /tmp/chromatic.log ] && [ -n "$GITLAB_TOKEN" ] && [ -n "$CI_MERGE_REQUEST_IID" ]; then
+        STORYBOOK_URL=$(grep -oE 'https://[a-z0-9]+-[a-z0-9]+\.chromatic\.com/' /tmp/chromatic.log | head -1)
+        if [ -n "$STORYBOOK_URL" ]; then
           curl --fail --silent --request POST \
             --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
             --header "Content-Type: application/json" \
@@ -31,6 +31,9 @@ chromatic:
             "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes" > /dev/null 2>&1 || true
         fi
       fi
+  artifacts:
+    reports:
+      dotenv: libs/ui/chromatic.env
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
@@ -46,7 +49,4 @@ chromatic:
     PNPM_HOME: .pnpm-store
   environment:
     name: storybook/$CI_COMMIT_REF_SLUG
-    action: start
-    deployment_tier: development
-    auto_stop_in: 30 days
-    url: https://6a913af8333b88bd9dbbb2e6-${CI_COMMIT_SHORT_SHA}.chromatic.com/
+    url: $STORYBOOK_URL
