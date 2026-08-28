@@ -10,7 +10,7 @@ import {
   toastInfo,
   toastSuccess,
   useAppForm,
-  z,
+  v,
 } from '@p4/ui';
 import { useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
@@ -27,10 +27,10 @@ export default function StorefrontRegisterPage() {
 
   const schema = useMemo(
     () => ({
-      fullName: z.string().min(2, t('auth.fullNameRequired')),
-      email: z.string().email(t('auth.emailInvalid')),
-      password: z.string().min(6, t('auth.passwordMinLength')),
-      confirmPassword: z.string().min(1, t('auth.confirmPasswordRequired')),
+      fullName: v.pipe(v.string(), v.minLength(2, t('auth.fullNameRequired'))),
+      email: v.pipe(v.string(), v.email(t('auth.emailInvalid'))),
+      password: v.pipe(v.string(), v.minLength(6, t('auth.passwordMinLength'))),
+      confirmPassword: v.pipe(v.string(), v.minLength(1, t('auth.confirmPasswordRequired'))),
     }),
     [t],
   );

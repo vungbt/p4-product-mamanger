@@ -1,5 +1,6 @@
 import type { AnyFormState } from '@tanstack/react-form';
 import { createFormHook, createFormHookContexts, useForm, useStore } from '@tanstack/react-form';
+import { valibotValidator } from '@tanstack/valibot-form-adapter';
 import {
   type ComponentType,
   createContext,
@@ -7,10 +8,10 @@ import {
   type ReactNode,
   useContext,
 } from 'react';
-import { z } from 'zod';
+import * as v from 'valibot';
 import { cn } from '../../helpers/utils';
 
-export { useForm, useStore, z };
+export { useForm, useStore, v };
 
 type FieldValidators = Record<string, unknown>;
 
@@ -19,7 +20,7 @@ type AppFormWrapperProps = {
     AppForm: ComponentType<{ children?: ReactNode }>;
     handleSubmit: () => void;
   };
-  schema?: Record<string, z.ZodTypeAny>;
+  schema?: Record<string, v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>;
   validators?: Record<string, FieldValidators>;
   className?: string;
   children: ReactNode;
@@ -42,11 +43,13 @@ export function useFormValidatorsContext() {
   return useContext(formValidatorsContext);
 }
 
-export function createZodFieldValidators(schema: Record<string, z.ZodTypeAny>) {
-  const validateWith = (schemaRule: z.ZodTypeAny) => {
+export function createValibotFieldValidators(
+  schema: Record<string, v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>,
+) {
+  const validateWith = (schemaRule: v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>) => {
     return ({ value }: { value: unknown }) => {
-      const result = schemaRule.safeParse(value);
-      return result.success ? undefined : result.error.issues[0]?.message;
+      const result = v.safeParse(schemaRule, value);
+      return result.success ? undefined : result.issues[0]?.message;
     };
   };
 
@@ -61,6 +64,9 @@ export function createZodFieldValidators(schema: Record<string, z.ZodTypeAny>) {
   );
 }
 
+/** @deprecated Use createValibotFieldValidators instead */
+export const createZodFieldValidators = createValibotFieldValidators;
+
 export function Form({
   form,
   schema,
@@ -69,7 +75,8 @@ export function Form({
   children,
   onSubmit,
 }: AppFormWrapperProps) {
-  const resolvedValidators = validators ?? (schema ? createZodFieldValidators(schema) : undefined);
+  const resolvedValidators =
+    validators ?? (schema ? createValibotFieldValidators(schema) : undefined);
 
   return (
     <formValidatorsContext.Provider value={resolvedValidators}>
