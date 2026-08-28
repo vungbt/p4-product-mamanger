@@ -7,7 +7,7 @@ stages:
 # ============================================
 chromatic:
   stage: visual-test
-  image: node:20-alpine
+  image: node:22-alpine
   before_script:
     - corepack enable
     - corepack prepare pnpm@latest --activate
