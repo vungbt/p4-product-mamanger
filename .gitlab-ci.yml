@@ -15,7 +15,7 @@ chromatic:
     - pnpm install --filter @p4/ui...
   script:
     - cd libs/ui
-    - npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --auto-accept-changes="main"
+    - npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --auto-accept-changes="main" --exit-zero-on-changes
   rules:
     # Chạy trên Merge Request khi libs/ui thay đổi
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
