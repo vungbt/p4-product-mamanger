@@ -20,10 +20,10 @@ chromatic:
       STORYBOOK_URL=$(grep -o 'https://[a-z0-9-]*\.chromatic\.com/' /tmp/chromatic.log | head -1)
       if [ -n "$STORYBOOK_URL" ] && [ -n "$CI_MERGE_REQUEST_IID" ]; then
         curl --silent --request POST \
-          --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+          --header "JOB-TOKEN: $CI_JOB_TOKEN" \
           --header "Content-Type: application/json" \
           --data "{\"body\": \"📖 **Storybook Preview:** ${STORYBOOK_URL}\"}" \
-          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes"
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes" || true
       fi
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
