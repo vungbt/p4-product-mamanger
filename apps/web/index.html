@@ -8,12 +8,12 @@
     <script>
       // Chống FOUC: set class .dark trên <html> TRƯỚC khi React mount,
       // theo đúng key/logic của libs/ui/theme/use-dark-mode.ts (STORAGE_KEY = 'p4-theme').
-      (function () {
+      (() => {
         try {
-          var stored = localStorage.getItem('p4-theme');
-          var isDark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const stored = localStorage.getItem('p4-theme');
+          const isDark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
           document.documentElement.classList.toggle('dark', isDark);
-        } catch (e) {}
+        } catch (_e) {}
       })();
     </script>
     <link rel="icon" href="/favicon.ico" sizes="any" />

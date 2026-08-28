@@ -1,4 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
+import type { ReactPaginateProps } from 'react-paginate';
 import * as ReactPaginateModule from 'react-paginate';
 import { cn } from '../../helpers/utils';
 import { RenderIcon } from '../icons';
@@ -11,17 +12,17 @@ import { RenderIcon } from '../icons';
 // recursively (some interop paths nest the wrapper more than once) until we hit something
 // invokable (a function/class, or a React special object like memo/forwardRef with $$typeof).
 // This is a no-op when the import already resolved correctly (e.g. in apps/web's Vite setup).
-const resolveReactPaginate = (mod: unknown): ComponentType<any> => {
-  let candidate = mod as any;
+const resolveReactPaginate = (mod: unknown): ComponentType<ReactPaginateProps> => {
+  let candidate: unknown = mod;
   while (
     candidate &&
     typeof candidate !== 'function' &&
-    typeof candidate.$$typeof === 'undefined' &&
-    'default' in candidate
+    typeof (candidate as { $$typeof?: unknown }).$$typeof === 'undefined' &&
+    'default' in (candidate as object)
   ) {
-    candidate = candidate.default;
+    candidate = (candidate as { default: unknown }).default;
   }
-  return candidate as ComponentType<any>;
+  return candidate as ComponentType<ReactPaginateProps>;
 };
 
 const ReactPaginate = resolveReactPaginate(ReactPaginateModule);

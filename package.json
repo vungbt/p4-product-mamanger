@@ -22,7 +22,7 @@
     "db:tunnel": "bash scripts/db-tunnel.sh"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,jsonc}": [
+    "*.{js,jsx,ts,tsx,json,jsonc,html}": [
       "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"
     ]
   },

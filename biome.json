@@ -11,7 +11,8 @@
       "!**/dist",
       "!**/node_modules",
       "!**/.turbo",
-      "!apps/api/src/sequelize/seeders/ecommerce-seed-expanded-categories.json"
+      "!apps/api/src/sequelize/seeders/ecommerce-seed-expanded-categories.json",
+      "!docs"
     ]
   },
   "formatter": {
@@ -41,7 +42,7 @@
         "noUnusedVariables": "warn"
       },
       "complexity": {
-        "noImportantStyles": "warn"
+        "noImportantStyles": "off"
       },
       "suspicious": {
         "noUnknownAtRules": {
