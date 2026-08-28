@@ -1,0 +1,88 @@
+.p4-editor-content .tiptap {
+  outline: none;
+}
+
+.p4-editor-content .tiptap > * + * {
+  margin-top: 0.75em;
+}
+
+.p4-editor-content .tiptap h1 {
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-neutral-text-primary);
+}
+
+.p4-editor-content .tiptap h2 {
+  font-size: 1.25em;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-neutral-text-primary);
+}
+
+.p4-editor-content .tiptap p {
+  color: var(--color-neutral-text-primary);
+}
+
+.p4-editor-content .tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--color-neutral-placeholder);
+  pointer-events: none;
+}
+
+.p4-editor-content .tiptap ul,
+.p4-editor-content .tiptap ol {
+  padding-left: 1.5em;
+  color: var(--color-neutral-text-primary);
+}
+
+.p4-editor-content .tiptap ul {
+  list-style: disc;
+}
+
+.p4-editor-content .tiptap ol {
+  list-style: decimal;
+}
+
+.p4-editor-content .tiptap blockquote {
+  border-left: 3px solid var(--color-neutral-border);
+  padding-left: 1em;
+  color: var(--color-neutral-text-secondary);
+}
+
+.p4-editor-content .tiptap code {
+  background-color: var(--color-neutral-border);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-size: 0.9em;
+}
+
+.p4-editor-content .tiptap pre {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border-radius: 8px;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+}
+
+.p4-editor-content .tiptap pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.p4-editor-content .tiptap a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.p4-editor-content .tiptap img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.p4-editor-content .tiptap video {
+  max-width: 100%;
+  border-radius: 8px;
+}

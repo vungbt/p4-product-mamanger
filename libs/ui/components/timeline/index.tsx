@@ -75,7 +75,6 @@ function VerticalTimeline({
       {steps.map((step, index) => {
         const isLast = index === steps.length - 1;
         const hasIcon = !!step.icon;
-        const isActive = step.done || step.current;
 
         const dotColor = step.done
           ? 'bg-success border-success text-white'
@@ -95,7 +94,8 @@ function VerticalTimeline({
 
         return (
           <div
-            key={step.label}
+            // biome-ignore lint/suspicious/noArrayIndexKey: steps is a fixed, ordered sequence — never reordered/inserted/removed, and labels aren't guaranteed unique
+            key={index}
             className={cn('relative flex gap-3', !isLast && 'pb-6', customClasses?.step)}
           >
             {!isLast && (
@@ -172,7 +172,7 @@ function HorizontalTimeline({
             ? 'text-primary'
             : 'text-neutral-placeholder';
 
-        const lineColor = step.done ? 'bg-success-border' : 'bg-neutral-divider';
+        const lineColor = step.done ? 'bg-success' : 'bg-neutral-divider';
         const textColor = step.done
           ? 'text-neutral-text-primary'
           : step.current
@@ -181,7 +181,8 @@ function HorizontalTimeline({
 
         return (
           <div
-            key={step.label}
+            // biome-ignore lint/suspicious/noArrayIndexKey: steps is a fixed, ordered sequence — never reordered/inserted/removed, and labels aren't guaranteed unique
+            key={index}
             className={cn('flex items-center', !isLast && 'flex-1', customClasses?.step)}
           >
             <div className="flex items-center gap-2">

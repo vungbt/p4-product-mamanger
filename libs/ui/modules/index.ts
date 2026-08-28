@@ -4,6 +4,7 @@ export * from './admin-header';
 export * from './datepicker';
 export * from './daterangepicker';
 export * from './drawer';
+export * from './editor';
 export * from './footer';
 export * from './form/form';
 export * from './form/form-field';

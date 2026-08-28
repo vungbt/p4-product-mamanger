@@ -72,6 +72,7 @@ function FormFieldContent({
       'DatePicker',
       'TimePicker',
       'DateRangePicker',
+      'Editor',
     ];
     return !selfHandledErrors.includes(childName ?? '');
   };
