@@ -10,7 +10,7 @@ import {
   toastInfo,
   toastSuccess,
   useAppForm,
-  z,
+  v,
 } from '@p4/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -44,8 +44,8 @@ export default function StorefrontLoginPage() {
 
   const schema = useMemo(
     () => ({
-      email: z.string().email(t('auth.emailInvalid')),
-      password: z.string().min(1, t('auth.passwordRequired')),
+      email: v.pipe(v.string(), v.email(t('auth.emailInvalid'))),
+      password: v.pipe(v.string(), v.minLength(1, t('auth.passwordRequired'))),
     }),
     [t],
   );

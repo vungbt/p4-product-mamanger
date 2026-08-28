@@ -25,6 +25,7 @@
     "@szhsin/react-menu": "^4.5.1",
     "@tanstack/react-form": "^1.28.4",
     "@tanstack/react-table": "^8.21.3",
+    "@tanstack/valibot-form-adapter": "^0.42.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel": "^8.6.0",
@@ -43,7 +44,7 @@
     "react-time-picker": "^8.0.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.0",
-    "zod": "^4.3.6"
+    "valibot": "^1.4.2"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^10.5.10",
