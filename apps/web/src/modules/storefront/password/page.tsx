@@ -10,7 +10,7 @@ import {
   toastError,
   toastSuccess,
   useAppForm,
-  z,
+  v,
 } from '@p4/ui';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,10 +28,10 @@ export default function StorefrontPasswordPage() {
   const schema = useMemo(
     () => ({
       currentPassword: hasPassword
-        ? z.string().min(1, t('auth.currentPasswordRequired'))
-        : z.string().optional(),
-      newPassword: z.string().min(6, t('auth.passwordMinLength')),
-      confirmPassword: z.string().min(1, t('auth.confirmPasswordRequired')),
+        ? v.pipe(v.string(), v.minLength(1, t('auth.currentPasswordRequired')))
+        : v.optional(v.string()),
+      newPassword: v.pipe(v.string(), v.minLength(6, t('auth.passwordMinLength'))),
+      confirmPassword: v.pipe(v.string(), v.minLength(1, t('auth.confirmPasswordRequired'))),
     }),
     [hasPassword, t],
   );
