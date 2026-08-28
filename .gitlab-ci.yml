@@ -1,0 +1,32 @@
+stages:
+  - visual-test
+
+# ============================================
+# Chromatic — Visual Regression Testing
+# Chỉ chạy khi MR có thay đổi trong libs/ui/
+# ============================================
+chromatic:
+  stage: visual-test
+  image: node:20-alpine
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+    - pnpm install --filter @p4/ui...
+  script:
+    - cd libs/ui
+    - npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --auto-accept-changes="main"
+  rules:
+    # Chạy trên Merge Request khi libs/ui thay đổi
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - libs/ui/**/*
+    # Chạy trên main để update baseline
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - libs/ui/**/*
+  cache:
+    key: pnpm-$CI_COMMIT_REF_SLUG
+    paths:
+      - .pnpm-store
+  variables:
+    PNPM_HOME: .pnpm-store
