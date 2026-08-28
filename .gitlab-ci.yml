@@ -9,22 +9,13 @@ chromatic:
   stage: visual-test
   image: node:22-alpine
   before_script:
-    - apk add --no-cache git curl
+    - apk add --no-cache git
     - corepack enable
     - corepack prepare pnpm@latest --activate
     - pnpm install --filter @p4/ui...
   script:
     - cd libs/ui
-    - npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --auto-accept-changes --exit-zero-on-changes --no-interactive 2>&1 | tee /tmp/chromatic.log
-    - |
-      STORYBOOK_URL=$(grep -o 'https://[a-z0-9-]*\.chromatic\.com/' /tmp/chromatic.log | head -1)
-      if [ -n "$STORYBOOK_URL" ] && [ -n "$CI_MERGE_REQUEST_IID" ]; then
-        curl --silent --request POST \
-          --header "JOB-TOKEN: $CI_JOB_TOKEN" \
-          --header "Content-Type: application/json" \
-          --data "{\"body\": \"📖 **Storybook Preview:** ${STORYBOOK_URL}\"}" \
-          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes" || true
-      fi
+    - npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --auto-accept-changes --exit-zero-on-changes --no-interactive
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
@@ -40,4 +31,4 @@ chromatic:
     PNPM_HOME: .pnpm-store
   environment:
     name: storybook/$CI_COMMIT_REF_SLUG
-    url: https://6a913af8333b88bd9dbbb2e6-${CI_COMMIT_SHORT_SHA}.chromatic.com/
+    url: https://www.chromatic.com/builds?appId=6a913af8333b88bd9dbbb2e6
