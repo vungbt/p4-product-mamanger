@@ -3,7 +3,8 @@ stages:
 
 # ============================================
 # Chromatic — Visual Regression Testing
-# Chỉ chạy khi MR có thay đổi trong libs/ui/
+# MR: chỉ publish Storybook (không chụp snapshot)
+# main: publish + chụp snapshot baseline
 # ============================================
 chromatic:
   stage: visual-test
@@ -15,9 +16,14 @@ chromatic:
     - pnpm install --filter @p4/ui...
   script:
     - cd libs/ui
-    - npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --auto-accept-changes --exit-zero-on-changes --no-interactive 2>&1 | tee /tmp/chromatic.log
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
+        npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --auto-accept-changes --no-interactive 2>&1 | tee /tmp/chromatic.log
+      else
+        npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --exit-once-uploaded --no-interactive 2>&1 | tee /tmp/chromatic.log
+      fi
     - STORYBOOK_URL=$(grep -oE 'https://[a-z0-9]+-[a-z0-9]+\.chromatic\.com/' /tmp/chromatic.log | head -1)
-    - echo "STORYBOOK_URL=$STORYBOOK_URL" > chromatic.env
+    - echo "STORYBOOK_URL=${STORYBOOK_URL:-none}" > chromatic.env
     - echo "📖 Storybook Preview → $STORYBOOK_URL"
   after_script:
     - |

@@ -24,6 +24,16 @@ const NUMERIC_TEXT_FONT_SIZES = [
   '36',
   '40',
   '48',
+  'ui-stat',
+  'ui-h1',
+  'ui-h2',
+  'ui-h3',
+  'ui-body',
+  'ui-body-strong',
+  'ui-label',
+  'ui-caption',
+  'ui-overline',
+  'ui-mono',
 ] as const;
 
 const twMerge = extendTailwindMerge({
