@@ -1,6 +1,5 @@
 import type { AnyFormState } from '@tanstack/react-form';
 import { createFormHook, createFormHookContexts, useForm, useStore } from '@tanstack/react-form';
-import { valibotValidator } from '@tanstack/valibot-form-adapter';
 import {
   type ComponentType,
   createContext,

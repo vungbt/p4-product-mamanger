@@ -15,11 +15,14 @@
     "./theme/*": "./theme/*",
     "./tailwind.preset": "./tailwind.preset.ts",
     "./tailwind.preset.cjs": "./tailwind.preset.cjs",
-    "./helpers/*": "./helpers/*"
+    "./helpers/*": "./helpers/*",
+    "./locales": "./locales/index.ts"
   },
   "peerDependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "i18next": "^26.3.6",
+    "react-i18next": "^17.0.11"
   },
   "dependencies": {
     "@szhsin/react-menu": "^4.5.1",
@@ -67,7 +70,10 @@
     "storybook": "^10.5.10",
     "tailwindcss": "^3.4.17",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "@p4/i18n": "workspace:*",
+    "i18next": "^26.3.6",
+    "react-i18next": "^17.0.11"
   },
   "scripts": {
     "storybook": "storybook dev -p 6006",
