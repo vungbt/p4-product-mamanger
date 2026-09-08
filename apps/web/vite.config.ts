@@ -5,7 +5,12 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    dedupe: ['react', 'react-dom', 'i18next', 'react-i18next'],
     alias: [
+      {
+        find: '@p4/ui/locales',
+        replacement: path.resolve(__dirname, '../../libs/ui/locales/index.ts'),
+      },
       {
         find: '@p4/api-client',
         replacement: path.resolve(__dirname, '../../libs/api-client/src/index.tsx'),

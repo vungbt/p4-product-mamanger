@@ -1,10 +1,9 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import { type AppLocale, createI18n } from '@p4/i18n';
+import { uiResources } from '@p4/ui/locales';
 import en from './locales/en/common.json';
 import vi from './locales/vi/common.json';
 
-export const SUPPORTED_LOCALES = ['vi', 'en'] as const;
-export type AppLocale = (typeof SUPPORTED_LOCALES)[number];
+export { type AppLocale, SUPPORTED_LOCALES } from '@p4/i18n';
 
 export const LOCALE_STORAGE_KEY = 'p4_locale';
 
@@ -18,16 +17,13 @@ function readStoredLocale(): AppLocale {
   return 'vi';
 }
 
-void i18n.use(initReactI18next).init({
+const i18n = createI18n({
   resources: {
-    vi: { common: vi },
-    en: { common: en },
+    vi: { common: vi, ...uiResources.vi },
+    en: { common: en, ...uiResources.en },
   },
   lng: typeof window !== 'undefined' ? readStoredLocale() : 'vi',
-  fallbackLng: 'vi',
   defaultNS: 'common',
-  ns: ['common'],
-  interpolation: { escapeValue: false },
 });
 
 export function setAppLocale(locale: AppLocale) {

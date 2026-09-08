@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { RenderIcon } from '../../components/icons';
 import { cn } from '../../helpers/utils';
 
@@ -9,12 +10,8 @@ type TableEmptyProps = {
   height?: number;
 };
 
-export const TableEmpty = ({
-  message = 'No data here',
-  columnLength,
-  className,
-  height,
-}: TableEmptyProps) => {
+export const TableEmpty = ({ message, columnLength, className, height }: TableEmptyProps) => {
+  const { t } = useTranslation('ui');
   return (
     <tr>
       <td
@@ -24,7 +21,7 @@ export const TableEmpty = ({
       >
         <div className="flex w-full justify-center items-center flex-col gap-2">
           <RenderIcon name="inbox" className="text-neutral-border !w-10 !h-10" />
-          {message}
+          {message === undefined ? t('table.empty') : message}
         </div>
       </td>
     </tr>

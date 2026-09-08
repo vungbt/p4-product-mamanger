@@ -18,7 +18,8 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-i18next": "^17.0.11",
-    "react-router-dom": "^7.6.2"
+    "react-router-dom": "^7.6.2",
+    "@p4/i18n": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",
