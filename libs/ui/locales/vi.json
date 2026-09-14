@@ -4,5 +4,12 @@
   },
   "table": {
     "empty": "Không có dữ liệu"
+  },
+  "product-card": {
+    "add-to-cart": "Thêm vào giỏ hàng",
+    "stock": "Còn hàng",
+    "best-seller": "Bán chạy",
+    "new-arrival": "Hàng mới",
+    "featured": "Nổi bật"
   }
 }

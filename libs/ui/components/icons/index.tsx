@@ -38,12 +38,14 @@ import {
   Handshake,
   Heading1,
   Heading2,
+  Heart,
   Home,
   Image,
   Inbox,
   Info,
   Italic,
   Key,
+  Keyboard,
   Landmark,
   LayoutGrid,
   Link,
@@ -223,7 +225,10 @@ const iconMap = {
   'shopping-cart': ShoppingCart,
   sun: Sun,
   'log-out': LogOut,
-} satisfies Record<string, FC<LucideProps>>;
+  keyboard: Keyboard,
+  heart: Heart,
+  'heart-solid': Heart,
+} satisfies Record<string, FC<LucideProps | IconProps>>;
 
 export type IconName = keyof typeof iconMap;
 
