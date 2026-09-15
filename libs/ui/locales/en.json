@@ -4,5 +4,15 @@
   },
   "table": {
     "empty": "No data here"
+  },
+  "stat-card": {
+    "revenue": "Revenue",
+    "type-revenue": "compared to previous period",
+    "sum": "+",
+    "percent": "%",
+    "order": "Order",
+    "type-order": "pending",
+    "traffic": "Low stock products",
+    "type-traffic": "Warning threshold: stock ≤"
   }
 }
