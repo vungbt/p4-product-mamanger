@@ -4,5 +4,11 @@
   },
   "table": {
     "empty": "Không có dữ liệu"
+  },
+  "mobile-sticky-action-bar": {
+    "add-to-cart": "Thêm giỏ",
+    "buy-now": "Mua ngay",
+    "title": "Tổng tiền",
+    "checkout": "Đặt hàng"
   }
 }

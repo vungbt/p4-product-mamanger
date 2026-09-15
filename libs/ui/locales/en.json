@@ -4,5 +4,11 @@
   },
   "table": {
     "empty": "No data here"
+  },
+  "mobile-sticky-action-bar": {
+    "add-to-cart": "Add to cart",
+    "buy-now": "Buy now",
+    "title": "Total price",
+    "checkout": "Checkout"
   }
 }
