@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn, formatCurrency } from '../../helpers';
 export type FlashSaleProductCardProps = {
   className?: string;
@@ -34,6 +35,7 @@ export function FlashSaleProductCard({
   sold,
   stock,
 }: FlashSaleProductCardProps) {
+  const { t } = useTranslation('ui');
   const totalQuantity = stock + sold;
   const soldPercent = totalQuantity > 0 ? (sold / totalQuantity) * 100 : 0;
   const displayPrice = formatCurrency(salePrice);
@@ -43,7 +45,8 @@ export function FlashSaleProductCard({
       <div className="relative  rounded-xl w-full h-48">
         {sale > 0 && (
           <span className="absolute left-2 top-2 bg-error px-4 py-1 rounded-full text-neutral-white font-bold text-base">
-            -{sale}%
+            -{sale}
+            {t('flash-Sale-Card.percent')}
           </span>
         )}
         {imageUrl && (
@@ -68,9 +71,13 @@ export function FlashSaleProductCard({
         <div className="w-full bg-neutral-border rounded-full h-2">
           <div className="bg-primary-base h-2 rounded-full" style={{ width: `${soldPercent}%` }} />
         </div>
-        <p className="mt-2 text-sm text-[var(--color-neutral-text-secondary)]">
-          Đã bán {sold}/{totalQuantity}
-        </p>
+        <div className="mt-2 text-sm text-[var(--color-neutral-text-secondary)]">
+          <span>{t('flash-Sale-Card.sold')}</span>
+          <span>
+            {' '}
+            {sold}/{totalQuantity}
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -4,5 +4,9 @@
   },
   "table": {
     "empty": "Không có dữ liệu"
+  },
+  "flash-Sale-Card": {
+    "sold": "Đã bán",
+    "percent": "%"
   }
 }

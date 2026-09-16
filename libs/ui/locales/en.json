@@ -4,5 +4,9 @@
   },
   "table": {
     "empty": "No data here"
+  },
+  "flash-Sale-Card": {
+    "sold": "Sold",
+    "outOfStock": "Out of Stock"
   }
 }
