@@ -41,7 +41,7 @@ export function FlashSaleProductCard({
   const displayPrice = formatCurrency(salePrice);
   const displayOriginalPrice = originalPrice ? formatCurrency(originalPrice) : null;
   return (
-    <div className={` rounded-xl w-80 max-h-full border border-neutral-divider p-4  ${className}`}>
+    <div className={cn('rounded-xl w-80 max-h-full border border-neutral-divider p-4', className)}>
       <div className="relative  rounded-xl w-full h-48">
         {sale > 0 && (
           <span className="absolute left-2 top-2 bg-error px-4 py-1 rounded-full text-neutral-white font-bold text-base">
@@ -74,7 +74,6 @@ export function FlashSaleProductCard({
         <div className="mt-2 text-sm text-[var(--color-neutral-text-secondary)]">
           <span>{t('flash-Sale-Card.sold')}</span>
           <span>
-            {' '}
             {sold}/{totalQuantity}
           </span>
         </div>

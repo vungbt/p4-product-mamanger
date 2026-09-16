@@ -7,6 +7,6 @@
   },
   "flash-Sale-Card": {
     "sold": "Sold",
-    "outOfStock": "Out of Stock"
+    "percent": "%"
   }
 }
