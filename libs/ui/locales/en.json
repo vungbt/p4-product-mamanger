@@ -4,5 +4,10 @@
   },
   "table": {
     "empty": "No data here"
+  },
+  "status-breakdown-list": {
+    "single": "single ",
+    "period": ".",
+    "percent": "%"
   }
 }
