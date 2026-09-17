@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { cn, formatCurrency } from '../../helpers';
-import { ProgressBar } from './progress-bar';
-import { SaleTag } from './sale-tag';
+import { ProgressBar } from '../progress-bar';
+import { Tag } from '../tag';
 
 export type FlashSaleProductCardProps = {
   className?: string;
@@ -51,7 +51,8 @@ export function FlashSaleProductCard({
       <div className="relative  rounded-xl w-full h-48">
         {sale && sale > 0 ? (
           <span className="absolute p-2">
-            <SaleTag
+            <Tag
+              variant="sale"
               content={`${t('flash-Sale-Card.sale')} ${sale} ${t('flash-Sale-Card.percent')}`}
             />
           </span>

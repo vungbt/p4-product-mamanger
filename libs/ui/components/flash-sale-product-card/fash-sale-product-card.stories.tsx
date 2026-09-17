@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FlashSaleProductCard } from '.';
 
 const meta = {
-  title: 'components/flashsalecard',
+  title: 'Components/FlashSaleProductCard',
   component: FlashSaleProductCard,
   argTypes: {
     stock: {
