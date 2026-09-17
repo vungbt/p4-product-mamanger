@@ -38,7 +38,7 @@ export const Closable: Story = {
 };
 
 export const Sold: Story = {
-  args: { content: 'Sold', color: undefined, type: 'sold' },
+  args: { content: 'Sold', color: undefined, type: 'solid' },
 };
 export const AllDesignColors: Story = {
   render: () => (

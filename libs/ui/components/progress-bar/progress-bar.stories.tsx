@@ -5,7 +5,7 @@ const meta = {
   title: 'Components/ProgressBar',
   component: ProgressBar,
   argTypes: {
-    sold: {
+    currentValue: {
       control: 'number',
     },
     total: {
@@ -25,7 +25,7 @@ export const Default: Story = {
     </div>
   ),
   args: {
-    sold: 50,
+    currentValue: 50,
     total: 100,
   },
 };
@@ -37,7 +37,7 @@ export const WithEmpty: Story = {
     </div>
   ),
   args: {
-    sold: 0,
+    currentValue: 0,
     total: 100,
   },
 };
@@ -49,7 +49,7 @@ export const WithFull: Story = {
     </div>
   ),
   args: {
-    sold: 100,
+    currentValue: 100,
     total: 100,
   },
 };

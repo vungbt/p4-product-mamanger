@@ -52,7 +52,7 @@ export function FlashSaleProductCard({
         {sale && sale > 0 ? (
           <span className="absolute p-2">
             <Tag
-              type="sold"
+              type="solid"
               content={`${t('flashSaleCard.sale')} ${sale} ${t('flashSaleCard.percent')}`}
             />
           </span>
@@ -76,7 +76,7 @@ export function FlashSaleProductCard({
         </div>
       </div>
       <div className="w-full">
-        <ProgressBar sold={sold} total={totalQuantity} />
+        <ProgressBar currentValue={sold} total={totalQuantity} />
         <div className="mt-2 text-[11px] text-neutral-text-secondary">
           <span>{t('flashSaleCard.sold')}</span>
           <span>
