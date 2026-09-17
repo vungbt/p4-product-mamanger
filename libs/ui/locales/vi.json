@@ -5,7 +5,7 @@
   "table": {
     "empty": "Không có dữ liệu"
   },
-  "flash-Sale-Card": {
+  "flashSaleCard": {
     "sold": "Đã bán",
     "percent": "%",
     "sale": "-"
