@@ -38,7 +38,7 @@ export function MobileStickyActionBar({
   return (
     <div
       className={cn(
-        'w-80 border border-neutral-divider rounded-xl p-2 absolute bottom-0 px-3 py-[10px]',
+        'w-80 border border-neutral-divider rounded-xl p-2 absolute bottom-0 px-3 py-[10px] gap-3',
         className,
       )}
     >
@@ -68,19 +68,19 @@ export function MobileStickyActionBar({
       </div>
       {/* variant M4 */}
       <div
-        className={cn('flex items-center gap-2 h-11', {
+        className={cn('flex items-center justify-between gap-3 h-11 w-full px-3 py-[10px]', {
           hidden: !checkout,
         })}
       >
-        <div className="flex flex-col px-2">
-          <span className=" font-medium text-neutral-text-secondary uppercase text-lg">
+        <div className="flex flex-col">
+          <span className=" font-medium text-neutral-text-secondary uppercase text-[10.5px] tracking-wide">
             {t('mobileStickyActionBar.title')}
           </span>
-          <span className=" font-bold text-primary text-xl">
+          <span className=" font-extrabold text-primary text-lg tracking-[-0.02em]">
             {formatCurrency(checkout?.price || 0)}
           </span>
         </div>
-        <Button onClick={checkout?.onClick} className=" px-8 h-11">
+        <Button onClick={checkout?.onClick} className=" px-10 h-11">
           {t('mobileStickyActionBar.checkout')}
         </Button>
       </div>
