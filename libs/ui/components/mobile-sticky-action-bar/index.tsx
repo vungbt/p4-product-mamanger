@@ -37,11 +37,14 @@ export function MobileStickyActionBar({
   const { t } = useTranslation('ui');
   return (
     <div
-      className={cn('border border-neutral-divider rounded-xl p-2 absolute bottom-0', className)}
+      className={cn(
+        'w-80 border border-neutral-divider rounded-xl p-2 absolute bottom-0 px-3 py-[10px]',
+        className,
+      )}
     >
       {/* variant M3 */}
       <div
-        className={cn('flex items-center gap-2 w-full  h-16', {
+        className={cn('flex items-center gap-2 w-full  h-11', {
           hidden: !!checkout,
         })}
       >
@@ -49,36 +52,36 @@ export function MobileStickyActionBar({
           icon="heart"
           iconClassName={favorited ? 'text-primary fill-current' : 'text-neutral-disable'}
           onClick={onFavorite}
-          className="border border-neutral-divider bg-neutral-white rounded-lg h-12 w-12"
+          className="border border-neutral-divider bg-neutral-white rounded-lg h-11 w-11"
         />
 
         <Button
           onClick={addCart?.onClick}
-          className="flex-1 border-primary bg-pending-bg w-44 text-primary hover:text-neutral-white h-12"
+          className="flex border-primary bg-pending-bg text-primary hover:text-neutral-white h-11"
           icon="cart"
         >
-          {t('mobile-sticky-action-bar.add-to-cart')}
+          {t('mobileStickyActionBar.add-to-cart')}
         </Button>
-        <Button onClick={buy?.onClick} className="flex-1 w-full h-12">
-          {t('mobile-sticky-action-bar.buy-now')}
+        <Button onClick={buy?.onClick} className="flex-1 w-full h-11">
+          {t('mobileStickyActionBar.buy-now')}
         </Button>
       </div>
       {/* variant M4 */}
       <div
-        className={cn('flex w-80 items-center gap-2 h-16', {
+        className={cn('flex items-center gap-2 h-11', {
           hidden: !checkout,
         })}
       >
         <div className="flex flex-col px-2">
           <span className=" font-medium text-neutral-text-secondary uppercase text-lg">
-            {t('mobile-sticky-action-bar.title')}
+            {t('mobileStickyActionBar.title')}
           </span>
           <span className=" font-bold text-primary text-xl">
             {formatCurrency(checkout?.price || 0)}
           </span>
         </div>
-        <Button onClick={checkout?.onClick} className=" w-2/3 px-8 h-12">
-          {t('mobile-sticky-action-bar.checkout')}
+        <Button onClick={checkout?.onClick} className=" px-8 h-11">
+          {t('mobileStickyActionBar.checkout')}
         </Button>
       </div>
     </div>
