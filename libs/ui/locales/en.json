@@ -5,7 +5,7 @@
   "table": {
     "empty": "No data here"
   },
-  "product-card": {
+  "productCard": {
     "add-to-cart": "Add to cart",
     "stock": "Stock",
     "best-seller": "Best seller",

@@ -5,9 +5,9 @@
   "table": {
     "empty": "Không có dữ liệu"
   },
-  "product-card": {
+  "productCard": {
     "add-to-cart": "Thêm vào giỏ hàng",
-    "stock": "Còn hàng",
+    "stock": "Còn",
     "best-seller": "Bán chạy",
     "new-arrival": "Hàng mới",
     "featured": "Nổi bật"

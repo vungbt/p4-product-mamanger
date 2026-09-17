@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn, formatCurrency } from '../../helpers';
 import { Button } from '../button';
@@ -45,7 +44,7 @@ export function ProductCart({
   return (
     <div
       className={cn(
-        'max-w-80 max-h-full border border-neutral-divider bg-neutral-white rounded-xl p-4',
+        'w-[260px] max-h-full border border-neutral-divider bg-neutral-white rounded-xl p-4',
         className,
       )}
     >
@@ -65,50 +64,53 @@ export function ProductCart({
           )}
         </div>
         {type && (
-          <div className="absolute top-2 left-2 bg-error-bg text-error-base px-2 py-1 rounded-full border border-error-border">
-            <span className="font-bold text-sm">
-              {type === 'best-seller' && t('product-card.best-seller')}
-              {type === 'new-arrival' && t('product-card.new-arrival')}
-              {type === 'featured' && t('product-card.featured')}
+          <div className="absolute top-[10px] left-[10px] bg-error-bg text-error-base px-[10px] py-[3px] rounded-full border border-error-border">
+            <span className="font-bold text-[11.5px]">
+              {type === 'best-seller' && t('productCard.best-seller')}
+              {type === 'new-arrival' && t('productCard.new-arrival')}
+              {type === 'featured' && t('productCard.featured')}
             </span>
           </div>
         )}
-        <div className="absolute top-2 right-2 rounded-full bg-neutral-white">
+        <div className="flex items-center justify-center w-8 h-8 absolute top-[8px] right-[8px] rounded-full bg-neutral-white">
           <IconButton
-            icon={favorited ? 'heart-solid' : 'heart'}
+            icon="heart"
+            style={{ width: 15, height: 15 }}
             iconClassName={favorited ? 'text-primary fill-current' : 'text-neutral-disable'}
             onClick={onFavorite}
           />
         </div>
       </div>
       <div className="flex justify-between items-center">
-        <span className="text-neutral-disable font-bold">{category}</span>
+        <span className="text-neutral-disable font-bold text-[11px]">{category}</span>
         <div className="flex gap-2 items-center">
           <RenderIcon
             name="star"
-            style={{ width: 14, height: 14 }}
+            style={{ width: 12, height: 12 }}
             className="text-primary-base fill-current"
           />
-          <span className="text-neutral-text-secondary font-bold">{rating}</span>
-          <span className="text-neutral-disable">.{sold}</span>
+          <span className="text-neutral-text-secondary font-bold text-[11.5px] tracking-[0.04em]">
+            {rating}
+          </span>
+          <span className="text-neutral-disable text-[11px]">.{sold}</span>
         </div>
       </div>
       <div className="flex flex-col">
-        <span className="font-bold line-clamp-2">{name}</span>
-        <span className="text-neutral-disable text-sm line-clamp-2">{description}</span>
+        <span className="font-bold line-clamp-2 text-sm">{name}</span>
+        <span className="text-neutral-disable line-clamp-2 text-xs">{description}</span>
       </div>
       <div className="justify-between flex items-center mb-2 h-10">
-        <span className="text-primary-base font-bold text-xl">{formatCurrency(price)}</span>
-        <span className="bg-success-bg text-success-base border border-success rounded-2xl px-2 font-bold h-8 flex items-center">
-          {t('product-card.stock')}: {stock}
+        <span className="text-primary-base font-extrabold text-base">{formatCurrency(price)}</span>
+        <span className="bg-success-bg text-success border border-success-border rounded-2xl px-[10px] py-[3px] font-bold flex items-center text-[11px]">
+          {t('productCard.stock')}: {stock}
         </span>
       </div>
       <Button
-        className="w-full text-pending-clicked hover:text-neutral-white bg-primary-border hover:bg-primary-hover flex items-center border-primary"
+        className="w-full text-primary-clicked hover:text-neutral-white bg-primary-bg hover:bg-primary-hover flex items-center border-primary-border"
         onClick={onBuy}
       >
         <RenderIcon className="mr-2" name="cart" />
-        <span>{t('product-card.add-to-cart')}</span>
+        <span>{t('productCard.add-to-cart')}</span>
       </Button>
     </div>
   );

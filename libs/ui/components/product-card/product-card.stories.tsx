@@ -17,7 +17,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: (args) => <ProductCart {...args} />,
   args: {
-    favorited: true,
+    favorited: false,
     type: 'best-seller',
     imageUrl: '',
     category: 'Phụ Kiện',
@@ -33,7 +33,7 @@ export const Default: Story = {
 export const UndefinedType: Story = {
   render: (args) => <ProductCart {...args} />,
   args: {
-    favorited: true,
+    favorited: false,
     type: undefined,
     imageUrl: '',
     category: 'Phụ Kiện',
@@ -49,7 +49,7 @@ export const UndefinedType: Story = {
 export const NewArival: Story = {
   render: (args) => <ProductCart {...args} />,
   args: {
-    favorited: true,
+    favorited: false,
     type: 'new-arrival',
     imageUrl: '',
     category: 'Phụ Kiện',
