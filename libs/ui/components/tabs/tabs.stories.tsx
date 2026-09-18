@@ -6,7 +6,7 @@ import { type TabItem, Tabs } from './index';
 // `meta.args.tabs` fails.
 const TAB_ITEMS: TabItem[] = [
   { label: 'Overview', value: 0, content: 'Overview content goes here.' },
-  { label: 'Reviews', value: 1, icon: 'star', content: 'Reviews content goes here.' },
+  { label: 'Reviews', value: 1, icon: 'star-solid', content: 'Reviews content goes here.' },
   { label: 'Shipping', value: 2, content: 'Shipping content goes here.' },
 ];
 
