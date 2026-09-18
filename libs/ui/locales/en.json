@@ -5,10 +5,16 @@
   "table": {
     "empty": "No data here"
   },
+
   "mobileStickyActionBar": {
     "add-to-cart": "Add to cart",
     "buy-now": "Buy now",
     "title": "Total price",
     "checkout": "Checkout"
+  },
+  "flashSaleCard": {
+    "sold": "Sold",
+    "percent": "%",
+    "sale": "-"
   }
 }

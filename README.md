@@ -2,7 +2,7 @@
 
 > Tuần 5 · React SPA · **Monorepo** (theo pattern [smart-connection-monorepo](https://github.com/vungbt/smart-connection-monorepo)) · Admin + Storefront
 
-Repo: https://gitlab.com/training2312930/p4-product-manager
+Repo: https://github.com/vungbt/p4-product-mamanger
 
 Design: [docs/design/p4-product-manager-design.html](./docs/design/p4-product-manager-design.html)
 

@@ -10,5 +10,10 @@
     "buy-now": "Mua ngay",
     "title": "Tổng cộng",
     "checkout": "Đặt hàng"
+  },
+  "flashSaleCard": {
+    "sold": "Đã bán",
+    "percent": "%",
+    "sale": "-"
   }
 }
