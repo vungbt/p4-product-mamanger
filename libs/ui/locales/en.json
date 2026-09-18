@@ -10,7 +10,8 @@
     "stock": "Stock",
     "best-seller": "Best seller",
     "new-arrival": "New arrival",
-    "featured": "Featured"
+    "featured": "Featured",
+    "period": "."
   },
   "mobileStickyActionBar": {
     "add-to-cart": "Add to cart",

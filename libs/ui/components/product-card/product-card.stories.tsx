@@ -1,28 +1,37 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ProductCart } from '.';
+import { ProductCard } from '.';
 
 const meta = {
   title: 'Components/ProductCard',
-  component: ProductCart,
+  component: ProductCard,
   tags: ['autodocs'],
   argTypes: {
     stock: { control: 'number' },
-    sold: { control: 'number' },
+    sold: {
+      control: 'object',
+      properties: {
+        number: { control: 'number' },
+        remaining: { control: 'number' },
+      },
+    },
     rating: { control: 'number' },
     price: { control: 'number' },
   },
-} satisfies Meta<typeof ProductCart>;
+} satisfies Meta<typeof ProductCard>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {
-  render: (args) => <ProductCart {...args} />,
+  render: (args: any) => <ProductCard {...args} />,
   args: {
-    favorited: false,
+    favored: false,
     type: 'best-seller',
-    imageUrl: '',
+    thumbnail: {
+      imageUrl: '',
+      alt: '',
+    },
     category: 'Phụ Kiện',
     stock: 50,
-    sold: 150,
+    sold: { number: 200, remaining: 10 },
     name: 'DareU EK128 Pro wired red switch',
     description: 'Bàn phím cơ Gaming DareU EK128 Pro wired red switch, ',
     rating: 4.8,
@@ -31,14 +40,17 @@ export const Default: Story = {
 };
 
 export const UndefinedType: Story = {
-  render: (args) => <ProductCart {...args} />,
+  render: (args: any) => <ProductCard {...args} />,
   args: {
-    favorited: false,
+    favored: false,
     type: undefined,
-    imageUrl: '',
+    thumbnail: {
+      imageUrl: '',
+      alt: '',
+    },
     category: 'Phụ Kiện',
     stock: 50,
-    sold: 150,
+    sold: {},
     name: 'DareU EK128 Pro wired red switch',
     description: '',
     rating: 4.8,
@@ -47,14 +59,17 @@ export const UndefinedType: Story = {
 };
 
 export const NewArival: Story = {
-  render: (args) => <ProductCart {...args} />,
+  render: (args: any) => <ProductCard {...args} />,
   args: {
-    favorited: false,
+    favored: false,
     type: 'new-arrival',
-    imageUrl: '',
+    thumbnail: {
+      imageUrl: '',
+      alt: '',
+    },
     category: 'Phụ Kiện',
     stock: 50,
-    sold: 150,
+    sold: { number: 200, remaining: 30 },
     name: 'DareU EK128 Pro wired red switch',
     description:
       'Bàn phím cơ Gaming DareU EK128 Pro wired red switch,sản phẩm mới đầy đủ tính năng với 3 cổng kết nối',
