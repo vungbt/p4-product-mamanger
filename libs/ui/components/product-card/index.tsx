@@ -51,7 +51,7 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        'w-[260px] max-h-full border border-neutral-divider bg-neutral-white rounded-xl p-4',
+        'max-w-[260px] max-h-full border border-neutral-divider bg-neutral-white rounded-xl p-4',
         className,
       )}
     >
