@@ -5,6 +5,15 @@
   "table": {
     "empty": "Không có dữ liệu"
   },
+
+  "productCard": {
+    "add-to-cart": "Thêm vào giỏ hàng",
+    "stock": "Còn",
+    "best-seller": "Bán chạy",
+    "new-arrival": "Hàng mới",
+    "featured": "Nổi bật",
+    "period": "."
+  },
   "mobileStickyActionBar": {
     "add-to-cart": "Thêm giỏ",
     "buy-now": "Mua ngay",

@@ -45,6 +45,7 @@ import {
   Info,
   Italic,
   Key,
+  Keyboard,
   Landmark,
   LayoutGrid,
   Link,
@@ -225,7 +226,8 @@ const iconMap = {
   'shopping-cart': ShoppingCart,
   sun: Sun,
   'log-out': LogOut,
-} satisfies Record<string, FC<LucideProps>>;
+  keyboard: Keyboard,
+} satisfies Record<string, FC<LucideProps | IconProps>>;
 
 export type IconName = keyof typeof iconMap;
 
