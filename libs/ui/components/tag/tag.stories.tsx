@@ -37,6 +37,9 @@ export const Closable: Story = {
   args: { content: 'Sneakers', color: '#0ea5e9', onClose: fn() },
 };
 
+export const Sold: Story = {
+  args: { content: 'Sold', color: undefined, type: 'solid' },
+};
 export const AllDesignColors: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">

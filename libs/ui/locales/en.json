@@ -11,5 +11,16 @@
     "best-seller": "Best seller",
     "new-arrival": "New arrival",
     "featured": "Featured"
+  },
+  "mobileStickyActionBar": {
+    "add-to-cart": "Add to cart",
+    "buy-now": "Buy now",
+    "title": "Total price",
+    "checkout": "Checkout"
+  },
+  "flashSaleCard": {
+    "sold": "Sold",
+    "percent": "%",
+    "sale": "-"
   }
 }

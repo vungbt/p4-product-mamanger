@@ -103,6 +103,7 @@ export type IconProps = {
 export type Icon = FC<IconProps>;
 
 const iconMap = {
+  heart: Heart,
   home: Home,
   'home-solid': Home,
   /** Alias matching the exact icon name in docs/design/p4-product-manager-design.html (Section A · Icon set) */
@@ -226,8 +227,6 @@ const iconMap = {
   sun: Sun,
   'log-out': LogOut,
   keyboard: Keyboard,
-  heart: Heart,
-  'heart-solid': Heart,
 } satisfies Record<string, FC<LucideProps | IconProps>>;
 
 export type IconName = keyof typeof iconMap;

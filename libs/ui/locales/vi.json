@@ -5,11 +5,23 @@
   "table": {
     "empty": "Không có dữ liệu"
   },
+
   "productCard": {
     "add-to-cart": "Thêm vào giỏ hàng",
     "stock": "Còn",
     "best-seller": "Bán chạy",
     "new-arrival": "Hàng mới",
     "featured": "Nổi bật"
+  },
+  "mobileStickyActionBar": {
+    "add-to-cart": "Thêm giỏ",
+    "buy-now": "Mua ngay",
+    "title": "Tổng cộng",
+    "checkout": "Đặt hàng"
+  },
+  "flashSaleCard": {
+    "sold": "Đã bán",
+    "percent": "%",
+    "sale": "-"
   }
 }

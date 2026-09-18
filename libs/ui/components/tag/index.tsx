@@ -8,7 +8,7 @@ type TagProps = {
   closeIcon?: IconName;
   icon?: IconName;
   className?: string;
-  type?: 'default' | 'outline';
+  type?: 'default' | 'outline' | 'solid';
   onClose?: () => void;
 };
 
@@ -41,6 +41,7 @@ export function Tag({
         {
           '!border-neutral-border !bg-neutral-bg !text-neutral-text-primary':
             type === 'default' && !color,
+          '!bg-error !border-error !text-neutral-white': type === 'solid',
         },
         className,
       )}
