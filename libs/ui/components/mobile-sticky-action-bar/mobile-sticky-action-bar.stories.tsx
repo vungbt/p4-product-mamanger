@@ -13,24 +13,14 @@ type Story = StoryObj<typeof MobileStickyActionBar>;
 export const Primary: Story = {
   args: {
     favorited: false,
-    addCart: {
-      label: 'Thêm Giỏ',
-      onClick: () => alert('Thêm giỏ hàng'),
-    },
-    buy: {
-      label: 'Mua Ngay',
-      price: 1000000,
-      onClick: () => alert('Mua ngay'),
-    },
+    onAddCart: () => alert('Thêm giỏ hàng'),
+    onBuy: () => alert('Mua ngay'),
   },
 };
 export const Checkout: Story = {
   args: {
-    checkout: {
-      title: 'TỔNG CỘNG',
-      price: 1000000,
-      label: 'Đặt hàng',
-      onClick: () => alert('Đặt hàng'),
-    },
+    showCheckout: true,
+    checkoutPrice: 1000000,
+    onCheckout: () => alert('Đặt hàng'),
   },
 };

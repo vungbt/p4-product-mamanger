@@ -7,49 +7,44 @@ type MobileStickyActionBarProps = {
   favorited?: boolean;
   onFavorite?: () => void;
 
-  addCart?: {
-    label?: string;
-    onClick?: () => void;
-  };
-  buy?: {
-    label?: string;
-    price?: number;
-    onClick?: () => void;
-  };
+  onAddCart?: () => void;
+  onBuy?: () => void;
 
-  checkout?: {
-    title?: string;
-    price?: number;
-    label?: string;
-    onClick?: () => void;
-  };
+  /** Switches from the add-to-cart/buy row (variant M3) to the price/checkout row (variant M4). */
+  showCheckout?: boolean;
+  checkoutPrice?: number;
+  onCheckout?: () => void;
   className?: string;
 };
 
 export function MobileStickyActionBar({
   onFavorite,
   favorited,
-  addCart,
-  buy,
-  checkout,
+  onAddCart,
+  onBuy,
+  showCheckout,
+  checkoutPrice,
+  onCheckout,
   className,
 }: MobileStickyActionBarProps) {
   const { t } = useTranslation('ui');
   return (
     <div
       className={cn(
-        'w-80 border border-neutral-divider rounded-xl p-2 absolute bottom-0 px-3 py-[10px] gap-3',
+        // Placement (fixed/absolute + inset) is the consumer's call, not this component's — pass it
+        // via `className` (e.g. `fixed inset-x-0 bottom-0 mx-auto`) when mounting the bar.
+        'w-full max-w-80 border border-neutral-divider rounded-xl p-2 px-3 py-2.5 gap-3',
         className,
       )}
     >
       {/* variant M3 */}
       <div
         className={cn('flex items-center gap-2 w-full  h-11', {
-          hidden: !!checkout,
+          hidden: showCheckout,
         })}
       >
         <IconButton
-          icon="heart"
+          icon={favorited ? 'heart-solid' : 'heart-outline'}
           iconClassName={favorited ? 'text-primary fill-current' : 'text-neutral-disable'}
           onClick={onFavorite}
           className="border border-neutral-divider bg-neutral-white rounded-lg h-11 w-11"
@@ -57,19 +52,19 @@ export function MobileStickyActionBar({
 
         <Button
           icon="cart"
-          onClick={addCart?.onClick}
+          onClick={onAddCart}
           className="flex border-primary bg-pending-bg text-primary hover:text-neutral-white h-11"
         >
           {t('mobileStickyActionBar.add-to-cart')}
         </Button>
-        <Button onClick={buy?.onClick} className="flex-1 w-full h-11">
+        <Button onClick={onBuy} className="flex-1 w-full h-11">
           {t('mobileStickyActionBar.buy-now')}
         </Button>
       </div>
       {/* variant M4 */}
       <div
-        className={cn('flex items-center justify-between gap-3 h-11 w-full px-3 py-[10px]', {
-          hidden: !checkout,
+        className={cn('flex items-center justify-between gap-3 h-11 w-full px-3 py-2.5', {
+          hidden: !showCheckout,
         })}
       >
         <div className="flex flex-col">
@@ -77,10 +72,10 @@ export function MobileStickyActionBar({
             {t('mobileStickyActionBar.title')}
           </span>
           <span className=" font-extrabold text-primary text-lg tracking-[-0.02em]">
-            {formatCurrency(checkout?.price || 0)}
+            {formatCurrency(checkoutPrice || 0)}
           </span>
         </div>
-        <Button onClick={checkout?.onClick} className=" px-10 h-11">
+        <Button onClick={onCheckout} className=" px-10 h-11">
           {t('mobileStickyActionBar.checkout')}
         </Button>
       </div>

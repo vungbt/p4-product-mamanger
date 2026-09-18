@@ -18,6 +18,7 @@ export * from './input';
 export * from './input-number';
 export * from './input-otp';
 export * from './input-password';
+export * from './link-image-provider';
 export * from './menu';
 export * from './pagination';
 export * from './radio';

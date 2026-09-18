@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { cn, formatCurrency } from '../../helpers';
+import { UiImage } from '../link-image-provider';
 import { ProgressBar } from '../progress-bar';
 import { Tag } from '../tag';
 
@@ -8,7 +9,11 @@ export type FlashSaleProductCardProps = {
 
   sale: number;
 
-  imageUrl: string;
+  image: {
+    url: string;
+    /** Omit to fall back to `name`. */
+    alt?: string;
+  };
 
   name: string;
   description?: string;
@@ -30,7 +35,7 @@ export type FlashSaleProductCardProps = {
 export function FlashSaleProductCard({
   className,
   sale,
-  imageUrl,
+  image,
   name,
   description,
   originalPrice,
@@ -44,7 +49,9 @@ export function FlashSaleProductCard({
   return (
     <div
       className={cn(
-        'rounded-xl w-60 border border-neutral-border p-[14px] flex flex-col gap-[5px]',
+        // Intrinsic floor only — actual rendered width comes from whatever layout (grid/flex) the
+        // consumer places this in, not a hardcoded width here.
+        'rounded-xl min-w-60 border border-neutral-border p-3.5 flex flex-col gap-[5px]',
         className,
       )}
     >
@@ -57,8 +64,12 @@ export function FlashSaleProductCard({
             />
           </span>
         ) : null}
-        {imageUrl && (
-          <img src={imageUrl} alt={name} className="w-full h-full object-cover rounded-xl" />
+        {image?.url && (
+          <UiImage
+            src={image.url}
+            alt={image.alt ?? name}
+            className="w-full h-full object-cover rounded-xl"
+          />
         )}
       </div>
       <div>

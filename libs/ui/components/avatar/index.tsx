@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { cn } from '../../helpers/utils';
+import { UiImage } from '../link-image-provider';
 
 type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -43,7 +44,7 @@ export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
       )}
     >
       {showImage ? (
-        <img
+        <UiImage
           src={src}
           alt={name ?? 'avatar'}
           width={px}

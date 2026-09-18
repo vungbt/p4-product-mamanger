@@ -1,4 +1,5 @@
 import type { CSSProperties, MouseEventHandler, ReactNode } from 'react';
+import { UiLink } from '../../components/link-image-provider';
 import { cn } from '../../helpers/utils';
 
 export type FooterContactItem = {
@@ -144,14 +145,14 @@ export function Footer({
               </div>
               <div className="flex flex-col gap-2.5">
                 {group.links.map((link, linkIndex) => (
-                  <a
+                  <UiLink
                     key={link.key ?? linkIndex}
                     href={link.href ?? '#'}
                     onClick={link.onClick}
                     className="text-14 text-[#94a3b8] no-underline transition-colors hover:text-white"
                   >
                     {link.label}
-                  </a>
+                  </UiLink>
                 ))}
               </div>
             </div>
@@ -192,6 +193,8 @@ export function Footer({
               </span>
               <div className="flex gap-2">
                 {socialLinks.map((social, index) => (
+                  // Always a real <a>, not UiLink: external (target="_blank"/rel), so it must never go
+                  // through the app's client-side router — react-router's <Link> isn't for off-site URLs.
                   <a
                     key={social.key ?? index}
                     href={social.href ?? '#'}
@@ -222,14 +225,14 @@ export function Footer({
           {hasBottomLinks && (
             <div className="flex gap-[18px] text-13 text-[#94a3b8]">
               {bottomLinks.map((link, index) => (
-                <a
+                <UiLink
                   key={link.key ?? index}
                   href={link.href ?? '#'}
                   onClick={link.onClick}
                   className="no-underline transition-colors hover:text-white"
                 >
                   {link.label}
-                </a>
+                </UiLink>
               ))}
             </div>
           )}
