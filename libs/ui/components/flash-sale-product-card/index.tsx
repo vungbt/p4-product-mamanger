@@ -44,7 +44,7 @@ export function FlashSaleProductCard({
   return (
     <div
       className={cn(
-        'rounded-xl w-60 border border-neutral-border p-[14px] flex flex-col gap-[5px]',
+        'rounded-xl min-w-60 border border-neutral-border p-[14px] flex flex-col gap-[5px]',
         className,
       )}
     >

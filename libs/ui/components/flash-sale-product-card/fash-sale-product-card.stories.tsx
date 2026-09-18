@@ -27,7 +27,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {
-  render: (args) => <FlashSaleProductCard {...args} />,
+  render: (args) => (
+    <div className="inline-flex w-[260px]">
+      <FlashSaleProductCard {...args} />
+    </div>
+  ),
   args: {
     sale: 20,
     name: 'Bàn phím cơ AULA SF2099 RGB Mechanical Keyboard',
@@ -41,7 +45,18 @@ export const Default: Story = {
   },
 };
 export const WithoutSale: Story = {
-  render: (args) => <FlashSaleProductCard {...args} />,
+  render: (args) => (
+    <div className=" gap-2 flex-nowrap grid grid-cols-4  ">
+      <FlashSaleProductCard {...args} />
+      <FlashSaleProductCard {...args} />
+      <FlashSaleProductCard {...args} />
+      <FlashSaleProductCard {...args} />
+      <FlashSaleProductCard {...args} />
+      <FlashSaleProductCard {...args} />
+      <FlashSaleProductCard {...args} />
+      <FlashSaleProductCard {...args} />
+    </div>
+  ),
   args: {
     sale: 0,
     name: 'Bàn phím cơ AULA SF2099 RGB Mechanical Keyboard',
@@ -56,11 +71,16 @@ export const WithoutSale: Story = {
 };
 
 export const WidthDescription: Story = {
-  render: (args) => <FlashSaleProductCard {...args} />,
+  render: (args) => (
+    <div className="inline-flex">
+      <FlashSaleProductCard {...args} />
+      <FlashSaleProductCard {...args} />
+    </div>
+  ),
   args: {
     sale: 20,
-    name: 'Bàn phím cơ AULA SF2099 RGB Mechanical Keyboarddsadsadasdasdasdasdas',
-    description: 'Bàn phím cơ ngon trong tầm giá ,3 cổng kết nối 74 phím , led rgb, hot swap',
+    name: 'Bàn phím cơ AULA SF2099 RGB Mechanical',
+    description: 'Bàn phím cơ ngon trong tầm giá',
     originalPrice: 2000000,
     salePrice: 1000000,
     imageUrl:
