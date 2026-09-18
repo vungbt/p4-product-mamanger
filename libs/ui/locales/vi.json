@@ -5,7 +5,7 @@
   "table": {
     "empty": "Không có dữ liệu"
   },
-  "stat-card": {
+  "statCard": {
     "revenue": "Doanh thu",
     "type-revenue": "so với kỳ trước",
     "sum": "+",
