@@ -56,9 +56,9 @@ export function MobileStickyActionBar({
         />
 
         <Button
+          icon="cart"
           onClick={addCart?.onClick}
           className="flex border-primary bg-pending-bg text-primary hover:text-neutral-white h-11"
-          icon="cart"
         >
           {t('mobileStickyActionBar.add-to-cart')}
         </Button>
