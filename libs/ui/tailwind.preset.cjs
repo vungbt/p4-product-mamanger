@@ -3,6 +3,13 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      // Extends (not replaces) Tailwind's default spacing scale — this key follows its own
+      // convention (n * 4px), so `1.25` = 5px and `4.5` = 18px, matching how `2.5`/`3.5` already
+      // work out of the box.
+      spacing: {
+        1.25: '5px',
+        4.5: '18px',
+      },
       lineHeight: {
         64: 'var(--lineHeight-64)',
         56: 'var(--lineHeight-56)',
@@ -101,8 +108,11 @@ module.exports = {
       16: 'var(--size-16)',
       15: 'var(--size-15)',
       14: 'var(--size-14)',
+      13.5: 'var(--size-13-5)',
       13: 'var(--size-13)',
       12: 'var(--size-12)',
+      11: 'var(--size-11)',
+      10.5: 'var(--size-10-5)',
       10: 'var(--size-10)',
       8: 'var(--size-8)',
       xs: 'var(--size-12)',

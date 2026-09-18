@@ -13,8 +13,7 @@
       "default": "./index.ts"
     },
     "./theme/*": "./theme/*",
-    "./tailwind.preset": "./tailwind.preset.ts",
-    "./tailwind.preset.cjs": "./tailwind.preset.cjs",
+    "./tailwind.preset": "./tailwind.preset.cjs",
     "./helpers/*": "./helpers/*",
     "./locales": "./locales/index.ts"
   },

@@ -31,8 +31,6 @@ export function MobileStickyActionBar({
   return (
     <div
       className={cn(
-        // Placement (fixed/absolute + inset) is the consumer's call, not this component's — pass it
-        // via `className` (e.g. `fixed inset-x-0 bottom-0 mx-auto`) when mounting the bar.
         'w-full max-w-80 border border-neutral-divider rounded-xl p-2 px-3 py-2.5 gap-3',
         className,
       )}
@@ -68,7 +66,7 @@ export function MobileStickyActionBar({
         })}
       >
         <div className="flex flex-col">
-          <span className=" font-medium text-neutral-text-secondary uppercase text-[10.5px] tracking-wide">
+          <span className=" font-medium text-neutral-text-secondary uppercase text-10.5 tracking-wide">
             {t('mobileStickyActionBar.title')}
           </span>
           <span className=" font-extrabold text-primary text-lg tracking-[-0.02em]">
