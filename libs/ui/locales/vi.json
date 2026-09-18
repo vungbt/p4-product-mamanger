@@ -5,12 +5,6 @@
   "table": {
     "empty": "Không có dữ liệu"
   },
-  "mobileStickyActionBar": {
-    "add-to-cart": "Thêm giỏ",
-    "buy-now": "Mua ngay",
-    "title": "Tổng cộng",
-    "checkout": "Đặt hàng"
-  },
   "flashSaleCard": {
     "sold": "Đã bán",
     "percent": "%",

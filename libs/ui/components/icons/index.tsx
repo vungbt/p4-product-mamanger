@@ -38,7 +38,6 @@ import {
   Handshake,
   Heading1,
   Heading2,
-  Heart,
   Home,
   Image,
   Inbox,
@@ -102,7 +101,6 @@ export type IconProps = {
 export type Icon = FC<IconProps>;
 
 const iconMap = {
-  heart: Heart,
   home: Home,
   'home-solid': Home,
   /** Alias matching the exact icon name in docs/design/p4-product-manager-design.html (Section A · Icon set) */
