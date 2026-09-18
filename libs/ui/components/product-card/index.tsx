@@ -51,11 +51,11 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        'max-w-[260px] max-h-full border border-neutral-divider bg-neutral-white rounded-xl p-4',
+        'min-w-[260px] w-[260px] border border-neutral-divider bg-neutral-white rounded-xl p-4',
         className,
       )}
     >
-      <div className="relative h-48 mb-2">
+      <div className="relative h-48 w-full mb-2">
         <div className="w-full h-full bg-neutral-divider rounded-xl p-4">
           {thumbnail.imageUrl ? (
             <img
