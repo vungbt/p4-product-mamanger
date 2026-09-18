@@ -3,7 +3,7 @@
 ## 1. Clone & cài
 
 ```bash
-git clone git@gitlab.com:training2312930/p4-product-manager.git
+git clone git@github.com:vungbt/p4-product-mamanger.git
 cd p4-product-manager
 pnpm install
 cp .env.example .env
