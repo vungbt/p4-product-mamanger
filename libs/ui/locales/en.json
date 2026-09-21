@@ -16,5 +16,14 @@
     "sold": "Sold",
     "percent": "%",
     "sale": "-"
+  },
+  "productCard": {
+    "addToCart": "Add to cart",
+    "outOfStock": "Out of stock",
+    "inStock": "{{count}} left",
+    "sold": "{{count}} sold",
+    "sale": "−{{percent}}%",
+    "favoriteAdd": "Add to favorites",
+    "favoriteRemove": "Remove from favorites"
   }
 }
