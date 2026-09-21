@@ -91,17 +91,17 @@ export function ProductCard({
         </div>
       </div>
       <div className="flex justify-between items-center">
-        <span className="text-neutral-disable font-bold text-[11px]">{category}</span>
+        <span className="text-neutral-disable font-bold text-11">{category}</span>
         <div className="flex gap-2 items-center">
           <RenderIcon
             name={favored ? 'star-solid' : 'star-outline'}
             className="text-primary-base fill-current !w-3 !h-3"
           />
-          <span className="text-neutral-text-secondary font-bold text-[11.5px] tracking-[0.04em]">
+          <span className="text-neutral-text-secondary font-bold text-12 tracking-[0.04em]">
             {rating}
           </span>
           {soldCount && soldCount > 0 ? (
-            <span className="text-neutral-disable text-[11px]">
+            <span className="text-neutral-disable text-11">
               {t('productCard.period')}
               {soldCount}
             </span>
@@ -115,8 +115,8 @@ export function ProductCard({
       <div className="justify-between flex items-center mb-2 h-10">
         <span className="text-primary-base font-extrabold text-base">{formatCurrency(price)}</span>
         {stock && stock > 0 ? (
-          <span className="bg-success-bg text-success border border-success-border rounded-2xl px-[10px] py-[3px] font-bold flex items-center text-[11px]">
-            <span className="text-neutral-disable text-[11px]">
+          <span className="bg-success-bg text-success border border-success-border rounded-2xl px-2.5 py-1 font-bold flex items-center text-11">
+            <span className="text-neutral-disable text-11">
               {t('productCard.stock')}: {stock}
             </span>
           </span>
