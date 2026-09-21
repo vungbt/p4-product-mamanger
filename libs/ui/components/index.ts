@@ -21,6 +21,7 @@ export * from './input-password';
 export * from './link-image-provider';
 export * from './menu';
 export * from './pagination';
+export * from './product-card';
 export * from './radio';
 export * from './switch';
 export * from './tabs';

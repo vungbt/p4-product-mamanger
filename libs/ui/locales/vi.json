@@ -15,5 +15,14 @@
     "sold": "Đã bán",
     "percent": "%",
     "sale": "-"
+  },
+  "productCard": {
+    "addToCart": "Thêm vào giỏ",
+    "outOfStock": "Hết hàng",
+    "inStock": "Còn {{count}}",
+    "sold": "{{count}} đã bán",
+    "sale": "−{{percent}}%",
+    "favoriteAdd": "Thêm vào yêu thích",
+    "favoriteRemove": "Bỏ yêu thích"
   }
 }

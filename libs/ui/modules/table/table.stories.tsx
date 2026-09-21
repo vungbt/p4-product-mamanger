@@ -29,9 +29,9 @@ const columns: ColumnDef<ProductRow>[] = [
     cell: ({ getValue }) => {
       const status = getValue<ProductRow['status']>();
       return status === 'active' ? (
-        <Tag content="Active" color="#22c55e" />
+        <Tag content="Active" color="success" />
       ) : (
-        <Tag content="Draft" color="#94a3b8" />
+        <Tag content="Draft" color="pending" />
       );
     },
   },
