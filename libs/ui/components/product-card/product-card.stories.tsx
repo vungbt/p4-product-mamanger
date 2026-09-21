@@ -21,7 +21,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {
-  render: (args: any) => <ProductCard {...args} />,
+  render: (args: any) => (
+    <div className="inline-flex">
+      <ProductCard {...args} />
+    </div>
+  ),
   args: {
     favored: false,
     type: 'best-seller',
@@ -40,7 +44,6 @@ export const Default: Story = {
 };
 
 export const UndefinedType: Story = {
-  render: (args: any) => <ProductCard {...args} />,
   args: {
     favored: false,
     type: undefined,
@@ -56,10 +59,28 @@ export const UndefinedType: Story = {
     rating: 4.8,
     price: 1043500,
   },
+  render: (args: any) => (
+    <div className="grid grid-cols-3 gap-4">
+      <ProductCard {...args} type="best-seller" />
+      <ProductCard {...args} type="featured" />
+      <ProductCard {...args} type="new-arrival" />
+      <ProductCard
+        {...args}
+        type={undefined}
+        stock={0}
+        description="Bàn phím cơ Gaming DareU EK128 Pro wired red switch"
+      />
+    </div>
+  ),
 };
 
 export const NewArival: Story = {
-  render: (args: any) => <ProductCard {...args} />,
+  render: (args: any) => (
+    <div className="inline-flex gap-4">
+      <ProductCard {...args} />
+      <ProductCard {...args} />
+    </div>
+  ),
   args: {
     favored: false,
     type: 'new-arrival',

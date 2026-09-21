@@ -112,9 +112,13 @@ export function ProductCard({
       </div>
       <div className="justify-between flex items-center mb-2 h-10">
         <span className="text-primary-base font-extrabold text-base">{formatCurrency(price)}</span>
-        <span className="bg-success-bg text-success border border-success-border rounded-2xl px-[10px] py-[3px] font-bold flex items-center text-[11px]">
-          {t('productCard.stock')}: {stock}
-        </span>
+        {stock && stock > 0 ? (
+          <span className="bg-success-bg text-success border border-success-border rounded-2xl px-[10px] py-[3px] font-bold flex items-center text-[11px]">
+            <span className="text-neutral-disable text-[11px]">
+              {t('productCard.stock')}: {stock}
+            </span>
+          </span>
+        ) : null}
       </div>
       <Button
         className="w-full text-primary-clicked hover:text-neutral-white bg-primary-bg hover:bg-primary-hover flex items-center border-primary-border"
