@@ -31,7 +31,11 @@ type Story = StoryObj<typeof meta>;
 // layout. A single card with no sizing parent would otherwise stretch to the full canvas width, so
 // these single-card stories wrap it in `inline-flex` (shrink-to-fit) to preview it at its natural size.
 export const Default: Story = {
-  render: (args) => <FlashSaleProductCard {...args} />,
+  render: (args) => (
+    <div className="inline-flex">
+      <FlashSaleProductCard {...args} />
+    </div>
+  ),
   args: {
     sale: 20,
     name: 'Bàn phím cơ AULA SF2099 RGB Mechanical Keyboard',
@@ -46,7 +50,11 @@ export const Default: Story = {
   },
 };
 export const WithoutSale: Story = {
-  render: (args) => <FlashSaleProductCard {...args} />,
+  render: (args) => (
+    <div className="inline-flex">
+      <FlashSaleProductCard {...args} />
+    </div>
+  ),
   args: {
     sale: 0,
     name: 'Bàn phím cơ AULA SF2099 RGB Mechanical Keyboard',
@@ -62,7 +70,11 @@ export const WithoutSale: Story = {
 };
 
 export const WidthDescription: Story = {
-  render: (args) => <FlashSaleProductCard {...args} />,
+  render: (args) => (
+    <div className="inline-flex">
+      <FlashSaleProductCard {...args} />
+    </div>
+  ),
   args: {
     sale: 20,
     name: 'Bàn phím cơ AULA SF2099 RGB Mechanical',

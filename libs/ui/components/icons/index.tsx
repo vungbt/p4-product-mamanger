@@ -52,7 +52,6 @@ import {
   ListOrdered,
   Loader2,
   LogOut,
-  type LucideProps,
   Mail,
   Minus,
   Moon,
@@ -100,13 +99,12 @@ export type IconProps = {
   className?: string;
   style?: CSSProperties;
   transform?: string;
-  strokeWidth?: number | string;
+  strokeWidth?: number;
 };
 
 export type Icon = FC<IconProps>;
 
 const iconMap = {
-  keyboard: Keyboard,
   'heart-solid': HeartSolid,
   'heart-outline': HeartOutline,
   home: Home,
@@ -232,7 +230,8 @@ const iconMap = {
   'shopping-cart': ShoppingCart,
   sun: Sun,
   'log-out': LogOut,
-} satisfies Record<string, FC<LucideProps | IconProps>>;
+  keyboard: Keyboard,
+} satisfies Record<string, FC<IconProps>>;
 
 export type IconName = keyof typeof iconMap;
 

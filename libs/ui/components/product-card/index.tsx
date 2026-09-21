@@ -51,7 +51,7 @@ export function ProductCard({
   return (
     <div
       className={cn(
-        'min-w-[260px] border border-neutral-divider bg-neutral-white rounded-xl p-4',
+        'min-w-60 border border-neutral-divider bg-neutral-white rounded-xl p-4',
         className,
       )}
     >

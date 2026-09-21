@@ -49,7 +49,7 @@ export function FlashSaleProductCard({
   return (
     <div
       className={cn(
-        'rounded-xl w-60 border border-neutral-border p-[14px] flex flex-col gap-[5px]',
+        'rounded-xl min-w-60 border border-neutral-border p-3.5 flex flex-col gap-1.25',
         className,
       )}
     >
@@ -71,7 +71,7 @@ export function FlashSaleProductCard({
         )}
       </div>
       <div>
-        <span className="text-neutral-black font-medium text-13.5 line-clamp-2">{name}</span>
+        <span className="text-neutral-black font-medium text-sm line-clamp-2">{name}</span>
         <span className="text-neutral-text-secondary text-12 line-clamp-1">{description}</span>
         <div className="flex mt-2 ">
           <div className="flex items-center gap-2">
