@@ -84,9 +84,8 @@ export function ProductCard({
         )}
         <div className="flex items-center justify-center w-8 h-8 absolute top-2 right-2 rounded-full bg-neutral-white">
           <IconButton
-            icon="heart"
+            icon={favored ? 'heart-solid' : 'heart-outline'}
             className="!h-4 !w-4"
-            iconClassName={favored ? 'text-primary fill-current' : 'text-neutral-disable'}
             onClick={onFavorite}
           />
         </div>
@@ -94,7 +93,10 @@ export function ProductCard({
       <div className="flex justify-between items-center">
         <span className="text-neutral-disable font-bold text-[11px]">{category}</span>
         <div className="flex gap-2 items-center">
-          <RenderIcon name="star" className="text-primary-base fill-current !w-3 !h-3" />
+          <RenderIcon
+            name={favored ? 'star-solid' : 'star-outline'}
+            className="text-primary-base fill-current !w-3 !h-3"
+          />
           <span className="text-neutral-text-secondary font-bold text-[11.5px] tracking-[0.04em]">
             {rating}
           </span>

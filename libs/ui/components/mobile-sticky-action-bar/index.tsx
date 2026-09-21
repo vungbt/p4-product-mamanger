@@ -42,7 +42,7 @@ export function MobileStickyActionBar({
         })}
       >
         <IconButton
-          icon="heart"
+          icon={favorited ? 'heart-solid' : 'heart-outline'}
           iconClassName={favorited ? 'text-primary fill-current' : 'text-neutral-disable'}
           onClick={onFavorite}
           className="border border-neutral-divider bg-neutral-white rounded-lg h-11 w-11"

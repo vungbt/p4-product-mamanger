@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { cn, formatCurrency } from '../../helpers';
+import { UiImage } from '../link-image-provider';
 import { ProgressBar } from '../progress-bar';
 import { Tag } from '../tag';
 
@@ -8,7 +9,11 @@ export type FlashSaleProductCardProps = {
 
   sale: number;
 
-  imageUrl: string;
+  image: {
+    url: string;
+    /** Omit to fall back to `name`. */
+    alt?: string;
+  };
 
   name: string;
   description?: string;
@@ -30,7 +35,7 @@ export type FlashSaleProductCardProps = {
 export function FlashSaleProductCard({
   className,
   sale,
-  imageUrl,
+  image,
   name,
   description,
   originalPrice,
@@ -44,7 +49,7 @@ export function FlashSaleProductCard({
   return (
     <div
       className={cn(
-        'rounded-xl min-w-60 border border-neutral-border p-[14px] flex flex-col gap-[5px]',
+        'rounded-xl w-60 border border-neutral-border p-[14px] flex flex-col gap-[5px]',
         className,
       )}
     >
@@ -57,12 +62,16 @@ export function FlashSaleProductCard({
             />
           </span>
         ) : null}
-        {imageUrl && (
-          <img src={imageUrl} alt={name} className="w-full h-full object-cover rounded-xl" />
+        {image?.url && (
+          <UiImage
+            src={image.url}
+            alt={image.alt ?? name}
+            className="w-full h-full object-cover rounded-xl"
+          />
         )}
       </div>
       <div>
-        <span className="text-neutral-black font-medium text-[13.5px] line-clamp-2">{name}</span>
+        <span className="text-neutral-black font-medium text-13.5 line-clamp-2">{name}</span>
         <span className="text-neutral-text-secondary text-12 line-clamp-1">{description}</span>
         <div className="flex mt-2 ">
           <div className="flex items-center gap-2">
@@ -77,7 +86,7 @@ export function FlashSaleProductCard({
       </div>
       <div className="w-full">
         <ProgressBar currentValue={sold} total={totalQuantity} />
-        <div className="mt-2 text-[11px] text-neutral-text-secondary">
+        <div className="mt-2 text-11 text-neutral-text-secondary">
           <span>{t('flashSaleCard.sold')}</span>
           <span>
             {sold}/{totalQuantity}

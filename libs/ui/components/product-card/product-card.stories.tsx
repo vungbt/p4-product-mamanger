@@ -43,7 +43,7 @@ export const Default: Story = {
   },
 };
 
-export const UndefinedType: Story = {
+export const AllType: Story = {
   args: {
     favored: false,
     type: undefined,
@@ -75,12 +75,6 @@ export const UndefinedType: Story = {
 };
 
 export const NewArival: Story = {
-  render: (args: any) => (
-    <div className="inline-flex gap-4">
-      <ProductCard {...args} />
-      <ProductCard {...args} />
-    </div>
-  ),
   args: {
     favored: false,
     type: 'new-arrival',
@@ -97,4 +91,10 @@ export const NewArival: Story = {
     rating: 4.8,
     price: 1043500,
   },
+  render: (args: any) => (
+    <div className="inline-flex gap-4">
+      <ProductCard {...args} type="best-seller" />
+      <ProductCard {...args} price={1973490} />
+    </div>
+  ),
 };
