@@ -14,6 +14,7 @@ export const Default: Story = {
   args: {
     defaultValue: 1,
     min: 1,
+    max: 10,
   },
 };
 
