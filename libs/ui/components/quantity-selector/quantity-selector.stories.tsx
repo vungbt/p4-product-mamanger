@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { QuantitySelector, type QuantitySelectorProps } from './index';
 
 const meta: Meta<QuantitySelectorProps> = {
-  title: 'Modules/Form/QuantitySelector',
+  title: 'Components/QuantitySelector',
   component: QuantitySelector,
   argTypes: {},
 } satisfies Meta<QuantitySelectorProps>;

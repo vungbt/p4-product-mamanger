@@ -142,7 +142,7 @@ function AllFieldTypesDemo() {
       </FormField>
 
       <FormField name="quantity" label="Số lượng">
-        <QuantitySelector min={1} max={10} />
+        <QuantitySelector min={1} max={100} />
       </FormField>
 
       <Button type="submit" className="w-full">
