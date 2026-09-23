@@ -3,6 +3,7 @@ import { Button } from '../../components/button';
 import { Checkbox } from '../../components/checkbox';
 import { Input } from '../../components/input';
 import { InputPassword } from '../../components/input-password';
+import { QuantitySelector } from '../../components/quantity-selector';
 import { Textarea } from '../../components/textarea';
 import { DatePicker } from '../datepicker/datepicker';
 import { type DateRange, DateRangePicker } from '../daterangepicker/daterangepicker';
@@ -68,6 +69,7 @@ function AllFieldTypesDemo() {
       birthday: null as Date | null,
       workRange: null as DateRange | null,
       meetingTime: null as string | null,
+      quantity: 1,
     },
     onSubmit: async ({ value }) => {
       // eslint-disable-next-line no-console
@@ -92,6 +94,7 @@ function AllFieldTypesDemo() {
       v.nullable(v.tuple([v.nullable(v.date()), v.nullable(v.date())])),
       v.check((r) => !!r?.[0] && !!r?.[1], 'Vui lòng chọn đủ khoảng ngày'),
     ),
+    quantity: v.number(),
   };
 
   return (
@@ -136,6 +139,10 @@ function AllFieldTypesDemo() {
 
       <FormField name="meetingTime" label="Giờ họp (tuỳ chọn)">
         <TimePicker />
+      </FormField>
+
+      <FormField name="quantity" label="Số lượng">
+        <QuantitySelector min={1} max={100} />
       </FormField>
 
       <Button type="submit" className="w-full">
