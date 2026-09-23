@@ -3,7 +3,7 @@ import { cn, formatCurrency } from '../../helpers';
 import { Button } from '../button';
 import { IconButton } from '../icon-button';
 
-export type MobileStickyActionBarProps = {
+type MobileStickyActionBarProps = {
   favorited?: boolean;
   onFavorite?: () => void;
 
