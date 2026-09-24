@@ -9,6 +9,7 @@ const meta: Meta<typeof OrderSummaryCard> = {
       action: 'submitted',
     },
   },
+  tags: ['autodocs'],
 };
 
 export default meta;
@@ -23,10 +24,30 @@ export const Default: Story = {
   ),
   args: {
     onSubmit: () => {},
-    subtotal: '1.980.000đ',
-    discount: '198.000đ',
-    shipping: '30.000đ',
-    total: '1.812.000đ',
+    items: [
+      { label: 'Tạm tính', value: 1980000 },
+      { label: 'Giảm giá (SALE10)', value: 198000, highlight: true },
+      { label: 'Phí vận chuyển', value: 30000 },
+    ],
+    total: { value: 1812000, label: '1812000' },
+    ctaLabel: 'Đặt hàng',
+  },
+};
+
+export const WithoutDiscount: Story = {
+  render: (args) => (
+    <div className="w-96">
+      <OrderSummaryCard {...args} />
+    </div>
+  ),
+  args: {
+    onSubmit: () => {},
+    items: [
+      { label: 'Tạm tính', value: 1980000 },
+      { label: 'Giảm giá', value: 198000, highlight: true },
+      { label: 'Phí vận chuyển', value: 'Miễn phí vận chuyển' },
+    ],
+    total: { value: 1812000, label: '1.812.000đ' },
     ctaLabel: 'Đặt hàng',
   },
 };
