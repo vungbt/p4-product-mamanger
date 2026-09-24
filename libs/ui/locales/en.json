@@ -25,5 +25,13 @@
     "sale": "−{{percent}}%",
     "favoriteAdd": "Add to favorites",
     "favoriteRemove": "Remove from favorites"
+  },
+  "orderSummaryCard": {
+    "label": "Total order",
+    "discountLabel": "Discount",
+    "provisional calculation": "Provisional calculation",
+    "transport": "transport",
+    "title": "Total price",
+    "checkout": "Checkout"
   }
 }

@@ -24,5 +24,13 @@
     "sale": "−{{percent}}%",
     "favoriteAdd": "Thêm vào yêu thích",
     "favoriteRemove": "Bỏ yêu thích"
+  },
+  "orderSummaryCard": {
+    "label": "Tổng kết đơn",
+    "provisional calculation": "Tạm tính",
+    "discount": "Giảm giá (SALE10)",
+    "transport": "Phí vận chuyển",
+    "title": "Tổng cộng",
+    "checkout": "Đặt hàng"
   }
 }
