@@ -43,8 +43,8 @@ export const WithoutDiscount: Story = {
     onSubmit: () => {},
     items: [
       { label: 'Tạm tính', value: 1980000 },
-      { label: 'Giảm giá', value: -198000, highlight: true },
-      { label: 'Phí vận chuyển', value: 0 },
+      { label: 'Giảm giá', value: 0, highlight: true },
+      { label: 'Phí vận chuyển', value: 30000 },
     ],
   },
 };
