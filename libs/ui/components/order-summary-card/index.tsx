@@ -4,7 +4,7 @@ import { Button } from '../button';
 
 export type OrderSummaryItem = {
   label: string;
-  value?: number;
+  value: number;
   highlight?: boolean;
 };
 
@@ -18,10 +18,7 @@ export type OrderSummaryCardProps = {
 export function OrderSummaryCard({ className, items, ctaLabel, onSubmit }: OrderSummaryCardProps) {
   const { t } = useTranslation();
 
-  const total = items.reduce((acc, item) => {
-    const value = item.value || 0;
-    return item.highlight ? acc - value : acc + value;
-  }, 0);
+  const total = items.reduce((acc, item) => item?.value + acc, 0);
 
   return (
     <div className={cn(' min-w-80 h-full p-2 px-3 py-2.5 gap-3 bg-neutral-white', className)}>
@@ -37,7 +34,6 @@ export function OrderSummaryCard({ className, items, ctaLabel, onSubmit }: Order
                   item.highlight ? 'text-success' : 'text-neutral-text-primary',
                 )}
               >
-                {item.highlight && t('orderSummaryCard.sale')}
                 {formatCurrency(item?.value || 0)}
               </span>
             </div>

@@ -26,7 +26,7 @@ export const Default: Story = {
     onSubmit: () => {},
     items: [
       { label: 'Tạm tính', value: 1980000 },
-      { label: 'Giảm giá (SALE10)', value: 198000, highlight: true },
+      { label: 'Giảm giá (SALE10)', value: -198000, highlight: true },
       { label: 'Phí vận chuyển', value: 30000 },
     ],
     ctaLabel: 'Đặt hàng',
@@ -43,7 +43,7 @@ export const WithoutDiscount: Story = {
     onSubmit: () => {},
     items: [
       { label: 'Tạm tính', value: 1980000 },
-      { label: 'Giảm giá', value: 198000, highlight: true },
+      { label: 'Giảm giá', value: -198000, highlight: true },
       { label: 'Phí vận chuyển', value: 0 },
     ],
   },
