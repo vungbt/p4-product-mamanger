@@ -29,7 +29,6 @@ export const Default: Story = {
       { label: 'Giảm giá (SALE10)', value: 198000, highlight: true },
       { label: 'Phí vận chuyển', value: 30000 },
     ],
-    total: { value: 1812000, label: '1812000' },
     ctaLabel: 'Đặt hàng',
   },
 };
@@ -45,9 +44,7 @@ export const WithoutDiscount: Story = {
     items: [
       { label: 'Tạm tính', value: 1980000 },
       { label: 'Giảm giá', value: 198000, highlight: true },
-      { label: 'Phí vận chuyển', value: 'Miễn phí vận chuyển' },
+      { label: 'Phí vận chuyển', value: 0 },
     ],
-    total: { value: 1812000, label: '1.812.000đ' },
-    ctaLabel: 'Đặt hàng',
   },
 };

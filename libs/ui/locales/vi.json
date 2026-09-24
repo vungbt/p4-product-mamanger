@@ -29,6 +29,9 @@
     "label": "Tổng kết đơn",
     "provisional calculation": "Tạm tính",
     "discount": "Giảm giá (SALE10)",
-    "transport": "Phí vận chuyển"
+    "transport": "Phí vận chuyển",
+    "title": "Tổng cộng",
+    "sale": "-",
+    "checkout": "Đặt hàng"
   }
 }
