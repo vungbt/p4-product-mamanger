@@ -11,7 +11,7 @@ export default meta;
 
 type Story = StoryObj<typeof InfoBanner>;
 
-export const withInfoBanner: Story = {
+export const Default: Story = {
   render: (args) => (
     <div className="">
       <InfoBanner {...args} />
