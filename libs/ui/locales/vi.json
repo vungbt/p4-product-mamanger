@@ -32,5 +32,11 @@
     "transport": "Phí vận chuyển",
     "title": "Tổng cộng",
     "checkout": "Đặt hàng"
+  },
+  "lowStockTable": {
+    "columnProduct": "Sản phẩm",
+    "columnStock": "Tồn kho",
+    "stockCount": "Còn {{count}}",
+    "outOfStock": "Hết hàng"
   }
 }

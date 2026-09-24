@@ -19,6 +19,7 @@ export * from './input-number';
 export * from './input-otp';
 export * from './input-password';
 export * from './link-image-provider';
+export * from './low-stock-table';
 export * from './menu';
 export * from './pagination';
 export * from './product-card';

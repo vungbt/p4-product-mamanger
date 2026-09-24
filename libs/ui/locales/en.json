@@ -33,5 +33,11 @@
     "transport": "transport",
     "title": "Total price",
     "checkout": "Checkout"
+  },
+  "lowStockTable": {
+    "columnProduct": "Product",
+    "columnStock": "Stock",
+    "stockCount": "{{count}} left",
+    "outOfStock": "Out of stock"
   }
 }

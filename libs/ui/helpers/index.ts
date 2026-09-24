@@ -2,4 +2,5 @@
 // both components/ and modules/.
 
 export * from './format';
+export * from './stock';
 export * from './utils';

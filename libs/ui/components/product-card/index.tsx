@@ -1,12 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { cn, formatCurrency } from '../../helpers';
+import { cn, formatCurrency, getStockTag } from '../../helpers';
 import { Button } from '../button';
 import { IconButton } from '../icon-button';
 import { RenderIcon } from '../icons';
 import { UiImage, UiLink } from '../link-image-provider';
-import { Tag, type TagColorName } from '../tag';
-
-const LOW_STOCK_THRESHOLD = 10;
+import { Tag } from '../tag';
 
 export type ProductCardProps = {
   className?: string;
@@ -41,20 +39,6 @@ export type ProductCardProps = {
     price?: string;
   };
 };
-
-function getStockTag(
-  stock: number,
-  inStockLabel: string,
-  outOfStockLabel: string,
-): { content: string; color: TagColorName } {
-  if (stock <= 0) {
-    return { content: outOfStockLabel, color: 'error' };
-  }
-  return {
-    content: inStockLabel,
-    color: stock <= LOW_STOCK_THRESHOLD ? 'pending' : 'success',
-  };
-}
 
 export function ProductCard({
   className,
