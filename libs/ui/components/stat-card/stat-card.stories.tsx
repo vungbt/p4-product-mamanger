@@ -20,3 +20,25 @@ export const Default: Story = {
     sub: [],
   },
 };
+
+export const withOrder: Story = {
+  render: (args) => {
+    return <StatCard {...args} />;
+  },
+  args: {
+    value: [182450000, 382, 6],
+    trend: [12.4, 0, 10],
+    sub: [],
+  },
+};
+
+export const withTraffic: Story = {
+  render: (args) => {
+    return <StatCard {...args} />;
+  },
+  args: {
+    value: [182450000, 382, 6],
+    trend: [12.4, 12, 0],
+    sub: [],
+  },
+};
