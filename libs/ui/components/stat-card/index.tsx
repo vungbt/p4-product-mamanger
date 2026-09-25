@@ -12,6 +12,7 @@ export type StatCardProps = {
     private: number;
     growth: number;
   };
+
   Traffic: {
     private: number;
     growth: number;
