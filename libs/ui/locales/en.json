@@ -5,7 +5,16 @@
   "table": {
     "empty": "No data here"
   },
-
+  "statCard": {
+    "revenue": "Revenue",
+    "type-revenue": "compared to previous period",
+    "sum": "+",
+    "percent": "%",
+    "order": "Order",
+    "type-order": "pending",
+    "traffic": "Low stock products",
+    "type-traffic": "Warning threshold: stock ≤"
+  },
   "mobileStickyActionBar": {
     "add-to-cart": "Add to cart",
     "buy-now": "Buy now",

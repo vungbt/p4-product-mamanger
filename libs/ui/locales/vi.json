@@ -5,6 +5,16 @@
   "table": {
     "empty": "Không có dữ liệu"
   },
+  "statCard": {
+    "revenue": "Doanh thu",
+    "type-revenue": "so với kỳ trước",
+    "sum": "+",
+    "percent": "%",
+    "order": "Số đơn hàng",
+    "type-order": "chờ xử lý",
+    "traffic": "Sản phẩm sắp hết",
+    "type-traffic": "Ngưỡng cảnh báo: tồn ≤"
+  },
   "mobileStickyActionBar": {
     "add-to-cart": "Thêm giỏ",
     "buy-now": "Mua ngay",
