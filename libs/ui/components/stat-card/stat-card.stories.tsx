@@ -15,37 +15,8 @@ export const Default: Story = {
     return <StatCard {...args} />;
   },
   args: {
-    Revenue: {
-      private: 182450000,
-      growth: 12.4,
-    },
-    Order: {
-      private: 348,
-      growth: 12,
-    },
-    Traffic: {
-      private: 6,
-      growth: 10,
-    },
-  },
-};
-
-export const withOrder: Story = {
-  render: (args) => {
-    return <StatCard {...args} />;
-  },
-  args: {
-    Revenue: {
-      private: 182450000,
-      growth: -12.4,
-    },
-    Order: {
-      private: 348,
-      growth: 0,
-    },
-    Traffic: {
-      private: 6,
-      growth: 10,
-    },
+    value: [182450000, 382, 6],
+    trend: [12.4, 12, 10],
+    sub: [],
   },
 };
