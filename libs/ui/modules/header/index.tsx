@@ -1,4 +1,5 @@
 import type { MouseEventHandler, ReactNode } from 'react';
+import { UiLink } from '../../components/link-image-provider';
 import { cn } from '../../helpers/utils';
 
 export type HeaderNavItem = {
@@ -52,7 +53,7 @@ export function Header({ logo, navItems, search, actions, className, customClass
       {navItems && navItems.length > 0 && (
         <nav className={cn('flex items-center gap-1', customClasses?.nav)}>
           {navItems.map((item, index) => (
-            <a
+            <UiLink
               key={item.key ?? index}
               href={item.href ?? '#'}
               onClick={item.onClick}
@@ -65,7 +66,7 @@ export function Header({ logo, navItems, search, actions, className, customClass
               )}
             >
               {item.label}
-            </a>
+            </UiLink>
           ))}
         </nav>
       )}

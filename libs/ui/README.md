@@ -15,7 +15,7 @@ import '@p4/ui/theme/tokens.css';
 import '@p4/ui/theme/themes.css';
 ```
 
-Tailwind preset: `@p4/ui/tailwind.preset` (wired in `apps/web/tailwind.config.js`).
+Tailwind preset: `libs/ui/tailwind.preset.cjs` — the one and only copy; `apps/web/tailwind.config.cjs` and `libs/ui/tailwind.config.cjs` (Storybook) both `require()` it directly (a `.cjs` file, not `.ts`, since Tailwind v3 loads config files with plain Node `require`). Also re-exported as `@p4/ui/tailwind.preset` for any other consumer.
 
 ## Layout modules
 

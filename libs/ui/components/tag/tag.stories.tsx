@@ -1,22 +1,20 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
-import { Tag } from './index';
+import { TAG_COLORS, Tag, type TagColorName } from './index';
 
-const DESIGN_COLORS = [
-  { name: 'success', hex: '#22c55e' },
-  { name: 'pending', hex: '#eab308' },
-  { name: 'error', hex: '#ef4444' },
-  { name: 'info', hex: '#0ea5e9' },
-  { name: 'primary', hex: '#f97316' },
-];
+const TAG_COLOR_NAMES = Object.keys(TAG_COLORS) as TagColorName[];
 
 const meta = {
   title: 'Components/Tag',
   component: Tag,
   tags: ['autodocs'],
+  argTypes: {
+    color: { control: 'select', options: TAG_COLOR_NAMES },
+    type: { control: 'select', options: ['default', 'outline', 'solid'] },
+  },
   args: {
     content: 'In stock',
-    color: '#22c55e',
+    color: 'success',
   },
 } satisfies Meta<typeof Tag>;
 
@@ -30,18 +28,29 @@ export const Neutral: Story = {
 };
 
 export const WithIcon: Story = {
-  args: { content: 'Trending', icon: 'graph', color: '#f97316' },
+  args: { content: 'Trending', icon: 'graph', color: 'primary' },
 };
 
 export const Closable: Story = {
-  args: { content: 'Sneakers', color: '#0ea5e9', onClose: fn() },
+  args: { content: 'Sneakers', color: 'info', onClose: fn() },
+};
+
+export const Sold: Story = {
+  args: { content: 'Sold', color: undefined, type: 'solid' },
+};
+
+export const Custom: Story = {
+  args: { content: 'Draft', color: '#94a3b8' },
+  argTypes: {
+    color: { control: 'color' },
+  },
 };
 
 export const AllDesignColors: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
-      {DESIGN_COLORS.map(({ name, hex }) => (
-        <Tag key={name} content={name} color={hex} />
+      {TAG_COLOR_NAMES.map((name) => (
+        <Tag key={name} content={name} color={name} />
       ))}
     </div>
   ),

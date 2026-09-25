@@ -7,8 +7,8 @@ import {
 } from '@p4/api-client';
 import type { AuthSession } from '@p4/auth';
 import type { LoginResponse } from '@p4/shared';
-import { Toaster } from '@p4/ui';
-import { BrowserRouter } from 'react-router-dom';
+import { LinkImageProvider, Toaster, type UiImageProps, type UiLinkProps } from '@p4/ui';
+import { BrowserRouter, Link } from 'react-router-dom';
 import { API_BASE_URL } from '@/constants/constants';
 import { AuthProvider } from '@/contexts/auth-context';
 import RouteConfigs from '@/routing/config.route';
@@ -67,20 +67,49 @@ async function loginWithGoogleApi(credential: string): Promise<AuthSession> {
   }
 }
 
+// Lets @p4/ui components render UiLink through react-router-dom's <Link> (client-side nav, no full
+// reload) instead of the plain <a> fallback they use in Storybook/other consumers.
+function RouterUiLink({ href, className, children, onClick, title }: UiLinkProps) {
+  return (
+    <Link className={className} onClick={onClick} title={title} to={href}>
+      {children}
+    </Link>
+  );
+}
+
+// No image-optimization service in this project (unlike e.g. next/image) — this just adds the
+// browser-native perf hints and a fallback for a blank `alt` that UiImage's default doesn't have.
+function WebImage({ src, alt, className, width, height, onError }: UiImageProps) {
+  return (
+    <img
+      alt={alt || 'Hình ảnh'}
+      className={className}
+      decoding="async"
+      height={height}
+      loading="lazy"
+      onError={onError}
+      src={src}
+      width={width}
+    />
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <ApiQueryProvider enableDevtools={import.meta.env.DEV}>
-        <AuthProvider
-          onLogin={loginWithApi}
-          onGoogleLogin={loginWithGoogleApi}
-          onRefresh={refreshAuthSession}
-          onLogout={revokeAuthSession}
-        >
-          <MasterRoutes routes={RouteConfigs} />
-          <Toaster position="top-right" duration={3000} />
-        </AuthProvider>
-      </ApiQueryProvider>
+      <LinkImageProvider Image={WebImage} Link={RouterUiLink}>
+        <ApiQueryProvider enableDevtools={import.meta.env.DEV}>
+          <AuthProvider
+            onLogin={loginWithApi}
+            onGoogleLogin={loginWithGoogleApi}
+            onRefresh={refreshAuthSession}
+            onLogout={revokeAuthSession}
+          >
+            <MasterRoutes routes={RouteConfigs} />
+            <Toaster position="top-right" duration={3000} />
+          </AuthProvider>
+        </ApiQueryProvider>
+      </LinkImageProvider>
     </BrowserRouter>
   );
 }

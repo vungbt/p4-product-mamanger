@@ -14,22 +14,22 @@
     }
   },
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "catalog:react-peer",
+    "react-dom": "catalog:react-peer"
   },
   "dependencies": {
     "@p4/auth": "workspace:*",
     "@p4/shared": "workspace:*",
-    "@tanstack/react-query": "^5.80.7",
-    "@tanstack/react-query-devtools": "^5.80.7",
-    "axios": "^1.9.0",
-    "query-string": "^9.2.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "@tanstack/react-query": "catalog:",
+    "@tanstack/react-query-devtools": "catalog:",
+    "axios": "catalog:",
+    "query-string": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "typescript": "~6.0.2"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "typescript": "catalog:"
   }
 }
