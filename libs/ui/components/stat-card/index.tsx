@@ -2,20 +2,17 @@ import { useTranslation } from 'react-i18next';
 import { cn, formatCurrency } from '../../helpers';
 export type StatCardProps = {
   className?: string;
+
   Revenue: {
-    name?: string;
     private: number;
     growth: number;
-    type?: string;
   };
+
   Order: {
-    name?: string;
     private: number;
     growth: number;
-    type?: string;
   };
   Traffic: {
-    type?: string;
     private: number;
     growth: number;
   };
@@ -23,40 +20,38 @@ export type StatCardProps = {
 export function StatCard({ className, Revenue, Order, Traffic }: StatCardProps) {
   const { t } = useTranslation('ui');
   return (
-    <div className={cn('p-4 flex w-full h-44 gap-4 ', className)}>
-      <div className="flex flex-col gap-1 border border-neutral-disable rounded-2xl w-1/3 h-full p-5">
-        <span className="text-neutral-text-secondary font-medium text-lg">
-          {t('statCard.revenue')}
+    <div className={cn('grid grid-cols-3 gap-4', className)}>
+      <div className="flex flex-col border border-neutral-disable rounded-2xl border-solid h-full p-6">
+        <span className="text-ui-body text-neutral-text-secondary">{t('statCard.revenue')}</span>
+        <span className="text-primary text-ui-stat leading-48">
+          {formatCurrency(Revenue.private)}
         </span>
-        <span className="text-primary text-32 font-bold">{formatCurrency(Revenue.private)}</span>
-        <span className="text-neutral-text-secondary font-medium text-lg">
+        <span className="text-neutral-text-secondary  text-ui-caption leading-5">
           {Revenue.growth > 0 ? (
             <>
               <span className="text-success">
                 {t('statCard.sum')} {Revenue.growth} {t('statCard.percent')}
               </span>
-              <span className="font-medium text-lg">{t('statCard.type-revenue')}</span>
+              <span className="font-medium text-12">{t('statCard.type-revenue')}</span>
             </>
           ) : (
             <>
               <span className="text-error">
                 {Revenue.growth} {t('statCard.percent')}
               </span>
-              <span className="font-medium text-lg">{Revenue.type}</span>
+              <span className="font-medium text-12">{t('statCard.type-revenue')}</span>
             </>
           )}
         </span>
       </div>
-      <div className="flex flex-col gap-1 border border-neutral-disable rounded-2xl w-1/3 h-full p-5">
-        <span className="text-neutral-text-secondary font-medium text-lg">
-          {t('statCard.order')}
-        </span>
-        <span className="text-neutral-black text-32 font-bold">{Order.private}</span>
-        <span className="text-neutral-text-secondary font-medium text-lg">
-          {Order.growth > 0 ? (
+      <div className="flex flex-col border border-neutral-disable rounded-2xl border-solid  h-full p-5">
+        <span className="text-ui-body text-neutral-text-secondary">{t('statCard.order')}</span>
+        <span className="text-neutral-black text-ui-stat leading-48">{Order.private}</span>
+        <span className="text-neutral-text-secondary  text-ui-caption leading-5">
+          {Order.growth >= 0 ? (
             <>
               <span className="mr-1">{Order.growth}</span>
-              <span className="font-medium text-lg">{t('statCard.type-order')}</span>
+              <span className="font-medium text-12">{t('statCard.type-order')}</span>
             </>
           ) : (
             <>
@@ -65,12 +60,10 @@ export function StatCard({ className, Revenue, Order, Traffic }: StatCardProps) 
           )}
         </span>
       </div>
-      <div className="flex flex-col gap-1 border border-neutral-disable rounded-2xl w-1/3 h-full p-5">
-        <span className="text-neutral-text-secondary font-medium text-lg">
-          {t('statCard.traffic')}
-        </span>
-        <span className="text-pending text-32 font-bold">{Traffic.private}</span>
-        <span className="text-neutral-text-secondary font-medium text-lg">
+      <div className="flex flex-col border border-neutral-disable rounded-2xl border-solid  h-full p-5">
+        <span className="text-ui-body text-neutral-text-secondary">{t('statCard.traffic')}</span>
+        <span className="text-pending text-ui-stat leading-48">{Traffic.private}</span>
+        <span className="text-neutral-text-secondary  text-ui-caption leading-5">
           {Traffic.growth > 0 ? (
             <>
               <span>
