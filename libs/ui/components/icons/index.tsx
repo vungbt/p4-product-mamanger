@@ -44,6 +44,7 @@ import {
   Info,
   Italic,
   Key,
+  Keyboard,
   Landmark,
   LayoutGrid,
   Link,
@@ -51,7 +52,6 @@ import {
   ListOrdered,
   Loader2,
   LogOut,
-  type LucideProps,
   Mail,
   Minus,
   Moon,
@@ -72,7 +72,6 @@ import {
   ShoppingCart,
   SlidersVertical,
   SquarePen,
-  Star,
   Store,
   Strikethrough,
   Sun,
@@ -91,16 +90,23 @@ import {
   XCircle,
 } from 'lucide-react';
 import type { CSSProperties, FC } from 'react';
+import HeartOutline from './heart-outline';
+import HeartSolid from './heart-solid';
+import StarOutline from './star-outline';
+import StarSolid from './star-solid';
 
 export type IconProps = {
   className?: string;
   style?: CSSProperties;
+  transform?: string;
   strokeWidth?: number;
 };
 
 export type Icon = FC<IconProps>;
 
 const iconMap = {
+  'heart-solid': HeartSolid,
+  'heart-outline': HeartOutline,
   home: Home,
   'home-solid': Home,
   /** Alias matching the exact icon name in docs/design/p4-product-manager-design.html (Section A · Icon set) */
@@ -118,7 +124,8 @@ const iconMap = {
   back: ArrowLeft,
   upload: Upload,
   filter: Filter,
-  star: Star,
+  'star-solid': StarSolid,
+  'star-outline': StarOutline,
   more: MoreVertical,
   trend: TrendingUp,
   logout: LogOut,
@@ -223,7 +230,8 @@ const iconMap = {
   'shopping-cart': ShoppingCart,
   sun: Sun,
   'log-out': LogOut,
-} satisfies Record<string, FC<LucideProps>>;
+  keyboard: Keyboard,
+} satisfies Record<string, FC<IconProps>>;
 
 export type IconName = keyof typeof iconMap;
 

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { cn } from '../../helpers/utils';
 import { RenderIcon } from '../icons';
+import { UiImage } from '../link-image-provider';
 import { Menu, type MenuEntry } from '../menu';
 
 export type UserChipProps = {
@@ -51,7 +52,7 @@ function UserChipContent({
         )}
       >
         {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+          <UiImage src={avatarUrl} alt={name} className="h-full w-full object-cover" />
         ) : (
           getInitials(name)
         )}

@@ -1,5 +1,6 @@
 import type { MouseEventHandler, ReactNode } from 'react';
 import { cn } from '../../helpers/utils';
+import { UiLink } from '../link-image-provider';
 
 export type BreadcrumbItem = {
   key?: string | number;
@@ -73,7 +74,7 @@ const renderDefaultItem = (item: BreadcrumbItem, isLast: boolean, itemClassName?
 
   if (item.href) {
     return (
-      <a
+      <UiLink
         href={item.href}
         onClick={item.onClick}
         className={cn(
@@ -83,7 +84,7 @@ const renderDefaultItem = (item: BreadcrumbItem, isLast: boolean, itemClassName?
         )}
       >
         {item.title}
-      </a>
+      </UiLink>
     );
   }
 

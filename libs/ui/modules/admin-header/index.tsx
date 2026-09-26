@@ -1,5 +1,6 @@
 import type { MouseEventHandler, ReactNode } from 'react';
 import { RenderIcon } from '../../components/icons';
+import { UiLink } from '../../components/link-image-provider';
 import { cn } from '../../helpers/utils';
 
 export type AdminHeaderCrumb = {
@@ -65,13 +66,13 @@ export function AdminHeader({
             const isLast = index === breadcrumbs.length - 1;
             const content =
               item.href && !isLast ? (
-                <a
+                <UiLink
                   href={item.href}
                   onClick={item.onClick}
                   className="no-underline transition-colors hover:text-primary"
                 >
                   {item.label}
-                </a>
+                </UiLink>
               ) : (
                 <span className={isLast ? 'font-bold text-neutral-text-primary' : undefined}>
                   {item.label}

@@ -3,6 +3,17 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      // Extends (not replaces) Tailwind's default spacing scale — this key follows its own
+      // convention (n * 4px), so `1.25` = 5px and `4.5` = 18px, matching how `2.5`/`3.5` already
+      // work out of the box.
+      spacing: {
+        1.25: '5px',
+        4.5: '18px',
+        9.5: '38px',
+      },
+      aspectRatio: {
+        '4/3': '4 / 3',
+      },
       lineHeight: {
         64: 'var(--lineHeight-64)',
         56: 'var(--lineHeight-56)',
@@ -18,6 +29,7 @@ module.exports = {
         md: '0px 8px 12px rgba(234, 88, 12, 0.12)',
         border: '0px 0px 0px 1px rgba(234, 88, 12, 1), 0px 0px 0px 2px rgba(234, 88, 12, 0.2)',
         'focus-ring': '0 0 0 3px var(--color-primary-focus-ring)',
+        raised: '0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
       },
     },
     colors: {
@@ -100,9 +112,14 @@ module.exports = {
       17: 'var(--size-17)',
       16: 'var(--size-16)',
       15: 'var(--size-15)',
+      14.5: 'var(--size-14-5)',
       14: 'var(--size-14)',
+      13.5: 'var(--size-13-5)',
       13: 'var(--size-13)',
       12: 'var(--size-12)',
+      11.5: 'var(--size-11-5)',
+      11: 'var(--size-11)',
+      10.5: 'var(--size-10-5)',
       10: 'var(--size-10)',
       8: 'var(--size-8)',
       xs: 'var(--size-12)',

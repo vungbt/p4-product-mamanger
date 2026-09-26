@@ -1,5 +1,6 @@
 import type { MouseEventHandler, ReactNode } from 'react';
 import { RenderIcon } from '../../components/icons';
+import { UiLink } from '../../components/link-image-provider';
 import { cn } from '../../helpers/utils';
 
 export type SidebarNavItem = {
@@ -109,7 +110,7 @@ function SidebarNavLink({
   }
 
   return (
-    <a
+    <UiLink
       href={item.href ?? '#'}
       onClick={item.onClick}
       title={tooltip}
@@ -122,7 +123,7 @@ function SidebarNavLink({
     >
       <NavItemIcon>{item.icon}</NavItemIcon>
       {!collapsed && <span>{item.label}</span>}
-    </a>
+    </UiLink>
   );
 }
 

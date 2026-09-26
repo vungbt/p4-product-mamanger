@@ -47,7 +47,7 @@ const colorClasses = {
     solid: 'bg-primary text-white hover:bg-primary-hover active:bg-primary-clicked',
     outline: 'border border-primary text-primary bg-neutral-white hover:bg-primary-background',
     subtle:
-      'border border-primary-border bg-primary-background text-primary-clicked hover:bg-primary-hover',
+      'border border-primary-border bg-primary-background text-primary-clicked hover:border-primary-clicked hover:bg-primary-clicked hover:text-white',
     link: 'text-primary bg-transparent hover:underline',
     text: 'text-primary bg-transparent hover:text-primary-clicked',
     ghost: 'text-primary bg-transparent hover:bg-primary-background',
@@ -57,7 +57,7 @@ const colorClasses = {
     outline:
       'border border-secondary text-secondary bg-neutral-white hover:bg-secondary-background',
     subtle:
-      'border border-secondary-border bg-secondary-background text-secondary-base hover:bg-secondary-hover',
+      'border border-secondary-border bg-secondary-background text-secondary-base hover:border-secondary-clicked hover:bg-secondary-clicked hover:text-white',
     link: 'text-secondary bg-transparent hover:underline',
     text: 'text-secondary bg-transparent hover:text-secondary-clicked',
     ghost: 'text-secondary bg-transparent hover:bg-secondary-background',
@@ -65,7 +65,8 @@ const colorClasses = {
   success: {
     solid: 'bg-success text-white hover:bg-success-hover active:bg-success-clicked',
     outline: 'border border-success text-success bg-neutral-white hover:bg-success-bg',
-    subtle: 'border border-success-border bg-success-bg text-success hover:bg-success-base',
+    subtle:
+      'border border-success-border bg-success-bg text-success hover:border-success-clicked hover:bg-success-clicked hover:text-white',
     link: 'text-success bg-transparent hover:underline',
     text: 'text-success bg-transparent hover:text-success-base',
     ghost: 'text-success bg-transparent hover:bg-success-bg',
@@ -73,7 +74,8 @@ const colorClasses = {
   error: {
     solid: 'bg-error text-white hover:bg-error-hover active:bg-error-clicked',
     outline: 'border border-error text-error bg-neutral-white hover:bg-error-bg',
-    subtle: 'border border-error-border bg-error-bg text-error hover:bg-error-base',
+    subtle:
+      'border border-error-border bg-error-bg text-error hover:border-error-clicked hover:bg-error-clicked hover:text-white',
     link: 'text-error bg-transparent hover:underline',
     text: 'text-error bg-transparent hover:text-error-base',
     ghost: 'text-error bg-transparent hover:bg-error-bg',
@@ -81,7 +83,8 @@ const colorClasses = {
   pending: {
     solid: 'bg-pending text-white hover:bg-pending-hover active:bg-pending-clicked',
     outline: 'border border-pending text-pending bg-neutral-white hover:bg-pending-bg',
-    subtle: 'border border-pending-border bg-pending-bg text-pending hover:bg-pending-base',
+    subtle:
+      'border border-pending-border bg-pending-bg text-pending hover:border-pending-clicked hover:bg-pending-clicked hover:text-white',
     link: 'text-pending bg-transparent hover:underline',
     text: 'text-pending bg-transparent hover:text-pending-base',
     ghost: 'text-pending bg-transparent hover:bg-pending-bg',

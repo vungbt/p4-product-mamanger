@@ -9,11 +9,11 @@
     ".": "./src/index.ts"
   },
   "peerDependencies": {
-    "i18next": "^26.3.6",
-    "react-i18next": "^17.0.11"
+    "i18next": "catalog:",
+    "react-i18next": "catalog:"
   },
   "devDependencies": {
-    "i18next": "^26.3.6",
-    "react-i18next": "^17.0.11"
+    "i18next": "catalog:",
+    "react-i18next": "catalog:"
   }
 }

@@ -8,6 +8,11 @@ const meta: Meta<typeof StatusBreakdownList> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {
+  render: (args) => (
+    <div className="w-1/2">
+      <StatusBreakdownList {...args} />
+    </div>
+  ),
   args: {
     rows: [
       { label: 'Hoàn tất', count: 123, percent: 100, color: 'success' },

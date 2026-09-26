@@ -5,9 +5,37 @@
   "table": {
     "empty": "Không có dữ liệu"
   },
-  "status-breakdown-list": {
+  "statusBreakdownList": {
     "single": "đơn ",
     "period": ".",
     "percent": "%"
+  },
+  "mobileStickyActionBar": {
+    "add-to-cart": "Thêm giỏ",
+    "buy-now": "Mua ngay",
+    "title": "Tổng cộng",
+    "checkout": "Đặt hàng"
+  },
+  "flashSaleCard": {
+    "sold": "Đã bán",
+    "percent": "%",
+    "sale": "-"
+  },
+  "productCard": {
+    "addToCart": "Thêm vào giỏ",
+    "outOfStock": "Hết hàng",
+    "inStock": "Còn {{count}}",
+    "sold": "{{count}} đã bán",
+    "sale": "−{{percent}}%",
+    "favoriteAdd": "Thêm vào yêu thích",
+    "favoriteRemove": "Bỏ yêu thích"
+  },
+  "orderSummaryCard": {
+    "label": "Tổng kết đơn",
+    "provisional calculation": "Tạm tính",
+    "discount": "Giảm giá (SALE10)",
+    "transport": "Phí vận chuyển",
+    "title": "Tổng cộng",
+    "checkout": "Đặt hàng"
   }
 }

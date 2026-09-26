@@ -13,25 +13,25 @@ export type StatusBreakdownListProps = {
 export const StatusBreakdownList = ({ className, rows }: StatusBreakdownListProps) => {
   const { t } = useTranslation('ui');
   return (
-    <div className={cn(`p-4 flex flex-col gap-3.5 max-w-[380px] ${className}`)}>
+    <div className={cn(`p-4 flex flex-col gap-3.5 min-w-96 ${className}`)}>
       {rows?.map((rows) => (
         <div key={rows.label} className="flex flex-col rounded-full">
-          <div className="flex items-center justify-between text-neutral-text-secondary">
-            <span className="text-12.5 font-bold ">{rows.label}</span>
-            <div className="flex gap-2 items-center">
-              <span className="text-12">
-                {rows.count} {t('status-breakdown-list.single')}
+          <div className="flex items-center justify-between text-neutral-text-secondar gap-2.5 mb-1.5">
+            <span className="text-ui-mono leading-5">{rows.label}</span>
+            <div className="flex items-center text-12 leading-5">
+              <span>
+                {rows.count} {t('statusBreakdownList.single')}
               </span>
               <span className="flex justify-center items-center">
-                {t('status-breakdown-list.period')}
+                {t('statusBreakdownList.period')}
               </span>
-              <span className="text-12">
+              <span>
                 {rows.percent}
-                {t('status-breakdown-list.percent')}
+                {t('statusBreakdownList.percent')}
               </span>
             </div>
           </div>
-          <div className=" bg-neutral-border h-2 rounded-full">
+          <div className=" bg-neutral-border h-2 rounded-full leading-6">
             {rows.percent > 0 && rows.percent < 100 && (
               <div
                 className={cn(`bg-${rows.color} h-2 rounded-l-lg`)}

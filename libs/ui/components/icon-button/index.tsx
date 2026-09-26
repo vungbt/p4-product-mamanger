@@ -123,7 +123,7 @@ export function IconButton({
       {badge !== undefined && badge !== null && badge !== false && (
         <span
           className={cn(
-            'absolute -top-[5px] -right-[5px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[11px] font-bold text-white',
+            'absolute -top-1.25 -right-1.25 flex h-4.5 min-w-4.5 items-center justify-center rounded-full px-1 text-11 font-bold text-white',
             badgeColorClasses[badgeColor],
             badgeClassName,
           )}
