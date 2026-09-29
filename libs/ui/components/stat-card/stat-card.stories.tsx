@@ -17,7 +17,7 @@ export const Default: Story = {
         <StatCard
           label="Doanh thu"
           value="182450000"
-          trend={132}
+          trend={-132}
           sub="so với kỳ trước"
           tone="primary"
         />

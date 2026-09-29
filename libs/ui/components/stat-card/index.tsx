@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
 import { cn, formatCurrency } from '../../helpers';
 
 export type StatCardTone = 'default' | 'primary' | 'pending';
@@ -26,8 +25,6 @@ function getTrendClass(trend: number): string {
 }
 
 export function StatCard({ className, label, value, tone = 'default', trend, sub }: StatCardProps) {
-  const { t } = useTranslation();
-
   return (
     <div
       className={cn(
@@ -45,8 +42,8 @@ export function StatCard({ className, label, value, tone = 'default', trend, sub
         {tone === 'primary' && trend !== undefined && (
           <>
             <span className={getTrendClass(trend)}>
-              {trend && trend > 0 ? t('statCard.sum') : t('statCard.sale')} {Math.abs(trend)}
-              {t('statCard.percent')}
+              {trend && trend > 0 ? '+' : '-'} {Math.abs(trend)}
+              {'%'}
             </span>
             <span className="font-medium text-12 ml-1">{sub}</span>
           </>
