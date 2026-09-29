@@ -45,7 +45,7 @@ export function StatCard({ className, label, value, tone = 'default', trend, sub
         {tone === 'primary' && trend !== undefined && (
           <>
             <span className={getTrendClass(trend)}>
-              {trend > 0 ? t('statCard.sum') : t('statCard.sale')} {Math.abs(trend)}{' '}
+              {trend > 0 ? t('statCard.sum') : t('statCard.sale')} {Math.abs(trend)}
               {t('statCard.percent')}
             </span>
             <span className="font-medium text-12 ml-1">{sub}</span>
