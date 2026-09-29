@@ -5,11 +5,6 @@
   "table": {
     "empty": "No data here"
   },
-  "statCard": {
-    "sum": "+",
-    "sale": "-",
-    "percent": "%"
-  },
   "mobileStickyActionBar": {
     "add-to-cart": "Add to cart",
     "buy-now": "Buy now",
