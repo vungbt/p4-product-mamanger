@@ -13,7 +13,7 @@ type Story = StoryObj<typeof StatCard>;
 export const Default: Story = {
   render: () => {
     return (
-      <div className="grid grid-cols-3 gap-4 bg-slate-50 p-6 rounded-xl">
+      <div className="grid grid-cols-3 gap-4 bg-neutral-white p-6 rounded-xl">
         <StatCard
           label="Doanh thu"
           value="182450000"
@@ -31,7 +31,7 @@ export const Default: Story = {
 export const withNegative: Story = {
   render: () => {
     return (
-      <div className="grid grid-cols-3 gap-4 bg-slate-50 p-6 rounded-xl">
+      <div className="grid grid-cols-3 gap-4 bg-neutral-white p-6 rounded-xl">
         <StatCard
           label="Doanh thu"
           value="182450000"
