@@ -8,8 +8,7 @@
   "statCard": {
     "sum": "+",
     "sale": "-",
-    "percent": "%",
-    "order": "Order"
+    "percent": "%"
   },
   "mobileStickyActionBar": {
     "add-to-cart": "Add to cart",
