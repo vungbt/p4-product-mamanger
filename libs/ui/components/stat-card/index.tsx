@@ -2,79 +2,69 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn, formatCurrency } from '../../helpers';
 
-export type Stat = {
+export type StatCardTone = 'default' | 'primary' | 'pending';
+
+export type StatCardProps = {
+  className?: string;
+  label: string;
   value: ReactNode;
+  tone?: StatCardTone;
   trend?: number;
   sub?: ReactNode;
 };
 
-export type StatCardProps = {
-  className?: string;
-  stats: Stat[];
+const TONE_CLASSES: Record<StatCardTone, string> = {
+  default: 'text-neutral-black',
+  primary: 'text-primary',
+  pending: 'text-pending',
 };
-export function StatCard({ className, stats }: StatCardProps) {
-  const { t } = useTranslation('ui');
-  const revenue = stats?.[0];
-  const order = stats?.[1];
-  const traffic = stats?.[2];
+
+function getTrendClass(trend: number): string {
+  if (trend > 0) return 'text-success';
+  if (trend < 0) return 'text-error';
+  return 'text-neutral-text-secondary';
+}
+
+export function StatCard({ className, label, value, tone = 'default', trend, sub }: StatCardProps) {
+  const { t } = useTranslation();
+
   return (
-    <div className={cn('grid grid-cols-3 gap-4', className)}>
-      <div className="flex flex-col border border-neutral-disable rounded-2xl border-solid h-full p-6">
-        <span className="text-ui-body text-neutral-text-secondary">{t('statCard.revenue')}</span>
-        <span className="text-primary text-ui-stat leading-48">
-          {formatCurrency(Number(revenue.value))}
-        </span>
-        <span className="text-neutral-text-secondary  text-ui-caption leading-5">
-          {revenue.trend && revenue.trend > 0 ? (
-            <>
-              <span className="text-success">
-                {t('statCard.sum')} {revenue.trend} {t('statCard.percent')}
-              </span>
-              <span className="font-medium text-12">{t('statCard.type-revenue')}</span>
-            </>
-          ) : (
-            <>
-              <span className="text-error">
-                {Number(revenue.trend)} {t('statCard.percent')}
-              </span>
-              <span className="font-medium text-12">{t('statCard.type-revenue')}</span>
-            </>
-          )}
-        </span>
-      </div>
-      <div className="flex flex-col border border-neutral-disable rounded-2xl border-solid  h-full p-5">
-        <span className="text-ui-body text-neutral-text-secondary">{t('statCard.order')}</span>
-        <span className="text-neutral-black text-ui-stat leading-48">{order?.value}</span>
-        <span className="text-neutral-text-secondary  text-ui-caption leading-5">
-          {Number(order?.trend) >= 0 ? (
-            <>
-              <span className="mr-1">{order.trend}</span>
-              <span className="font-medium text-12">{t('statCard.type-order')}</span>
-            </>
-          ) : (
-            <>
-              <span>{null}</span>
-            </>
-          )}
-        </span>
-      </div>
-      <div className="flex flex-col border border-neutral-disable rounded-2xl border-solid  h-full p-5">
-        <span className="text-ui-body text-neutral-text-secondary">{t('statCard.traffic')}</span>
-        <span className="text-pending text-ui-stat leading-48">{traffic?.value}</span>
-        <span className="text-neutral-text-secondary  text-ui-caption leading-5">
-          {Number(traffic?.trend) >= 0 ? (
-            <>
-              <span>
-                {t('statCard.type-traffic')} {traffic.trend}
-              </span>
-            </>
-          ) : (
-            <>
-              <span>{null}</span>
-            </>
-          )}
-        </span>
-      </div>
+    <div
+      className={cn(
+        'flex flex-col border border-neutral-disable rounded-2xl border-solid h-full p-6',
+        className,
+      )}
+    >
+      <span className="text-ui-body text-neutral-text-secondary">{label}</span>
+
+      <span className={cn('text-ui-stat leading-48', TONE_CLASSES[tone])}>
+        {tone === 'primary' ? formatCurrency(Number(value)) : value}
+      </span>
+
+      <span className="text-neutral-text-secondary text-ui-caption leading-5 mt-auto">
+        {tone === 'primary' && trend !== undefined && (
+          <>
+            <span className={getTrendClass(trend)}>
+              {trend > 0 ? t('statCard.sum') : t('statCard.sale')} {Math.abs(trend)}{' '}
+              {t('statCard.percent')}
+            </span>
+            <span className="font-medium text-12 ml-1">{sub}</span>
+          </>
+        )}
+
+        {tone === 'default' && Number(trend) >= 0 && (
+          <>
+            <span className="mr-1">{trend}</span>
+            <span className="font-medium text-12">{sub}</span>
+          </>
+        )}
+
+        {tone === 'pending' && Number(trend) >= 0 && (
+          <span>
+            {sub} {trend}
+          </span>
+        )}
+      </span>
     </div>
   );
 }

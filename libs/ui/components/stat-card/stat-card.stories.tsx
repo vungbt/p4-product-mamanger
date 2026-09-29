@@ -12,29 +12,17 @@ type Story = StoryObj<typeof StatCard>;
 
 export const Default: Story = {
   render: () => {
-    const value = [1723490, 120, 12];
-    const trend = [12, 3, 3];
     return (
-      <div className="">
+      <div className="grid grid-cols-3 gap-4 bg-slate-50 p-6 rounded-xl">
         <StatCard
-          stats={[
-            {
-              value: value[0],
-              trend: trend[0],
-              sub: [],
-            },
-            {
-              value: value[1],
-              trend: trend[1],
-              sub: [],
-            },
-            {
-              value: value[1],
-              trend: trend[1],
-              sub: [],
-            },
-          ]}
+          label="Doanh thu"
+          value="182450000"
+          trend={12.4}
+          sub="so với kỳ trước"
+          tone="primary"
         />
+        <StatCard label="Số đơn hàng" value="348" trend={12} sub="chờ xử lý" tone="default" />
+        <StatCard label="Sản phẩm sắp hết" value="6" sub="Ngưỡng cảnh báo: tồn ≤" tone="pending" />
       </div>
     );
   },
@@ -42,28 +30,22 @@ export const Default: Story = {
 
 export const withNegative: Story = {
   render: () => {
-    const value = [1723490, 120, 12];
-    const trend = [-12, 0, 0];
     return (
-      <div className="">
+      <div className="grid grid-cols-3 gap-4 bg-slate-50 p-6 rounded-xl">
         <StatCard
-          stats={[
-            {
-              value: value[0],
-              trend: trend[0],
-              sub: [],
-            },
-            {
-              value: value[1],
-              trend: trend[1],
-              sub: [],
-            },
-            {
-              value: value[1],
-              trend: trend[1],
-              sub: [],
-            },
-          ]}
+          label="Doanh thu"
+          value="182450000"
+          trend={-12.4}
+          sub="so với kỳ trước"
+          tone="primary"
+        />
+        <StatCard label="Số đơn hàng" value="348" trend={12} sub="chờ xử lý" tone="default" />
+        <StatCard
+          label="Sản phẩm sắp hết"
+          value="6"
+          trend={10}
+          sub="Ngưỡng cảnh báo: tồn ≤"
+          tone="pending"
         />
       </div>
     );

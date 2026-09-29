@@ -9,6 +9,7 @@
     "revenue": "Revenue",
     "type-revenue": "compared to previous period",
     "sum": "+",
+    "sale": "-",
     "percent": "%",
     "order": "Order",
     "type-order": "pending",
