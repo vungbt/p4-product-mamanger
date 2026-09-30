@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import { cn } from '../../helpers';
 export type StatusBreakdownListProps = {
   className?: string;
@@ -8,10 +7,10 @@ export type StatusBreakdownListProps = {
     count: number;
     percent: number;
     color?: string;
+    type: string;
   }[];
 };
 export const StatusBreakdownList = ({ className, rows }: StatusBreakdownListProps) => {
-  const { t } = useTranslation('ui');
   return (
     <div className={cn(`p-4 flex flex-col gap-3.5 min-w-96 ${className}`)}>
       {rows?.map((rows) => (
@@ -20,14 +19,12 @@ export const StatusBreakdownList = ({ className, rows }: StatusBreakdownListProp
             <span className="text-ui-mono leading-5">{rows.label}</span>
             <div className="flex items-center text-12 leading-5">
               <span>
-                {rows.count} {t('statusBreakdownList.single')}
+                {rows.count} {rows.type}
               </span>
-              <span className="flex justify-center items-center">
-                {t('statusBreakdownList.period')}
-              </span>
+              <span className="flex justify-center items-center">{'.'}</span>
               <span>
                 {rows.percent}
-                {t('statusBreakdownList.percent')}
+                {'%'}
               </span>
             </div>
           </div>

@@ -5,11 +5,6 @@
   "table": {
     "empty": "Không có dữ liệu"
   },
-  "statusBreakdownList": {
-    "single": "đơn ",
-    "period": ".",
-    "percent": "%"
-  },
   "mobileStickyActionBar": {
     "add-to-cart": "Thêm giỏ",
     "buy-now": "Mua ngay",
