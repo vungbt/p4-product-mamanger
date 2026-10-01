@@ -16,10 +16,10 @@ export const WithSuccessStatus: Story = {
     </div>
   ),
   args: {
-    rows: [
-      { label: 'Hoàn tất', count: 123, percent: 100, type: 'đơn', color: 'success' },
-      { label: 'Hoàn tất', count: 56, percent: 35, type: 'đơn', color: 'success' },
-    ],
+    progress: 1127,
+    total: 1127,
+    remaining: 117,
+    rows: [{ label: 'Hoàn tất', order: 'đơn', color: 'success' }],
   },
 };
 
@@ -30,9 +30,15 @@ export const WithPrimaryStatus: Story = {
     </div>
   ),
   args: {
+    progress: 1000,
+    total: 1127,
+    remaining: 1000,
     rows: [
-      { label: 'Đang giao', count: 123, percent: 100, type: 'đơn', color: 'primary' },
-      { label: 'Đang giao', count: 56, percent: 35, type: 'đơn', color: 'primary' },
+      {
+        label: 'Đang giao',
+        order: 'đơn',
+        color: 'primary',
+      },
     ],
   },
 };
@@ -44,9 +50,15 @@ export const WithInfoStatus: Story = {
     </div>
   ),
   args: {
+    progress: 500,
+    total: 1127,
+    remaining: 500,
     rows: [
-      { label: 'Đã thanh toán', count: 123, percent: 100, type: 'đơn', color: 'info' },
-      { label: 'Đã thanh toán', count: 29, percent: 25, type: 'đơn', color: 'info' },
+      {
+        label: 'Đã thanh toán',
+        order: 'đơn',
+        color: 'info',
+      },
     ],
   },
 };
@@ -58,9 +70,15 @@ export const WithPendingStatus: Story = {
     </div>
   ),
   args: {
+    progress: 300,
+    total: 1127,
+    remaining: 400,
     rows: [
-      { label: 'Chờ xử lý', count: 19, percent: 15, type: 'đơn', color: 'pending' },
-      { label: 'Chờ xử lý', count: 12, percent: 5, type: 'đơn', color: 'pending' },
+      {
+        label: 'Chờ xử lý',
+        order: 'đơn',
+        color: 'pending',
+      },
     ],
   },
 };
@@ -72,26 +90,15 @@ export const WithErrorStatus: Story = {
     </div>
   ),
   args: {
+    progress: 123,
+    total: 1127,
+    remaining: 123,
     rows: [
-      { label: 'Hoàn tất', count: 123, percent: 100, type: 'đơn', color: 'error' },
-      { label: 'Hoàn tất', count: 56, percent: 35, type: 'đơn', color: 'error' },
-    ],
-  },
-};
-
-export const AllStatus: Story = {
-  render: (args) => (
-    <div className="w-1/2">
-      <StatusBreakdownList {...args} />
-    </div>
-  ),
-  args: {
-    rows: [
-      { label: 'Hoàn tất', count: 123, percent: 100, type: 'đơn', color: 'success' },
-      { label: 'Đang giao', count: 56, percent: 35, type: 'đơn', color: 'primary' },
-      { label: 'Đã thanh toán', count: 29, percent: 25, type: 'đơn', color: 'info' },
-      { label: 'Chờ xử lý', count: 19, percent: 15, type: 'đơn', color: 'pending' },
-      { label: 'Đã hủy', count: 12, percent: 5, type: 'đơn', color: 'error' },
+      {
+        label: 'Hoàn tất',
+        order: 'đơn',
+        color: 'error',
+      },
     ],
   },
 };
