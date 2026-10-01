@@ -4,16 +4,6 @@ export enum DateFormat {
   DMY = 'dd/MM/yyyy',
 }
 
-export enum TargetDateFormat {
-  DHMS = 'dd:HH:mm:ss',
-  HMS = 'HH:mm:ss',
-  HM = 'HH:mm',
-  Day = 'dd',
-  Hour = 'HH',
-  Minute = 'MM',
-  Second = 'ss',
-}
-
 export function formatCurrency(amount: number, currency: string = 'VND'): string {
   try {
     return new Intl.NumberFormat('vi-VN', {
@@ -36,15 +26,6 @@ export function formatCurrency(amount: number, currency: string = 'VND'): string
 export function formatDate(
   date: string | Date,
   formatStr: DateFormat | (string & {}) = DateFormat.DMY,
-): string {
-  const parsed = typeof date === 'string' ? parseISO(date) : date;
-  if (!isValid(parsed)) return String(date);
-  return formatFn(parsed, formatStr);
-}
-
-export function formatTime(
-  date: string | Date,
-  formatStr: TargetDateFormat | (string & {}) = TargetDateFormat.DHMS,
 ): string {
   const parsed = typeof date === 'string' ? parseISO(date) : date;
   if (!isValid(parsed)) return String(date);
