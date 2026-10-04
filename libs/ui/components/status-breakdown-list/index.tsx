@@ -1,26 +1,22 @@
 import { cn } from '../../helpers';
 export type StatusBreakdownListProps = {
   className?: string;
-  progress?: number;
-  total?: number;
-  remaining?: number;
   rows: {
     label: string;
     color: string;
     order: string;
+    progress?: number;
+    total?: number;
+    remaining?: number;
   }[];
 };
-export const StatusBreakdownList = ({
-  className,
-  rows,
-  progress,
-  total,
-  remaining,
-}: StatusBreakdownListProps) => {
+export const StatusBreakdownList = ({ className, rows }: StatusBreakdownListProps) => {
   const percent = rows.map((rows) =>
-    progress && total ? Math.floor((progress / total) * 100) : 0,
+    rows.progress && rows.total ? Math.floor((rows.progress / rows.total) * 100) : 0,
   );
-  const count = total && remaining ? total - remaining : 0;
+  const count = rows.map((rows) =>
+    rows.total && rows.remaining ? rows.total - rows.remaining : 0,
+  );
   return (
     <div className={cn(`p-4 flex flex-col gap-3.5 min-w-96 ${className}`)}>
       {rows.length > 0 &&
@@ -45,15 +41,11 @@ export const StatusBreakdownList = ({
             </div>
             {percent.map((percent) => (
               <div key={`${percent}`} className={cn(`bg-neutral-border rounded-full leading-6`)}>
-                {percent >= 0 && percent < 100 && (
+                {percent > 0 && (
                   <div
-                    className={cn(`bg-${rows.color} h-2 rounded-l-lg`)}
-                    style={{ width: `${percent}%` }}
-                  />
-                )}
-                {percent === 100 && (
-                  <div
-                    className={cn(`bg-${rows.color} h-2 rounded-full`)}
+                    className={cn(
+                      `bg-${rows.color} h-2 ${percent === 100 ? 'rounded-full' : 'rounded-l-lg'}`,
+                    )}
                     style={{ width: `${percent}%` }}
                   />
                 )}

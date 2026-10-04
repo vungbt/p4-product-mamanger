@@ -16,10 +16,16 @@ export const WithSuccessStatus: Story = {
     </div>
   ),
   args: {
-    progress: 1127,
-    total: 1127,
-    remaining: 117,
-    rows: [{ label: 'Hoàn tất', order: 'đơn', color: 'success' }],
+    rows: [
+      {
+        label: 'Hoàn tất',
+        order: 'đơn',
+        color: 'success',
+        progress: 1127,
+        total: 1127,
+        remaining: 117,
+      },
+    ],
   },
 };
 
@@ -30,14 +36,14 @@ export const WithPrimaryStatus: Story = {
     </div>
   ),
   args: {
-    progress: 1000,
-    total: 1127,
-    remaining: 1000,
     rows: [
       {
         label: 'Đang giao',
         order: 'đơn',
         color: 'primary',
+        progress: 300,
+        total: 500,
+        remaining: 200,
       },
     ],
   },
@@ -50,14 +56,14 @@ export const WithInfoStatus: Story = {
     </div>
   ),
   args: {
-    progress: 500,
-    total: 1127,
-    remaining: 500,
     rows: [
       {
         label: 'Đã thanh toán',
         order: 'đơn',
         color: 'info',
+        progress: 400,
+        total: 1000,
+        remaining: 600,
       },
     ],
   },
@@ -70,14 +76,14 @@ export const WithPendingStatus: Story = {
     </div>
   ),
   args: {
-    progress: 300,
-    total: 1127,
-    remaining: 400,
     rows: [
       {
         label: 'Chờ xử lý',
         order: 'đơn',
         color: 'pending',
+        progress: 500,
+        total: 1000,
+        remaining: 500,
       },
     ],
   },
@@ -90,14 +96,14 @@ export const WithErrorStatus: Story = {
     </div>
   ),
   args: {
-    progress: 123,
-    total: 1127,
-    remaining: 123,
     rows: [
       {
-        label: 'Hoàn tất',
+        label: 'Đã hủy',
         order: 'đơn',
         color: 'error',
+        progress: 500,
+        total: 1000,
+        remaining: 500,
       },
     ],
   },
