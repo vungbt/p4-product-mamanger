@@ -32,5 +32,11 @@
     "transport": "Phí vận chuyển",
     "title": "Tổng cộng",
     "checkout": "Đặt hàng"
+  },
+  "countdownTimer": {
+    "days": "Ngày",
+    "hours": "Giờ",
+    "minutes": "Phút",
+    "seconds": "Giây"
   }
 }

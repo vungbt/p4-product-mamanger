@@ -1,0 +1,26 @@
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import CountdownTimer from './index';
+
+const meta: Meta<typeof CountdownTimer> = {
+  title: 'Components/CountdownTimer',
+  component: CountdownTimer,
+  args: {
+    targetDate: '',
+  },
+  tags: ['autodocs'],
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  render: (args) => (
+    <div className="w-96">
+      <CountdownTimer {...args} />
+    </div>
+  ),
+  args: {
+    targetDate: '2026-10-07',
+    title: 'Flash sale kết thúc sau:',
+  },
+};
