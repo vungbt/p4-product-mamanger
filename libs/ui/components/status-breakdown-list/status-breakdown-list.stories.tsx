@@ -108,3 +108,55 @@ export const WithErrorStatus: Story = {
     ],
   },
 };
+
+export const All: Story = {
+  render: (args) => (
+    <div className="w-1/2">
+      <StatusBreakdownList {...args} />
+    </div>
+  ),
+  args: {
+    rows: [
+      {
+        label: 'Hoàn tất',
+        order: 'đơn',
+        color: 'success',
+        progress: 1127,
+        total: 1127,
+        remaining: 117,
+      },
+      {
+        label: 'Đang giao',
+        order: 'đơn',
+        color: 'primary',
+        progress: 300,
+        total: 500,
+        remaining: 200,
+      },
+      {
+        label: 'Đã thanh toán',
+        order: 'đơn',
+        color: 'info',
+        progress: 400,
+        total: 1000,
+        remaining: 600,
+      },
+      {
+        label: 'Chờ xử lý',
+        order: 'đơn',
+        color: 'pending',
+        progress: 20,
+        total: 100,
+        remaining: 80,
+      },
+      {
+        label: 'Đã hủy',
+        order: 'đơn',
+        color: 'error',
+        progress: 10,
+        total: 100,
+        remaining: 50,
+      },
+    ],
+  },
+};
