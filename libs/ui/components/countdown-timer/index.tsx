@@ -42,7 +42,7 @@ export default function CountdownTimer({ targetDate, title }: CountdownTimerProp
       <div className="">
         <span className="text-sm text-neutral-text-secondary">{title}</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-1">
         <div className=" flex flex-col items-center rounded-xl border border-primary-border bg-neutral-white px-3 py-2">
           <span className="text-20 font-extrabold text-primary-clicked tracking-tighter">
             {timeLeft.days}
