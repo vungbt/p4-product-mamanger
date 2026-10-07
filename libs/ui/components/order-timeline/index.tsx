@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { cn } from '../../helpers';
 import { RenderIcon } from '../icons';
 
@@ -14,6 +15,10 @@ export type OrderTimelineProps = {
 };
 
 export function OrderTimeline({ steps, orientation = 'vertical', className }: OrderTimelineProps) {
+  /*dùng format của date-fns để định dạng ngày tháng */
+  const formatDate = (date: Date) => {
+    return format(date, 'dd/MM HH:mm');
+  };
   if (orientation === 'vertical')
     return (
       <div className={cn('flex flex-col gap-2 w-full', className)}>
@@ -51,9 +56,14 @@ export function OrderTimeline({ steps, orientation = 'vertical', className }: Or
                 </span>
                 {step.description && <span className="">{step.description}</span>}
               </div>
-              <div className="flex flex-row gap-2">
-                <span className={'flex gap-2'}>{step.date?.toLocaleDateString()}</span>
-                <span className={'flex gap-2'}>{step.date?.toLocaleTimeString()}</span>
+              <div className="">
+                <span
+                  className={cn('text-sm font-semibold', {
+                    'text-neutral-disable': step.done === false && step.current === false,
+                  })}
+                >
+                  {formatDate?.(step.date!)}
+                </span>
               </div>
             </div>
           </div>
