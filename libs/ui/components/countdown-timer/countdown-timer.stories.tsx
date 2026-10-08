@@ -5,7 +5,7 @@ const meta: Meta<typeof CountdownTimer> = {
   title: 'Components/CountdownTimer',
   component: CountdownTimer,
   args: {
-    targetDate: '',
+    targetDate: new Date(),
   },
   tags: ['autodocs'],
 };
@@ -20,7 +20,7 @@ export const Default: Story = {
     </div>
   ),
   args: {
-    targetDate: '2026-10-09 10:20:00',
+    targetDate: new Date('2026-10-10 09:43:00'),
     title: 'Flash sale kết thúc sau:',
   },
 };

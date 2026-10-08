@@ -1,67 +1,64 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../helpers';
+export type TimeLeft = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
+
+const calculateTimeLeft = (targetDate: Date): TimeLeft => {
+  const difference = +new Date(targetDate) - +new Date();
+
+  if (difference <= 0) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+  }
+
+  return {
+    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((difference / 1000 / 60) % 60),
+    seconds: Math.floor((difference / 1000) % 60),
+  };
+};
 
 export type CountdownTimerProps = {
-  targetDate: Date | string;
+  targetDate: Date;
   title?: string;
   className?: string;
 };
 
 export default function CountdownTimer({ targetDate, title, className }: CountdownTimerProps) {
   const { t } = useTranslation('ui');
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => calculateTimeLeft(targetDate));
 
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>;
-    const calculateTimeLeft = () => {
-      let targetTime = 0;
+    const timer = setInterval(() => {
+      const newTime = calculateTimeLeft(targetDate);
+      setTimeLeft(newTime);
 
-      // Nếu targetDate là chuỗi dạng "YYYY-MM-DD", chuyển nó về Date cục bộ (local time)
-      // bằng cách tách chuỗi và truyền vào new Date(year, monthIndex, day)
-      if (typeof targetDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(targetDate.trim())) {
-        const [year, month, day] = targetDate.trim().split('-');
-        targetTime = +new Date(Number(year), Number(month) - 1, Number(day));
-      } else {
-        targetTime = +new Date(targetDate);
+      // Stop timer if time is up
+      if (
+        newTime.days === 0 &&
+        newTime.hours === 0 &&
+        newTime.minutes === 0 &&
+        newTime.seconds === 0
+      ) {
+        clearInterval(timer);
       }
+    }, 1000);
 
-      const difference = targetTime - +new Date();
-      let timeLeft = {
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
-      };
-
-      if (difference > 0) {
-        timeLeft = {
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        };
-      } else {
-        if (timer) clearInterval(timer);
-      }
-
-      setTimeLeft(timeLeft);
-    };
-    timer = setInterval(calculateTimeLeft, 1000);
-    calculateTimeLeft();
     return () => clearInterval(timer);
   }, [targetDate]);
 
   return (
     <div className={cn('flex flex-col mt-4  min-w-80', className)}>
-      <div className="font-extrabold">
-        <span className="text-lg">{title}</span>
-      </div>
+      {title && (
+        <div className="font-extrabold">
+          <span className="text-lg">{title}</span>
+        </div>
+      )}
       <div className="flex items-center gap-2 mt-4 flex-1">
         {[
           { key: 'days', value: timeLeft.days, label: t('countdownTimer.days') },
