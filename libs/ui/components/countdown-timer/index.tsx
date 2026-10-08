@@ -38,7 +38,6 @@ export default function CountdownTimer({ targetDate, title, className }: Countdo
       const newTime = calculateTimeLeft(targetDate);
       setTimeLeft(newTime);
 
-      // Stop timer if time is up
       if (
         newTime.days === 0 &&
         newTime.hours === 0 &&
