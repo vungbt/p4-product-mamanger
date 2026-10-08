@@ -32,7 +32,7 @@ export const WithEvaluate: Story = {
   ),
   args: {
     orientation: 'readonly',
-    rating: 4.5,
+    rating: 4.6,
     maxRating: 5,
     count: 180,
     label: 'đánh giá',
