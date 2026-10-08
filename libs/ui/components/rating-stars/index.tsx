@@ -23,24 +23,37 @@ export function RatingStars({
   const evaluation = `${rating}/${maxRating}`;
   return (
     <div className={cn('flex items-center gap-1.5', className)}>
-      {Array.from({ length: maxRating }).map((_, index) => (
-        <button type="button" key={index} onClick={() => onChange?.(index + 1)}>
-          <RenderIcon
-            name="star-outline"
-            className={cn(
-              'cursor-pointer transition-colors !h-3 !w-3',
-              index + 1 <= rating
-                ? 'text-primary fill-current'
-                : 'text-neutral-disable fill-current',
-            )}
-          />
-        </button>
-      ))}
+      <div className="flex">
+        {Array.from({ length: maxRating }).map((_, index) => {
+          const isClickable = orientation === 'clickable';
+          return (
+            <button
+              type="button"
+              key={index}
+              onClick={() => isClickable && onChange?.(index + 1)}
+              disabled={!isClickable}
+              className={cn(isClickable ? 'cursor-pointer' : 'cursor-default')}
+            >
+              <RenderIcon
+                name="star-outline"
+                className={cn(
+                  'transition-colors !h-4 !w-4',
+                  rating >= index + 1
+                    ? 'text-primary fill-current'
+                    : 'text-neutral-disable fill-current',
+                )}
+              />
+            </button>
+          );
+        })}
+      </div>
       <div className="flex items-center gap-1 text-12 leading-5">
         {orientation === 'readonly' ? (
           <>
-            <span className="text-13 font-bold">{rating}</span>
-            {count !== undefined && count > 0 && (
+            <span className="text-13 font-bold">
+              {Number.isInteger(rating) ? `${rating}.0` : rating}
+            </span>
+            {(count ?? 0) > 0 && (
               <>
                 <span className="text-neutral-text-secondary">·</span>
                 <span className="text-neutral-text-secondary">{count}</span>
@@ -50,7 +63,7 @@ export function RatingStars({
           </>
         ) : (
           <>
-            <span className="text-13 ml-2 text-neutral-text-secondary">{evaluation}</span>
+            <span className="text-13 ml-1 text-neutral-text-secondary">{evaluation}</span>
             <span className="text-neutral-text-secondary">{label}</span>
           </>
         )}
