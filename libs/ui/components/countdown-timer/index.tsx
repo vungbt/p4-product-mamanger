@@ -29,6 +29,12 @@ export type CountdownTimerProps = {
   className?: string;
 };
 
+type TimeDisplayItem = {
+  key: keyof TimeLeft;
+  value: number;
+  type: string;
+};
+
 export default function CountdownTimer({ targetDate, title, className }: CountdownTimerProps) {
   const { t } = useTranslation('ui');
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => calculateTimeLeft(targetDate));
@@ -51,6 +57,13 @@ export default function CountdownTimer({ targetDate, title, className }: Countdo
     return () => clearInterval(timer);
   }, [targetDate]);
 
+  const timeUnits: TimeDisplayItem[] = [
+    { key: 'days', value: timeLeft.days, type: t('countdownTimer.days') },
+    { key: 'hours', value: timeLeft.hours, type: t('countdownTimer.hours') },
+    { key: 'minutes', value: timeLeft.minutes, type: t('countdownTimer.minutes') },
+    { key: 'seconds', value: timeLeft.seconds, type: t('countdownTimer.seconds') },
+  ];
+
   return (
     <div className={cn('flex flex-col mt-4  min-w-80', className)}>
       {title && (
@@ -59,12 +72,7 @@ export default function CountdownTimer({ targetDate, title, className }: Countdo
         </div>
       )}
       <div className="flex items-center gap-2 mt-4 flex-1">
-        {[
-          { key: 'days', value: timeLeft.days, label: t('countdownTimer.days') },
-          { key: 'hours', value: timeLeft.hours, label: t('countdownTimer.hours') },
-          { key: 'minutes', value: timeLeft.minutes, label: t('countdownTimer.minutes') },
-          { key: 'seconds', value: timeLeft.seconds, label: t('countdownTimer.seconds') },
-        ].map(({ key, value, label }) => (
+        {timeUnits.map(({ key, value, type }) => (
           <div
             key={key}
             className="flex flex-col items-center rounded-xl border border-primary-border bg-neutral-white px-3 py-2"
@@ -72,7 +80,7 @@ export default function CountdownTimer({ targetDate, title, className }: Countdo
             <span className="text-20 font-extrabold text-primary-clicked tracking-tighter">
               {value}
             </span>
-            <span className="text-10 font-bold text-primary-border">{label}</span>
+            <span className="text-10 font-bold text-primary-border">{type}</span>
           </div>
         ))}
       </div>
