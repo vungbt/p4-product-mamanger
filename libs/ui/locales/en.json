@@ -32,5 +32,11 @@
     "transport": "transport",
     "title": "Total price",
     "checkout": "Checkout"
+  },
+  "countdownTimer": {
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "seconds": "Seconds"
   }
 }
