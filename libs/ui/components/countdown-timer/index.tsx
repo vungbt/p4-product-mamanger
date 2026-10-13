@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { string } from 'valibot';
 import { cn } from '../../helpers';
 export type TimeLeft = {
   days: number;
@@ -32,7 +33,7 @@ export type CountdownTimerProps = {
 type TimeDisplayItem = {
   key: keyof TimeLeft;
   value: number;
-  type: string;
+  label: string;
 };
 
 export default function CountdownTimer({ targetDate, title, className }: CountdownTimerProps) {
@@ -58,10 +59,10 @@ export default function CountdownTimer({ targetDate, title, className }: Countdo
   }, [targetDate]);
 
   const timeUnits: TimeDisplayItem[] = [
-    { key: 'days', value: timeLeft.days, type: t('countdownTimer.days') },
-    { key: 'hours', value: timeLeft.hours, type: t('countdownTimer.hours') },
-    { key: 'minutes', value: timeLeft.minutes, type: t('countdownTimer.minutes') },
-    { key: 'seconds', value: timeLeft.seconds, type: t('countdownTimer.seconds') },
+    { key: 'days', value: timeLeft.days, label: t('countdownTimer.days') },
+    { key: 'hours', value: timeLeft.hours, label: t('countdownTimer.hours') },
+    { key: 'minutes', value: timeLeft.minutes, label: t('countdownTimer.minutes') },
+    { key: 'seconds', value: timeLeft.seconds, label: t('countdownTimer.seconds') },
   ];
 
   return (
@@ -72,15 +73,15 @@ export default function CountdownTimer({ targetDate, title, className }: Countdo
         </div>
       )}
       <div className="flex items-center gap-2 mt-4 flex-1">
-        {timeUnits.map(({ key, value, type }) => (
+        {timeUnits.map(({ key, value, label }) => (
           <div
             key={key}
             className="flex flex-col items-center rounded-xl border border-primary-border bg-neutral-white px-3 py-2"
           >
             <span className="text-20 font-extrabold text-primary-clicked tracking-tighter">
-              {value}
+              {String(value).padStart(2, '0')}
             </span>
-            <span className="text-10 font-bold text-primary-border">{type}</span>
+            <span className="text-10 font-bold text-primary-border">{label}</span>
           </div>
         ))}
       </div>

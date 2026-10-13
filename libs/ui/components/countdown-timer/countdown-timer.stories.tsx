@@ -20,7 +20,7 @@ export const Default: Story = {
     </div>
   ),
   args: {
-    targetDate: new Date('2026-10-10 09:43:00'),
+    targetDate: new Date('2026-10-14 23:59:59'),
     title: 'Flash sale kết thúc sau:',
   },
 };
