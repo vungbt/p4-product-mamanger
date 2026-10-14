@@ -32,14 +32,14 @@ export const Default: Story = {
   },
 };
 
-export const Defaultttt: Story = {
+export const WithStars: Story = {
   render: (args) => (
     <div className="max-w-2xl w-full flex gap-2 items-center">
       <ReviewCard {...args} />
     </div>
   ),
   args: {
-    userEmail: 'dongbui942006@gmail.com',
+    userEmail: 'Dongbui942006@gmail.com',
     rating: 4,
     date: new Date(),
     comment: 'Đáng giá trong tầm giá, phần mềm tuỳ biến hơi khó dùng.',
