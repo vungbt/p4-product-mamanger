@@ -1,0 +1,80 @@
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { RatingBreakdown } from './index';
+
+const meta = {
+  title: 'Components/RatingBreakdown',
+  component: RatingBreakdown,
+  tags: ['autodocs'],
+} as Meta<typeof RatingBreakdown>;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+export const Primary: Story = {
+  render: (args) => (
+    <div className="p-4 w-24">
+      <RatingBreakdown {...args} />
+    </div>
+  ),
+  args: {
+    average: 4.6,
+    total: 12,
+    breakdown: [
+      {
+        star: 5,
+        count: 8,
+      },
+      {
+        star: 4,
+        count: 3,
+      },
+      {
+        star: 3,
+        count: 1,
+      },
+      {
+        star: 2,
+        count: 0,
+      },
+      {
+        star: 1,
+        count: 0,
+      },
+    ],
+  },
+};
+
+export const ZeroReviews: Story = {
+  render: (args) => (
+    <div className="p-4 w-24">
+      <RatingBreakdown {...args} />
+    </div>
+  ),
+  args: {
+    average: 4.9,
+    total: 50,
+    breakdown: [
+      {
+        star: 5,
+        count: 25,
+      },
+      {
+        star: 4,
+        count: 20,
+      },
+      {
+        star: 3,
+        count: 15,
+      },
+      {
+        star: 2,
+        count: 10,
+      },
+      {
+        star: 1,
+        count: 5,
+      },
+    ],
+  },
+};
