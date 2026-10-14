@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { OrderTimeline } from './index';
+import { OrderTimeline, Orientation } from './index';
 
 const meta: Meta<typeof OrderTimeline> = {
   title: 'OrderTimeline',
@@ -20,25 +20,22 @@ export const Primary: Story = {
     );
   },
   args: {
-    orientation: 'vertical',
+    orientation: Orientation.VERTICAL,
     steps: [
       {
         label: 'Đã tạo đơn',
         done: true,
-        current: true,
         date: new Date(),
       },
       {
         label: 'Thanh toán thành công.',
         done: true,
-        current: true,
         description: 'VNPay',
         date: new Date('10/08 15:48'),
       },
       {
         label: 'Đã đóng gói tại kho HCM',
         done: true,
-        current: true,
         date: new Date('10/09 16:48:34'),
       },
       {
@@ -67,24 +64,21 @@ export const Horizontal: Story = {
     );
   },
   args: {
-    orientation: 'horizontal',
+    orientation: Orientation.HORIZONTAL,
     steps: [
       {
         label: 'Đã đặt',
         done: true,
-        current: true,
         date: new Date(),
       },
       {
         label: 'Đã thanh toán',
         done: true,
-        current: true,
         date: new Date(),
       },
       {
         label: 'Đã đóng gói',
         done: true,
-        current: true,
         date: new Date(),
       },
       {
