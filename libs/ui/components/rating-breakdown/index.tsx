@@ -33,7 +33,7 @@ export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
 
   return (
     <div className={cn('flex items-center gap-4 min-w-80', className)}>
-      <div className="text-center flex-none min-w-[64px]">
+      <div className="text-center flex-none min-w-16">
         <div className="text-32 font-extrabold tracking-tight leading-none text-neutral-text-primary">
           {displayScore}
         </div>

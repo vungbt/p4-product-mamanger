@@ -13,7 +13,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Primary: Story = {
   render: (args) => (
-    <div className="p-4 w-24">
+    <div className="p-4 w-28">
       <RatingBreakdown {...args} />
     </div>
   ),
