@@ -3,7 +3,7 @@ import { RenderIcon } from '../icons';
 import { ProgressBar } from '../progress-bar';
 
 export type RatingBreakdownItem = {
-  star?: 1 | 2 | 3 | 4 | 5;
+  star: 1 | 2 | 3 | 4 | 5;
   count: number;
 };
 
@@ -14,7 +14,7 @@ export type RatingBreakdownProps = {
   title?: string;
   description?: string;
   className?: string;
-  breakdown: RatingBreakdownItem[];
+  breakdown?: RatingBreakdownItem[];
 };
 
 export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
@@ -29,7 +29,7 @@ export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
   const displayScore = title ?? (average ?? score ?? 0).toFixed(1);
   const displayDescription = description ?? `${total} đánh giá`;
 
-  const sortedBreakdown = [...breakdown].sort((a, b) => (b.star ?? 0) - (a.star ?? 0));
+  const sortedBreakdown = [...breakdown].sort((a, b) => b.star - a.star);
 
   return (
     <div className={cn('flex items-center gap-4 min-w-80', className)}>
@@ -43,10 +43,10 @@ export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
       </div>
 
       <div className="flex-1 flex flex-col gap-1.5">
-        {sortedBreakdown.map((item, index) => {
-          const starLevel = item.star ?? 0;
+        {sortedBreakdown.map((item) => {
+          const starLevel = item.star;
           return (
-            <div key={starLevel || index} className="flex items-center gap-2">
+            <div key={item.star} className="flex items-center gap-2">
               <div className="flex items-center gap-1">
                 <span className="text-11 font-bold text-neutral-text-secondary w-2.5 text-center">
                   {starLevel}

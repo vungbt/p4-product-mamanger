@@ -53,7 +53,7 @@ export const ZeroReviews: Story = {
   ),
   args: {
     average: 4.9,
-    total: 50,
+    total: 75,
     breakdown: [
       {
         star: 5,
