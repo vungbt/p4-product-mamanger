@@ -41,6 +41,7 @@ export const WithStars: Story = {
   args: {
     userEmail: 'Dongbui942006@gmail.com',
     rating: 4,
+    maxRating: 5,
     date: new Date(),
     comment: 'Đáng giá trong tầm giá, phần mềm tuỳ biến hơi khó dùng.',
   },

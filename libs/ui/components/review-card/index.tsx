@@ -6,12 +6,12 @@ import { RenderIcon } from '../icons';
 export type ReviewCardProps = {
   userEmail: string;
   rating: number;
-  maxRating?: number;
+  maxRating: number;
   date: Date;
   comment?: string;
 };
 
-export function ReviewCard({ userEmail, rating, date, comment, maxRating = 5 }: ReviewCardProps) {
+export function ReviewCard({ userEmail, rating, date, comment, maxRating }: ReviewCardProps) {
   return (
     <div className="flex gap-2">
       <div className="text-neutral-text-secondary ">
@@ -23,8 +23,8 @@ export function ReviewCard({ userEmail, rating, date, comment, maxRating = 5 }: 
       <div className="flex flex-col">
         <div className="flex gap-2 items-center">
           <p className="text-neutral-text-primary font-bold">{userEmail}</p>
-          {rating >= 1 &&
-            rating <= 5 &&
+          {rating > 0 &&
+            rating <= maxRating &&
             Array.from({ length: maxRating }, (_, index) => (
               <RenderIcon
                 key={index}
