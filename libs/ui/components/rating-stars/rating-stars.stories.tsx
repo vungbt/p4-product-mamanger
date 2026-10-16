@@ -16,7 +16,7 @@ export const Default: Story = {
     </div>
   ),
   args: {
-    orientation: 'readonly',
+    orientation: true,
     rating: 5,
     maxRating: 5,
     count: 218,
@@ -31,7 +31,7 @@ export const WithEvaluate: Story = {
     </div>
   ),
   args: {
-    orientation: 'readonly',
+    orientation: true,
     rating: 4.6,
     maxRating: 5,
     count: 180,
@@ -46,7 +46,7 @@ export const Large: Story = {
     </div>
   ),
   args: {
-    orientation: 'readonly',
+    orientation: true,
     rating: 3,
     maxRating: 5,
     count: 0,
@@ -61,7 +61,7 @@ export const Clickable: Story = {
     </div>
   ),
   args: {
-    orientation: 'clickable',
+    orientation: false,
     rating: 4,
     maxRating: 5,
     count: 200,

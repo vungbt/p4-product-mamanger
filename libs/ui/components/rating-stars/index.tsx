@@ -3,29 +3,32 @@ import { RenderIcon } from '../icons';
 
 export interface RatingStarsProps {
   rating: number;
-  maxRating?: number;
+  maxRating: number;
   className?: string;
   count?: number;
   label?: string;
-  orientation?: 'readonly' | 'clickable';
+  orientation?: boolean;
   onChange?: (rating: number) => void;
 }
 
 export function RatingStars({
   rating,
-  maxRating = 5,
+  maxRating,
   className,
   count,
   label,
-  orientation,
+  orientation = true,
   onChange,
 }: RatingStarsProps) {
   const evaluation = `${rating}/${maxRating}`;
+  const isClickable = !orientation;
+  const formatRating = (val: number) => {
+    return Number.isInteger(val) ? `${val}.0` : val;
+  };
   return (
     <div className={cn('flex items-center gap-1.5', className)}>
       <div className="flex">
         {Array.from({ length: maxRating }).map((_, index) => {
-          const isClickable = orientation === 'clickable';
           return (
             <button
               type="button"
@@ -48,11 +51,9 @@ export function RatingStars({
         })}
       </div>
       <div className="flex items-center gap-1 text-12 leading-5">
-        {orientation === 'readonly' ? (
+        {!isClickable ? (
           <>
-            <span className="text-13 font-bold">
-              {Number.isInteger(rating) ? `${rating}.0` : rating}
-            </span>
+            <span className="text-13 font-bold">{formatRating(rating)}</span>
             {(count ?? 0) > 0 && (
               <>
                 <span className="text-neutral-text-secondary">·</span>
