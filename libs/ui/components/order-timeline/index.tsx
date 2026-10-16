@@ -7,8 +7,7 @@ export type OrderTimelineStep = {
   done?: boolean;
   current?: boolean;
   description?: string;
-
-  date?: Date;
+  date: Date;
 };
 
 export enum Orientation {
