@@ -8,10 +8,8 @@ export type RatingBreakdownItem = {
 };
 
 export type RatingBreakdownProps = {
-  average?: number;
-  score?: number;
+  average: number;
   total: number;
-  title?: string;
   description?: string;
   className?: string;
   breakdown?: RatingBreakdownItem[];
@@ -19,15 +17,14 @@ export type RatingBreakdownProps = {
 
 export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
   average,
-  score,
   total,
-  title,
   description,
   breakdown = [],
   className,
 }) => {
-  const displayScore = title ?? (average ?? score ?? 0).toFixed(1);
-  const displayDescription = description ?? `${total} đánh giá`;
+  const displayScore = (average ?? 0).toFixed(1);
+  const displayDescription =
+    description ?? (!total || total <= 0 ? 'Chưa có đánh giá' : `${total} đánh giá`);
 
   const sortedBreakdown = [...breakdown].sort((a, b) => b.star - a.star);
 
@@ -53,7 +50,6 @@ export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
                 </span>
                 <RenderIcon name="star-solid" className="text-primary !w-3 !h-3" />
               </div>
-
               <div className="flex-1">
                 <ProgressBar
                   currentValue={item.count}
@@ -64,7 +60,6 @@ export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
                   )}
                 />
               </div>
-
               <span className="text-11 text-neutral-placeholder w-3.5 text-right">
                 {item.count}
               </span>

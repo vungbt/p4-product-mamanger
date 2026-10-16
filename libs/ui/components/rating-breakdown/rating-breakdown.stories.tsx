@@ -45,35 +45,69 @@ export const Primary: Story = {
   },
 };
 
-export const ZeroReviews: Story = {
+export const WithZeroReviews: Story = {
   render: (args) => (
     <div className="p-4 w-24">
       <RatingBreakdown {...args} />
     </div>
   ),
   args: {
-    average: 4.9,
-    total: 75,
+    average: 0,
+    total: 0,
     breakdown: [
       {
         star: 5,
-        count: 25,
+        count: 0,
       },
       {
         star: 4,
-        count: 20,
+        count: 0,
       },
       {
         star: 3,
-        count: 15,
+        count: 0,
       },
       {
         star: 2,
-        count: 10,
+        count: 0,
       },
       {
         star: 1,
-        count: 5,
+        count: 0,
+      },
+    ],
+  },
+};
+
+export const WithUndefined: Story = {
+  render: (args) => (
+    <div className="p-4 w-24">
+      <RatingBreakdown {...args} />
+    </div>
+  ),
+  args: {
+    average: 0,
+    total: undefined,
+    breakdown: [
+      {
+        star: 5,
+        count: 0,
+      },
+      {
+        star: 4,
+        count: 0,
+      },
+      {
+        star: 3,
+        count: 0,
+      },
+      {
+        star: 2,
+        count: 0,
+      },
+      {
+        star: 1,
+        count: 0,
       },
     ],
   },
