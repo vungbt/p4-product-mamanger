@@ -24,6 +24,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ChevronUp,
+  Circle,
+  CircleCheck,
   Clock,
   CloudUpload,
   Code,
@@ -105,6 +107,8 @@ export type IconProps = {
 export type Icon = FC<IconProps>;
 
 const iconMap = {
+  'circle-check': CircleCheck,
+  circle: Circle,
   'heart-solid': HeartSolid,
   'heart-outline': HeartOutline,
   home: Home,
