@@ -23,6 +23,7 @@ export * from './menu';
 export * from './pagination';
 export * from './product-card';
 export * from './radio';
+export * from './rating-breakdown';
 export * from './switch';
 export * from './tabs';
 export * from './tag';
