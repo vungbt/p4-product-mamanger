@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../helpers/utils';
 import { RenderIcon } from '../icons';
 import { ProgressBar } from '../progress-bar';
@@ -23,8 +24,14 @@ export const RatingBreakdown: React.FC<RatingBreakdownProps> = ({
   className,
 }) => {
   const displayScore = (average ?? 0).toFixed(1);
+
+  const { t } = useTranslation();
+
   const displayDescription =
-    description ?? (!total || total <= 0 ? 'Chưa có đánh giá' : `${total} đánh giá`);
+    description ??
+    (!total || total <= 0
+      ? t('ratingBreakdown.noReviews')
+      : `${total} ${t('ratingBreakdown.reviews')}`);
 
   const sortedBreakdown = [...breakdown].sort((a, b) => b.star - a.star);
 

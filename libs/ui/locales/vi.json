@@ -38,5 +38,9 @@
     "hours": "Giờ",
     "minutes": "Phút",
     "seconds": "Giây"
+  },
+  "ratingBreakdown": {
+    "noReviews": "Chưa có đánh giá",
+    "reviews": "đánh giá"
   }
 }

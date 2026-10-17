@@ -38,5 +38,9 @@
     "hours": "Hours",
     "minutes": "Minutes",
     "seconds": "Seconds"
+  },
+  "ratingBreakdown": {
+    "noReviews": "No reviews",
+    "reviews": "reviews"
   }
 }
