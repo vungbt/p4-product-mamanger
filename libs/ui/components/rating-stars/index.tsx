@@ -7,7 +7,7 @@ export interface RatingStarsProps {
   className?: string;
   count?: number;
   label?: string;
-  orientation?: boolean;
+  clickable?: boolean;
   onChange?: (rating: number) => void;
 }
 
@@ -17,11 +17,10 @@ export function RatingStars({
   className,
   count,
   label,
-  orientation = true,
+  clickable = true,
   onChange,
 }: RatingStarsProps) {
   const evaluation = `${rating}/${maxRating}`;
-  const isClickable = !orientation;
   const formatRating = (val: number) => {
     return Number.isInteger(val) ? `${val}.0` : val;
   };
@@ -33,9 +32,9 @@ export function RatingStars({
             <button
               type="button"
               key={index}
-              onClick={() => isClickable && onChange?.(index + 1)}
-              disabled={!isClickable}
-              className={cn(isClickable ? 'cursor-pointer' : 'cursor-default')}
+              onClick={() => clickable && onChange?.(index + 1)}
+              disabled={!clickable}
+              className={cn(clickable ? 'cursor-pointer' : 'cursor-default')}
             >
               <RenderIcon
                 name="star-outline"
@@ -51,7 +50,7 @@ export function RatingStars({
         })}
       </div>
       <div className="flex items-center gap-1 text-12 leading-5">
-        {!isClickable ? (
+        {clickable ? (
           <>
             <span className="text-13 font-bold">{formatRating(rating)}</span>
             {(count ?? 0) > 0 && (
