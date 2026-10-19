@@ -19,7 +19,7 @@ export function PaymentMethodSelector({
   className,
 }: PaymentMethodSelectorProps) {
   return (
-    <div className={cn('flex gap-2.5 w-full min-w-96 flex-wrap', className)}>
+    <div className={cn('flex gap-2.5 w-full flex-wrap', className)}>
       {options.map((option) => {
         const isSelected = value === option.value;
 
@@ -46,7 +46,7 @@ export function PaymentMethodSelector({
 
             <span
               className={cn(
-                'text-13.5 leading-none transition-colors',
+                'text-13.5 transition-colors',
                 isSelected ? 'font-bold text-primary-clicked' : 'font-semibold text-secondary',
               )}
             >
