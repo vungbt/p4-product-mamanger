@@ -8,6 +8,7 @@ export * from './button';
 export * from './carousel';
 export * from './checkbox';
 export * from './common';
+export * from './coupon-input-bar';
 export * from './divider';
 export * from './empty';
 export * from './form-error-message';
