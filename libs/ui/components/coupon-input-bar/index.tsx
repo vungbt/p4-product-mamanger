@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../../helpers';
 import { Button } from '../button';
 import { RenderIcon } from '../icons';
+import { Input } from '../input';
 
 export type CouponInputBarProps = {
   value: string;
@@ -35,18 +36,18 @@ export function CouponInputBar({
           <span className="font-mono text-13 font-bold text-success">
             {appliedCoupon.code} {appliedCoupon.discountLabel}
           </span>
-          <button
+          <Button
             type="button"
             onClick={onRemove}
             aria-label="Remove coupon"
-            className="flex cursor-pointer items-center justify-center text-success hover:opacity-80 border-none bg-transparen"
+            className="flex  items-center justify-center text-success bg-transparent"
           >
             <RenderIcon name="close" className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       ) : (
         <>
-          <input
+          <Input
             type="text"
             value={value}
             disabled={loading}
@@ -58,6 +59,7 @@ export function CouponInputBar({
             type="button"
             color="neutral"
             variant="outline"
+            className="min-w-28"
             onClick={onApply}
             loading={loading}
           >

@@ -61,8 +61,8 @@ export const Interactive: Story = {
     >(undefined);
     const [loading, setLoading] = useState(false);
     const handleApply = () => {
-      args.onApply?.();
       if (!value.trim()) return;
+      args.onApply?.();
       setLoading(true);
       setTimeout(() => {
         setAppliedCoupon({
