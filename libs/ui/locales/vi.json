@@ -42,5 +42,8 @@
   "ratingBreakdown": {
     "noReviews": "Chưa có đánh giá",
     "reviews": "đánh giá"
+  },
+  "categoryCard": {
+    "products": "sản phẩm"
   }
 }
