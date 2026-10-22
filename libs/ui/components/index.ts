@@ -1,6 +1,8 @@
 // Barrel for `components/` alone — simple, single-concern components that don't orchestrate multiple
 // parts or wrap a heavy external lib. Don't cross-export `modules/`/`hooks/` here — those two groups
 // have their own barrels (`modules/index.ts`, `hooks/index.ts`), combined together in `libs/ui/index.ts` (root).
+
+export * from './announcement-bar';
 export * from './avatar';
 export * from './box';
 export * from './breadcrumb';
