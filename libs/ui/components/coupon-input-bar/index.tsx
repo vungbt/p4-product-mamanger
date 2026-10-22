@@ -59,7 +59,6 @@ export function CouponInputBar({
             type="button"
             color="neutral"
             variant="outline"
-            className="min-w-28"
             onClick={onApply}
             loading={loading}
           >
