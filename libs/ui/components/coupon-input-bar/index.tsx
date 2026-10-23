@@ -9,10 +9,7 @@ export type CouponInputBarProps = {
   onChange: (value: string) => void;
   onApply: () => void;
   onRemove: () => void;
-  appliedCoupon?: {
-    code: string;
-    discountLabel: string;
-  };
+  couponCode?: string;
   loading?: boolean;
   className?: string;
   placeholder?: string;
@@ -23,7 +20,7 @@ export function CouponInputBar({
   onChange,
   onApply,
   onRemove,
-  appliedCoupon,
+  couponCode,
   loading,
   className,
   placeholder,
@@ -31,10 +28,10 @@ export function CouponInputBar({
   const { t } = useTranslation();
   return (
     <div className={cn('flex items-center gap-2.5 w-full', className)}>
-      {appliedCoupon ? (
+      {couponCode ? (
         <div className="flex h-10 flex-1 items-center justify-between rounded-lg border border-success-border bg-success-bg px-3.5">
           <span className="font-mono text-13 font-bold text-success">
-            {appliedCoupon.code} {appliedCoupon.discountLabel}
+            {couponCode && `${couponCode} đã áp dụng`}
           </span>
           <Button
             type="button"

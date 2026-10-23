@@ -35,10 +35,8 @@ export const Default: Story = {
 export const AppliedState: Story = {
   args: {
     value: '',
-    appliedCoupon: {
-      code: 'SALE10',
-      discountLabel: 'đã áp dụng',
-    },
+    couponCode: 'SALE10',
+    loading: false,
   },
 };
 
@@ -52,23 +50,14 @@ export const Loading: Story = {
 export const Interactive: Story = {
   render: function Render(args) {
     const [value, setValue] = useState('');
-    const [appliedCoupon, setAppliedCoupon] = useState<
-      | {
-          code: string;
-          discountLabel: string;
-        }
-      | undefined
-    >(undefined);
+    const [couponCode, setCouponCode] = useState<string | undefined>(undefined);
     const [loading, setLoading] = useState(false);
     const handleApply = () => {
       if (!value.trim()) return;
       args.onApply?.();
       setLoading(true);
       setTimeout(() => {
-        setAppliedCoupon({
-          code: value.trim().toUpperCase(),
-          discountLabel: 'đã áp dụng',
-        });
+        setCouponCode(value.trim().toUpperCase());
         setValue('');
         setLoading(false);
       }, 1000);
@@ -76,7 +65,7 @@ export const Interactive: Story = {
 
     const handleRemove = () => {
       args.onRemove?.();
-      setAppliedCoupon(undefined);
+      setCouponCode(undefined);
     };
 
     return (
@@ -89,7 +78,7 @@ export const Interactive: Story = {
         }}
         onApply={handleApply}
         onRemove={handleRemove}
-        appliedCoupon={appliedCoupon}
+        couponCode={couponCode}
         loading={loading}
       />
     );
