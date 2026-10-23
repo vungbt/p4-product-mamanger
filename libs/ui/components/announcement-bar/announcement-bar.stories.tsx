@@ -14,9 +14,7 @@ type Story = StoryObj<typeof AnnouncementBar>;
 export const Default: Story = {
   args: {
     label: 'Miễn phí vận chuyển cho đơn hàng từ 500.000đ',
-    highlighted: {
-      description: 'Nhập mã',
-      code: 'FREESHIP',
-    },
+    description: 'Nhập mã',
+    code: 'FREESHIP',
   },
 };

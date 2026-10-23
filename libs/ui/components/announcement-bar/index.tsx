@@ -3,13 +3,11 @@ import { cn } from '../../helpers';
 export type AnnouncementBarProps = {
   className?: string;
   label: string;
-  highlighted: {
-    code: string;
-    description: string;
-  };
+  code: string;
+  description: string;
 };
 
-export const AnnouncementBar = ({ className, label, highlighted }: AnnouncementBarProps) => {
+export const AnnouncementBar = ({ className, label, code, description }: AnnouncementBarProps) => {
   return (
     <div
       className={cn(
@@ -19,8 +17,8 @@ export const AnnouncementBar = ({ className, label, highlighted }: AnnouncementB
     >
       <div className="flex gap-1">
         <span className="">{`${label} ·`}</span>
-        <span className="">{highlighted.description}</span>
-        <span className="text-primary font-bold">{highlighted.code}</span>
+        <span className="">{description}</span>
+        <span className="text-primary font-bold">{code}</span>
       </div>
     </div>
   );
