@@ -48,10 +48,12 @@ export const CategoryCard = ({
             {name}
           </span>
         )}
-        {count !== null && count !== undefined && (
+        {count && count > 0 ? (
           <span className="text-neutral-text-secondary text-12">
             {count} {label || t('categoryCard.products')}
           </span>
+        ) : (
+          <span className="text-neutral-text-secondary text-12">{null}</span>
         )}
       </div>
     </div>
