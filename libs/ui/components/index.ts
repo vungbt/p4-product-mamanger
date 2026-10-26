@@ -25,6 +25,7 @@ export * from './payment-method-selector';
 export * from './product-card';
 export * from './radio';
 export * from './rating-breakdown';
+export * from './removable-filter-chip';
 export * from './switch';
 export * from './tabs';
 export * from './tag';
