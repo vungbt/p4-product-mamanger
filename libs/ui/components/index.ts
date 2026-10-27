@@ -8,6 +8,7 @@ export * from './box';
 export * from './breadcrumb';
 export * from './button';
 export * from './carousel';
+export * from './category-card';
 export * from './checkbox';
 export * from './common';
 export * from './divider';

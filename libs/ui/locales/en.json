@@ -42,5 +42,8 @@
   "ratingBreakdown": {
     "noReviews": "No reviews",
     "reviews": "reviews"
+  },
+  "categoryCard": {
+    "products": "product"
   }
 }
