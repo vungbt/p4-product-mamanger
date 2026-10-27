@@ -47,5 +47,8 @@
     "apply": "Apply",
     "loading": "Applying",
     "placeholder": "Enter coupon code"
+  },
+  "categoryCard": {
+    "products": "product"
   }
 }

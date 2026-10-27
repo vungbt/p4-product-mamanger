@@ -82,6 +82,8 @@ const ICON_NAMES: IconName[] = [
   'arrow-right',
   'shopping-cart',
   'log-out',
+  'radio-outline',
+  'radio-solid',
 ];
 
 function IconGallery() {

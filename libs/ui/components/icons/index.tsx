@@ -24,6 +24,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ChevronUp,
+  Circle,
+  CircleCheck,
   Clock,
   CloudUpload,
   Code,
@@ -92,6 +94,7 @@ import {
 import type { CSSProperties, FC } from 'react';
 import HeartOutline from './heart-outline';
 import HeartSolid from './heart-solid';
+import Radio from './radio-solid';
 import StarOutline from './star-outline';
 import StarSolid from './star-solid';
 
@@ -105,6 +108,10 @@ export type IconProps = {
 export type Icon = FC<IconProps>;
 
 const iconMap = {
+  'circle-check': CircleCheck,
+  circle: Circle,
+  'radio-solid': Radio,
+  'radio-outline': Circle,
   'heart-solid': HeartSolid,
   'heart-outline': HeartOutline,
   home: Home,
