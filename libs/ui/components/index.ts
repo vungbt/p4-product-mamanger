@@ -25,6 +25,7 @@ export * from './payment-method-selector';
 export * from './product-card';
 export * from './radio';
 export * from './rating-breakdown';
+export * from './search-pill';
 export * from './switch';
 export * from './tabs';
 export * from './tag';
