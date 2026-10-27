@@ -17,7 +17,7 @@ export const Primary: Story = {
     initials: 'Đông Sứa',
     size: 'md',
     accept: 'đổi ảnh đại diện',
-    onUplaod: (file) => console.log(file),
+    onUpload: (file) => console.log(file),
   },
 };
 
@@ -28,6 +28,6 @@ export const Large: Story = {
     size: 'lg',
     accept: 'Đổi ảnh đại diện',
     label: 'PNG/JPG, tối đa 2MB',
-    onUplaod: (file) => console.log(file),
+    onUpload: (file) => console.log(file),
   },
 };
