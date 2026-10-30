@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { StorefrontHeader } from './index';
 
 const meta = {
-  title: 'UI/StorefrontHeader',
+  title: 'Modules/StorefrontHeader',
   component: StorefrontHeader,
   tags: ['autodocs'],
   argTypes: {

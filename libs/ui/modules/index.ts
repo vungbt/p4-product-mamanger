@@ -15,5 +15,6 @@ export * from './radio-group';
 export * from './search-input';
 export * from './select';
 export * from './sidebar';
+export * from './storefront-header';
 export * from './table';
 export * from './timepicker';
