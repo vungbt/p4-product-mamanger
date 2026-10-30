@@ -5,6 +5,7 @@
 export * from './address-card';
 export * from './announcement-bar';
 export * from './avatar';
+export * from './avatar-upload';
 export * from './box';
 export * from './breadcrumb';
 export * from './button';
