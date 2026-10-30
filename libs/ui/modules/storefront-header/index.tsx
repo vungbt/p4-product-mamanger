@@ -1,8 +1,8 @@
+import { IconButton } from '../../components/icon-button';
+import { Input } from '../../components/input';
+import { UiImage, UiLink } from '../../components/link-image-provider';
+import { UserChip } from '../../components/user-chip';
 import { cn } from '../../helpers/utils';
-import { IconButton } from '../icon-button';
-import { Input } from '../input';
-import { UiImage, UiLink } from '../link-image-provider';
-import { UserChip } from '../user-chip';
 
 export type NavItem = {
   label: string;
