@@ -42,5 +42,13 @@
   "ratingBreakdown": {
     "noReviews": "No reviews",
     "reviews": "reviews"
+  },
+  "couponInputBar": {
+    "apply": "Apply",
+    "loading": "Applying",
+    "placeholder": "Enter coupon code"
+  },
+  "categoryCard": {
+    "products": "product"
   }
 }

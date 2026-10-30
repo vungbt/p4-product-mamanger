@@ -42,5 +42,13 @@
   "ratingBreakdown": {
     "noReviews": "Chưa có đánh giá",
     "reviews": "đánh giá"
+  },
+  "couponInputBar": {
+    "apply": "Áp dụng",
+    "loading": "Đang áp dụng",
+    "placeholder": "Nhập mã giảm giá"
+  },
+  "categoryCard": {
+    "products": "sản phẩm"
   }
 }

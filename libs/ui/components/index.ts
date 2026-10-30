@@ -1,13 +1,19 @@
 // Barrel for `components/` alone — simple, single-concern components that don't orchestrate multiple
 // parts or wrap a heavy external lib. Don't cross-export `modules/`/`hooks/` here — those two groups
 // have their own barrels (`modules/index.ts`, `hooks/index.ts`), combined together in `libs/ui/index.ts` (root).
+
+export * from './address-card';
+export * from './announcement-bar';
 export * from './avatar';
+export * from './avatar-upload';
 export * from './box';
 export * from './breadcrumb';
 export * from './button';
 export * from './carousel';
+export * from './category-card';
 export * from './checkbox';
 export * from './common';
+export * from './coupon-input-bar';
 export * from './divider';
 export * from './empty';
 export * from './form-error-message';
@@ -26,6 +32,7 @@ export * from './product-card';
 export * from './radio';
 export * from './rating-breakdown';
 export * from './removable-filter-chip';
+export * from './search-pill';
 export * from './switch';
 export * from './tabs';
 export * from './tag';

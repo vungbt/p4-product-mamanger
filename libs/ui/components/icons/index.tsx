@@ -7,6 +7,7 @@ import {
   AlignRight,
   ArrowLeft,
   ArrowRight,
+  ArrowUpFromLine,
   BadgePercent,
   Banknote,
   Bell,
@@ -108,6 +109,7 @@ export type IconProps = {
 export type Icon = FC<IconProps>;
 
 const iconMap = {
+  'arrow-up-from-line': ArrowUpFromLine,
   'circle-check': CircleCheck,
   circle: Circle,
   'radio-solid': Radio,
