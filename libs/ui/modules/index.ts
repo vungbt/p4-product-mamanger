@@ -1,6 +1,7 @@
 // Barrel for `modules/` alone — multi-file components that orchestrate several parts or wrap a heavy
 // external lib (tanstack-table, react-select, react-hook-form/zod-style validation, framer-motion overlay...).
 export * from './admin-header';
+export * from './admin-topbar';
 export * from './datepicker';
 export * from './daterangepicker';
 export * from './drawer';
