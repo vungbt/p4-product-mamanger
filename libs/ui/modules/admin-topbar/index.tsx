@@ -35,6 +35,7 @@ export const AdminTopbar = ({
       <div className="flex items-center gap-2 text-13.5">
         <Breadcrumb
           separator="›"
+          itemClassName="text-13.5"
           items={breadcrumb.map((b) => ({ title: b.label, href: b.href }))}
         />
       </div>
@@ -44,16 +45,20 @@ export const AdminTopbar = ({
           variant="outline"
           color="neutral"
           shape="square"
+          aria-label="Thông báo"
           className="relative rounded-lg p-2"
           badge={notifCount && notifCount > 0 ? notifCount : undefined}
           badgeColor="primary"
           onClick={onBellClick}
         />
         <UserChip
-          className="border-none"
+          className="border-none "
           name={user.name}
           subtitle={user.role}
           avatarUrl={user.avatarUrl}
+          customClasses={{
+            avatar: 'bg-neutral-text-secondary text-11 text-neutral-white border-none w-9 h-9',
+          }}
         />
       </div>
     </header>
