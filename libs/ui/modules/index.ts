@@ -9,6 +9,7 @@ export * from './footer';
 export * from './form/form';
 export * from './form/form-field';
 export * from './header';
+export * from './mobile-header';
 export * from './modal';
 export * from './radio-button-group';
 export * from './radio-group';
