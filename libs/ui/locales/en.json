@@ -50,5 +50,11 @@
   },
   "categoryCard": {
     "products": "product"
+  },
+  "mobileTabBar": {
+    "home": "home",
+    "shop": "shop",
+    "order": "order",
+    "user": "user"
   }
 }

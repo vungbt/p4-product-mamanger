@@ -50,5 +50,11 @@
   },
   "categoryCard": {
     "products": "sản phẩm"
+  },
+  "mobileTabBar": {
+    "home": "trang chủ",
+    "shop": "shop",
+    "order": "đơn hàng",
+    "user": "Tài khoản"
   }
 }
