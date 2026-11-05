@@ -1,37 +1,38 @@
-# Project conventions
+# Frontend conventions
 
-Monorepo (pnpm + Turborepo). Linting/formatting is **Biome only** (`pnpm lint` / `pnpm format`) — there is no ESLint, so anything below that isn't caught by Biome must be caught in code review by hand.
+## UI components
 
-## Component structure (`libs/ui/components/**`, `libs/ui/modules/**`)
+- Import shared controls, forms, tables and navigation directly from `@itclabs/react-ui`.
+- Use the published library and its Storybook: https://react-ui-one-rose.vercel.app/.
+- Reusable P4 business compositions live in `libs/blocks` (`@p4/blocks`), built from the published kit. Do not copy Button/Input/Avatar or other kit primitives into this package. Feature-specific UI stays alongside its page in `apps/web/src`.
+- Preserve business props, callbacks and stories when changing a block. Run `pnpm --filter @p4/blocks typecheck` and `pnpm build:storybook`; preview with `pnpm storybook`.
+- Use `cn` from `@itclabs/react-ui` for conditional classes; prefer the kit's semantic text and color utilities when merging classes.
+- Read installed TypeScript declarations before using props. Button supports `variant` (`primary`, `secondary`, `ghost`, `danger`) and `size` (`sm`, `md`, `lg`); render custom icons as children. IconButton requires a `label`.
+- Forms use `Form`, `FormField`, `useAppForm` and Valibot (imported directly from `valibot`).
+- Use `toast` from `@itclabs/react-ui/toast`; the root mounts `ToastProvider`.
+- Register additional named glyph imports in `apps/web/src/libraries/ui-theme.ts`; avoid importing the full icon catalog.
 
-- One folder per component, **kebab-case** (`icon-button`, `product-card`).
-- `index.tsx` exports the component; co-locate `*.stories.tsx` in the same folder.
-- The exported component name and its `Props` type must be **PascalCase and match the folder name** (folder `product-card` → `ProductCard` / `ProductCardProps`, not `ProductCart`). The Storybook `title` should match too (e.g. `Components/ProductCard`).
-- Use the shared `cn()` helper (`libs/ui/helpers/utils.ts`) to merge Tailwind classes — don't concatenate class strings manually.
-- When a class/spacing/color choice isn't obvious from the code (matches a specific design spec, deliberately differs from a nearby similar component, etc.), leave a short comment referencing `docs/design/*` like existing components do (see `button/index.tsx`, `icon-button/index.tsx`). Don't explain what the code obviously does.
+## Styling
 
-## Styling: no arbitrary values, ever — extend the preset instead
+- Follow the [official theming guide](https://react-ui-one-rose.vercel.app/?path=/docs/guides-theming--docs) and `docs/design/p4-theme.md`. Fixed branding lives in CSS on `:root`; use `UIProvider.theme.tokens` only for runtime branding, never duplicate a token in both sources.
+- The kit's default fonts include 400–700. Keep the optional `theme/fonts-800.css` entry while blocks use `font-extrabold`.
 
-- Never write a Tailwind arbitrary value (`w-[15px]`, `text-[#333]`, `text-[13.5px]`) or a raw `style={{ ... }}` prop for something a token could express. This is absolute, not "unless it's a one-off precise measurement" — there is no such exception.
-- **The single source of truth for the design scale is `libs/ui/tailwind.preset.cjs`** (plus `libs/ui/theme/tokens.css` for the CSS custom properties `fontSize`/color tokens read from). There used to be three drifted copies of this preset (`config/tailwind/tailwind.preset.ts`, `libs/ui/tailwind.preset.ts`, `libs/ui/tailwind.preset.cjs`) — they're gone; don't recreate one. Both `apps/web/tailwind.config.cjs` and `libs/ui/tailwind.config.cjs` (Storybook) `require()` this one file directly.
-- If the exact value you need isn't in the scale, **add it** — don't hardcode it inline and don't silently round to the nearest existing step (design measurements in this project are often genuinely fractional, e.g. `13.5px`/`10.5px` body/caption text — see `docs/design/p4-product-manager-design.html`, which uses half-pixel sizes throughout). Add a `fontSize` entry (`13.5: 'var(--size-13-5)'` in the preset + `--size-13-5: 13.5px;` in `tokens.css`) or extend `theme.extend.spacing` following Tailwind's own `n * 4px` key convention (`1.25` = 5px, `4.5` = 18px) — see the `heart`/`star` badge offset and `flash-sale-product-card`'s `text-13.5`/`text-11`/`gap-1.25` for the pattern.
-- A new numeric `fontSize` key is registered in **two** places: the preset's `fontSize` map, and `NUMERIC_TEXT_FONT_SIZES` in `libs/ui/helpers/utils.ts` (so `cn()`'s tailwind-merge config knows `text-13.5` is a font-size utility, not a color one — miss this and `cn('text-13.5', 'text-neutral-text-primary')` can silently drop a class). Spacing keys (`gap-*`, `p-*`, `w-*`, `min-w-*`, ...) don't need this — tailwind-merge already treats any numeric suffix in those groups as spacing.
-- Before adding a token, check whether an existing one already matches — a semantic token can exist at the same pixel size but bake in extra properties that don't fit your use case (e.g. `text-ui-overline` is 11px but also forces `font-weight:700` + letter-spacing; a plain 11px label without that treatment needs the bare `text-11` numeric token instead, not `text-ui-overline`).
-- Never use `style={{ ... }}` to size/color a child element through a wrapper component's props — props like `style`/`className` on components such as `IconButton`/`Button` are spread onto the *outer* element, not passed down to the icon. Use the component's own class-override prop instead (`iconClassName` on `IconButton`, `customClasses.icon` on `Button`).
+- Tailwind CSS 4 is compiled by `@tailwindcss/vite`.
+- `apps/web/src/styles/tailwind.css` imports kit styles once. Import `p4-theme.css` after kit styles for the P4 Ember orange/cool-neutral palette; keep Be Vietnam Pro typography. Use semantic tokens (`canvas`, `surface`, `ink`, `muted`, `line`, `brand-*`).
+- Extend `@theme` for new design tokens. Avoid adding arbitrary values or inline style props for values a token can express.
+- The current app uses a light P4 palette mapped to the kit tokens on `:root`, including portals. Do not restore legacy font, sizing or dark mode overrides.
+- `UIProvider` configures React Router, images and UI locale; app translations stay in i18next.
 
-## Layout: don't hardcode sizing/positioning that belongs to the consumer
+## Layout and accessibility
 
-- Don't bake `absolute`/`fixed` positioning with hardcoded offsets (`absolute bottom-0`) directly into a shared component — it assumes one specific parent/viewport context and breaks when reused elsewhere. `mobile-sticky-action-bar` used to hardcode `w-80 absolute bottom-0`, which overflowed any viewport narrower than 320px and had no horizontal placement (`left`/`right` unset); it's now `w-full max-w-80` with no positioning baked in, leaving placement (`fixed inset-x-0 bottom-0 mx-auto`, etc.) to whatever mounts it via `className`.
-- If positioning genuinely is the component's whole job (an overlay like `Modal`/`Drawer`/`Toast`), that's fine — but still avoid a hardcoded fixed pixel width alongside it; make width overridable via `className`/props the same way.
-- For a component that sits in normal document flow and is typically repeated in a grid/flex (a "Card"), don't hardcode `w-*` either — use `min-w-*` as an intrinsic floor (e.g. `flash-sale-product-card`'s `min-w-60`) and let the actual rendered width come from the parent's layout (a grid track, a flex basis), not the component. Preview this in Storybook by wrapping the story in the real parent context — a `grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]` for a card grid, a plain `inline-flex` wrapper for a single card at its natural size — instead of rendering the component bare (see `FlashSaleProductCard`'s `InGrid`/`Default` stories).
+- Derive menus from RouteConfigs; use Sidebar/Navbar rather than duplicating navigation.
+- Keep feature-specific hooks/components alongside their page; use `src/libraries` or `src/hooks` only for shared consumers.
+- Preserve existing auth, role guards and API contracts. This UI migration does not require backend changes.
+- Give images meaningful alt text (empty only for decorative images), label icon buttons, and verify mobile navigation, keyboard focus and form errors.
+- Check `pnpm --filter @p4/web build` and `pnpm lint` before finishing frontend work.
 
-## Props & TypeScript
+- Table rows with up to three actions show them inline. Use the kit IconButton with descriptive labels; reserve overflow menus for larger action sets.
 
-- Give every optional prop a sensible rendering fallback — don't interpolate an optional value directly into surrounding literal text (e.g. `` `.${sold}` `` renders a bare "." when `sold` is undefined). Guard with a conditional or default value instead.
-- Before adding a new prop/behavior to a component, check whether a sibling or parent component already solves it (e.g. `Button` already renders a leading icon via its `icon` prop — don't hand-roll `<RenderIcon className="mr-2" .../>` as a child instead of using it). Reusing the existing prop keeps sizing/spacing in sync automatically when the shared component changes.
-- Avoid `any`; keep exported prop types explicit so Storybook controls and consumers get real autocomplete.
+## Code spacing
 
-## Accessibility
-
-- Every content image needs a real `alt` (e.g. `alt={name}` for a product image) — empty `alt=""` is only for purely decorative images.
-- The Storybook a11y addon is already wired up (`libs/ui/.storybook`) — check the Accessibility panel for a new/changed story before considering it done, not just the visual result.
+- Separate hook calls, derived data, handler declarations and the returned JSX with blank lines. Keep a blank line between top-level type declarations and components/functions. Biome does not insert all semantic blank lines; check these manually after formatting.

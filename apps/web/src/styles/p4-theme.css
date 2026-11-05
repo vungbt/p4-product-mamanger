@@ -1,0 +1,58 @@
+/* P4 Ember — orange brand on cool neutral canvas and white surfaces.
+   Guide: https://react-ui-one-rose.vercel.app/?path=/docs/guides-theming--docs
+   Fixed branding uses CSS; do not duplicate these values in UIProvider.tokens.
+   Load after the kit CSS. Root scope also covers dialogs, menus and toasts.
+   Typography, dimensions and interaction behavior stay with the kit. */
+@theme {
+  /* Host role: the kit otherwise shares canvas between page and table header. */
+  --color-table-header: #eeefec;
+}
+
+:root {
+  /* Surfaces and content */
+  --color-canvas: #edf2f7;
+  --color-surface: #ffffff;
+  --color-sidebar: #ffffff;
+  --color-ink: #292724;
+  --color-muted: #68645f;
+  --color-line: #e3e2dc;
+  --color-control-border: #8a857e;
+
+  /* Preserve the original orange as the brand anchor; deepen filled controls
+     and text accents so white labels remain readable. */
+  --color-brand-50: #fff7ed;
+  --color-brand-100: #ffedd5;
+  --color-brand-500: #ea580c;
+  --color-brand-700: #c2410c;
+  --color-brand-800: #9a3412;
+  --color-on-brand: #ffffff;
+
+  /* Neutral hover, orange selection */
+  --color-hover: #f3f2ee;
+  --color-hover-strong: #eae8e1;
+  --color-selected: var(--color-brand-100);
+  --color-selected-ink: var(--color-brand-800);
+  --color-focus: var(--color-brand-700);
+  --color-accent: var(--color-brand-700);
+
+  /* Status colors: distinct from the orange brand */
+  --color-info-50: #eff6ff;
+  --color-info-700: #1d4ed8;
+  --color-success-50: #f0fdf4;
+  --color-success-700: #15803d;
+  --color-warning-50: #fefce8;
+  --color-warning-700: #854d0e;
+  --color-danger-50: #fef2f2;
+  --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+  --color-rating: #b45309;
+  --color-rating-empty: #e3e2dc;
+
+  /* Data visualization */
+  --color-chart-1: #c2410c;
+  --color-chart-2: #2563eb;
+  --color-chart-3: #0f766e;
+  --color-chart-4: #7c3aed;
+  --color-chart-5: #a16207;
+  --color-chart-6: #be185d;
+}

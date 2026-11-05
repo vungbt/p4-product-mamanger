@@ -4,10 +4,7 @@ import StorefrontHeader from './header';
 
 export default function StorefrontLayout() {
   return (
-    <div
-      className="flex min-h-screen flex-col bg-neutral-bg text-neutral-text-primary"
-      data-portal="storefront"
-    >
+    <div className="flex min-h-screen flex-col bg-canvas text-ink" data-portal="storefront">
       <StorefrontHeader />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
         <Outlet />

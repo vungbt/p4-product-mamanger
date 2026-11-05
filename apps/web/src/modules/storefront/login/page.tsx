@@ -4,17 +4,16 @@ import {
   Form,
   FormField,
   FormSubmit,
+  Icon,
   Input,
   InputPassword,
-  toastError,
-  toastInfo,
-  toastSuccess,
   useAppForm,
-  v,
-} from '@p4/ui';
+} from '@itclabs/react-ui';
+import { toast } from '@itclabs/react-ui/toast';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import * as v from 'valibot';
 import { ROUTES } from '@/constants/constants';
 import useAuth from '@/hooks/use-auth';
 import BrandLogo from '@/libraries/brand-logo';
@@ -58,20 +57,20 @@ export default function StorefrontLoginPage() {
     onSubmit: async ({ value }) => {
       try {
         await login(value.email, value.password, 'storefront');
-        toastSuccess(t('auth.loginSuccess'));
+        toast.success(t('auth.loginSuccess'));
         navigate(ROUTES.storefront.shop, { replace: true });
       } catch (error) {
         const message =
           error instanceof Error
             ? t(error.message, { defaultValue: t('auth.loginFailed') })
             : t('auth.loginFailed');
-        toastError(message);
+        toast.error(message);
       }
     },
   });
 
   return (
-    <main className="flex min-h-screen bg-neutral-white" data-portal="storefront">
+    <main className="flex min-h-screen bg-surface" data-portal="storefront">
       <aside className="relative hidden min-h-screen w-[44%] overflow-hidden lg:block">
         {HERO_SLIDES.map((slide, index) => (
           <img
@@ -84,21 +83,21 @@ export default function StorefrontLoginPage() {
             fetchPriority={index === 0 ? 'high' : 'auto'}
           />
         ))}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-b from-transparent via-neutral-black/45 to-neutral-black/90" />
-        <div className="absolute left-10 top-10 rounded-full border border-white/25 bg-neutral-black/15 px-4 py-2 text-12 font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-md xl:left-14 xl:top-14">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-b from-transparent via-black/45 to-black/90" />
+        <div className="absolute left-10 top-10 rounded-full border border-white/25 bg-black/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-md xl:left-14 xl:top-14">
           {t('auth.storefrontFeaturedBadge')} · {year}
         </div>
 
         <div className="absolute inset-x-0 bottom-0 p-10 pb-36 text-white xl:p-14 xl:pb-40 2xl:p-16 2xl:pb-44">
-          <div className="relative max-w-xl overflow-hidden rounded-2xl border border-white/35 bg-neutral-black/45 p-6 shadow-2xl shadow-neutral-black/30 backdrop-blur-xl xl:p-7">
-            <div className="absolute inset-y-0 left-0 w-1 bg-primary" />
-            <p className="mb-3 text-12 font-semibold uppercase tracking-[0.18em] text-white/75">
+          <div className="relative max-w-xl overflow-hidden rounded-2xl border border-white/35 bg-black/45 p-6 shadow-2xl shadow-black/30 backdrop-blur-xl xl:p-7">
+            <div className="absolute inset-y-0 left-0 w-1 bg-accent" />
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/75">
               {t('auth.storefrontPanelEyebrow')}
             </p>
-            <h1 className="text-heading-4 font-bold leading-tight xl:text-heading-3">
+            <h1 className="text-title font-bold leading-tight xl:text-title">
               {t('auth.storefrontWelcome')}
             </h1>
-            <p className="mt-3 max-w-lg text-15 leading-relaxed text-white">
+            <p className="mt-3 max-w-lg text-body leading-relaxed text-white">
               {t('auth.storefrontWelcomeDesc')}
             </p>
           </div>
@@ -114,7 +113,7 @@ export default function StorefrontLoginPage() {
                 aria-current={activeSlide === index}
                 onClick={() => setActiveSlide(index)}
                 className={`h-1 rounded-full transition-all duration-300 ${
-                  activeSlide === index ? 'w-10 bg-primary' : 'w-5 bg-white/50 hover:bg-white/80'
+                  activeSlide === index ? 'w-10 bg-accent' : 'w-5 bg-white/50 hover:bg-white/80'
                 }`}
               />
             ))}
@@ -129,7 +128,7 @@ export default function StorefrontLoginPage() {
                 onClick={() => setActiveSlide(index)}
                 className={`h-14 w-11 overflow-hidden rounded-lg border-2 transition-all duration-300 xl:h-16 xl:w-12 ${
                   activeSlide === index
-                    ? '-translate-y-1 border-primary shadow-lg'
+                    ? '-translate-y-1 border-accent shadow-lg'
                     : 'border-white/40 opacity-70 hover:opacity-100'
                 }`}
               >
@@ -153,69 +152,50 @@ export default function StorefrontLoginPage() {
         <div className="flex flex-1 items-center px-6 py-12 sm:px-10 lg:px-14 xl:px-20 2xl:px-24">
           <div className="mx-auto w-full max-w-lg">
             <div className="mb-9 space-y-3">
-              <p className="text-12 font-semibold uppercase tracking-[0.14em] text-primary">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent">
                 {t('auth.storefrontPanelEyebrow')}
               </p>
-              <h2 className="text-heading-5 font-bold leading-tight text-neutral-black sm:text-heading-4">
+              <h2 className="text-heading font-bold leading-tight text-ink sm:text-title">
                 {t('auth.storefrontSignInTitle')}
               </h2>
-              <p className="max-w-md text-15 leading-relaxed text-neutral-text-secondary">
+              <p className="max-w-md text-body leading-relaxed text-muted">
                 {t('auth.storefrontSignInSubtitle')}
               </p>
             </div>
 
-            <Form form={form} schema={schema} className="space-y-6">
-              <FormField
-                name="email"
-                label={t('auth.email')}
-                required
-                size="large"
-                className="mb-0"
-              >
+            <Form form={form} schema={schema} className="grid gap-6">
+              <FormField name="email" label={t('auth.email')} required className="mb-0">
                 <Input
+                  size="lg"
                   type="email"
-                  icon="envelope"
+                  icon="mail"
                   placeholder={t('auth.emailPlaceholder')}
                   autoComplete="email"
-                  color="neutral"
-                  variant="outline"
                 />
               </FormField>
 
               <div className="relative">
                 <button
                   type="button"
-                  className="absolute right-0 top-0 z-10 text-13 font-medium text-primary hover:text-primary-clicked"
-                  onClick={() => toastInfo(t('auth.forgotPasswordSoon'))}
+                  className="absolute right-0 top-0 z-10 text-ui-sm font-medium text-accent hover:text-brand-800"
+                  onClick={() => toast.info(t('auth.forgotPasswordSoon'))}
                 >
                   {t('auth.forgotPassword')}
                 </button>
-                <FormField
-                  name="password"
-                  label={t('common.password')}
-                  required
-                  size="large"
-                  className="mb-0"
-                >
+                <FormField name="password" label={t('common.password')} required className="mb-0">
                   <InputPassword
+                    size="lg"
                     placeholder={t('auth.passwordPlaceholder')}
                     autoComplete="current-password"
-                    color="neutral"
-                    variant="outline"
                   />
                 </FormField>
               </div>
 
               <FormSubmit form={form}>
                 {(isSubmitting) => (
-                  <Button
-                    type="submit"
-                    loading={isSubmitting}
-                    size="large"
-                    className="w-full"
-                    iconRight="arrow-right"
-                  >
+                  <Button type="submit" loading={isSubmitting} size="lg" className="w-full">
                     {isSubmitting ? t('common.loggingIn') : t('common.login')}
+                    <Icon name="arrowRight" />
                   </Button>
                 )}
               </FormSubmit>
@@ -226,7 +206,7 @@ export default function StorefrontLoginPage() {
                 <Divider />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-neutral-white px-3 text-12 font-medium uppercase tracking-[0.14em] text-neutral-text-secondary">
+                <span className="bg-surface px-3 text-xs font-medium uppercase tracking-[0.14em] text-muted">
                   {t('auth.or')}
                 </span>
               </div>
@@ -234,16 +214,16 @@ export default function StorefrontLoginPage() {
 
             <GoogleLoginButton
               onSuccess={() => {
-                toastSuccess(t('auth.loginSuccess'));
+                toast.success(t('auth.loginSuccess'));
                 navigate(ROUTES.storefront.shop, { replace: true });
               }}
             />
 
-            <p className="mt-7 text-center text-14 text-neutral-text-secondary">
+            <p className="mt-7 text-center text-control text-muted">
               {t('auth.notMember')}{' '}
               <Link
                 to={ROUTES.storefront.register}
-                className="font-semibold text-primary hover:text-primary-clicked"
+                className="font-semibold text-accent hover:text-brand-800"
               >
                 {t('auth.createAccount')}
               </Link>
@@ -251,7 +231,7 @@ export default function StorefrontLoginPage() {
 
             <Link
               to={ROUTES.storefront.shop}
-              className="mt-4 inline-flex w-full items-center justify-center text-14 font-semibold text-primary hover:text-primary-clicked"
+              className="mt-4 inline-flex w-full items-center justify-center text-control font-semibold text-accent hover:text-brand-800"
             >
               {t('auth.backToShop')}
             </Link>
@@ -259,7 +239,7 @@ export default function StorefrontLoginPage() {
         </div>
 
         <footer className="px-6 pb-6 sm:px-10 sm:pb-8 lg:px-14 xl:px-20 2xl:px-24">
-          <p className="mx-auto w-full max-w-lg text-12 text-neutral-text-secondary">
+          <p className="mx-auto w-full max-w-lg text-xs text-muted">
             {t('auth.loginCopyright', { year })}
           </p>
         </footer>

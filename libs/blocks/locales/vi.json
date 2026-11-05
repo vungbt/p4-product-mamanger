@@ -1,0 +1,57 @@
+{
+  "mobileStickyActionBar": {
+    "add-to-cart": "Thêm giỏ",
+    "buy-now": "Mua ngay",
+    "title": "Tổng cộng",
+    "checkout": "Đặt hàng"
+  },
+  "flashSaleCard": {
+    "sold": "Đã bán",
+    "percent": "%",
+    "sale": "-"
+  },
+  "productCard": {
+    "addToCart": "Thêm vào giỏ",
+    "outOfStock": "Hết hàng",
+    "inStock": "Còn {{count}}",
+    "sold": "{{count}} đã bán",
+    "sale": "−{{percent}}%",
+    "favoriteAdd": "Thêm vào yêu thích",
+    "favoriteRemove": "Bỏ yêu thích"
+  },
+  "orderSummaryCard": {
+    "label": "Tổng kết đơn",
+    "provisional calculation": "Tạm tính",
+    "discount": "Giảm giá (SALE10)",
+    "transport": "Phí vận chuyển",
+    "title": "Tổng cộng",
+    "checkout": "Đặt hàng"
+  },
+  "countdownTimer": {
+    "days": "Ngày",
+    "hours": "Giờ",
+    "minutes": "Phút",
+    "seconds": "Giây"
+  },
+  "ratingBreakdown": {
+    "noReviews": "Chưa có đánh giá",
+    "reviews": "đánh giá"
+  },
+  "couponInputBar": {
+    "apply": "Áp dụng",
+    "loading": "Đang áp dụng",
+    "placeholder": "Nhập mã giảm giá",
+    "remove": "Bỏ mã giảm giá",
+    "applied": "{{code}} đã áp dụng"
+  },
+  "categoryCard": {
+    "products": "sản phẩm"
+  },
+  "searchPill": {
+    "placeholder": "Tìm kiếm theo tên sản phẩm...",
+    "clear": "Xóa tìm kiếm"
+  },
+  "paymentMethodSelector": {
+    "label": "Phương thức thanh toán"
+  }
+}

@@ -23,7 +23,6 @@ p4-product-manager/
 │   └── web/     ← Học viên code ở đây
 ├── libs/
 │   ├── shared/      ← Types (@p4/shared)
-│   ├── ui/          ← Design system (@p4/ui)
 │   ├── auth/        ← Auth (@p4/auth)
 │   └── api-client/  ← Axios + TanStack Query (@p4/api-client)
 ├── docker-compose.yml / docker-compose.dev.yml
@@ -100,3 +99,5 @@ SPA rewrite: [apps/web/vercel.json](./apps/web/vercel.json)
 ## 8. Hỏi agent
 
 `@apps/web/README.md` — **không sửa `apps/api`**, chỉ gợi ý FE.
+
+UI components: import từ `@itclabs/react-ui` (npm). Theme ở `apps/web/src/styles/tailwind.css`; component docs: https://react-ui-one-rose.vercel.app/.

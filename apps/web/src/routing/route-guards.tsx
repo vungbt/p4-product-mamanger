@@ -1,4 +1,4 @@
-import { toastError } from '@p4/ui';
+import { toast } from '@itclabs/react-ui/toast';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
@@ -10,7 +10,7 @@ function UnauthorizedRedirect({ to }: { to: string }) {
   const { t } = useTranslation();
 
   useEffect(() => {
-    toastError(t('auth.unauthorized'));
+    toast.error(t('auth.unauthorized'));
   }, [t]);
 
   return <Navigate to={to} replace />;

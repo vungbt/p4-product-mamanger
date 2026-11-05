@@ -1,3 +1,22 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "@itclabs/react-ui/theme/styles.css";
+/* Product/checkout blocks use font-extrabold (800), an optional kit font entry. */
+@import "@itclabs/react-ui/theme/fonts-800.css";
+@import "./p4-theme.css";
+@import "@p4/blocks/styles.css";
+
+/* Photo overlays need fixed black/white, independent of the UI palette. */
+@theme {
+  --color-white: #fff;
+  --color-black: #000;
+}
+
+@layer utilities {
+  /* Position the library's mobile drawer trigger beside the application header. */
+  .admin-shell > div:first-child {
+    position: fixed;
+    inset-block-start: calc(var(--spacing) * 5);
+    inset-inline-start: calc(var(--spacing) * 3);
+    z-index: var(--z-index-header);
+    padding: 0;
+  }
+}

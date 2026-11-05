@@ -1,6 +1,6 @@
-import { Footer, RenderIcon } from '@p4/ui';
+import { Icon } from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants/constants';
 import BrandLogo from '@/libraries/brand-logo';
 
@@ -42,83 +42,65 @@ const SOCIAL_LINKS = [
 
 export default function StorefrontFooter() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const year = new Date().getFullYear();
-
-  const goTo = (path: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    navigate(path);
-  };
-
   return (
-    <Footer
-      className="mt-auto"
-      logo={
-        <>
-          <BrandLogo variant="header-white" height={40} className="hidden sm:block" />
-          <BrandLogo variant="mark-white" height={40} className="sm:hidden" />
-        </>
-      }
-      tagline={t('storefront.footerTagline')}
-      contacts={[
-        {
-          key: 'address',
-          icon: <RenderIcon name="building-storefront" className="!h-4 !w-4" />,
-          label: t('storefront.footerAddressLabel'),
-          value: t('storefront.footerAddress'),
-        },
-        {
-          key: 'phone',
-          icon: <RenderIcon name="phone" className="!h-4 !w-4" />,
-          label: t('storefront.footerPhoneLabel'),
-          value: <a href="tel:+84901234567">{t('storefront.footerPhone')}</a>,
-        },
-        {
-          key: 'email',
-          icon: <RenderIcon name="envelope" className="!h-4 !w-4" />,
-          label: t('storefront.footerEmailLabel'),
-          value: <a href="mailto:support@p4.demo">support@p4.demo</a>,
-        },
-      ]}
-      linkGroups={[
-        {
-          key: 'shop',
-          title: t('storefront.footerShop'),
-          links: [
-            {
-              key: 'shop',
-              label: t('menu.shop'),
-              href: ROUTES.storefront.shop,
-              onClick: goTo(ROUTES.storefront.shop),
-            },
-            {
-              key: 'cart',
-              label: t('menu.cart'),
-              href: ROUTES.storefront.cart,
-              onClick: goTo(ROUTES.storefront.cart),
-            },
-          ],
-        },
-        {
-          key: 'support',
-          title: t('storefront.footerSupport'),
-          links: [
-            {
-              key: 'contact',
-              label: t('storefront.footerContact'),
-              href: 'mailto:support@p4.demo',
-            },
-            { key: 'faq', label: t('storefront.footerFaq'), href: '#' },
-          ],
-        },
-      ]}
-      socialLinks={SOCIAL_LINKS.map((social) => ({
-        key: social.id,
-        icon: social.icon,
-        href: social.href,
-        label: social.label,
-      }))}
-      copyright={t('storefront.footerRights', { year })}
-    />
+    <footer className="mt-auto border-t border-line bg-surface text-ink">
+      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <BrandLogo variant="header" height={40} />
+          <p className="mt-4 text-control text-muted">{t('storefront.footerTagline')}</p>
+        </div>
+        <address className="space-y-3 text-control not-italic">
+          <p className="flex items-start gap-2">
+            <Icon name="store" className="mt-1 shrink-0" />
+            <span>
+              <strong className="block">{t('storefront.footerAddressLabel')}</strong>
+              {t('storefront.footerAddress')}
+            </span>
+          </p>
+          <p className="flex items-center gap-2">
+            <Icon name="phone" />
+            <a href="tel:+84901234567">{t('storefront.footerPhone')}</a>
+          </p>
+          <p className="flex items-center gap-2">
+            <Icon name="mail" />
+            <a href="mailto:support@p4.demo">support@p4.demo</a>
+          </p>
+        </address>
+        <nav aria-label={t('storefront.footerShop')} className="space-y-3 text-control">
+          <h2 className="font-semibold">{t('storefront.footerShop')}</h2>
+          <Link className="block hover:text-accent" to={ROUTES.storefront.shop}>
+            {t('menu.shop')}
+          </Link>
+          <Link className="block hover:text-accent" to={ROUTES.storefront.cart}>
+            {t('menu.cart')}
+          </Link>
+        </nav>
+        <div className="space-y-3 text-control">
+          <h2 className="font-semibold">{t('storefront.footerSupport')}</h2>
+          <a className="block hover:text-accent" href="mailto:support@p4.demo">
+            {t('storefront.footerContact')}
+          </a>
+          <a className="block hover:text-accent" href="mailto:support@p4.demo?subject=FAQ">
+            {t('storefront.footerFaq')}
+          </a>
+          <div className="flex gap-3">
+            {SOCIAL_LINKS.map((social) => (
+              <a
+                key={social.id}
+                href={social.href}
+                aria-label={social.label}
+                className="rounded-control p-2 hover:bg-hover"
+              >
+                {social.icon}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+      <p className="border-t border-line px-6 py-4 text-center text-xs text-muted">
+        {t('storefront.footerRights', { year })}
+      </p>
+    </footer>
   );
 }

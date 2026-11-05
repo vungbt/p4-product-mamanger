@@ -1,4 +1,5 @@
-import { Button, cn, toastError, toastInfo } from '@p4/ui';
+import { Button, cn } from '@itclabs/react-ui';
+import { toast } from '@itclabs/react-ui/toast';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useAuth from '@/hooks/use-auth';
@@ -114,7 +115,7 @@ export default function GoogleLoginButton({
             ? t(error.message, { defaultValue: t('auth.googleFailed') })
             : error.message;
         }
-        toastError(message);
+        toast.error(message);
       } finally {
         setLoading(false);
       }
@@ -163,7 +164,7 @@ export default function GoogleLoginButton({
         }
       })
       .catch(() => {
-        if (!cancelled) toastError(t('auth.googleFailed'));
+        if (!cancelled) toast.error(t('auth.googleFailed'));
       });
 
     return () => {
@@ -184,11 +185,10 @@ export default function GoogleLoginButton({
     return (
       <Button
         type="button"
-        variant="outline"
-        color="neutral"
-        size="large"
+        variant="secondary"
+        size="lg"
         className={cn('w-full', className)}
-        onClick={() => toastInfo(t('auth.googleNotConfigured'))}
+        onClick={() => toast.info(t('auth.googleNotConfigured'))}
       >
         {label}
       </Button>
@@ -200,10 +200,9 @@ export default function GoogleLoginButton({
     <div className={cn('relative w-full', className)}>
       <Button
         type="button"
-        variant="outline"
-        color="neutral"
-        size="large"
-        className="pointer-events-none w-full border-neutral-border bg-neutral-white text-neutral-text-primary shadow-none"
+        variant="secondary"
+        size="lg"
+        className="pointer-events-none w-full border-line bg-surface text-ink shadow-none"
         loading={loading || !gisReady}
         tabIndex={-1}
         aria-hidden

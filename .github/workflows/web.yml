@@ -1,0 +1,21 @@
+name: Frontend
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm --filter @p4/blocks typecheck
+      - run: pnpm --filter @p4/web build
+      - run: pnpm build:storybook

@@ -5,6 +5,7 @@ import type { IRoute } from '@/routing/route.types';
 const AdminLoginScreen = lazy(() => import('@/modules/admin/login/page'));
 const AdminDashboardScreen = lazy(() => import('@/modules/admin/dashboard/page'));
 const AdminProductsScreen = lazy(() => import('@/modules/admin/products/page'));
+const AdminCategoriesScreen = lazy(() => import('@/modules/admin/categories/page'));
 const AdminOrdersScreen = lazy(() => import('@/modules/admin/orders/page'));
 const AdminLayout = lazy(() => import('@/modules/admin/layout/layout'));
 
@@ -31,7 +32,7 @@ export const adminPortalRoutes: IRoute[] = [
         path: ROUTES.admin.dashboard,
         name: 'admin-dashboard',
         label: 'Dashboard',
-        iconName: 'graph',
+        iconName: 'chart',
         component: AdminDashboardScreen,
         exact: true,
       },
@@ -39,29 +40,45 @@ export const adminPortalRoutes: IRoute[] = [
         path: ROUTES.admin.products,
         name: 'admin-products',
         label: 'Products',
-        iconName: 'frame',
+        iconName: 'grid',
         component: AdminProductsScreen,
-        exact: true,
-      },
-      {
-        path: ROUTES.admin['product-new'],
-        name: 'product-new',
-        label: 'Thêm mới',
-        component: AdminProductsScreen,
-        hideInMenu: true,
-      },
-      {
-        path: '/admin/products/:id/edit',
-        name: 'product-edit',
-        label: 'Chỉnh sửa',
-        component: AdminProductsScreen,
-        hideInMenu: true,
+        existSubMenu: true,
+        routes: [
+          {
+            path: ROUTES.admin.products,
+            name: 'product-list',
+            label: 'Product list',
+            component: AdminProductsScreen,
+            exact: true,
+          },
+          {
+            path: ROUTES.admin['product-categories'],
+            name: 'product-categories',
+            label: 'Categories',
+            component: AdminCategoriesScreen,
+            exact: true,
+          },
+          {
+            path: ROUTES.admin['product-new'],
+            name: 'product-new',
+            label: 'Create product',
+            component: AdminProductsScreen,
+            exact: true,
+          },
+          {
+            path: '/admin/products/:id/edit',
+            name: 'product-edit',
+            label: 'Edit product',
+            component: AdminProductsScreen,
+            hideInMenu: true,
+          },
+        ],
       },
       {
         path: ROUTES.admin.orders,
         name: 'admin-orders',
         label: 'Orders',
-        iconName: 'receipt-search',
+        iconName: 'receiptSearch',
         component: AdminOrdersScreen,
         exact: true,
       },
