@@ -8,6 +8,7 @@ export * from './editor';
 export * from './footer';
 export * from './form/form';
 export * from './form/form-field';
+export * from './grid-layout';
 export * from './header';
 export * from './modal';
 export * from './radio-button-group';
