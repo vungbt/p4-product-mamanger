@@ -550,10 +550,30 @@ paths:
   /api/categories:
     get:
       tags: [Categories]
-      summary: List all categories
+      summary: List categories (optional server pagination, search, filter and sort)
+      description: Without supported list parameters returns the legacy unpaginated envelope. Supplying any of page, pageSize, q, description, sortBy or sortOrder enables pagination and meta. Search is a case-insensitive literal substring across name, slug and description. Sort ties use ID ascending.
       operationId: listCategories
       parameters:
         - $ref: '#/components/parameters/AcceptLanguage'
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 255 }
+        - name: description
+          in: query
+          description: Filter by trimmed nonempty or empty description.
+          schema: { type: string, enum: [all, has, none], default: all }
+        - name: sortBy
+          in: query
+          schema: { type: string, enum: [name, slug, description], default: name }
+        - name: sortOrder
+          in: query
+          schema: { type: string, enum: [asc, desc], default: asc }
       responses:
         '200':
           description: Category list
@@ -564,10 +584,21 @@ paths:
                   - $ref: '#/components/schemas/SuccessEnvelope'
                   - type: object
                     properties:
+                      meta:
+                        description: Present only for paginated requests.
+                        type: object
+                        required: [page, pageSize, total, totalPages]
+                        properties:
+                          page: { type: integer }
+                          pageSize: { type: integer }
+                          total: { type: integer }
+                          totalPages: { type: integer }
                       data:
                         type: array
                         items:
                           $ref: '#/components/schemas/Category'
+        '400':
+          description: Invalid query parameter; extensions maps the invalid parameter to its error messages.
     post:
       tags: [Categories]
       summary: Create category (admin)

@@ -21,6 +21,16 @@ export interface Category {
   description: string;
 }
 
+/** Supplying any supported query parameter enables paginated category listing. */
+export interface CategoryListQuery {
+  page: number;
+  pageSize: number;
+  q?: string;
+  description?: 'all' | 'has' | 'none';
+  sortBy?: 'name' | 'slug' | 'description';
+  sortOrder?: 'asc' | 'desc';
+}
+
 export interface CategoryInput {
   name: string;
   slug: string;

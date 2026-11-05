@@ -1,7 +1,9 @@
-import type { Category, CategoryInput } from '@p4/shared';
+import type { Category, CategoryInput, CategoryListQuery } from '@p4/shared';
+import { col, fn, Op, type WhereOptions, where } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
 import { CategoryModel } from '@/sequelize/models/index.js';
 import { NotFound } from '@/utils/errors/index.js';
+import { buildPaginationMeta } from '@/utils/pagination.js';
 
 function toCategory(row: CategoryModel): Category {
   return {
@@ -12,9 +14,49 @@ function toCategory(row: CategoryModel): Category {
   };
 }
 
-export async function listCategories() {
-  const rows = await CategoryModel.findAll({ order: [['name', 'ASC']] });
-  return rows.map(toCategory);
+export async function listCategories(query?: CategoryListQuery) {
+  if (!query) {
+    const rows = await CategoryModel.findAll({
+      order: [
+        ['name', 'ASC'],
+        ['id', 'ASC'],
+      ],
+    });
+    return { data: rows.map(toCategory) };
+  }
+
+  const conditions: WhereOptions[] = [];
+
+  if (query.q) {
+    // Escape LIKE wildcards so user input is a literal substring, not a pattern.
+    const pattern = `%${query.q.replace(/[\\%_]/g, '\\$&')}%`;
+    conditions.push({
+      [Op.or]: ['name', 'slug', 'description'].map((field) => ({
+        [field]: { [Op.iLike]: pattern },
+      })),
+    });
+  }
+
+  if (query.description === 'has' || query.description === 'none') {
+    conditions.push(
+      where(fn('btrim', col('description')), { [query.description === 'has' ? Op.ne : Op.eq]: '' }),
+    );
+  }
+
+  const { rows, count } = await CategoryModel.findAndCountAll({
+    where: conditions.length ? { [Op.and]: conditions } : undefined,
+    order: [
+      [query.sortBy ?? 'name', query.sortOrder === 'desc' ? 'DESC' : 'ASC'],
+      ['id', 'ASC'],
+    ],
+    limit: query.pageSize,
+    offset: (query.page - 1) * query.pageSize,
+  });
+
+  return {
+    data: rows.map(toCategory),
+    meta: buildPaginationMeta(query.page, query.pageSize, count),
+  };
 }
 
 export async function getCategoryById(id: string) {

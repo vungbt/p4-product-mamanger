@@ -10,7 +10,8 @@
     "lint": "pnpm -w exec biome check apps/api/src",
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed": "sequelize-cli db:seed:all",
-    "db:reset": "sequelize-cli db:migrate:undo:all && sequelize-cli db:migrate && sequelize-cli db:seed:all"
+    "db:reset": "sequelize-cli db:migrate:undo:all && sequelize-cli db:migrate && sequelize-cli db:seed:all",
+    "test:categories": "pnpm build && node --test tests/categories.test.mjs"
   },
   "dependencies": {
     "@p4/shared": "workspace:*",
