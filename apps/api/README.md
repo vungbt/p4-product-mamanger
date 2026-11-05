@@ -384,3 +384,29 @@ Env: [.env.example](../../.env.example) · production template: [.env.prod.examp
 Entrypoint container: migrate → (optional `RUN_SEED=true`) → `node dist/index.js`.
 
 FE Vercel: `VITE_API_URL=https://p4-api.couponlinkh.com`
+
+
+### Categories: server list parameters
+
+`GET /api/categories` giữ response `{ data: Category[] }` cho consumer cũ khi không
+truyền tham số list. Truyền ít nhất một tham số dưới đây để bật chế độ phân trang:
+
+| Query | Giá trị |
+| --- | --- |
+| `page` | Số nguyên >= 1, mặc định 1 |
+| `pageSize` | 1–100, mặc định 10 |
+| `q` | Tối đa 255 ký tự; tìm substring không phân biệt hoa thường trong tên/slug/mô tả |
+| `description` | `all`, `has`, `none`; lọc mô tả sau khi trim |
+| `sortBy` | `name`, `slug`, `description`; mặc định `name` |
+| `sortOrder` | `asc`, `desc`; mặc định `asc` |
+
+Ví dụ: `/api/categories?page=2&pageSize=10&q=shirt&sortBy=slug&sortOrder=desc&description=has`.
+Response `{ data, meta: { page, pageSize, total, totalPages } }`; total tính sau
+lọc, trước phân trang. Page ngoài phạm vi trả data rỗng và giữ total thực tế.
+Search/filter/sort/limit/offset chạy ở PostgreSQL, không tải toàn bộ rồi slice.
+ID tăng dần là khóa phụ giúp thứ tự ổn định. Sai tham số trả 400 + field errors
+trong `extensions`; cột sort chỉ chấp nhận allowlist, `%`/`_` trong search là ký tự thường.
+
+Chạy `pnpm --filter @p4/api test:categories`: kiểm tra parser, controller và query
+Sequelize/SQL được sinh (model stub, không kết nối DB). Chưa thay schema/migration.
+Thay đổi này chỉ ở local, cần deploy trước khi frontend chuyển sang server mode.

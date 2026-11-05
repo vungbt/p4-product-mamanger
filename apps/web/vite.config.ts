@@ -1,39 +1,28 @@
 import path from 'node:path';
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     dedupe: ['react', 'react-dom', 'i18next', 'react-i18next'],
     alias: [
       {
-        find: '@p4/ui/locales',
-        replacement: path.resolve(__dirname, '../../libs/ui/locales/index.ts'),
-      },
-      {
         find: '@p4/api-client',
-        replacement: path.resolve(__dirname, '../../libs/api-client/src/index.tsx'),
+        replacement: path.resolve(import.meta.dirname, '../../libs/api-client/src/index.tsx'),
       },
       {
         find: '@p4/shared',
-        replacement: path.resolve(__dirname, '../../libs/shared/src/index.ts'),
+        replacement: path.resolve(import.meta.dirname, '../../libs/shared/src/index.ts'),
       },
       {
         find: '@p4/auth',
-        replacement: path.resolve(__dirname, '../../libs/auth/src/index.ts'),
-      },
-      {
-        find: '@p4/ui/theme',
-        replacement: path.resolve(__dirname, '../../libs/ui/theme'),
-      },
-      {
-        find: '@p4/ui',
-        replacement: path.resolve(__dirname, '../../libs/ui/index.ts'),
+        replacement: path.resolve(import.meta.dirname, '../../libs/auth/src/index.ts'),
       },
       {
         find: '@',
-        replacement: path.resolve(__dirname, 'src'),
+        replacement: path.resolve(import.meta.dirname, 'src'),
       },
     ],
   },

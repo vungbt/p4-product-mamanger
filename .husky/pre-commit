@@ -1,2 +1,2 @@
 pnpm exec lint-staged
-pnpm --filter @p4/ui build-storybook --quiet
+pnpm --filter @p4/web build

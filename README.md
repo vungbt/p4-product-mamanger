@@ -15,7 +15,7 @@ p4-product-manager/
 │   └── web/          ← React Vite (học viên code ở đây)
 ├── libs/
 │   ├── shared/       ← Types dùng chung (@p4/shared)
-│   ├── ui/           ← Design system (@p4/ui) — Tailwind components
+│   ├── blocks/       ← 18 block nghiệp vụ P4 (@p4/blocks), dùng kit npm
 │   ├── auth/         ← AuthProvider / useAuth (@p4/auth)
 │   └── api-client/   ← Axios + TanStack Query (@p4/api-client)
 ├── tsconfig.base.json
@@ -28,7 +28,8 @@ p4-product-manager/
 | **API** (Express) | `apps/api` | **Mentor** — đã implement sẵn |
 | **Web** (React) | `apps/web` | **Học viên** — chỉ làm FE |
 | **Shared types** | `libs/shared` | Dùng chung — không sửa trừ khi mentor cập nhật API |
-| **UI** | `libs/ui` | Mentor maintain — import `@p4/ui` |
+| **UI** | npm: `@itclabs/react-ui` | Shared UI kit — import trực tiếp trong web |
+| **P4 blocks** | `libs/blocks` | ProductCard, checkout, thống kê… ghép từ kit npm |
 | **Auth** | `libs/auth` | Mentor maintain — import `@p4/auth` |
 | **API client** | `libs/api-client` | Mentor maintain — import `@p4/api-client` |
 
@@ -124,7 +125,7 @@ Page được tổ chức theo feature: `modules/{portal}/{feature}/page.tsx`. C
 | Lint / Format | [Biome](https://biomejs.dev/) |
 | Git hooks | Husky + lint-staged + commitlint |
 | API | Node.js, Express, TypeScript |
-| Web | React, Vite, React Router, @tanstack/react-form + Zod (qua `@p4/ui` Form), SCSS modules |
+| Web | React, Vite, React Router, Tailwind CSS 4, @tanstack/react-form + Valibot (qua `@itclabs/react-ui` Form), SCSS modules |
 
 ---
 
@@ -150,3 +151,16 @@ Page được tổ chức theo feature: `modules/{portal}/{feature}/page.tsx`. C
 ## P6 Next.js
 
 Tuần 7 port **apps/web** sang Next.js — vẫn dùng cùng Express API.
+
+## UI kit
+
+Web dùng `@itclabs/react-ui@0.10.0` từ npm. Các control cơ bản import trực tiếp từ kit; 18 block nghiệp vụ đã chuyển sang [`@p4/blocks`](./libs/blocks/README.md) và dùng kit bên trong. Package UI nội bộ cũ đã được loại bỏ.
+Requires Node.js >= 22.12 và React 19. Chạy `pnpm install` để cài dependency.
+
+- Theme Tailwind 4: `apps/web/src/styles/tailwind.css` import kit styles một lần, import `p4-theme.css` để map theme P4 Ember (cam + xanh xám nhạt) sang token của lib; typography vẫn là Be Vietnam Pro.
+- `UIProvider` trong `app.tsx` nối React Router, image adapter và locale (`vi-VN` / `en-US`). `ToastProvider` cung cấp `toast`.
+- Icon riêng dùng trong app được đăng ký ở `apps/web/src/libraries/ui-theme.ts`; thêm named glyph import khi dùng icon ngoài core.
+- Admin dùng `WorkspaceShell`, `WorkspaceHeader`, `Sidebar` và `SidebarProvider` (layout inset mặc định); storefront dùng `Navbar`. Footer là nội dung riêng của P4.
+- Storybook của thư viện: https://react-ui-one-rose.vercel.app/.
+- Storybook block P4: `pnpm storybook` → http://localhost:6006 (54 stories); build tĩnh bằng `pnpm build:storybook`.
+- Web import `@p4/blocks/styles.css` để Tailwind quét class của block và đăng ký `blockResources` vào namespace `blocks` của i18next.

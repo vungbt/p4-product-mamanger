@@ -1,4 +1,4 @@
-import { type IconName, RenderIcon } from '@p4/ui';
+import { Icon, type IconName } from '@itclabs/react-ui';
 import { type ComponentType, createElement, type LazyExoticComponent, type ReactNode } from 'react';
 import type { Role } from '@/types/types';
 
@@ -6,7 +6,7 @@ export interface IRoute {
   path: string;
   name: string;
   label?: string;
-  /** Icon name — `@p4/ui` (Lucide aliases) */
+  /** Icon name — `@itclabs/react-ui` semantic names */
   iconName?: IconName;
   /** Or pass a ReactNode directly */
   icon?: ReactNode;
@@ -34,7 +34,7 @@ export type MenuItem =
 
 function resolveRouteIcon(route: IRoute): ReactNode | undefined {
   if (route.icon) return route.icon;
-  if (route.iconName) return createElement(RenderIcon, { name: route.iconName });
+  if (route.iconName) return createElement(Icon, { name: route.iconName });
   return undefined;
 }
 

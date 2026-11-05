@@ -1,0 +1,5 @@
+@import "@itclabs/react-ui/theme/styles.css";
+/* Product/checkout blocks use font-extrabold (800), an optional kit font entry. */
+@import "@itclabs/react-ui/theme/fonts-800.css";
+@import "../../../apps/web/src/styles/p4-theme.css";
+@import "../styles.css";

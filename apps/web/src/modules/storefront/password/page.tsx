@@ -1,20 +1,12 @@
+import { Button, Form, FormField, FormSubmit, InputPassword, useAppForm } from '@itclabs/react-ui';
+import { toast } from '@itclabs/react-ui/toast';
 import { axiosClient } from '@p4/api-client';
 import { type AuthSession, writeAuthSession } from '@p4/auth';
 import type { LoginResponse, UpdatePasswordInput } from '@p4/shared';
-import {
-  Button,
-  Form,
-  FormField,
-  FormSubmit,
-  InputPassword,
-  toastError,
-  toastSuccess,
-  useAppForm,
-  v,
-} from '@p4/ui';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import * as v from 'valibot';
 import { ROUTES } from '@/constants/constants';
 import useAuth from '@/hooks/use-auth';
 import BrandLogo from '@/libraries/brand-logo';
@@ -40,7 +32,7 @@ export default function StorefrontPasswordPage() {
     defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
     onSubmit: async ({ value }) => {
       if (value.newPassword !== value.confirmPassword) {
-        toastError(t('auth.passwordMismatch'));
+        toast.error(t('auth.passwordMismatch'));
         return;
       }
 
@@ -54,32 +46,32 @@ export default function StorefrontPasswordPage() {
           body,
         );
         writeAuthSession(response.data as AuthSession);
-        toastSuccess(t('auth.passwordUpdated'));
+        toast.success(t('auth.passwordUpdated'));
         navigate(ROUTES.storefront.shop, { replace: true });
       } catch (error) {
         const message =
           error && typeof error === 'object' && 'message' in error
             ? String((error as { message?: string }).message)
             : t('auth.passwordUpdateFailed');
-        toastError(message);
+        toast.error(message);
       }
     },
   });
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-primary-background px-6 py-12">
-      <section className="w-full max-w-lg rounded-3xl border border-neutral-border bg-neutral-white p-8 shadow-2xl sm:p-10">
+    <main className="flex min-h-screen items-center justify-center bg-brand-50 px-6 py-12">
+      <section className="w-full max-w-lg rounded-3xl border border-line bg-surface p-8 shadow-2xl sm:p-10">
         <Link to={ROUTES.storefront.shop} aria-label={t('auth.backToShop')}>
           <BrandLogo variant="header" height={36} />
         </Link>
-        <h1 className="mt-8 text-heading-5 font-bold text-neutral-text-primary">
+        <h1 className="mt-8 text-heading font-bold text-ink">
           {hasPassword ? t('auth.changePassword') : t('auth.setPassword')}
         </h1>
-        <p className="mt-2 text-14 text-neutral-text-secondary">
+        <p className="mt-2 text-control text-muted">
           {hasPassword ? t('auth.changePasswordHint') : t('auth.setPasswordHint')}
         </p>
 
-        <Form form={form} schema={schema} className="mt-8 space-y-5">
+        <Form form={form} schema={schema} className="mt-8 grid gap-5">
           {hasPassword ? (
             <FormField name="currentPassword" label={t('auth.currentPassword')} required>
               <InputPassword autoComplete="current-password" />
@@ -93,7 +85,7 @@ export default function StorefrontPasswordPage() {
           </FormField>
           <FormSubmit form={form}>
             {(isSubmitting) => (
-              <Button type="submit" size="large" className="w-full" loading={isSubmitting}>
+              <Button type="submit" size="lg" className="w-full" loading={isSubmitting}>
                 {t('auth.savePassword')}
               </Button>
             )}

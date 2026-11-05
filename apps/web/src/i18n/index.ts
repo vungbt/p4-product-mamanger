@@ -1,5 +1,5 @@
+import { blockResources } from '@p4/blocks/locales';
 import { type AppLocale, createI18n } from '@p4/i18n';
-import { uiResources } from '@p4/ui/locales';
 import en from './locales/en/common.json';
 import vi from './locales/vi/common.json';
 
@@ -19,8 +19,8 @@ function readStoredLocale(): AppLocale {
 
 const i18n = createI18n({
   resources: {
-    vi: { common: vi, ...uiResources.vi },
-    en: { common: en, ...uiResources.en },
+    vi: { common: vi, ...blockResources.vi },
+    en: { common: en, ...blockResources.en },
   },
   lng: typeof window !== 'undefined' ? readStoredLocale() : 'vi',
   defaultNS: 'common',

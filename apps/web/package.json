@@ -10,26 +10,27 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@itclabs/react-ui": "0.10.0",
     "@p4/api-client": "workspace:*",
     "@p4/auth": "workspace:*",
+    "@p4/i18n": "workspace:*",
     "@p4/shared": "workspace:*",
-    "@p4/ui": "workspace:*",
     "i18next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-i18next": "catalog:",
     "react-router-dom": "catalog:",
-    "@p4/i18n": "workspace:*"
+    "valibot": "catalog:",
+    "@p4/blocks": "workspace:*"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.4",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "autoprefixer": "catalog:",
-    "postcss": "catalog:",
     "sass": "catalog:",
-    "tailwindcss": "catalog:",
+    "tailwindcss": "^4.3.4",
     "typescript": "catalog:",
     "vite": "catalog:"
   }

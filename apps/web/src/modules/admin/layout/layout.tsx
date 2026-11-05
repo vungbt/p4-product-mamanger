@@ -1,23 +1,22 @@
-import { CollapsibleShellProvider } from '@p4/ui';
+import { SidebarProvider, WorkspaceBody, WorkspaceMain, WorkspaceShell } from '@itclabs/react-ui';
 import { Outlet } from 'react-router-dom';
 import AdminHeader from './header';
 import AdminSidebar from './sidebar';
-
 export default function AdminLayout() {
   return (
-    <CollapsibleShellProvider>
-      <div
-        className="flex min-h-screen bg-secondary-background text-neutral-black"
+    <SidebarProvider>
+      <WorkspaceShell
+        className="admin-shell w-full max-w-none"
         data-portal="admin"
+        sidebar={<AdminSidebar />}
       >
-        <AdminSidebar />
-        <main className="flex max-h-screen min-w-0 flex-1 flex-col overflow-auto">
+        <WorkspaceBody>
           <AdminHeader />
-          <div className="min-h-[calc(100vh-4rem)] flex-1 px-8 py-6">
+          <WorkspaceMain className="w-full max-w-none px-4 py-6 sm:px-6 sm:py-6 lg:px-6">
             <Outlet />
-          </div>
-        </main>
-      </div>
-    </CollapsibleShellProvider>
+          </WorkspaceMain>
+        </WorkspaceBody>
+      </WorkspaceShell>
+    </SidebarProvider>
   );
 }

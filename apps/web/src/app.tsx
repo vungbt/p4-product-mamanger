@@ -1,3 +1,4 @@
+import { ToastProvider, UIProvider, type UiImageProps, type UiLinkProps } from '@itclabs/react-ui';
 import {
   ApiQueryProvider,
   axiosClient,
@@ -7,10 +8,11 @@ import {
 } from '@p4/api-client';
 import type { AuthSession } from '@p4/auth';
 import type { LoginResponse } from '@p4/shared';
-import { LinkImageProvider, Toaster, type UiImageProps, type UiLinkProps } from '@p4/ui';
+import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Link } from 'react-router-dom';
 import { API_BASE_URL } from '@/constants/constants';
 import { AuthProvider } from '@/contexts/auth-context';
+import { uiTheme } from '@/libraries/ui-theme';
 import RouteConfigs from '@/routing/config.route';
 import MasterRoutes from '@/routing/master.route';
 
@@ -67,49 +69,38 @@ async function loginWithGoogleApi(credential: string): Promise<AuthSession> {
   }
 }
 
-// Lets @p4/ui components render UiLink through react-router-dom's <Link> (client-side nav, no full
-// reload) instead of the plain <a> fallback they use in Storybook/other consumers.
-function RouterUiLink({ href, className, children, onClick, title }: UiLinkProps) {
-  return (
-    <Link className={className} onClick={onClick} title={title} to={href}>
-      {children}
-    </Link>
-  );
+// Keep library navigation on React Router and forward native link/ref/accessibility props.
+function RouterUiLink({ href, ...props }: UiLinkProps) {
+  return <Link {...props} to={href} />;
 }
 
-// No image-optimization service in this project (unlike e.g. next/image) — this just adds the
-// browser-native perf hints and a fallback for a blank `alt` that UiImage's default doesn't have.
-function WebImage({ src, alt, className, width, height, onError }: UiImageProps) {
-  return (
-    <img
-      alt={alt || 'Hình ảnh'}
-      className={className}
-      decoding="async"
-      height={height}
-      loading="lazy"
-      onError={onError}
-      src={src}
-      width={width}
-    />
-  );
+function WebImage({ alt, ...props }: UiImageProps) {
+  return <img decoding="async" loading="lazy" {...props} alt={alt} />;
 }
 
 export default function App() {
+  const { i18n } = useTranslation();
   return (
     <BrowserRouter>
-      <LinkImageProvider Image={WebImage} Link={RouterUiLink}>
-        <ApiQueryProvider enableDevtools={import.meta.env.DEV}>
-          <AuthProvider
-            onLogin={loginWithApi}
-            onGoogleLogin={loginWithGoogleApi}
-            onRefresh={refreshAuthSession}
-            onLogout={revokeAuthSession}
-          >
-            <MasterRoutes routes={RouteConfigs} />
-            <Toaster position="top-right" duration={3000} />
-          </AuthProvider>
-        </ApiQueryProvider>
-      </LinkImageProvider>
+      <UIProvider
+        theme={uiTheme}
+        image={WebImage}
+        link={RouterUiLink}
+        locale={i18n.resolvedLanguage === 'en' ? 'en-US' : 'vi-VN'}
+      >
+        <ToastProvider position="top-right" duration={3000}>
+          <ApiQueryProvider enableDevtools={import.meta.env.DEV}>
+            <AuthProvider
+              onLogin={loginWithApi}
+              onGoogleLogin={loginWithGoogleApi}
+              onRefresh={refreshAuthSession}
+              onLogout={revokeAuthSession}
+            >
+              <MasterRoutes routes={RouteConfigs} />
+            </AuthProvider>
+          </ApiQueryProvider>
+        </ToastProvider>
+      </UIProvider>
     </BrowserRouter>
   );
 }

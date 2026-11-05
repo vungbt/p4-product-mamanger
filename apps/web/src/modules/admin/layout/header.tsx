@@ -1,61 +1,28 @@
-import { AdminHeader, IconButton, ThemeToggle, UserChip, useCollapsibleShell } from '@p4/ui';
+import { Breadcrumb, IconButton, WorkspaceHeader } from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
-import useAuth from '@/hooks/use-auth';
 import LanguageSwitcher from '@/libraries/language-switcher';
+import UserAccountMenu from '@/libraries/user-account-menu';
 import useAdminBreadcrumbs from './use-admin-breadcrumbs';
-
 export default function AdminHeaderBar() {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
-  const { collapsed, toggleCollapsed } = useCollapsibleShell();
   const breadcrumbs = useAdminBreadcrumbs();
-
   return (
-    <AdminHeader
-      breadcrumbs={breadcrumbs}
-      leading={
-        <IconButton
-          icon={collapsed ? 'collapse-right' : 'collapse-left'}
-          color="primary"
-          variant="default"
-          onClick={toggleCollapsed}
-          aria-label={collapsed ? t('common.expandSidebar') : t('common.collapseSidebar')}
-        />
+    <WorkspaceHeader
+      className="flex-nowrap bg-surface pl-14 sm:pl-14 lg:pl-8"
+      actionsClassName="ml-auto"
+      breadcrumb={
+        <div className="hidden min-w-0 items-center gap-3 sm:flex">
+          <Breadcrumb
+            items={breadcrumbs.map(({ key, label }) => ({ key, title: label }))}
+            className="min-w-0 hidden sm:block"
+          />
+        </div>
       }
       actions={
         <>
-          <ThemeToggle />
           <LanguageSwitcher />
-
-          {/* <IconButton
-            icon="bell"
-            color="primary"
-            variant="default"
-            aria-label={t("common.notifications")}
-          /> */}
-          <IconButton
-            icon="bell"
-            shape="square"
-            variant="outline"
-            color="neutral"
-            badge={3}
-            badgeColor="error"
-            aria-label={t('common.notifications')}
-          />
-
-          <UserChip
-            name={user?.email ?? t('app.admin')}
-            subtitle={<span className="capitalize">{user?.role ?? 'admin'}</span>}
-            avatarUrl={user?.avatarUrl}
-            dropdownItems={[
-              {
-                key: 'logout',
-                label: t('common.logout'),
-                danger: true,
-                onClick: logout,
-              },
-            ]}
-          />
+          <IconButton icon="bell" variant="ghost" label={t('common.notifications')} />
+          <UserAccountMenu portal="admin" />
         </>
       }
     />

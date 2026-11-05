@@ -4,17 +4,16 @@ import {
   Form,
   FormField,
   FormSubmit,
+  Icon,
   Input,
   InputPassword,
-  toastError,
-  toastInfo,
-  toastSuccess,
   useAppForm,
-  v,
-} from '@p4/ui';
+} from '@itclabs/react-ui';
+import { toast } from '@itclabs/react-ui/toast';
 import { useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import * as v from 'valibot';
 import { ROUTES } from '@/constants/constants';
 import BrandLogo from '@/libraries/brand-logo';
 import GoogleLoginButton from '@/libraries/google-login-button';
@@ -44,21 +43,18 @@ export default function StorefrontRegisterPage() {
     },
     onSubmit: async ({ value }) => {
       if (value.password !== value.confirmPassword) {
-        toastError(t('auth.passwordMismatch'));
+        toast.error(t('auth.passwordMismatch'));
         return;
       }
 
-      toastInfo(t('auth.registerSoon'));
+      toast.info(t('auth.registerSoon'));
     },
   });
 
   return (
-    <main
-      className="relative min-h-screen overflow-hidden bg-primary-background"
-      data-portal="storefront"
-    >
-      <div className="pointer-events-none absolute -left-40 top-1/3 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full bg-warning/15 blur-3xl" />
+    <main className="relative min-h-screen overflow-hidden bg-brand-50" data-portal="storefront">
+      <div className="pointer-events-none absolute -left-40 top-1/3 h-96 w-96 rounded-full bg-accent/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 -top-28 h-80 w-80 rounded-full bg-warning-700/15 blur-3xl" />
 
       <header className="relative z-20 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 sm:px-10 lg:px-12">
         <Link to={ROUTES.storefront.shop} aria-label={t('auth.backToShop')}>
@@ -68,52 +64,40 @@ export default function StorefrontRegisterPage() {
       </header>
 
       <section className="relative z-10 mx-auto grid min-h-[calc(100vh-156px)] w-full max-w-7xl items-center gap-12 px-6 py-8 sm:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)] lg:px-12 lg:py-12">
-        <div className="relative mx-auto w-full max-w-xl overflow-hidden rounded-3xl bg-gradient-to-br from-neutral-white via-neutral-white to-primary-background p-6 shadow-2xl shadow-primary/15 sm:p-9 lg:mx-0 xl:p-11">
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-warning to-primary/30" />
-          <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-primary/10 blur-3xl" />
+        <div className="relative mx-auto w-full max-w-xl overflow-hidden rounded-3xl bg-gradient-to-br from-surface via-surface to-brand-50 p-6 shadow-2xl shadow-accent/15 sm:p-9 lg:mx-0 xl:p-11">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-accent via-warning-700 to-accent/30" />
+          <div className="pointer-events-none absolute -right-20 -top-20 h-52 w-52 rounded-full bg-accent/10 blur-3xl" />
 
           <div className="relative mb-8">
-            <span className="mb-4 inline-flex rounded-full bg-primary-background px-3 py-1.5 text-12 font-semibold uppercase tracking-[0.14em] text-primary">
+            <span className="mb-4 inline-flex rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-accent">
               {t('auth.memberEyebrow')}
             </span>
-            <h1 className="text-heading-5 font-bold leading-tight text-neutral-black sm:text-heading-4">
+            <h1 className="text-heading font-bold leading-tight text-ink sm:text-title">
               {t('auth.registerTitle')}
             </h1>
-            <p className="mt-3 text-15 leading-relaxed text-neutral-text-secondary">
+            <p className="mt-3 text-body leading-relaxed text-muted">
               {t('auth.registerSubtitle')}
             </p>
           </div>
 
-          <Form form={form} schema={schema} className="relative space-y-5">
+          <Form form={form} schema={schema} className="relative grid gap-5">
             <div className="grid gap-5 sm:grid-cols-2">
-              <FormField
-                name="fullName"
-                label={t('auth.fullName')}
-                required
-                size="large"
-                className="mb-0"
-              >
-                <Input placeholder={t('auth.fullNamePlaceholder')} autoComplete="name" />
+              <FormField name="fullName" label={t('auth.fullName')} required className="mb-0">
+                <Input size="lg" placeholder={t('auth.fullNamePlaceholder')} autoComplete="name" />
               </FormField>
-              <FormField
-                name="email"
-                label={t('auth.email')}
-                required
-                size="large"
-                className="mb-0"
-              >
-                <Input placeholder={t('auth.emailPlaceholder')} autoComplete="email" type="email" />
+              <FormField name="email" label={t('auth.email')} required className="mb-0">
+                <Input
+                  size="lg"
+                  placeholder={t('auth.emailPlaceholder')}
+                  autoComplete="email"
+                  type="email"
+                />
               </FormField>
             </div>
 
-            <FormField
-              name="password"
-              label={t('common.password')}
-              required
-              size="large"
-              className="mb-0"
-            >
+            <FormField name="password" label={t('common.password')} required className="mb-0">
               <InputPassword
+                size="lg"
                 placeholder={t('auth.passwordPlaceholder')}
                 autoComplete="new-password"
               />
@@ -123,10 +107,10 @@ export default function StorefrontRegisterPage() {
               name="confirmPassword"
               label={t('auth.confirmPassword')}
               required
-              size="large"
               className="mb-0"
             >
               <InputPassword
+                size="lg"
                 placeholder={t('auth.confirmPasswordPlaceholder')}
                 autoComplete="new-password"
               />
@@ -134,14 +118,9 @@ export default function StorefrontRegisterPage() {
 
             <FormSubmit form={form}>
               {(isSubmitting) => (
-                <Button
-                  type="submit"
-                  loading={isSubmitting}
-                  size="large"
-                  className="w-full"
-                  iconRight="arrow-right"
-                >
+                <Button type="submit" loading={isSubmitting} size="lg" className="w-full">
                   {t('auth.createAccount')}
+                  <Icon name="arrowRight" />
                 </Button>
               )}
             </FormSubmit>
@@ -151,7 +130,7 @@ export default function StorefrontRegisterPage() {
                 <Divider />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-neutral-white px-3 text-12 font-medium uppercase tracking-[0.14em] text-neutral-text-secondary">
+                <span className="bg-surface px-3 text-xs font-medium uppercase tracking-[0.14em] text-muted">
                   {t('auth.or')}
                 </span>
               </div>
@@ -159,19 +138,19 @@ export default function StorefrontRegisterPage() {
 
             <GoogleLoginButton
               onSuccess={() => {
-                toastSuccess(t('auth.loginSuccess'));
+                toast.success(t('auth.loginSuccess'));
                 navigate(ROUTES.storefront.shop, { replace: true });
               }}
             />
 
-            <p className="text-center text-12 leading-relaxed text-neutral-text-secondary">
+            <p className="text-center text-xs leading-relaxed text-muted">
               <Trans
                 i18nKey="auth.registerAgreement"
                 components={{
                   terms: (
                     <a
                       href="#terms"
-                      className="font-medium text-neutral-text-primary underline underline-offset-2 hover:text-primary"
+                      className="font-medium text-ink underline underline-offset-2 hover:text-accent"
                     >
                       {t('auth.terms')}
                     </a>
@@ -179,7 +158,7 @@ export default function StorefrontRegisterPage() {
                   privacy: (
                     <a
                       href="#privacy"
-                      className="font-medium text-neutral-text-primary underline underline-offset-2 hover:text-primary"
+                      className="font-medium text-ink underline underline-offset-2 hover:text-accent"
                     >
                       {t('auth.privacy')}
                     </a>
@@ -189,11 +168,11 @@ export default function StorefrontRegisterPage() {
             </p>
           </Form>
 
-          <p className="relative mt-7 text-center text-14 text-neutral-text-secondary">
+          <p className="relative mt-7 text-center text-control text-muted">
             {t('auth.alreadyMember')}{' '}
             <Link
               to={ROUTES.storefront.login}
-              className="font-semibold text-primary hover:text-primary-clicked"
+              className="font-semibold text-accent hover:text-brand-800"
             >
               {t('common.login')}
             </Link>
@@ -201,7 +180,7 @@ export default function StorefrontRegisterPage() {
         </div>
 
         <aside className="relative hidden min-h-[620px] lg:block">
-          <div className="absolute left-0 top-4 w-[72%] overflow-hidden rounded-[2rem] border-4 border-neutral-white shadow-2xl transition-transform duration-500 hover:-translate-y-2">
+          <div className="absolute left-0 top-4 w-[72%] overflow-hidden rounded-[2rem] border-4 border-surface shadow-2xl transition-transform duration-500 hover:-translate-y-2">
             <img
               src="/showcase/register-flatlay-v1.jpg"
               alt="Bộ sưu tập thời trang thành viên P4 Store"
@@ -209,7 +188,7 @@ export default function StorefrontRegisterPage() {
             />
           </div>
 
-          <div className="absolute right-0 top-24 w-[48%] rotate-3 overflow-hidden rounded-3xl border-4 border-neutral-white shadow-2xl transition-transform duration-500 hover:rotate-0 hover:scale-105">
+          <div className="absolute right-0 top-24 w-[48%] rotate-3 overflow-hidden rounded-3xl border-4 border-surface shadow-2xl transition-transform duration-500 hover:rotate-0 hover:scale-105">
             <img
               src="/showcase/register-sneaker-v1.jpg"
               alt="Giày thành viên P4 Store"
@@ -217,7 +196,7 @@ export default function StorefrontRegisterPage() {
             />
           </div>
 
-          <div className="absolute bottom-6 right-10 w-[45%] -rotate-3 overflow-hidden rounded-3xl border-4 border-neutral-white shadow-2xl transition-transform duration-500 hover:rotate-0 hover:scale-105">
+          <div className="absolute bottom-6 right-10 w-[45%] -rotate-3 overflow-hidden rounded-3xl border-4 border-surface shadow-2xl transition-transform duration-500 hover:rotate-0 hover:scale-105">
             <img
               src="/showcase/register-package-v1.jpg"
               alt="Hộp quà thành viên P4 Store"
@@ -225,19 +204,19 @@ export default function StorefrontRegisterPage() {
             />
           </div>
 
-          <div className="absolute bottom-20 left-5 max-w-xs rounded-2xl border border-white/35 bg-neutral-black/45 p-5 text-white shadow-2xl shadow-neutral-black/25 backdrop-blur-xl">
-            <p className="text-12 font-semibold uppercase tracking-[0.16em] text-primary">
+          <div className="absolute bottom-20 left-5 max-w-xs rounded-2xl border border-white/35 bg-black/45 p-5 text-white shadow-2xl shadow-black/25 backdrop-blur-xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
               {t('auth.memberBenefitEyebrow')}
             </p>
-            <h2 className="mt-2 text-title-1 font-bold">{t('auth.memberBenefitTitle')}</h2>
-            <p className="mt-2 text-14 leading-relaxed text-white/80">
+            <h2 className="mt-2 text-heading font-bold">{t('auth.memberBenefitTitle')}</h2>
+            <p className="mt-2 text-control leading-relaxed text-white/80">
               {t('auth.memberBenefitSubtitle')}
             </p>
           </div>
         </aside>
       </section>
 
-      <footer className="relative z-20 mx-auto w-full max-w-7xl px-6 pb-6 text-12 text-neutral-text-secondary sm:px-10 lg:px-12">
+      <footer className="relative z-20 mx-auto w-full max-w-7xl px-6 pb-6 text-xs text-muted sm:px-10 lg:px-12">
         {t('auth.loginCopyright', { year })}
       </footer>
     </main>

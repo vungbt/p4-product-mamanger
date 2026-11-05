@@ -1,65 +1,71 @@
-import { Avatar, cn, Menu, type MenuEntry } from '@p4/ui';
+import { type DropdownMenuEntry, UserMenu } from '@itclabs/react-ui';
+import { toast } from '@itclabs/react-ui/toast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants/constants';
 import useAuth from '@/hooks/use-auth';
 
 type UserAccountMenuProps = {
-  className?: string;
+  portal?: 'admin' | 'storefront';
+  placement?: 'header' | 'sidebar';
 };
-
-export default function UserAccountMenu({ className }: UserAccountMenuProps) {
+export default function UserAccountMenu({
+  portal = 'storefront',
+  placement = 'header',
+}: UserAccountMenuProps) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
   if (!user) return null;
-
-  const displayName = user.displayName?.trim() || user.email?.split('@')[0] || user.email || 'User';
-
-  const items: MenuEntry[] = [
+  const displayName = user.displayName?.trim() || user.email.split('@')[0] || user.email;
+  const items: DropdownMenuEntry[] = [
+    portal === 'admin'
+      ? {
+          id: 'settings',
+          icon: 'settings',
+          label: t('common.settings'),
+          onSelect: () => {
+            toast.info(t('common.settingsSoon'));
+          },
+        }
+      : {
+          id: 'password',
+          icon: 'key',
+          label: user.hasPassword ? t('auth.changePassword') : t('auth.setPassword'),
+          onSelect: () => navigate(ROUTES.storefront.password),
+        },
     {
-      key: 'password',
-      label: user.hasPassword ? t('auth.changePassword') : t('auth.setPassword'),
-      onClick: () => navigate(ROUTES.storefront.password),
-    },
-    {
-      key: 'logout',
+      id: 'logout',
+      icon: 'logout',
       label: t('common.logout'),
-      danger: true,
-      onClick: logout,
+      tone: 'danger',
+      onSelect: () => {
+        logout();
+        navigate(portal === 'admin' ? ROUTES.admin.login : ROUTES.storefront.login, {
+          replace: true,
+        });
+      },
     },
   ];
-
   return (
-    <Menu
-      trigger={
-        <button
-          type="button"
-          className={cn(
-            'inline-flex items-center justify-center rounded-full p-0.5 outline-none transition',
-            'ring-1 ring-neutral-border hover:ring-2 hover:ring-primary/40 focus-visible:ring-2 focus-visible:ring-primary',
-            className,
-          )}
-          aria-label={user.email}
-        >
-          <Avatar name={displayName} src={user.avatarUrl || undefined} size="md" />
-        </button>
+    <UserMenu
+      name={displayName}
+      description={user.email}
+      avatar={{ src: user.avatarUrl || undefined }}
+      collapseOnMobile={placement !== 'sidebar'}
+      className={placement === 'sidebar' ? 'w-full' : undefined}
+      classNames={
+        placement === 'sidebar'
+          ? {
+              trigger:
+                'w-full border-transparent bg-transparent hover:bg-surface/60 group-data-[collapsed=true]/sidebar:justify-center',
+              details: 'group-data-[collapsed=true]/sidebar:hidden',
+              chevron: 'group-data-[collapsed=true]/sidebar:hidden',
+            }
+          : undefined
       }
-      align="end"
       items={items}
-      header={
-        <>
-          <p className="truncate text-13 font-semibold text-neutral-text-primary">{displayName}</p>
-          <p className="truncate text-12 text-neutral-text-secondary">{user.email}</p>
-        </>
-      }
-      customClasses={{
-        menu: 'min-w-[220px] bg-neutral-white border border-neutral-border rounded-xl shadow-2xl overflow-hidden',
-        item: 'text-13 px-3 py-2.5 cursor-pointer hover:bg-neutral-background transition-colors',
-        dangerItem:
-          'text-13 px-3 py-2.5 cursor-pointer text-error hover:bg-error-bg transition-colors',
-      }}
+      header={user.email}
     />
   );
 }

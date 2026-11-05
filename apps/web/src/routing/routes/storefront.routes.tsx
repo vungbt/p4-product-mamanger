@@ -58,7 +58,7 @@ export const storefrontPortalRoutes: IRoute[] = [
         path: ROUTES.storefront.shop,
         name: 'shop',
         label: 'Shop',
-        iconName: 'building-storefront',
+        iconName: 'store',
         component: ShopScreen,
         exact: true,
       },

@@ -1,58 +1,17 @@
 stages:
-  - visual-test
+  - check
 
-# ============================================
-# Chromatic — Visual Regression Testing
-# MR: chỉ publish Storybook (không chụp snapshot)
-# main: publish + chụp snapshot baseline
-# ============================================
-chromatic:
-  stage: visual-test
+web:
+  stage: check
   image: node:22-alpine
   before_script:
-    - apk add --no-cache git curl
     - corepack enable
-    - corepack prepare pnpm@latest --activate
-    - pnpm install --filter @p4/ui...
+    - pnpm install --no-frozen-lockfile
   script:
-    - cd libs/ui
-    - |
-      if [ "$CI_COMMIT_BRANCH" = "main" ]; then
-        npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --auto-accept-changes --no-interactive 2>&1 | tee /tmp/chromatic.log
-      else
-        npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --exit-once-uploaded --no-interactive 2>&1 | tee /tmp/chromatic.log
-      fi
-    - STORYBOOK_URL=$(grep -oE 'https://[a-z0-9]+-[a-z0-9]+\.chromatic\.com/' /tmp/chromatic.log | head -1)
-    - echo "STORYBOOK_URL=${STORYBOOK_URL:-none}" > chromatic.env
-    - echo "📖 Storybook Preview → $STORYBOOK_URL"
-  after_script:
-    - |
-      if [ -f /tmp/chromatic.log ] && [ -n "$GITLAB_TOKEN" ] && [ -n "$CI_MERGE_REQUEST_IID" ]; then
-        STORYBOOK_URL=$(grep -oE 'https://[a-z0-9]+-[a-z0-9]+\.chromatic\.com/' /tmp/chromatic.log | head -1)
-        if [ -n "$STORYBOOK_URL" ]; then
-          curl --fail --silent --request POST \
-            --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-            --header "Content-Type: application/json" \
-            --data "{\"body\": \"📖 **Storybook Preview:** ${STORYBOOK_URL}\"}" \
-            "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes" > /dev/null 2>&1 || true
-        fi
-      fi
-  artifacts:
-    reports:
-      dotenv: libs/ui/chromatic.env
+    - pnpm lint
+    - pnpm --filter @p4/blocks typecheck
+    - pnpm --filter @p4/web build
+    - pnpm build:storybook
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      changes:
-        - libs/ui/**/*
     - if: $CI_COMMIT_BRANCH == "main"
-      changes:
-        - libs/ui/**/*
-  cache:
-    key: pnpm-$CI_COMMIT_REF_SLUG
-    paths:
-      - .pnpm-store
-  variables:
-    PNPM_HOME: .pnpm-store
-  environment:
-    name: storybook/$CI_COMMIT_REF_SLUG
-    url: $STORYBOOK_URL
