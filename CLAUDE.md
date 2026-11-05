@@ -36,3 +36,11 @@
 ## Code spacing
 
 - Separate hook calls, derived data, handler declarations and the returned JSX with blank lines. Keep a blank line between top-level type declarations and components/functions. Biome does not insert all semantic blank lines; check these manually after formatting.
+
+## Backend TypeScript
+
+- API query services use `ModelOrder<ModelAttributes>` and `StringField<ModelAttributes>` from `apps/api/src/types/database.ts`; SQL `SortDirection` is shared there. Avoid Sequelize's broad `Order` type for simple sorting.
+- Supply model attributes to `WhereOptions<ModelAttributes>`. Validate untrusted HTTP values at runtime before normalization; do not bypass compiler errors with assertions.
+- Run `pnpm --filter @p4/api typecheck` and `pnpm --filter @p4/api test:lists` after API changes. For DB query changes, run the documented local integration suite against the existing development stack.
+
+- Keep DTO field lists in their owning service; inline single-use lists. Services call `selectFields` directly for simple DTO selection; do not create mapper functions that only wrap this helper. Mappers with actual transformations use `selectFields` from `apps/api/src/utils/select-fields.ts` for direct fields and keep explicit DTO return types. Keep date/relationship transformations explicit; never select credential or internal fields into public DTOs. Do not cast mapper output to bypass type errors.

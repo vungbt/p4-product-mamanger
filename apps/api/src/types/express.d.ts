@@ -7,14 +7,8 @@ export type JsonApiBody<T = unknown> =
 declare global {
   namespace Express {
     interface Request {
+      requestId?: string;
       user?: import('@p4/shared').User;
-      pagination?: {
-        page: number;
-        pageSize: number;
-        offset: number;
-        limit: number;
-        q: string;
-      };
     }
 
     interface Response {

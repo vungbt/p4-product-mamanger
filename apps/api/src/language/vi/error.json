@@ -38,5 +38,20 @@
   "stripe_session_failed": "Không tạo được phiên thanh toán Stripe",
   "stripe_webhook_invalid": "Webhook Stripe không hợp lệ",
   "google_not_configured": "Chưa cấu hình Google Client ID",
-  "google_token_invalid": "Token Google không hợp lệ"
+  "google_token_invalid": "Token Google không hợp lệ",
+  "duplicate_value": "Dữ liệu đã tồn tại",
+  "unique_value": "{{attribute}} đã được sử dụng. Vui lòng chọn giá trị khác.",
+  "invalid_date_range": "Ngày kết thúc phải bằng hoặc sau ngày bắt đầu.",
+  "invalid_state_transition": "Không thể chuyển trạng thái theo yêu cầu.",
+  "version_conflict": "Dữ liệu đã thay đổi. Vui lòng tải lại trước khi thử lại.",
+  "idempotency_conflict": "Mã yêu cầu đã được dùng với nội dung khác.",
+  "idempotency_key_expired": "Mã yêu cầu đã hết hạn.",
+  "invalid_json_value": "Dữ liệu yêu cầu không hợp lệ.",
+  "invalid_field": "Giá trị của {{attribute}} không hợp lệ.",
+  "invalid_account_token": "Liên kết không hợp lệ, đã hết hạn hoặc đã được sử dụng.",
+  "invalid_timezone": "Múi giờ không hợp lệ.",
+  "last_owner_required": "Cần ít nhất một chủ shop đang hoạt động.",
+  "staff_already_exists": "Tài khoản này đã là nhân sự.",
+  "account_registration_required": "Người nhận cần đăng ký tài khoản trước.",
+  "rate_limit_exceeded": "Quá nhiều yêu cầu. Vui lòng thử lại sau."
 }

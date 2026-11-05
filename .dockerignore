@@ -11,3 +11,7 @@ node_modules
 .DS_Store
 apps/web
 **/.turbo
+
+.p4-storage
+.tmp-img
+documents/api

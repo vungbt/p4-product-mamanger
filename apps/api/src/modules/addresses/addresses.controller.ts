@@ -1,14 +1,19 @@
-import type { ShippingAddressInput } from '@p4/shared';
+import type { AddressListQuery, ShippingAddressInput } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import type { ListLocals } from '@/shared/list-query.js';
 import { Unauthorized } from '@/utils/errors/index.js';
 import * as addressesService from './addresses.service.js';
 
-export async function list(req: Request, res: Response, next: NextFunction) {
+export async function list(
+  req: Request,
+  res: Response<unknown, ListLocals<AddressListQuery | undefined>>,
+  next: NextFunction,
+) {
   try {
     if (!req.user) throw new Unauthorized();
-    const data = await addressesService.listAddresses(req.user.id);
-    return res.jsonApi(StatusCodes.OK, { data });
+    const result = await addressesService.listAddresses(req.user.id, res.locals.listQuery);
+    return res.jsonApi(StatusCodes.OK, result);
   } catch (error) {
     return next(error);
   }

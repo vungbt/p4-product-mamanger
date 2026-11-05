@@ -5,7 +5,7 @@ import * as filesService from './files.service.js';
 export async function getSignUploadUrl(req: Request, res: Response, next: NextFunction) {
   try {
     const name = typeof req.query.name === 'string' ? req.query.name : '';
-    const data = filesService.signUploadUrl(name);
+    const data = await filesService.signUploadUrl(name);
     return res.jsonApi(StatusCodes.OK, { data });
   } catch (error) {
     return next(error);
@@ -25,7 +25,7 @@ export async function getSignUploadUrls(req: Request, res: Response, next: NextF
       names = [];
     }
     const list = (names as unknown[]).map(String);
-    const data = filesService.signUploadUrls(list);
+    const data = await filesService.signUploadUrls(list);
     return res.jsonApi(StatusCodes.OK, { data });
   } catch (error) {
     return next(error);

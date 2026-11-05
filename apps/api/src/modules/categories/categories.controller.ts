@@ -1,13 +1,16 @@
 import type { CategoryInput } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { parseCategoryListQuery } from './categories.query.js';
 import * as categoriesService from './categories.service.js';
+import type { CategoryListLocals } from './categories.validation.js';
 
-export async function list(req: Request, res: Response, next: NextFunction) {
+export async function list(
+  _req: Request,
+  res: Response<unknown, CategoryListLocals>,
+  next: NextFunction,
+) {
   try {
-    const query = parseCategoryListQuery(req.query);
-    const result = await categoriesService.listCategories(query);
+    const result = await categoriesService.listCategories(res.locals.listQuery);
 
     return res.jsonApi(StatusCodes.OK, result);
   } catch (error) {

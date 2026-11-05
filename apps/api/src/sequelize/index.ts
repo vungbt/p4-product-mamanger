@@ -1,7 +1,6 @@
 import pg from 'pg';
 import { Sequelize } from 'sequelize';
 import { env } from '@/configs/env.js';
-import { logger } from '@/utils/logger.js';
 
 export const sequelize = new Sequelize(
   env.database.name,
@@ -12,7 +11,7 @@ export const sequelize = new Sequelize(
     port: env.database.port,
     dialect: 'postgres',
     dialectModule: pg,
-    logging: env.isProd ? false : (sql) => logger.debug(sql),
+    logging: false,
   },
 );
 

@@ -9,7 +9,35 @@
     "imageStorageId": "Cloudinary image id",
     "items": "Items",
     "productId": "Product ID",
-    "quantity": "Quantity"
+    "quantity": "Quantity",
+    "page": "Page",
+    "pageSize": "Page size",
+    "q": "Search",
+    "sortBy": "Sort field",
+    "sortOrder": "Sort order",
+    "slug": "Slug",
+    "categoryId": "Category",
+    "minPrice": "Minimum price",
+    "maxPrice": "Maximum price",
+    "minStock": "Minimum stock",
+    "maxStock": "Maximum stock",
+    "status": "Status",
+    "paymentStatus": "Payment status",
+    "shipmentStatus": "Shipment status",
+    "createdFrom": "Start date",
+    "createdTo": "End date",
+    "minTotal": "Minimum total",
+    "maxTotal": "Maximum total",
+    "isActive": "Active state",
+    "type": "Type",
+    "orderId": "Order ID",
+    "minAmount": "Minimum amount",
+    "maxAmount": "Maximum amount",
+    "rating": "Rating",
+    "city": "City",
+    "isDefault": "Default address"
   },
-  "message": {}
+  "message": {
+    "query_string": "Query parameters must contain a single string value."
+  }
 }

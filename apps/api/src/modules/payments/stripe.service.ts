@@ -10,7 +10,10 @@ export function getStripe(): Stripe {
     throw new BadRequest(errorKeys.stripeNotConfigured);
   }
   if (!stripeClient) {
-    stripeClient = new Stripe(env.payment.stripeSecretKey);
+    stripeClient = new Stripe(env.payment.stripeSecretKey, {
+      timeout: 15000,
+      maxNetworkRetries: 1,
+    });
   }
   return stripeClient;
 }
@@ -25,30 +28,34 @@ export async function createCheckoutSession(input: {
   amount: number;
   currency: string;
   description: string;
+  idempotencyKey: string;
 }): Promise<{ sessionId: string; url: string }> {
   const stripe = getStripe();
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    client_reference_id: input.orderId,
-    metadata: {
-      orderId: input.orderId,
-      paymentId: input.paymentId,
-    },
-    success_url: fillOrderId(env.payment.checkoutSuccessUrl, input.orderId),
-    cancel_url: fillOrderId(env.payment.checkoutCancelUrl, input.orderId),
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: input.currency,
-          unit_amount: input.amount,
-          product_data: {
-            name: input.description,
+  const session = await stripe.checkout.sessions.create(
+    {
+      mode: 'payment',
+      client_reference_id: input.orderId,
+      metadata: {
+        orderId: input.orderId,
+        paymentId: input.paymentId,
+      },
+      success_url: fillOrderId(env.payment.checkoutSuccessUrl, input.orderId),
+      cancel_url: fillOrderId(env.payment.checkoutCancelUrl, input.orderId),
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: input.currency,
+            unit_amount: input.amount,
+            product_data: {
+              name: input.description,
+            },
           },
         },
-      },
-    ],
-  });
+      ],
+    },
+    { idempotencyKey: input.idempotencyKey },
+  );
 
   if (!session.url) {
     throw new BadRequest(errorKeys.stripeSessionFailed);

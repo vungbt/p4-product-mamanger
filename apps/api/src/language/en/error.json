@@ -38,5 +38,20 @@
   "stripe_session_failed": "Failed to create Stripe Checkout Session",
   "stripe_webhook_invalid": "Invalid Stripe webhook",
   "google_not_configured": "Google Client ID is not configured",
-  "google_token_invalid": "Invalid Google token"
+  "google_token_invalid": "Invalid Google token",
+  "duplicate_value": "This value already exists",
+  "unique_value": "{{attribute}} is already in use. Please choose another value.",
+  "invalid_date_range": "The end date must be on or after the start date.",
+  "invalid_state_transition": "This state transition is not allowed.",
+  "version_conflict": "This resource has changed. Reload before retrying.",
+  "idempotency_conflict": "This request key was already used for different input.",
+  "idempotency_key_expired": "This request key has expired.",
+  "invalid_json_value": "Invalid request data.",
+  "invalid_field": "Invalid value for {{attribute}}.",
+  "invalid_account_token": "This link is invalid, expired or already used.",
+  "invalid_timezone": "Invalid timezone.",
+  "last_owner_required": "At least one active owner is required.",
+  "staff_already_exists": "This account is already a staff member.",
+  "account_registration_required": "The recipient must register an account first.",
+  "rate_limit_exceeded": "Too many requests. Please try again later."
 }

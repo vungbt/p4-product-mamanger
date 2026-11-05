@@ -15,12 +15,22 @@ export interface OrderAttributes {
   subtotal: number;
   discountAmount: number;
   total: number;
+  lifecycleStatus: import('@p4/shared').OrderLifecycleStatus;
+  version: number;
+  currency: string;
+  snapshot: import('@p4/shared').CheckoutQuoteSnapshot | null;
+  quoteId: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export type OrderCreation = Optional<
   OrderAttributes,
+  | 'lifecycleStatus'
+  | 'version'
+  | 'currency'
+  | 'snapshot'
+  | 'quoteId'
   | 'id'
   | 'status'
   | 'addressId'
@@ -48,6 +58,11 @@ export class OrderModel extends Model<OrderAttributes, OrderCreation> implements
   declare subtotal: number;
   declare discountAmount: number;
   declare total: number;
+  declare lifecycleStatus: import('@p4/shared').OrderLifecycleStatus;
+  declare version: number;
+  declare currency: string;
+  declare snapshot: import('@p4/shared').CheckoutQuoteSnapshot | null;
+  declare quoteId: string | null;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 }
@@ -55,6 +70,15 @@ export class OrderModel extends Model<OrderAttributes, OrderCreation> implements
 export function initOrderModel(sequelize: Sequelize) {
   OrderModel.init(
     {
+      lifecycleStatus: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'pending_confirmation',
+      },
+      version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
+      currency: { type: DataTypes.STRING, allowNull: false, defaultValue: 'VND' },
+      snapshot: { type: DataTypes.JSONB, allowNull: true },
+      quoteId: { type: DataTypes.UUID, allowNull: true, unique: true },
       id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,

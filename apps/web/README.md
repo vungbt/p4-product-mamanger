@@ -218,5 +218,6 @@ Props/type riêng của component khai báo cạnh component; hook import type k
 Lỗi validation API trả `{ message, code: 'input_valid_error', extensions: { field: string[] } }`.
 Client giữ envelope lỗi trong `error.data`; hook editor map `name`/`slug`/`description`
 vào `onServer` error của FormField, xóa lỗi field khi chỉnh giá trị. Lỗi chung hoặc
-field không nhận diện vẫn hiện Alert. Lỗi unique slug của Sequelize hiện đi qua
-nhánh `server_error` (500), chưa có thông tin field nên FE không tự suy đoán là lỗi slug.
+field không nhận diện vẫn hiện Alert. API local map lỗi unique slug của Sequelize
+sang HTTP 400, `code: 'input_valid_error'`, `extensions.slug` với thông báo theo locale;
+form hiển thị lỗi ngay tại Slug. Cần deploy BE để môi trường remote có hành vi này.

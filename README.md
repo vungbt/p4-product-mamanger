@@ -131,6 +131,8 @@ Page được tổ chức theo feature: `modules/{portal}/{feature}/page.tsx`. C
 
 ## Thứ tự làm (web)
 
+Ưu tiên Admin: xem [các task Admin theo thứ tự](documents/admin/README.md), mỗi task một file.
+
 1. Types/constants + đọc API README
 2. `@p4/api-client` + `use-auth`
 3. Routes + `protected-route`
@@ -164,3 +166,7 @@ Requires Node.js >= 22.12 và React 19. Chạy `pnpm install` để cài depende
 - Storybook của thư viện: https://react-ui-one-rose.vercel.app/.
 - Storybook block P4: `pnpm storybook` → http://localhost:6006 (54 stories); build tĩnh bằng `pnpm build:storybook`.
 - Web import `@p4/blocks/styles.css` để Tailwind quét class của block và đăng ký `blockResources` vào namespace `blocks` của i18next.
+
+## Task frontend
+
+Thứ tự triển khai Admin và Storefront: [42 task riêng](documents/frontend/README.md).

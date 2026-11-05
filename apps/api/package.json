@@ -11,7 +11,19 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed": "sequelize-cli db:seed:all",
     "db:reset": "sequelize-cli db:migrate:undo:all && sequelize-cli db:migrate && sequelize-cli db:seed:all",
-    "test:categories": "pnpm build && node --test tests/categories.test.mjs"
+    "test:categories": "pnpm build && node --test tests/categories.test.mjs",
+    "test:lists": "pnpm typecheck && pnpm build && node --test tests/categories.test.mjs tests/list-query.test.mjs tests/select-fields.test.mjs",
+    "test:lists:local": "pnpm build && node --test tests/list-api.integration.test.mjs",
+    "typecheck": "tsc -p tsconfig.typecheck.json --noEmit",
+    "openapi:generate": "pnpm build && node scripts/openapi/generate.mjs",
+    "openapi:check": "pnpm build && node scripts/openapi/generate.mjs --check",
+    "dev:typecheck": "tsc -p tsconfig.typecheck.json --noEmit --watch --preserveWatchOutput",
+    "worker": "tsx src/worker.ts",
+    "worker:start": "node dist/worker.js",
+    "commerce:audit": "tsx src/scripts/commerce-audit.ts --dry-run",
+    "test:commerce": "pnpm typecheck && pnpm build && node --test --test-concurrency=1 tests/categories.test.mjs tests/list-query.test.mjs tests/select-fields.test.mjs tests/commerce-foundations.test.mjs tests/jobs-reports.test.mjs tests/accounts.integration.test.mjs tests/catalog-inventory.integration.test.mjs tests/checkout.integration.test.mjs tests/content-support-notifications.integration.test.mjs tests/list-api.integration.test.mjs tests/processes.integration.test.mjs tests/openapi.test.mjs",
+    "prebuild": "pnpm --filter @p4/processes build && pnpm --filter @p4/realtime build",
+    "predev": "pnpm --filter @p4/processes build && pnpm --filter @p4/realtime build"
   },
   "dependencies": {
     "@p4/shared": "workspace:*",
@@ -35,7 +47,15 @@
     "sequelize-cli": "catalog:",
     "stripe": "catalog:",
     "uuid": "catalog:",
-    "validatorjs": "catalog:"
+    "validatorjs": "catalog:",
+    "@p4/processes": "workspace:*",
+    "@p4/realtime": "workspace:*",
+    "exceljs": "catalog:",
+    "multer": "catalog:",
+    "csv-parse": "catalog:",
+    "unzipper": "catalog:",
+    "valibot": "catalog:",
+    "yaml": "catalog:"
   },
   "devDependencies": {
     "@types/bcryptjs": "catalog:",
@@ -49,6 +69,9 @@
     "@types/validatorjs": "catalog:",
     "tsc-alias": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "@types/multer": "catalog:",
+    "@types/unzipper": "catalog:",
+    "socket.io-client": "catalog:"
   }
 }

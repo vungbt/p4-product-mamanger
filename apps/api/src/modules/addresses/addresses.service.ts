@@ -1,79 +1,165 @@
-import type { Address, ShippingAddressInput, User } from '@p4/shared';
+import type {
+  Address,
+  AddressListQuery,
+  ApiPaginatedSuccess,
+  ApiSuccess,
+  ShippingAddressInput,
+  User,
+} from '@p4/shared';
+import { Op, type WhereOptions } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
-import { AddressModel } from '@/sequelize/models/index.js';
+import type { AddressAttributes } from '@/sequelize/models/address.model.js';
+import { AddressModel, sequelize } from '@/sequelize/models/index.js';
+import { recordAudit } from '@/shared/commerce/persistence.js';
+import { searchPattern } from '@/shared/list-filters.js';
+import type { ModelOrder, StringField } from '@/types/database.js';
 import { NotFound } from '@/utils/errors/index.js';
+import { buildPaginationMeta } from '@/utils/pagination.js';
+import { selectFields } from '@/utils/select-fields.js';
 
-function toAddress(row: AddressModel): Address {
+const addressFields = [
+  'id',
+  'userId',
+  'fullName',
+  'phone',
+  'line1',
+  'city',
+  'isDefault',
+] satisfies (keyof Address)[];
+
+const searchFields: StringField<AddressAttributes>[] = ['fullName', 'phone', 'line1', 'city'];
+
+export async function listAddresses(
+  userId: string,
+  query?: AddressListQuery,
+): Promise<ApiSuccess<Address[]> | ApiPaginatedSuccess<Address>> {
+  const where: WhereOptions<AddressAttributes> = {
+    userId,
+    ...(query?.city ? { city: { [Op.iLike]: searchPattern(query.city) } } : {}),
+    ...(query?.isDefault !== undefined ? { isDefault: query.isDefault } : {}),
+    ...(query?.q
+      ? {
+          [Op.or]: searchFields.map((field) => ({
+            [field]: { [Op.iLike]: searchPattern(query.q ?? '') },
+          })),
+        }
+      : {}),
+  };
+  const order: ModelOrder<AddressAttributes> = query?.sortBy
+    ? [
+        [query.sortBy, query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+        ['id', 'ASC'],
+      ]
+    : [
+        ['isDefault', 'DESC'],
+        ['createdAt', 'DESC'],
+        ['id', 'ASC'],
+      ];
+
+  if (!query)
+    return {
+      data: (await AddressModel.findAll({ where, order })).map((row) =>
+        selectFields(row, addressFields),
+      ),
+    };
+
+  const { rows, count } = await AddressModel.findAndCountAll({
+    where,
+    order,
+    limit: query.pageSize,
+    offset: (query.page - 1) * query.pageSize,
+  });
   return {
-    id: row.id,
-    userId: row.userId,
-    fullName: row.fullName,
-    phone: row.phone,
-    line1: row.line1,
-    city: row.city,
-    isDefault: row.isDefault,
+    data: rows.map((row) => selectFields(row, addressFields)),
+    meta: buildPaginationMeta(query.page, query.pageSize, count),
   };
 }
 
-export async function listAddresses(userId: string) {
-  const rows = await AddressModel.findAll({
-    where: { userId },
-    order: [
-      ['isDefault', 'DESC'],
-      ['createdAt', 'DESC'],
-    ],
+async function lockAddressOwner(userId: string, transaction: import('sequelize').Transaction) {
+  await sequelize.query('SELECT pg_advisory_xact_lock(hashtext(:key))', {
+    replacements: { key: `address-default:${userId}` },
+    transaction,
   });
-  return rows.map(toAddress);
 }
 
 export async function createAddress(
   user: User,
   input: ShippingAddressInput & { isDefault?: boolean },
-) {
-  if (input.isDefault) {
-    await AddressModel.update({ isDefault: false }, { where: { userId: user.id } });
-  }
-  const row = await AddressModel.create({
-    userId: user.id,
-    fullName: input.fullName,
-    phone: input.phone,
-    line1: input.line1,
-    city: input.city,
-    isDefault: Boolean(input.isDefault),
+): Promise<Address> {
+  return sequelize.transaction(async (transaction) => {
+    await lockAddressOwner(user.id, transaction);
+    if (input.isDefault)
+      await AddressModel.update({ isDefault: false }, { where: { userId: user.id }, transaction });
+    const row = await AddressModel.create(
+      {
+        userId: user.id,
+        ...selectFields(input, ['fullName', 'phone', 'line1', 'city']),
+        isDefault: Boolean(input.isDefault),
+      },
+      { transaction },
+    );
+    await recordAudit(
+      { actorId: user.id, action: 'address.created', resourceType: 'address', resourceId: row.id },
+      transaction,
+    );
+    return selectFields(row, addressFields);
   });
-  return toAddress(row);
 }
 
 export async function updateAddress(
   userId: string,
   id: string,
   input: Partial<ShippingAddressInput> & { isDefault?: boolean },
-) {
-  const row = await AddressModel.findOne({ where: { id, userId } });
-  if (!row) throw new NotFound(errorKeys.addressNotFound);
-  if (input.isDefault) {
-    await AddressModel.update({ isDefault: false }, { where: { userId } });
-  }
-  await row.update({
-    fullName: input.fullName ?? row.fullName,
-    phone: input.phone ?? row.phone,
-    line1: input.line1 ?? row.line1,
-    city: input.city ?? row.city,
-    isDefault: input.isDefault != null ? Boolean(input.isDefault) : row.isDefault,
+): Promise<Address> {
+  return sequelize.transaction(async (transaction) => {
+    await lockAddressOwner(userId, transaction);
+    const row = await AddressModel.findOne({
+      where: { id, userId },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!row) throw new NotFound(errorKeys.addressNotFound);
+    if (input.isDefault)
+      await AddressModel.update({ isDefault: false }, { where: { userId }, transaction });
+    await row.update(
+      {
+        fullName: input.fullName ?? row.fullName,
+        phone: input.phone ?? row.phone,
+        line1: input.line1 ?? row.line1,
+        city: input.city ?? row.city,
+        isDefault: input.isDefault ?? row.isDefault,
+      },
+      { transaction },
+    );
+    await recordAudit(
+      { actorId: userId, action: 'address.updated', resourceType: 'address', resourceId: id },
+      transaction,
+    );
+    return selectFields(row, addressFields);
   });
-  return toAddress(row);
 }
 
-export async function deleteAddress(userId: string, id: string) {
-  const row = await AddressModel.findOne({ where: { id, userId } });
-  if (!row) throw new NotFound(errorKeys.addressNotFound);
-  const data = toAddress(row);
-  await row.destroy();
-  return data;
+export async function deleteAddress(userId: string, id: string): Promise<Address> {
+  return sequelize.transaction(async (transaction) => {
+    await lockAddressOwner(userId, transaction);
+    const row = await AddressModel.findOne({
+      where: { id, userId },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!row) throw new NotFound(errorKeys.addressNotFound);
+    const data = selectFields(row, addressFields);
+    await row.destroy({ transaction });
+    await recordAudit(
+      { actorId: userId, action: 'address.deleted', resourceType: 'address', resourceId: id },
+      transaction,
+    );
+    return data;
+  });
 }
 
-export async function getAddressForUser(userId: string, id: string) {
+export async function getAddressForUser(userId: string, id: string): Promise<Address> {
   const row = await AddressModel.findOne({ where: { id, userId } });
   if (!row) throw new NotFound(errorKeys.addressNotFound);
-  return toAddress(row);
+  return selectFields(row, addressFields);
 }
