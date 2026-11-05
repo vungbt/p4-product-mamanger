@@ -1,6 +1,6 @@
 import { type DataTableState, useDebouncedCallback } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
-import type { Category, CategoryInput } from '@p4/shared';
+import { type Category, type CategoryInput, DESCRIPTION_FILTER_VALUES } from '@p4/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useCategories, { categoryErrorMessage } from './use-categories';
@@ -53,9 +53,13 @@ export default function useCategoryPage() {
 
   const rows = query.data?.data ?? [];
 
-  const descriptionFilter = state.columnFilters?.find(
+  const rawDescriptionFilter = state.columnFilters?.find(
     (filter) => filter.id === 'description',
   )?.value;
+
+  const descriptionFilter = DESCRIPTION_FILTER_VALUES.find(
+    (value) => value === rawDescriptionFilter,
+  );
 
   const hasAppliedFilters = Boolean(state.globalFilter || state.columnFilters?.length);
 
@@ -75,12 +79,15 @@ export default function useCategoryPage() {
     }
   };
 
-  const changeDescriptionFilter = (value: string | null) =>
+  const changeDescriptionFilter = (value: string | null) => {
+    const filter = DESCRIPTION_FILTER_VALUES.find((option) => option === value) ?? 'all';
+
     setState((previous) => ({
       ...previous,
-      columnFilters: value === 'has' || value === 'none' ? [{ id: 'description', value }] : [],
+      columnFilters: filter === 'all' ? [] : [{ id: 'description', value: filter }],
       pagination: { ...previous.pagination, pageIndex: 0 },
     }));
+  };
 
   const changeColumnVisibility = (id: string, checked: boolean) =>
     setState((previous) => ({

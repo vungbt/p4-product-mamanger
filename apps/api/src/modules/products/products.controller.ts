@@ -1,13 +1,16 @@
-import type { ProductInput } from '@p4/shared';
+import type { ProductInput, ProductListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import type { ListLocals } from '@/shared/list-query.js';
 import * as productsService from './products.service.js';
 
-export async function list(req: Request, res: Response, next: NextFunction) {
+export async function list(
+  _req: Request,
+  res: Response<unknown, ListLocals<ProductListQuery>>,
+  next: NextFunction,
+) {
   try {
-    const { page = 1, pageSize = 10, q = '' } = req.pagination ?? {};
-    const categoryId = typeof req.query.categoryId === 'string' ? req.query.categoryId : undefined;
-    const result = await productsService.listProducts({ page, pageSize, q, categoryId });
+    const result = await productsService.listProducts(res.locals.listQuery);
     return res.jsonApi(StatusCodes.OK, { data: result.data, meta: result.meta });
   } catch (error) {
     return next(error);

@@ -1,4 +1,6 @@
+import type { ProductListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
+import { queryNumber, queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
 import validate from '@/shared/validation.js';
 
 export const validateCreateProduct = (req: Request, res: Response, next: NextFunction) =>
@@ -30,4 +32,33 @@ export const validateAddImage = validate({
     imageStorageId: 'required|string',
     sortOrder: 'integer|min:0',
   },
+});
+
+const sortFields: NonNullable<ProductListQuery['sortBy']>[] = [
+  'name',
+  'price',
+  'stock',
+  'createdAt',
+];
+
+export const validateProductsListQuery = validateListQuery({
+  sortFields,
+  defaultSort: 'createdAt',
+  defaultOrder: 'asc',
+  legacy: false,
+  rules: (query) => ({
+    categoryId: uuidQueryRule,
+    minPrice: 'sometimes|required|numeric|min:0|max:2147483647',
+    maxPrice: `sometimes|required|numeric|min:${queryNumber(query, 'minPrice') ?? 0}|max:2147483647`,
+    minStock: 'sometimes|required|integer|min:0|max:2147483647',
+    maxStock: `sometimes|required|integer|min:${queryNumber(query, 'minStock') ?? 0}|max:2147483647`,
+  }),
+  normalize: (query, base): ProductListQuery => ({
+    ...base,
+    categoryId: queryText(query, 'categoryId'),
+    minPrice: queryNumber(query, 'minPrice'),
+    maxPrice: queryNumber(query, 'maxPrice'),
+    minStock: queryNumber(query, 'minStock'),
+    maxStock: queryNumber(query, 'maxStock'),
+  }),
 });

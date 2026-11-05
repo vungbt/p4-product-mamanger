@@ -1,35 +1,83 @@
-import type { Address, ShippingAddressInput, User } from '@p4/shared';
+import type {
+  Address,
+  AddressListQuery,
+  ApiPaginatedSuccess,
+  ApiSuccess,
+  ShippingAddressInput,
+  User,
+} from '@p4/shared';
+import { Op, type WhereOptions } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
+import type { AddressAttributes } from '@/sequelize/models/address.model.js';
 import { AddressModel } from '@/sequelize/models/index.js';
+import { searchPattern } from '@/shared/list-filters.js';
+import type { ModelOrder, StringField } from '@/types/database.js';
 import { NotFound } from '@/utils/errors/index.js';
+import { buildPaginationMeta } from '@/utils/pagination.js';
+import { selectFields } from '@/utils/select-fields.js';
 
-function toAddress(row: AddressModel): Address {
-  return {
-    id: row.id,
-    userId: row.userId,
-    fullName: row.fullName,
-    phone: row.phone,
-    line1: row.line1,
-    city: row.city,
-    isDefault: row.isDefault,
+const addressFields = [
+  'id',
+  'userId',
+  'fullName',
+  'phone',
+  'line1',
+  'city',
+  'isDefault',
+] satisfies (keyof Address)[];
+
+const searchFields: StringField<AddressAttributes>[] = ['fullName', 'phone', 'line1', 'city'];
+
+export async function listAddresses(
+  userId: string,
+  query?: AddressListQuery,
+): Promise<ApiSuccess<Address[]> | ApiPaginatedSuccess<Address>> {
+  const where: WhereOptions<AddressAttributes> = {
+    userId,
+    ...(query?.city ? { city: { [Op.iLike]: searchPattern(query.city) } } : {}),
+    ...(query?.isDefault !== undefined ? { isDefault: query.isDefault } : {}),
+    ...(query?.q
+      ? {
+          [Op.or]: searchFields.map((field) => ({
+            [field]: { [Op.iLike]: searchPattern(query.q ?? '') },
+          })),
+        }
+      : {}),
   };
-}
+  const order: ModelOrder<AddressAttributes> = query?.sortBy
+    ? [
+        [query.sortBy, query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+        ['id', 'ASC'],
+      ]
+    : [
+        ['isDefault', 'DESC'],
+        ['createdAt', 'DESC'],
+        ['id', 'ASC'],
+      ];
 
-export async function listAddresses(userId: string) {
-  const rows = await AddressModel.findAll({
-    where: { userId },
-    order: [
-      ['isDefault', 'DESC'],
-      ['createdAt', 'DESC'],
-    ],
+  if (!query)
+    return {
+      data: (await AddressModel.findAll({ where, order })).map((row) =>
+        selectFields(row, addressFields),
+      ),
+    };
+
+  const { rows, count } = await AddressModel.findAndCountAll({
+    where,
+    order,
+    limit: query.pageSize,
+    offset: (query.page - 1) * query.pageSize,
   });
-  return rows.map(toAddress);
+  return {
+    data: rows.map((row) => selectFields(row, addressFields)),
+    meta: buildPaginationMeta(query.page, query.pageSize, count),
+  };
 }
 
 export async function createAddress(
   user: User,
   input: ShippingAddressInput & { isDefault?: boolean },
-) {
+): Promise<Address> {
   if (input.isDefault) {
     await AddressModel.update({ isDefault: false }, { where: { userId: user.id } });
   }
@@ -41,14 +89,14 @@ export async function createAddress(
     city: input.city,
     isDefault: Boolean(input.isDefault),
   });
-  return toAddress(row);
+  return selectFields(row, addressFields);
 }
 
 export async function updateAddress(
   userId: string,
   id: string,
   input: Partial<ShippingAddressInput> & { isDefault?: boolean },
-) {
+): Promise<Address> {
   const row = await AddressModel.findOne({ where: { id, userId } });
   if (!row) throw new NotFound(errorKeys.addressNotFound);
   if (input.isDefault) {
@@ -61,19 +109,19 @@ export async function updateAddress(
     city: input.city ?? row.city,
     isDefault: input.isDefault != null ? Boolean(input.isDefault) : row.isDefault,
   });
-  return toAddress(row);
+  return selectFields(row, addressFields);
 }
 
-export async function deleteAddress(userId: string, id: string) {
+export async function deleteAddress(userId: string, id: string): Promise<Address> {
   const row = await AddressModel.findOne({ where: { id, userId } });
   if (!row) throw new NotFound(errorKeys.addressNotFound);
-  const data = toAddress(row);
+  const data = selectFields(row, addressFields);
   await row.destroy();
   return data;
 }
 
-export async function getAddressForUser(userId: string, id: string) {
+export async function getAddressForUser(userId: string, id: string): Promise<Address> {
   const row = await AddressModel.findOne({ where: { id, userId } });
   if (!row) throw new NotFound(errorKeys.addressNotFound);
-  return toAddress(row);
+  return selectFields(row, addressFields);
 }

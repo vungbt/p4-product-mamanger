@@ -1,18 +1,18 @@
 import { Router } from 'express';
 import { authRequired, requireRole } from '@/middlewares/auth.middleware.js';
-import { paginationMiddleware } from '@/middlewares/pagination.middleware.js';
+import { validateOrdersListQuery } from '@/modules/orders/orders.validation.js';
 import * as refundsController from '@/modules/refunds/refunds.controller.js';
 import * as ordersController from './orders.controller.js';
 import { validateCheckoutBody, validateShipmentUpdateBody } from './orders.validation.js';
 
 const router = Router();
 
-router.get('/', authRequired, requireRole('admin'), paginationMiddleware, ordersController.list);
+router.get('/', authRequired, requireRole('admin'), validateOrdersListQuery, ordersController.list);
 router.get(
   '/mine',
   authRequired,
   requireRole('user', 'admin'),
-  paginationMiddleware,
+  validateOrdersListQuery,
   ordersController.listMine,
 );
 router.get('/:id', authRequired, requireRole('user', 'admin'), ordersController.getOne);

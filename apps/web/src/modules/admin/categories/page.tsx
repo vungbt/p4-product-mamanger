@@ -20,11 +20,17 @@ import {
   SettingsIcon,
   ViewIcon,
 } from '@itclabs/react-ui/icons/outline';
-import type { Category } from '@p4/shared';
+import { type Category, DESCRIPTION_FILTER_VALUES, type DescriptionFilter } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
 import CategoryDetails from './components/category-details';
 import CategoryEditor from './components/category-editor';
 import useCategoryPage from './hooks/use-category-page';
+
+const descriptionLabels: Record<DescriptionFilter, string> = {
+  all: 'categories.allDescriptions',
+  has: 'categories.withDescription',
+  none: 'categories.withoutDescription',
+};
 
 export default function AdminCategoriesPage() {
   const {
@@ -158,11 +164,11 @@ export default function AdminCategoriesPage() {
             searchable={false}
             clearable
             placeholder={t('categories.allDescriptions')}
-            value={typeof descriptionFilter === 'string' ? descriptionFilter : null}
-            options={[
-              { value: 'has', label: t('categories.withDescription') },
-              { value: 'none', label: t('categories.withoutDescription') },
-            ]}
+            value={descriptionFilter ?? null}
+            options={DESCRIPTION_FILTER_VALUES.filter((value) => value !== 'all').map((value) => ({
+              value,
+              label: t(descriptionLabels[value]),
+            }))}
             onValueChange={changeDescriptionFilter}
           />
           <Tooltip content={t(hasFilters ? 'categories.clearFilters' : 'categories.refresh')}>

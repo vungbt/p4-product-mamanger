@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Category, Product, ProductImage, ProductInput } from '@p4/shared';
+import type { Product, ProductImage, ProductInput, ProductListQuery } from '@p4/shared';
 import type { WhereOptions } from 'sequelize';
 import { Op } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
@@ -10,8 +10,13 @@ import {
   ProductImageModel,
   ProductModel,
 } from '@/sequelize/models/index.js';
+import type { ProductAttributes } from '@/sequelize/models/product.model.js';
+import type { ProductImageAttributes } from '@/sequelize/models/product-image.model.js';
+import { numberRange, searchPattern } from '@/shared/list-filters.js';
+import type { ModelOrder } from '@/types/database.js';
 import { NotFound } from '@/utils/errors/index.js';
-import { paginateSlice } from '@/utils/pagination.js';
+import { buildPaginationMeta } from '@/utils/pagination.js';
+import { selectFields } from '@/utils/select-fields.js';
 
 type GalleryRow = ProductImageModel & { file?: FileModel | null };
 type ProductEager = ProductModel & {
@@ -44,23 +49,24 @@ const galleryInclude = {
   ],
 };
 
-function toCategory(row: CategoryModel): Category {
-  return {
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    description: row.description,
-  };
-}
+const galleryImageFields = ['id', 'fileId', 'sortOrder'] satisfies (keyof ProductImage)[];
 
 function toGalleryImage(row: GalleryRow): ProductImage {
   return {
-    id: row.id,
-    fileId: row.fileId,
+    ...selectFields(row, galleryImageFields),
     url: row.file?.url ?? '',
-    sortOrder: row.sortOrder,
   };
 }
+
+const productFields = [
+  'id',
+  'name',
+  'price',
+  'description',
+  'imageId',
+  'categoryId',
+  'stock',
+] satisfies (keyof Product)[];
 
 function toProduct(row: ProductEager): Product {
   const images = (row.gallery ?? [])
@@ -68,16 +74,12 @@ function toProduct(row: ProductEager): Product {
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map(toGalleryImage);
   return {
-    id: row.id,
-    name: row.name,
-    price: row.price,
-    description: row.description,
-    imageId: row.imageId,
+    ...selectFields(row, productFields),
     imageUrl: row.image?.url ?? images[0]?.url ?? '',
-    categoryId: row.categoryId,
-    category: row.category ? toCategory(row.category) : null,
+    category: row.category
+      ? selectFields(row.category, ['id', 'name', 'slug', 'description'])
+      : null,
     images,
-    stock: row.stock,
   };
 }
 
@@ -89,29 +91,39 @@ async function resolveImageId(imageStorageId?: string, fallback?: string | null)
   return file.id;
 }
 
-export async function listProducts(opts: {
-  page: number;
-  pageSize: number;
-  q: string;
-  categoryId?: string;
-}) {
-  const q = opts.q.trim();
-  const where: WhereOptions = {};
-  if (q) {
-    Object.assign(where, {
-      [Op.or]: [{ name: { [Op.iLike]: `%${q}%` } }, { description: { [Op.iLike]: `%${q}%` } }],
+export async function listProducts(query: ProductListQuery) {
+  const conditions: WhereOptions<ProductAttributes>[] = [];
+
+  const order: ModelOrder<ProductAttributes> = [
+    [query.sortBy ?? 'createdAt', query.sortOrder === 'desc' ? 'DESC' : 'ASC'],
+    ['id', 'ASC'],
+  ];
+
+  if (query.q) {
+    const pattern = searchPattern(query.q);
+    conditions.push({
+      [Op.or]: [{ name: { [Op.iLike]: pattern } }, { description: { [Op.iLike]: pattern } }],
     });
   }
-  if (opts.categoryId) {
-    Object.assign(where, { categoryId: opts.categoryId });
-  }
+  if (query.categoryId) conditions.push({ categoryId: query.categoryId });
+  if (query.minPrice !== undefined || query.maxPrice !== undefined)
+    conditions.push({ price: numberRange(query.minPrice, query.maxPrice) });
+  if (query.minStock !== undefined || query.maxStock !== undefined)
+    conditions.push({ stock: numberRange(query.minStock, query.maxStock) });
 
-  const rows = (await ProductModel.findAll({
-    where: Object.keys(where).length ? where : undefined,
-    include: productInclude,
-    order: [['createdAt', 'ASC']],
-  })) as ProductEager[];
-  return paginateSlice(rows.map(toProduct), opts.page, opts.pageSize);
+  const { rows, count } = await ProductModel.findAndCountAll({
+    where: conditions.length ? { [Op.and]: conditions } : undefined,
+    include: [imageInclude, categoryInclude, { ...galleryInclude, separate: true }],
+    distinct: true,
+    order,
+    limit: query.pageSize,
+    offset: (query.page - 1) * query.pageSize,
+  });
+
+  return {
+    data: rows.map(toProduct),
+    meta: buildPaginationMeta(query.page, query.pageSize, count),
+  };
 }
 
 export async function getProductById(id: string) {
@@ -233,7 +245,7 @@ export async function removeProductImage(productId: string, imageRowId: string) 
   if (product?.imageId === fileId) {
     const next = await ProductImageModel.findOne({
       where: { productId },
-      order: [['sortOrder', 'ASC']],
+      order: [['sortOrder', 'ASC']] satisfies ModelOrder<ProductImageAttributes>,
     });
     await product.update({ imageId: next?.fileId ?? null });
   }

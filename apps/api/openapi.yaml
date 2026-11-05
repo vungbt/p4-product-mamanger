@@ -263,19 +263,61 @@ paths:
     get:
       tags: [Products]
       summary: List products (public, paginated)
+      description: Search, filters, sort and pagination run in the database; invalid parameters return localized field errors with code input_valid_error.
       operationId: listProducts
       parameters:
         - $ref: '#/components/parameters/AcceptLanguage'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - $ref: '#/components/parameters/SearchQuery'
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [name, price, stock, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
         - name: categoryId
           in: query
           schema:
             type: string
             format: uuid
-          description: Filter by category ID
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            maximum: 2147483647
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            maximum: 2147483647
+        - name: minStock
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 2147483647
+        - name: maxStock
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 2147483647
       responses:
+        '400':
+          description: Invalid query; localized field errors in extensions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '200':
           description: Product list
           content:
@@ -469,11 +511,39 @@ paths:
     get:
       tags: [Products]
       summary: List reviews for a product
+      description: Legacy requests without list parameters return data only; supplying search, sort, pagination or a resource filter adds meta.
       operationId: listProductReviews
       parameters:
         - $ref: '#/components/parameters/AcceptLanguage'
         - $ref: '#/components/parameters/ProductId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SearchQuery'
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [rating, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: rating
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
       responses:
+        '400':
+          description: Invalid query; localized field errors in extensions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '200':
           description: Review list
           content:
@@ -483,6 +553,8 @@ paths:
                   - $ref: '#/components/schemas/SuccessEnvelope'
                   - type: object
                     properties:
+                      meta:
+                        $ref: '#/components/schemas/PaginationMeta'
                       data:
                         type: array
                         items:
@@ -748,12 +820,43 @@ paths:
     get:
       tags: [Coupons]
       summary: List all coupons (admin)
+      description: Legacy requests without list parameters return data only; supplying search, sort, pagination or a resource filter adds meta.
       operationId: listCoupons
       security:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SearchQuery'
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [code, type, value, usedCount, startsAt, endsAt, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [percent, fixed]
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
       responses:
+        '400':
+          description: Invalid query; localized field errors in extensions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '200':
           description: Coupon list
           content:
@@ -763,6 +866,8 @@ paths:
                   - $ref: '#/components/schemas/SuccessEnvelope'
                   - type: object
                     properties:
+                      meta:
+                        $ref: '#/components/schemas/PaginationMeta'
                       data:
                         type: array
                         items:
@@ -867,6 +972,7 @@ paths:
     get:
       tags: [Orders]
       summary: List all orders (admin, paginated)
+      description: Search, filters, sort and pagination run in the database; invalid parameters return localized field errors with code input_valid_error.
       operationId: listOrders
       security:
         - bearerAuth: []
@@ -875,7 +981,64 @@ paths:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - $ref: '#/components/parameters/SearchQuery'
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [id, userEmail, status, total, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, paid, shipping, completed, cancelled]
+        - name: paymentStatus
+          in: query
+          schema:
+            type: string
+            enum: [pending, paid, failed]
+        - name: shipmentStatus
+          in: query
+          schema:
+            type: string
+            enum: [pending, shipped, delivered, cancelled]
+        - name: createdFrom
+          in: query
+          description: ISO date (YYYY-MM-DD) or UTC timestamp; date-only upper bounds include the whole UTC day
+          schema:
+            type: string
+            maxLength: 255
+        - name: createdTo
+          in: query
+          description: ISO date (YYYY-MM-DD) or UTC timestamp; date-only upper bounds include the whole UTC day
+          schema:
+            type: string
+            maxLength: 255
+        - name: minTotal
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            maximum: 2147483647
+        - name: maxTotal
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            maximum: 2147483647
       responses:
+        '400':
+          description: Invalid query; localized field errors in extensions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '200':
           description: Order list
           content:
@@ -928,6 +1091,7 @@ paths:
     get:
       tags: [Orders]
       summary: List current user's orders (paginated)
+      description: Search, filters, sort and pagination run in the database; invalid parameters return localized field errors with code input_valid_error. Results always belong to the authenticated user.
       operationId: listMyOrders
       security:
         - bearerAuth: []
@@ -935,7 +1099,65 @@ paths:
         - $ref: '#/components/parameters/AcceptLanguage'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SearchQuery'
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [id, userEmail, status, total, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, paid, shipping, completed, cancelled]
+        - name: paymentStatus
+          in: query
+          schema:
+            type: string
+            enum: [pending, paid, failed]
+        - name: shipmentStatus
+          in: query
+          schema:
+            type: string
+            enum: [pending, shipped, delivered, cancelled]
+        - name: createdFrom
+          in: query
+          description: ISO date (YYYY-MM-DD) or UTC timestamp; date-only upper bounds include the whole UTC day
+          schema:
+            type: string
+            maxLength: 255
+        - name: createdTo
+          in: query
+          description: ISO date (YYYY-MM-DD) or UTC timestamp; date-only upper bounds include the whole UTC day
+          schema:
+            type: string
+            maxLength: 255
+        - name: minTotal
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            maximum: 2147483647
+        - name: maxTotal
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            maximum: 2147483647
       responses:
+        '400':
+          description: Invalid query; localized field errors in extensions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '200':
           description: My orders
           content:
@@ -1191,18 +1413,68 @@ paths:
     get:
       tags: [Refunds]
       summary: List refunds (admin)
+      description: Legacy requests without list parameters return data only; supplying search, sort, pagination or a resource filter adds meta. orderId alone preserves the legacy unpaginated envelope.
       operationId: listRefunds
       security:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SearchQuery'
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [amount, status, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
         - name: orderId
           in: query
           schema:
             type: string
             format: uuid
-          description: Filter by order ID
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, completed, failed]
+        - name: createdFrom
+          in: query
+          description: ISO date (YYYY-MM-DD) or UTC timestamp; date-only upper bounds include the whole UTC day
+          schema:
+            type: string
+            maxLength: 255
+        - name: createdTo
+          in: query
+          description: ISO date (YYYY-MM-DD) or UTC timestamp; date-only upper bounds include the whole UTC day
+          schema:
+            type: string
+            maxLength: 255
+        - name: minAmount
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            maximum: 2147483647
+        - name: maxAmount
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            maximum: 2147483647
       responses:
+        '400':
+          description: Invalid query; localized field errors in extensions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '200':
           description: Refund list
           content:
@@ -1212,6 +1484,8 @@ paths:
                   - $ref: '#/components/schemas/SuccessEnvelope'
                   - type: object
                     properties:
+                      meta:
+                        $ref: '#/components/schemas/PaginationMeta'
                       data:
                         type: array
                         items:
@@ -1225,12 +1499,43 @@ paths:
     get:
       tags: [Addresses]
       summary: List current user's addresses
+      description: Legacy requests without list parameters return data only; supplying search, sort, pagination or a resource filter adds meta. Results always belong to the authenticated user.
       operationId: listAddresses
       security:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SearchQuery'
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [fullName, city, isDefault, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: city
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: isDefault
+          in: query
+          schema:
+            type: boolean
       responses:
+        '400':
+          description: Invalid query; localized field errors in extensions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '200':
           description: Address list
           content:
@@ -1240,6 +1545,8 @@ paths:
                   - $ref: '#/components/schemas/SuccessEnvelope'
                   - type: object
                     properties:
+                      meta:
+                        $ref: '#/components/schemas/PaginationMeta'
                       data:
                         type: array
                         items:
@@ -1466,7 +1773,8 @@ components:
       schema:
         type: string
         default: ''
-      description: Search keyword
+        maxLength: 255
+      description: Literal substring search (maximum 255 characters); searchable fields depend on the resource
     ProductId:
       name: id
       in: path

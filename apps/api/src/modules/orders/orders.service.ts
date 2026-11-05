@@ -1,13 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import type {
   Order,
-  OrderCouponInfo,
   OrderItem,
+  OrderListQuery,
   Payment,
   Shipment,
   ShippingAddressInput,
   User,
 } from '@p4/shared';
+import { cast, col, literal, Op, type WhereOptions, where } from 'sequelize';
 import { env } from '@/configs/env.js';
 import { errorKeys } from '@/constants/index.js';
 import { getAddressForUser } from '@/modules/addresses/addresses.service.js';
@@ -23,8 +24,12 @@ import {
   ProductModel,
   ShipmentModel,
 } from '@/sequelize/models/index.js';
+import type { OrderAttributes } from '@/sequelize/models/order.model.js';
+import { dateRange, numberRange, searchPattern } from '@/shared/list-filters.js';
+import type { ModelOrder } from '@/types/database.js';
 import { BadRequest, Forbidden, NotFound } from '@/utils/errors/index.js';
-import { paginateSlice } from '@/utils/pagination.js';
+import { buildPaginationMeta } from '@/utils/pagination.js';
+import { selectFields } from '@/utils/select-fields.js';
 
 export type CheckoutItem = { productId: string; quantity: number };
 
@@ -43,6 +48,15 @@ type OrderEager = OrderModel & {
   orderCoupon?: OrderCouponModel | null;
 };
 
+const paymentFields = [
+  'id',
+  'orderId',
+  'provider',
+  'amount',
+  'status',
+  'externalId',
+] satisfies (keyof Payment)[];
+
 function toPayment(row: PaymentModel): Payment {
   let checkoutUrl: string | undefined;
   if (row.status === 'pending') {
@@ -53,48 +67,50 @@ function toPayment(row: PaymentModel): Payment {
     }
   }
   return {
-    id: row.id,
-    orderId: row.orderId,
-    provider: row.provider,
-    amount: row.amount,
-    status: row.status,
-    externalId: row.externalId,
+    ...selectFields(row, paymentFields),
     paidAt: row.paidAt ? row.paidAt.toISOString() : null,
     checkoutUrl,
   };
 }
 
+const shipmentFields = [
+  'id',
+  'orderId',
+  'status',
+  'carrier',
+  'trackingCode',
+] satisfies (keyof Shipment)[];
+
 function toShipment(row: ShipmentModel): Shipment {
   return {
-    id: row.id,
-    orderId: row.orderId,
-    status: row.status,
-    carrier: row.carrier,
-    trackingCode: row.trackingCode,
+    ...selectFields(row, shipmentFields),
     shippedAt: row.shippedAt ? row.shippedAt.toISOString() : null,
     deliveredAt: row.deliveredAt ? row.deliveredAt.toISOString() : null,
   };
 }
 
-function toCouponInfo(row: OrderCouponModel): OrderCouponInfo {
-  return {
-    code: row.code,
-    discountAmount: row.discountAmount,
-    couponId: row.couponId,
-  };
-}
+const orderItemFields = [
+  'productId',
+  'productName',
+  'quantity',
+  'unitPrice',
+] satisfies (keyof OrderItem)[];
+
+const orderFields = [
+  'id',
+  'userId',
+  'userEmail',
+  'status',
+  'subtotal',
+  'discountAmount',
+  'shippingFee',
+  'total',
+] satisfies (keyof Order)[];
 
 function toOrder(row: OrderEager): Order {
   const items = row.items ?? [];
   return {
-    id: row.id,
-    userId: row.userId,
-    userEmail: row.userEmail,
-    status: row.status,
-    subtotal: row.subtotal,
-    discountAmount: row.discountAmount,
-    shippingFee: row.shippingFee,
-    total: row.total,
+    ...selectFields(row, orderFields),
     createdAt: row.createdAt.toISOString(),
     shippingAddress:
       row.shippingFullName && row.shippingPhone && row.shippingLine1 && row.shippingCity
@@ -105,17 +121,12 @@ function toOrder(row: OrderEager): Order {
             city: row.shippingCity,
           }
         : null,
-    items: items.map(
-      (i): OrderItem => ({
-        productId: i.productId,
-        productName: i.productName,
-        quantity: i.quantity,
-        unitPrice: i.unitPrice,
-      }),
-    ),
+    items: items.map((item): OrderItem => selectFields(item, orderItemFields)),
     payment: row.payment ? toPayment(row.payment) : null,
     shipment: row.shipment ? toShipment(row.shipment) : null,
-    coupon: row.orderCoupon ? toCouponInfo(row.orderCoupon) : null,
+    coupon: row.orderCoupon
+      ? selectFields(row.orderCoupon, ['code', 'discountAmount', 'couponId'])
+      : null,
   };
 }
 
@@ -144,12 +155,7 @@ async function resolveShipping(
     const address = await getAddressForUser(user.id, input.addressId);
     return {
       addressId: address.id,
-      shipping: {
-        fullName: address.fullName,
-        phone: address.phone,
-        line1: address.line1,
-        city: address.city,
-      },
+      shipping: selectFields(address, ['fullName', 'phone', 'line1', 'city']),
       shippingFee,
     };
   }
@@ -161,34 +167,64 @@ async function resolveShipping(
   throw new BadRequest(errorKeys.addressRequired);
 }
 
-export async function listOrders(opts: { page: number; pageSize: number; q: string }) {
-  const q = opts.q.trim();
-  const rows = (await OrderModel.findAll({
-    include: orderInclude,
-    order: [['createdAt', 'DESC']],
-  })) as OrderEager[];
+export async function listOrders(query: OrderListQuery, userId?: string) {
+  const conditions: WhereOptions<OrderAttributes>[] = [];
 
-  let orders = rows.map(toOrder);
-  if (q) {
-    const needle = q.toLowerCase();
-    orders = orders.filter(
-      (o) =>
-        o.userEmail.toLowerCase().includes(needle) ||
-        o.id.toLowerCase().includes(needle) ||
-        o.status.includes(needle) ||
-        o.items.some((i) => i.productName.toLowerCase().includes(needle)),
-    );
+  const order: ModelOrder<OrderAttributes> = [
+    [query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+    ['id', 'ASC'],
+  ];
+
+  if (userId) conditions.push({ userId });
+  if (query.status) conditions.push({ status: query.status });
+  if (query.minTotal !== undefined || query.maxTotal !== undefined)
+    conditions.push({ total: numberRange(query.minTotal, query.maxTotal) });
+  if (query.createdFrom || query.createdTo)
+    conditions.push({ createdAt: dateRange(query.createdFrom, query.createdTo) });
+  if (query.q) {
+    const pattern = searchPattern(query.q);
+    conditions.push({
+      [Op.or]: [
+        { userEmail: { [Op.iLike]: pattern } },
+        where(cast(col('OrderModel.id'), 'text'), { [Op.iLike]: pattern }),
+        where(cast(col('OrderModel.status'), 'text'), { [Op.iLike]: pattern }),
+        // Escape the value through the dialect; identifiers are fixed, never client supplied.
+        literal(
+          `EXISTS (SELECT 1 FROM "order_items" AS "search_item" WHERE "search_item"."order_id" = "OrderModel"."id" AND "search_item"."product_name" ILIKE ${sequelize.escape(pattern)})`,
+        ),
+      ],
+    });
   }
-  return paginateSlice(orders, opts.page, opts.pageSize);
+
+  const { rows, count } = await OrderModel.findAndCountAll({
+    where: conditions.length ? { [Op.and]: conditions } : undefined,
+    include: [
+      { model: OrderItemModel, as: 'items', separate: true },
+      {
+        model: PaymentModel,
+        as: 'payment',
+        ...(query.paymentStatus ? { where: { status: query.paymentStatus }, required: true } : {}),
+      },
+      {
+        model: ShipmentModel,
+        as: 'shipment',
+        ...(query.shipmentStatus
+          ? { where: { status: query.shipmentStatus }, required: true }
+          : {}),
+      },
+      { model: OrderCouponModel, as: 'orderCoupon' },
+    ],
+    distinct: true,
+    order,
+    limit: query.pageSize,
+    offset: (query.page - 1) * query.pageSize,
+  });
+
+  return { data: rows.map(toOrder), meta: buildPaginationMeta(query.page, query.pageSize, count) };
 }
 
-export async function listMyOrders(userId: string, opts: { page: number; pageSize: number }) {
-  const rows = (await OrderModel.findAll({
-    where: { userId },
-    include: orderInclude,
-    order: [['createdAt', 'DESC']],
-  })) as OrderEager[];
-  return paginateSlice(rows.map(toOrder), opts.page, opts.pageSize);
+export async function listMyOrders(userId: string, query: OrderListQuery) {
+  return listOrders(query, userId);
 }
 
 export async function getOrderById(id: string, user?: User) {
@@ -256,12 +292,9 @@ export async function createOrder(user: User, input: CheckoutInput) {
     );
 
     await OrderItemModel.bulkCreate(
-      orderItems.map((i) => ({
+      orderItems.map((item) => ({
         orderId: order.id,
-        productId: i.productId,
-        productName: i.productName,
-        quantity: i.quantity,
-        unitPrice: i.unitPrice,
+        ...selectFields(item, orderItemFields),
       })),
       { transaction },
     );
@@ -269,8 +302,7 @@ export async function createOrder(user: User, input: CheckoutInput) {
     await InventoryReservationModel.bulkCreate(
       orderItems.map((i) => ({
         orderId: order.id,
-        productId: i.productId,
-        quantity: i.quantity,
+        ...selectFields(i, ['productId', 'quantity']),
         status: 'reserved' as const,
         expiresAt: new Date(Date.now() + 30 * 60 * 1000),
       })),

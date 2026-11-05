@@ -1,11 +1,16 @@
-import type { CouponInput } from '@p4/shared';
+import type { CouponInput, CouponListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import type { ListLocals } from '@/shared/list-query.js';
 import * as couponsService from './coupons.service.js';
 
-export async function list(_req: Request, res: Response, next: NextFunction) {
+export async function list(
+  _req: Request,
+  res: Response<unknown, ListLocals<CouponListQuery | undefined>>,
+  next: NextFunction,
+) {
   try {
-    return res.jsonApi(StatusCodes.OK, { data: await couponsService.listCoupons() });
+    return res.jsonApi(StatusCodes.OK, await couponsService.listCoupons(res.locals.listQuery));
   } catch (error) {
     return next(error);
   }

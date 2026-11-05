@@ -1,13 +1,18 @@
-import type { ReviewInput } from '@p4/shared';
+import type { ReviewInput, ReviewListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import type { ListLocals } from '@/shared/list-query.js';
 import { Unauthorized } from '@/utils/errors/index.js';
 import * as reviewsService from './reviews.service.js';
 
-export async function listByProduct(req: Request, res: Response, next: NextFunction) {
+export async function listByProduct(
+  req: Request,
+  res: Response<unknown, ListLocals<ReviewListQuery | undefined>>,
+  next: NextFunction,
+) {
   try {
-    const data = await reviewsService.listReviews(String(req.params.id));
-    return res.jsonApi(StatusCodes.OK, { data });
+    const result = await reviewsService.listReviews(String(req.params.id), res.locals.listQuery);
+    return res.jsonApi(StatusCodes.OK, result);
   } catch (error) {
     return next(error);
   }

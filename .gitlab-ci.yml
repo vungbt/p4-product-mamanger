@@ -15,3 +15,16 @@ web:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
+
+api:
+  stage: check
+  image: node:22-alpine
+  before_script:
+    - corepack enable
+    - pnpm install --no-frozen-lockfile
+  script:
+    - pnpm --filter @p4/api lint
+    - pnpm --filter @p4/api test:lists
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"

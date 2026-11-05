@@ -38,5 +38,8 @@
   "stripe_session_failed": "Không tạo được phiên thanh toán Stripe",
   "stripe_webhook_invalid": "Webhook Stripe không hợp lệ",
   "google_not_configured": "Chưa cấu hình Google Client ID",
-  "google_token_invalid": "Token Google không hợp lệ"
+  "google_token_invalid": "Token Google không hợp lệ",
+  "duplicate_value": "Dữ liệu đã tồn tại",
+  "unique_value": "{{attribute}} đã được sử dụng. Vui lòng chọn giá trị khác.",
+  "invalid_date_range": "Ngày kết thúc phải bằng hoặc sau ngày bắt đầu."
 }

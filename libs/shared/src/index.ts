@@ -21,13 +21,17 @@ export interface Category {
   description: string;
 }
 
+export type DescriptionFilter = 'all' | 'has' | 'none';
+
+export const DESCRIPTION_FILTER_VALUES: readonly DescriptionFilter[] = ['all', 'has', 'none'];
+
 /** Supplying any supported query parameter enables paginated category listing. */
 export interface CategoryListQuery {
   page: number;
   pageSize: number;
   q?: string;
-  description?: 'all' | 'has' | 'none';
-  sortBy?: 'name' | 'slug' | 'description';
+  description?: DescriptionFilter;
+  sortBy?: keyof Pick<Category, 'name' | 'slug' | 'description'>;
   sortOrder?: 'asc' | 'desc';
 }
 
@@ -251,4 +255,61 @@ export interface ApiError {
   message: string;
   code?: string;
   extensions?: Record<string, unknown>;
+}
+
+/** Normalized list parameters; resource types restrict the public sort allowlist. */
+export interface ListQuery<SortField extends string> {
+  page: number;
+  pageSize: number;
+  q?: string;
+  sortBy?: SortField;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface ProductListQuery
+  extends ListQuery<keyof Pick<Product, 'name' | 'price' | 'stock'> | 'createdAt'> {
+  categoryId?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minStock?: number;
+  maxStock?: number;
+}
+
+export interface OrderListQuery
+  extends ListQuery<keyof Pick<Order, 'id' | 'userEmail' | 'status' | 'total' | 'createdAt'>> {
+  status?: OrderStatus;
+  paymentStatus?: PaymentStatus;
+  shipmentStatus?: ShipmentStatus;
+  createdFrom?: string;
+  createdTo?: string;
+  minTotal?: number;
+  maxTotal?: number;
+}
+
+export interface CouponListQuery
+  extends ListQuery<
+    | keyof Pick<Coupon, 'code' | 'type' | 'value' | 'usedCount' | 'startsAt' | 'endsAt'>
+    | 'createdAt'
+  > {
+  type?: CouponType;
+  isActive?: boolean;
+}
+
+export interface RefundListQuery
+  extends ListQuery<keyof Pick<Refund, 'amount' | 'status' | 'createdAt'>> {
+  status?: RefundStatus;
+  minAmount?: number;
+  maxAmount?: number;
+  createdFrom?: string;
+  createdTo?: string;
+}
+
+export interface ReviewListQuery extends ListQuery<keyof Pick<Review, 'rating' | 'createdAt'>> {
+  rating?: number;
+}
+
+export interface AddressListQuery
+  extends ListQuery<keyof Pick<Address, 'fullName' | 'city' | 'isDefault'> | 'createdAt'> {
+  city?: string;
+  isDefault?: boolean;
 }

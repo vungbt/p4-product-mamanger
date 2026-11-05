@@ -1,24 +1,32 @@
+import type { OrderListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import type { ListLocals } from '@/shared/list-query.js';
 import { Unauthorized } from '@/utils/errors/index.js';
 import type { CheckoutInput } from './orders.service.js';
 import * as ordersService from './orders.service.js';
 
-export async function list(req: Request, res: Response, next: NextFunction) {
+export async function list(
+  _req: Request,
+  res: Response<unknown, ListLocals<OrderListQuery>>,
+  next: NextFunction,
+) {
   try {
-    const { page = 1, pageSize = 10, q = '' } = req.pagination ?? {};
-    const result = await ordersService.listOrders({ page, pageSize, q });
+    const result = await ordersService.listOrders(res.locals.listQuery);
     return res.jsonApi(StatusCodes.OK, { data: result.data, meta: result.meta });
   } catch (error) {
     return next(error);
   }
 }
 
-export async function listMine(req: Request, res: Response, next: NextFunction) {
+export async function listMine(
+  req: Request,
+  res: Response<unknown, ListLocals<OrderListQuery>>,
+  next: NextFunction,
+) {
   try {
     if (!req.user) throw new Unauthorized();
-    const { page = 1, pageSize = 10 } = req.pagination ?? {};
-    const result = await ordersService.listMyOrders(req.user.id, { page, pageSize });
+    const result = await ordersService.listMyOrders(req.user.id, res.locals.listQuery);
     return res.jsonApi(StatusCodes.OK, { data: result.data, meta: result.meta });
   } catch (error) {
     return next(error);

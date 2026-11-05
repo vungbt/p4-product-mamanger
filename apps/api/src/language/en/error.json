@@ -38,5 +38,8 @@
   "stripe_session_failed": "Failed to create Stripe Checkout Session",
   "stripe_webhook_invalid": "Invalid Stripe webhook",
   "google_not_configured": "Google Client ID is not configured",
-  "google_token_invalid": "Invalid Google token"
+  "google_token_invalid": "Invalid Google token",
+  "duplicate_value": "This value already exists",
+  "unique_value": "{{attribute}} is already in use. Please choose another value.",
+  "invalid_date_range": "The end date must be on or after the start date."
 }

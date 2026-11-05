@@ -131,6 +131,8 @@ Page được tổ chức theo feature: `modules/{portal}/{feature}/page.tsx`. C
 
 ## Thứ tự làm (web)
 
+Ưu tiên Admin: xem [các task Admin theo thứ tự](documents/admin/README.md), mỗi task một file.
+
 1. Types/constants + đọc API README
 2. `@p4/api-client` + `use-auth`
 3. Routes + `protected-route`

@@ -7,6 +7,7 @@ import { FileModel, RefreshTokenModel, UserModel } from '@/sequelize/models/inde
 import { BadRequest, Unauthorized } from '@/utils/errors/index.js';
 import { signAccessToken, verifyAccessToken } from '@/utils/jwt.js';
 import { generateRefreshToken, hashToken, refreshExpiresAt } from '@/utils/refresh-token.js';
+import { selectFields } from '@/utils/select-fields.js';
 import { verifyGoogleIdToken } from './google-id-token.js';
 
 type UserWithAvatar = UserModel & { avatar?: FileModel | null };
@@ -17,13 +18,11 @@ const avatarInclude = {
   attributes: ['id', 'url', 'storageId', 'provider'],
 };
 
+const userFields = ['id', 'email', 'role', 'displayName', 'avatarId'] satisfies (keyof User)[];
+
 function toUser(row: UserWithAvatar): User {
   return {
-    id: row.id,
-    email: row.email,
-    role: row.role,
-    displayName: row.displayName,
-    avatarId: row.avatarId,
+    ...selectFields(row, userFields),
     // File upload ưu tiên hơn URL Google/external
     avatarUrl: row.avatar?.url || row.avatarUrl || '',
     hasPassword: Boolean(row.passwordHash),

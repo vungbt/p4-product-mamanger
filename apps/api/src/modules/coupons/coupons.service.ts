@@ -1,22 +1,31 @@
-import type { Coupon, CouponInput } from '@p4/shared';
-import type { Transaction } from 'sequelize';
+import type { Coupon, CouponInput, CouponListQuery } from '@p4/shared';
+import { Op, type Transaction, type WhereOptions } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
+import type { CouponAttributes } from '@/sequelize/models/coupon.model.js';
 import { CouponModel } from '@/sequelize/models/index.js';
+import { searchPattern } from '@/shared/list-filters.js';
+import type { ModelOrder } from '@/types/database.js';
 import { BadRequest, NotFound } from '@/utils/errors/index.js';
+import { buildPaginationMeta } from '@/utils/pagination.js';
+import { selectFields } from '@/utils/select-fields.js';
+
+const couponFields = [
+  'id',
+  'code',
+  'type',
+  'value',
+  'minOrderAmount',
+  'maxDiscount',
+  'usageLimit',
+  'usedCount',
+  'isActive',
+] satisfies (keyof Coupon)[];
 
 function toCoupon(row: CouponModel): Coupon {
   return {
-    id: row.id,
-    code: row.code,
-    type: row.type,
-    value: row.value,
-    minOrderAmount: row.minOrderAmount,
-    maxDiscount: row.maxDiscount,
-    usageLimit: row.usageLimit,
-    usedCount: row.usedCount,
+    ...selectFields(row, couponFields),
     startsAt: row.startsAt ? row.startsAt.toISOString() : null,
     endsAt: row.endsAt ? row.endsAt.toISOString() : null,
-    isActive: row.isActive,
   };
 }
 
@@ -52,9 +61,26 @@ export async function findValidCouponByCode(code: string, transaction?: Transact
   return row;
 }
 
-export async function listCoupons() {
-  const rows = await CouponModel.findAll({ order: [['createdAt', 'DESC']] });
-  return rows.map(toCoupon);
+export async function listCoupons(query?: CouponListQuery) {
+  const where: WhereOptions<CouponAttributes> = {
+    ...(query?.q ? { code: { [Op.iLike]: searchPattern(query.q) } } : {}),
+    ...(query?.type ? { type: query.type } : {}),
+    ...(query?.isActive !== undefined ? { isActive: query.isActive } : {}),
+  };
+  const order: ModelOrder<CouponAttributes> = [
+    [query?.sortBy ?? 'createdAt', query?.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+    ['id', 'ASC'],
+  ];
+
+  if (!query) return { data: (await CouponModel.findAll({ where, order })).map(toCoupon) };
+
+  const { rows, count } = await CouponModel.findAndCountAll({
+    where,
+    order,
+    limit: query.pageSize,
+    offset: (query.page - 1) * query.pageSize,
+  });
+  return { data: rows.map(toCoupon), meta: buildPaginationMeta(query.page, query.pageSize, count) };
 }
 
 export async function createCoupon(input: CouponInput) {

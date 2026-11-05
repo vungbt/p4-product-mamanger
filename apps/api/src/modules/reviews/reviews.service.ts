@@ -1,31 +1,50 @@
-import type { Review, ReviewInput, User } from '@p4/shared';
+import type { Review, ReviewInput, ReviewListQuery, User } from '@p4/shared';
+import { Op, type WhereOptions } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
 import { ProductModel, ReviewModel, UserModel } from '@/sequelize/models/index.js';
+import type { ReviewAttributes } from '@/sequelize/models/review.model.js';
+import { searchPattern } from '@/shared/list-filters.js';
+import type { ModelOrder } from '@/types/database.js';
 import { BadRequest, Forbidden, NotFound } from '@/utils/errors/index.js';
+import { buildPaginationMeta } from '@/utils/pagination.js';
+import { selectFields } from '@/utils/select-fields.js';
 
 type ReviewWithUser = ReviewModel & { user?: UserModel };
 
+const reviewFields = ['id', 'productId', 'userId', 'rating', 'comment'] satisfies (keyof Review)[];
+
 function toReview(row: ReviewWithUser): Review {
   return {
-    id: row.id,
-    productId: row.productId,
-    userId: row.userId,
+    ...selectFields(row, reviewFields),
     userEmail: row.user?.email,
-    rating: row.rating,
-    comment: row.comment,
     createdAt: row.createdAt.toISOString(),
   };
 }
 
-export async function listReviews(productId: string) {
+export async function listReviews(productId: string, query?: ReviewListQuery) {
   const product = await ProductModel.findByPk(productId);
   if (!product) throw new NotFound(errorKeys.productNotFound);
-  const rows = (await ReviewModel.findAll({
-    where: { productId },
+  const options = {
+    where: {
+      productId,
+      ...(query?.rating !== undefined ? { rating: query.rating } : {}),
+      ...(query?.q ? { comment: { [Op.iLike]: searchPattern(query.q) } } : {}),
+    } satisfies WhereOptions<ReviewAttributes>,
     include: [{ model: UserModel, as: 'user', attributes: ['id', 'email'] }],
-    order: [['createdAt', 'DESC']],
-  })) as ReviewWithUser[];
-  return rows.map(toReview);
+    order: [
+      [query?.sortBy ?? 'createdAt', query?.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+      ['id', 'ASC'],
+    ] satisfies ModelOrder<ReviewAttributes>,
+  };
+
+  if (!query) return { data: (await ReviewModel.findAll(options)).map(toReview) };
+
+  const { rows, count } = await ReviewModel.findAndCountAll({
+    ...options,
+    limit: query.pageSize,
+    offset: (query.page - 1) * query.pageSize,
+  });
+  return { data: rows.map(toReview), meta: buildPaginationMeta(query.page, query.pageSize, count) };
 }
 
 export async function createReview(user: User, productId: string, input: ReviewInput) {

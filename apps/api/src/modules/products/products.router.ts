@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { authRequired, requireRole } from '@/middlewares/auth.middleware.js';
-import { paginationMiddleware } from '@/middlewares/pagination.middleware.js';
+import { validateProductsListQuery } from '@/modules/products/products.validation.js';
 import * as reviewsController from '@/modules/reviews/reviews.controller.js';
-import { validateReview } from '@/modules/reviews/reviews.validation.js';
+import { validateReview, validateReviewsListQuery } from '@/modules/reviews/reviews.validation.js';
 import * as productsController from './products.controller.js';
 import {
   validateAddImage,
@@ -12,9 +12,9 @@ import {
 
 const router = Router();
 
-router.get('/', paginationMiddleware, productsController.list);
+router.get('/', validateProductsListQuery, productsController.list);
 router.get('/:id', productsController.getById);
-router.get('/:id/reviews', reviewsController.listByProduct);
+router.get('/:id/reviews', validateReviewsListQuery, reviewsController.listByProduct);
 router.post(
   '/:id/reviews',
   authRequired,

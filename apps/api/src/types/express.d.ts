@@ -8,13 +8,6 @@ declare global {
   namespace Express {
     interface Request {
       user?: import('@p4/shared').User;
-      pagination?: {
-        page: number;
-        pageSize: number;
-        offset: number;
-        limit: number;
-        q: string;
-      };
     }
 
     interface Response {
