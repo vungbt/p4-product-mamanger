@@ -9,8 +9,11 @@ import {
 } from '@/shared/list-query.js';
 import validate from '@/shared/validation.js';
 
-export const validateCheckoutBody = (req: Request, res: Response, next: NextFunction) =>
-  validate({
+export const validateCheckoutBody = (req: Request, res: Response, next: NextFunction) => {
+  const value: unknown = req.body;
+  if (value && typeof value === 'object' && 'quoteId' in value)
+    return validate({ rules: { quoteId: 'required|regex:/^[a-fA-F0-9-]{36}$/' } })(req, res, next);
+  return validate({
     rules: {
       items: 'required|array|min:1',
       'items.*.productId': 'required|string',
@@ -24,6 +27,7 @@ export const validateCheckoutBody = (req: Request, res: Response, next: NextFunc
       couponCode: 'string',
     },
   })(req, res, next);
+};
 
 export const validateShipmentUpdateBody = (req: Request, res: Response, next: NextFunction) =>
   validate({

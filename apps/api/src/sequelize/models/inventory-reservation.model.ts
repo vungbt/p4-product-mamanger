@@ -9,6 +9,7 @@ export interface InventoryReservationAttributes {
   quantity: number;
   status: ReservationStatus;
   expiresAt: Date | null;
+  variantId?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -28,6 +29,7 @@ export class InventoryReservationModel
   declare quantity: number;
   declare status: ReservationStatus;
   declare expiresAt: Date | null;
+  declare variantId: string | null;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 }
@@ -35,6 +37,7 @@ export class InventoryReservationModel
 export function initInventoryReservationModel(sequelize: Sequelize) {
   InventoryReservationModel.init(
     {
+      variantId: { type: DataTypes.UUID, allowNull: true },
       id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
       orderId: { type: DataTypes.UUID, allowNull: false, field: 'order_id' },
       productId: { type: DataTypes.STRING, allowNull: false, field: 'product_id' },

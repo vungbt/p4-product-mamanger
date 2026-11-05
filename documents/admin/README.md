@@ -1,5 +1,9 @@
 # P4 — Các task Admin
 
+> Kế hoạch ban đầu được giữ để tham chiếu. Thứ tự mới cho cả hai portal nằm ở
+> [các task Frontend](../frontend/README.md); dùng kế hoạch mới để triển khai tiếp.
+> Mô tả hiện trạng bên dưới là snapshot khi tạo kế hoạch cũ, không phản ánh API local mới nhất.
+
 Mỗi file là một task độc lập, có mục tiêu, phạm vi, phụ thuộc và điều kiện nghiệm
 thu. Làm lần lượt từ **ADM-01**; chưa bắt đầu triển khai chỉ vì file task đã được tạo.
 

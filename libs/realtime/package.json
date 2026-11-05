@@ -1,0 +1,46 @@
+{
+  "name": "@p4/realtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./shared": {
+      "types": "./src/shared/index.ts",
+      "development": "./src/shared/index.ts",
+      "import": "./dist/shared/index.js",
+      "default": "./dist/shared/index.js"
+    },
+    "./browser": {
+      "types": "./src/browser/index.ts",
+      "development": "./src/browser/index.ts",
+      "import": "./dist/browser/index.js",
+      "default": "./dist/browser/index.js"
+    },
+    "./server": {
+      "types": "./src/server/index.ts",
+      "development": "./src/server/index.ts",
+      "import": "./dist/server/index.js",
+      "default": "./dist/server/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch"
+  },
+  "dependencies": {
+    "@p4/shared": "workspace:*",
+    "valibot": "catalog:",
+    "@p4/processes": "workspace:*",
+    "socket.io": "catalog:",
+    "socket.io-client": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/react": "catalog:",
+    "@types/node": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:react-peer"
+  }
+}

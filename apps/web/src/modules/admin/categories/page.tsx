@@ -206,7 +206,11 @@ export default function AdminCategoriesPage() {
         </div>
         <DataTable
           className="rounded-none border-0 shadow-none"
-          classNames={{ thead: 'bg-table-header text-ink', row: 'border-line' }}
+          classNames={{
+            thead: 'bg-table-header text-ink',
+            row: 'border-line',
+            cell: 'align-middle',
+          }}
           rows={rows}
           loading={loading}
           error={error}

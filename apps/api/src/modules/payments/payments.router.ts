@@ -1,11 +1,7 @@
 import { Router } from 'express';
+import { authRequired } from '@/middlewares/auth.middleware.js';
 import * as paymentsController from './payments.controller.js';
 
 const router = Router();
-
-router.get('/:id/mock-pay', paymentsController.mockPay);
-router.post('/:id/mock-pay', paymentsController.mockPay);
-router.post('/webhook/mock', paymentsController.mockWebhook);
-// Stripe webhook mounted in index.ts with raw body (not here)
-
+router.post('/:id/mock-pay', authRequired, paymentsController.mockPay);
 export default router;

@@ -1,13 +1,20 @@
 import { Router } from 'express';
 import { authRequired, requireRole } from '@/middlewares/auth.middleware.js';
+import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { validateOrdersListQuery } from '@/modules/orders/orders.validation.js';
 import * as refundsController from '@/modules/refunds/refunds.controller.js';
 import * as ordersController from './orders.controller.js';
-import { validateCheckoutBody, validateShipmentUpdateBody } from './orders.validation.js';
+import { validateCheckoutBody } from './orders.validation.js';
 
 const router = Router();
 
-router.get('/', authRequired, requireRole('admin'), validateOrdersListQuery, ordersController.list);
+router.get(
+  '/',
+  authRequired,
+  requirePermission('order:read'),
+  validateOrdersListQuery,
+  ordersController.list,
+);
 router.get(
   '/mine',
   authRequired,
@@ -17,14 +24,12 @@ router.get(
 );
 router.get('/:id', authRequired, requireRole('user', 'admin'), ordersController.getOne);
 router.post('/', authRequired, requireRole('user'), validateCheckoutBody, ordersController.create);
-router.patch(
-  '/:id/shipment',
-  authRequired,
-  requireRole('admin'),
-  validateShipmentUpdateBody,
-  ordersController.updateShipment,
-);
 router.post('/:id/cancel', authRequired, requireRole('user', 'admin'), ordersController.cancel);
-router.post('/:id/refunds', authRequired, requireRole('admin'), refundsController.create);
+router.post(
+  '/:id/refunds',
+  authRequired,
+  requirePermission('refund:manage'),
+  refundsController.create,
+);
 
 export default router;

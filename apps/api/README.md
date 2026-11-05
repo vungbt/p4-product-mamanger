@@ -9,6 +9,15 @@ Web proxy: `/api` → API (cấu hình trong `apps/web/vite.config.ts`)
 
 - Spec: [`openapi.yaml`](./openapi.yaml) · raw: `GET /api/openapi.yaml`
 - UI (Scalar): [http://localhost:3001/api/docs](http://localhost:3001/api/docs) · prod: https://p4-api.couponlinkh.com/api/docs
+- Server trong docs theo origin đang chạy, hoặc `PUBLIC_API_URL` nếu có cấu hình. Code sample mặc định là Node.js Axios.
+- `openapi.yaml` được **sinh tự động, không sửa tay**. Sau khi thêm hoặc đổi API, chạy:
+
+  ```bash
+  pnpm --filter @p4/api openapi:generate
+  ```
+
+  Route, quyền và query đọc từ router đã build; schema request/response suy từ TypeScript và validator. Summary và phần không suy ra được (mảng lồng parse thủ công, handler dùng chung nhiều route) khai báo trong [`scripts/openapi/metadata.mjs`](./scripts/openapi/metadata.mjs).
+- `pnpm --filter @p4/api openapi:check` fail nếu spec lệch source hoặc endpoint mới thiếu summary; `tests/openapi.test.mjs` cũng chạy kiểm tra này.
 
 ---
 

@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { authRequired, requireRole } from '@/middlewares/auth.middleware.js';
+import { authRequired } from '@/middlewares/auth.middleware.js';
+import { requirePermission } from '@/middlewares/permission.middleware.js';
 import * as dashboardController from './dashboard.controller.js';
 
 const router = Router();
 
-router.get('/stats', authRequired, requireRole('admin'), dashboardController.stats);
+router.get('/stats', authRequired, requirePermission('report:read'), dashboardController.stats);
 
 export default router;

@@ -14,12 +14,20 @@ export interface CouponAttributes {
   startsAt: Date | null;
   endsAt: Date | null;
   isActive: boolean;
+  perUserLimit: number | null;
+  variantIds: string[];
+  categoryIds: string[];
+  version: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export type CouponCreation = Optional<
   CouponAttributes,
+  | 'perUserLimit'
+  | 'variantIds'
+  | 'categoryIds'
+  | 'version'
   | 'id'
   | 'minOrderAmount'
   | 'maxDiscount'
@@ -47,6 +55,10 @@ export class CouponModel
   declare startsAt: Date | null;
   declare endsAt: Date | null;
   declare isActive: boolean;
+  declare perUserLimit: number | null;
+  declare variantIds: string[];
+  declare categoryIds: string[];
+  declare version: number;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 }
@@ -54,6 +66,10 @@ export class CouponModel
 export function initCouponModel(sequelize: Sequelize) {
   CouponModel.init(
     {
+      perUserLimit: { type: DataTypes.INTEGER, allowNull: true },
+      variantIds: { type: DataTypes.ARRAY(DataTypes.UUID), allowNull: false, defaultValue: [] },
+      categoryIds: { type: DataTypes.ARRAY(DataTypes.UUID), allowNull: false, defaultValue: [] },
+      version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
       id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
       code: { type: DataTypes.STRING, allowNull: false, unique: true },
       type: { type: DataTypes.ENUM('percent', 'fixed'), allowNull: false },

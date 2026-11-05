@@ -1,4 +1,4 @@
-import type { Role } from '@p4/shared';
+import type { AccountStatus, Role, StaffRole } from '@p4/shared';
 import { DataTypes, Model, type Optional, type Sequelize } from 'sequelize';
 
 export interface UserAttributes {
@@ -10,6 +10,14 @@ export interface UserAttributes {
   avatarUrl: string | null;
   role: Role;
   avatarId: string | null;
+  phone: string | null;
+  locale: string;
+  timezone: string;
+  accountStatus: AccountStatus;
+  emailVerifiedAt: Date | null;
+  staffRole: StaffRole | null;
+  version: number;
+  authVersion: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -17,6 +25,14 @@ export interface UserAttributes {
 export type UserCreation = Optional<
   UserAttributes,
   | 'id'
+  | 'phone'
+  | 'locale'
+  | 'timezone'
+  | 'accountStatus'
+  | 'emailVerifiedAt'
+  | 'staffRole'
+  | 'version'
+  | 'authVersion'
   | 'passwordHash'
   | 'googleId'
   | 'displayName'
@@ -35,6 +51,14 @@ export class UserModel extends Model<UserAttributes, UserCreation> implements Us
   declare avatarUrl: string | null;
   declare role: Role;
   declare avatarId: string | null;
+  declare phone: string | null;
+  declare locale: string;
+  declare timezone: string;
+  declare accountStatus: AccountStatus;
+  declare emailVerifiedAt: Date | null;
+  declare staffRole: StaffRole | null;
+  declare version: number;
+  declare authVersion: number;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 }
@@ -42,6 +66,14 @@ export class UserModel extends Model<UserAttributes, UserCreation> implements Us
 export function initUserModel(sequelize: Sequelize) {
   UserModel.init(
     {
+      phone: { type: DataTypes.STRING, allowNull: true },
+      locale: { type: DataTypes.STRING, allowNull: false, defaultValue: 'vi' },
+      timezone: { type: DataTypes.STRING, allowNull: false, defaultValue: 'Asia/Ho_Chi_Minh' },
+      accountStatus: { type: DataTypes.STRING, allowNull: false, defaultValue: 'active' },
+      emailVerifiedAt: { type: DataTypes.DATE, allowNull: true },
+      staffRole: { type: DataTypes.STRING, allowNull: true },
+      version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
+      authVersion: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
       id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,

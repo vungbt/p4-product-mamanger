@@ -56,7 +56,7 @@ ssh "$SERVER" bash -s <<EOF
   echo "  Loading p4-api.tar.gz..."
   docker load < p4-api.tar.gz
   rm -f p4-api.tar.gz
-  docker compose $COMPOSE_FILES --env-file $ENV_FILE -p $PROJECT_NAME up -d postgres api
+  docker compose $COMPOSE_FILES --env-file $ENV_FILE -p $PROJECT_NAME up -d postgres api worker
   docker image prune -f
   echo ""
   docker compose -p $PROJECT_NAME ps

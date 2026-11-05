@@ -1,0 +1,116 @@
+import type { ListQuery, ReturnInspection } from '@p4/shared';
+import { Router } from 'express';
+import { authRequired } from '@/middlewares/auth.middleware.js';
+import { requirePermission } from '@/middlewares/permission.middleware.js';
+import { ReturnRequestModel } from '@/sequelize/models/index.js';
+import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { orderQuantities } from '@/shared/commerce/input.js';
+import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
+import { validateListQuery } from '@/shared/list-query.js';
+import { buildPaginationMeta } from '@/utils/pagination.js';
+import * as returns from './returns.service.js';
+
+const router = Router();
+router.post(
+  '/orders/:id/returns',
+  authRequired,
+  apiHandler(async (req) => {
+    const body = requestBody(req);
+    const evidenceIds =
+      body.data.evidenceIds === undefined ? [] : body.strings('evidenceIds', 10, 36);
+    if (evidenceIds.some((id) => !/^[a-f0-9-]{36}$/i.test(id))) return body.invalid('evidenceIds');
+    return returns.requestReturn(
+      currentUser(req),
+      uuidRouteId(req),
+      body.integer('expectedVersion', 1),
+      orderQuantities(body.data.items),
+      evidenceIds,
+      body.text('reason', 1000),
+    );
+  }, 201),
+);
+const list = validateListQuery({
+  sortFields: ['createdAt'],
+  defaultSort: 'createdAt',
+  defaultOrder: 'desc',
+  rules: () => ({}),
+  normalize: (_query, base) => base,
+});
+for (const admin of [false, true])
+  router.get(
+    admin ? '/admin/returns' : '/returns/mine',
+    authRequired,
+    ...(admin ? [requirePermission('return:read')] : []),
+    list,
+    listHandler(async (req, query: ListQuery<'createdAt'>) => {
+      const result = await ReturnRequestModel.findAndCountAll({
+        where: admin ? {} : { userId: currentUser(req).id },
+        order: [
+          ['createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+          ['id', 'ASC'],
+        ],
+        limit: query.pageSize,
+        offset: (query.page - 1) * query.pageSize,
+      });
+      return {
+        data: result.rows.map(returns.returnDto),
+        meta: buildPaginationMeta(query.page, query.pageSize, result.count),
+      };
+    }),
+  );
+router.get(
+  '/returns/:id',
+  authRequired,
+  apiHandler(async (req) =>
+    returns.returnDto(await returns.getReturn(currentUser(req), uuidRouteId(req))),
+  ),
+);
+for (const [action, status] of [
+  ['approve', 'approved'],
+  ['reject', 'rejected'],
+  ['in-transit', 'in_transit'],
+  ['receive', 'received'],
+  ['inspect', 'inspected'],
+  ['complete', 'completed'],
+] as const) {
+  router.post(
+    `/returns/:id/${action}`,
+    authRequired,
+    requirePermission('return:manage'),
+    apiHandler(async (req) => {
+      const body = requestBody(req);
+      let inspection: ReturnInspection[] | undefined;
+      if (action === 'inspect') {
+        const raw: unknown = body.data.inspection;
+        if (!Array.isArray(raw) || raw.length > 100) return body.invalid('inspection');
+        inspection = raw.map((line: unknown) => {
+          if (
+            !line ||
+            typeof line !== 'object' ||
+            !('orderItemId' in line) ||
+            !('saleableQuantity' in line) ||
+            !('damagedQuantity' in line) ||
+            typeof line.orderItemId !== 'string' ||
+            typeof line.saleableQuantity !== 'number' ||
+            typeof line.damagedQuantity !== 'number'
+          )
+            return body.invalid('inspection');
+          return {
+            orderItemId: line.orderItemId,
+            saleableQuantity: line.saleableQuantity,
+            damagedQuantity: line.damagedQuantity,
+          };
+        });
+      }
+      return returns.transitionReturn(
+        currentUser(req).id,
+        uuidRouteId(req),
+        status,
+        body.integer('expectedVersion', 1),
+        action === 'reject' ? body.text('reason', 1000) : (body.optionalText('reason', 1000) ?? ''),
+        inspection,
+      );
+    }),
+  );
+}
+export default router;

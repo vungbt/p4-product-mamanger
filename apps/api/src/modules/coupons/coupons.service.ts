@@ -2,8 +2,11 @@ import type { Coupon, CouponInput, CouponListQuery } from '@p4/shared';
 import { Op, type Transaction, type WhereOptions } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
 import type { CouponAttributes } from '@/sequelize/models/coupon.model.js';
-import { CouponModel } from '@/sequelize/models/index.js';
+import { CouponModel, sequelize } from '@/sequelize/models/index.js';
+import { recordAudit } from '@/shared/commerce/persistence.js';
+import { assertVersion } from '@/shared/commerce/transitions.js';
 import { searchPattern } from '@/shared/list-filters.js';
+import { requestStore } from '@/shared/request-store.js';
 import type { ModelOrder } from '@/types/database.js';
 import { BadRequest, NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
@@ -11,6 +14,10 @@ import { selectFields } from '@/utils/select-fields.js';
 
 const couponFields = [
   'id',
+  'perUserLimit',
+  'variantIds',
+  'categoryIds',
+  'version',
   'code',
   'type',
   'value',
@@ -21,7 +28,7 @@ const couponFields = [
   'isActive',
 ] satisfies (keyof Coupon)[];
 
-function toCoupon(row: CouponModel): Coupon {
+export function toCoupon(row: CouponModel): Coupon {
   return {
     ...selectFields(row, couponFields),
     startsAt: row.startsAt ? row.startsAt.toISOString() : null,
@@ -84,49 +91,96 @@ export async function listCoupons(query?: CouponListQuery) {
 }
 
 export async function createCoupon(input: CouponInput) {
-  const row = await CouponModel.create({
-    code: input.code.trim().toUpperCase(),
-    type: input.type,
-    value: input.value,
-    minOrderAmount: input.minOrderAmount ?? 0,
-    maxDiscount: input.maxDiscount ?? null,
-    usageLimit: input.usageLimit ?? null,
-    startsAt: input.startsAt ? new Date(input.startsAt) : null,
-    endsAt: input.endsAt ? new Date(input.endsAt) : null,
-    isActive: input.isActive ?? true,
+  return sequelize.transaction(async (transaction) => {
+    const row = await CouponModel.create(
+      {
+        code: input.code.trim().toUpperCase(),
+        type: input.type,
+        value: input.value,
+        minOrderAmount: input.minOrderAmount ?? 0,
+        maxDiscount: input.maxDiscount ?? null,
+        usageLimit: input.usageLimit ?? null,
+        startsAt: input.startsAt ? new Date(input.startsAt) : null,
+        endsAt: input.endsAt ? new Date(input.endsAt) : null,
+        isActive: input.isActive ?? true,
+        perUserLimit: input.perUserLimit ?? null,
+        variantIds: input.variantIds ?? [],
+        categoryIds: input.categoryIds ?? [],
+      },
+      { transaction },
+    );
+    await recordAudit(
+      {
+        actorId: requestStore.getStore()?.user?.id,
+        action: 'coupon.created',
+        resourceType: 'coupon',
+        resourceId: row.id,
+      },
+      transaction,
+    );
+    return toCoupon(row);
   });
-  return toCoupon(row);
 }
 
-export async function updateCoupon(id: string, input: Partial<CouponInput>) {
-  const row = await CouponModel.findByPk(id);
-  if (!row) throw new NotFound(errorKeys.couponNotFound);
-  await row.update({
-    code: input.code != null ? input.code.trim().toUpperCase() : row.code,
-    type: input.type ?? row.type,
-    value: input.value ?? row.value,
-    minOrderAmount: input.minOrderAmount ?? row.minOrderAmount,
-    maxDiscount: input.maxDiscount !== undefined ? input.maxDiscount : row.maxDiscount,
-    usageLimit: input.usageLimit !== undefined ? input.usageLimit : row.usageLimit,
-    startsAt:
-      input.startsAt !== undefined
-        ? input.startsAt
-          ? new Date(input.startsAt)
-          : null
-        : row.startsAt,
-    endsAt:
-      input.endsAt !== undefined ? (input.endsAt ? new Date(input.endsAt) : null) : row.endsAt,
-    isActive: input.isActive ?? row.isActive,
+export async function updateCoupon(id: string, input: CouponInput) {
+  return sequelize.transaction(async (transaction) => {
+    const row = await CouponModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
+    if (!row) throw new NotFound(errorKeys.couponNotFound);
+    if (input.expectedVersion === undefined) throw new BadRequest('expected_version_required');
+    assertVersion(row.version, input.expectedVersion);
+    if (
+      input.usageLimit !== null &&
+      input.usageLimit !== undefined &&
+      input.usageLimit < row.usedCount
+    )
+      throw new BadRequest('coupon_limit_below_usage');
+    await row.update(
+      {
+        code: input.code.trim().toUpperCase(),
+        type: input.type,
+        value: input.value,
+        minOrderAmount: input.minOrderAmount ?? 0,
+        maxDiscount: input.maxDiscount ?? null,
+        usageLimit: input.usageLimit ?? null,
+        startsAt: input.startsAt ? new Date(input.startsAt) : null,
+        endsAt: input.endsAt ? new Date(input.endsAt) : null,
+        isActive: input.isActive ?? true,
+        perUserLimit: input.perUserLimit ?? null,
+        variantIds: input.variantIds ?? [],
+        categoryIds: input.categoryIds ?? [],
+        version: row.version + 1,
+      },
+      { transaction },
+    );
+    await recordAudit(
+      {
+        actorId: requestStore.getStore()?.user?.id,
+        action: 'coupon.updated',
+        resourceType: 'coupon',
+        resourceId: row.id,
+      },
+      transaction,
+    );
+    return toCoupon(row);
   });
-  return toCoupon(row);
 }
 
 export async function deleteCoupon(id: string) {
-  const row = await CouponModel.findByPk(id);
-  if (!row) throw new NotFound(errorKeys.couponNotFound);
-  const data = toCoupon(row);
-  await row.destroy();
-  return data;
+  return sequelize.transaction(async (transaction) => {
+    const row = await CouponModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
+    if (!row) throw new NotFound(errorKeys.couponNotFound);
+    await row.update({ isActive: false, version: row.version + 1 }, { transaction });
+    await recordAudit(
+      {
+        actorId: requestStore.getStore()?.user?.id,
+        action: 'coupon.disabled',
+        resourceType: 'coupon',
+        resourceId: row.id,
+      },
+      transaction,
+    );
+    return toCoupon(row);
+  });
 }
 
 export async function previewCoupon(code: string, subtotal: number) {

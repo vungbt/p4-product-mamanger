@@ -1,8 +1,18 @@
 import { sequelize } from '@/sequelize/index.js';
+import {
+  AccountTokenModel,
+  initAccountTokenModel,
+} from '@/sequelize/models/account-token.model.js';
 import { AddressModel, initAddressModel } from '@/sequelize/models/address.model.js';
+import { AuditLogModel, initAuditLogModel } from '@/sequelize/models/audit-log.model.js';
 import { CategoryModel, initCategoryModel } from '@/sequelize/models/category.model.js';
 import { CouponModel, initCouponModel } from '@/sequelize/models/coupon.model.js';
+import { DomainEventModel, initDomainEventModel } from '@/sequelize/models/domain-event.model.js';
 import { FileModel, initFileModel } from '@/sequelize/models/file.model.js';
+import {
+  IdempotencyRecordModel,
+  initIdempotencyRecordModel,
+} from '@/sequelize/models/idempotency-record.model.js';
 import {
   InventoryReservationModel,
   initInventoryReservationModel,
@@ -24,8 +34,109 @@ import { initRefundModel, RefundModel } from '@/sequelize/models/refund.model.js
 import { initReviewModel, ReviewModel } from '@/sequelize/models/review.model.js';
 import { initShipmentModel, ShipmentModel } from '@/sequelize/models/shipment.model.js';
 import { initUserModel, UserModel } from '@/sequelize/models/user.model.js';
+import {
+  CancellationRequestModel,
+  initCancellationRequestModel,
+} from './cancellation-request.model.js';
+import { CartModel, initCartModel } from './cart.model.js';
+import { CartItemModel, initCartItemModel } from './cart-item.model.js';
+import { CheckoutQuoteModel, initCheckoutQuoteModel } from './checkout-quote.model.js';
+import { ContentEntryModel, initContentEntryModel } from './content-entry.model.js';
+import { ContentRedirectModel, initContentRedirectModel } from './content-redirect.model.js';
+import { ContentRevisionModel, initContentRevisionModel } from './content-revision.model.js';
+import { ContentTaxonomyModel, initContentTaxonomyModel } from './content-taxonomy.model.js';
+import { CouponRedemptionModel, initCouponRedemptionModel } from './coupon-redemption.model.js';
+import { ExchangeRequestModel, initExchangeRequestModel } from './exchange-request.model.js';
+import { InventoryMovementModel, initInventoryMovementModel } from './inventory-movement.model.js';
+import {
+  initMerchandisingEntryModel,
+  MerchandisingEntryModel,
+} from './merchandising-entry.model.js';
+import { initNotificationModel, NotificationModel } from './notification.model.js';
+import {
+  initNotificationDeliveryModel,
+  NotificationDeliveryModel,
+} from './notification-delivery.model.js';
+import {
+  initNotificationPreferencesModel,
+  NotificationPreferencesModel,
+} from './notification-preferences.model.js';
+import {
+  initNotificationTemplateModel,
+  NotificationTemplateModel,
+} from './notification-template.model.js';
+import { initOrderEventModel, OrderEventModel } from './order-event.model.js';
+import { initPaymentAttemptModel, PaymentAttemptModel } from './payment-attempt.model.js';
+import { initPaymentLedgerModel, PaymentLedgerModel } from './payment-ledger.model.js';
+import { initProcessModel, ProcessModel } from './process.model.js';
+import { initProcessItemModel, ProcessItemModel } from './process-item.model.js';
+import {
+  initProductSlugRedirectModel,
+  ProductSlugRedirectModel,
+} from './product-slug-redirect.model.js';
+import { initProductVariantModel, ProductVariantModel } from './product-variant.model.js';
+import { initPromotionModel, PromotionModel } from './promotion.model.js';
+import { initRealtimeEventModel, RealtimeEventModel } from './realtime-event.model.js';
+import { initReportExportModel, ReportExportModel } from './report-export.model.js';
+import { initReturnRequestModel, ReturnRequestModel } from './return-request.model.js';
+import { initShipmentEventModel, ShipmentEventModel } from './shipment-event.model.js';
+import { initShipmentItemModel, ShipmentItemModel } from './shipment-item.model.js';
+import { initShippingMethodModel, ShippingMethodModel } from './shipping-method.model.js';
+import { initShopSettingsModel, ShopSettingsModel } from './shop-settings.model.js';
+import { initSizeGuideModel, SizeGuideModel } from './size-guide.model.js';
+import {
+  initStockAlertSubscriptionModel,
+  StockAlertSubscriptionModel,
+} from './stock-alert-subscription.model.js';
+import { initSupportMessageModel, SupportMessageModel } from './support-message.model.js';
+import { initSupportTicketModel, SupportTicketModel } from './support-ticket.model.js';
+import { initUploadTicketModel, UploadTicketModel } from './upload-ticket.model.js';
+import { initWebhookReceiptModel, WebhookReceiptModel } from './webhook-receipt.model.js';
+import { initWishlistItemModel, WishlistItemModel } from './wishlist-item.model.js';
 
 initUserModel(sequelize);
+initRealtimeEventModel(sequelize);
+initProcessItemModel(sequelize);
+initProcessModel(sequelize);
+initExchangeRequestModel(sequelize);
+initReportExportModel(sequelize);
+initMerchandisingEntryModel(sequelize);
+initSupportMessageModel(sequelize);
+initSupportTicketModel(sequelize);
+initNotificationDeliveryModel(sequelize);
+initNotificationTemplateModel(sequelize);
+initNotificationModel(sequelize);
+initNotificationPreferencesModel(sequelize);
+initContentRedirectModel(sequelize);
+initContentTaxonomyModel(sequelize);
+initContentRevisionModel(sequelize);
+initContentEntryModel(sequelize);
+initStockAlertSubscriptionModel(sequelize);
+initWishlistItemModel(sequelize);
+initReturnRequestModel(sequelize);
+initShipmentEventModel(sequelize);
+initShipmentItemModel(sequelize);
+initWebhookReceiptModel(sequelize);
+initPaymentLedgerModel(sequelize);
+initPaymentAttemptModel(sequelize);
+initOrderEventModel(sequelize);
+initCancellationRequestModel(sequelize);
+initCheckoutQuoteModel(sequelize);
+initCouponRedemptionModel(sequelize);
+initPromotionModel(sequelize);
+initCartItemModel(sequelize);
+initCartModel(sequelize);
+initShippingMethodModel(sequelize);
+initShopSettingsModel(sequelize);
+initInventoryMovementModel(sequelize);
+initProductSlugRedirectModel(sequelize);
+initSizeGuideModel(sequelize);
+initProductVariantModel(sequelize);
+initUploadTicketModel(sequelize);
+initAccountTokenModel(sequelize);
+initIdempotencyRecordModel(sequelize);
+initDomainEventModel(sequelize);
+initAuditLogModel(sequelize);
 initFileModel(sequelize);
 initCategoryModel(sequelize);
 initProductModel(sequelize);
@@ -57,7 +168,7 @@ OrderItemModel.belongsTo(OrderModel, { foreignKey: 'orderId', as: 'order' });
 OrderModel.hasOne(PaymentModel, { foreignKey: 'orderId', as: 'payment' });
 PaymentModel.belongsTo(OrderModel, { foreignKey: 'orderId', as: 'order' });
 
-OrderModel.hasOne(ShipmentModel, { foreignKey: 'orderId', as: 'shipment' });
+OrderModel.hasMany(ShipmentModel, { foreignKey: 'orderId', as: 'shipments' });
 ShipmentModel.belongsTo(OrderModel, { foreignKey: 'orderId', as: 'order' });
 
 UserModel.hasMany(RefreshTokenModel, { foreignKey: 'userId', as: 'refreshTokens' });
@@ -100,21 +211,63 @@ ReviewModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user' });
 UserModel.hasMany(ReviewModel, { foreignKey: 'userId', as: 'reviews' });
 
 export {
+  AccountTokenModel,
   AddressModel,
+  AuditLogModel,
+  CancellationRequestModel,
+  CartItemModel,
+  CartModel,
   CategoryModel,
+  CheckoutQuoteModel,
+  ContentEntryModel,
+  ContentRedirectModel,
+  ContentRevisionModel,
+  ContentTaxonomyModel,
   CouponModel,
+  CouponRedemptionModel,
+  DomainEventModel,
+  ExchangeRequestModel,
   FileModel,
+  IdempotencyRecordModel,
+  InventoryMovementModel,
   InventoryReservationModel,
+  MerchandisingEntryModel,
+  NotificationDeliveryModel,
+  NotificationModel,
+  NotificationPreferencesModel,
+  NotificationTemplateModel,
   OrderCouponModel,
+  OrderEventModel,
   OrderItemModel,
   OrderModel,
+  PaymentAttemptModel,
+  PaymentLedgerModel,
   PaymentModel,
+  ProcessItemModel,
+  ProcessModel,
   ProductImageModel,
   ProductModel,
+  ProductSlugRedirectModel,
+  ProductVariantModel,
+  PromotionModel,
+  RealtimeEventModel,
   RefreshTokenModel,
   RefundModel,
+  ReportExportModel,
+  ReturnRequestModel,
   ReviewModel,
+  ShipmentEventModel,
+  ShipmentItemModel,
   ShipmentModel,
+  ShippingMethodModel,
+  ShopSettingsModel,
+  SizeGuideModel,
+  StockAlertSubscriptionModel,
+  SupportMessageModel,
+  SupportTicketModel,
   sequelize,
+  UploadTicketModel,
   UserModel,
+  WebhookReceiptModel,
+  WishlistItemModel,
 };

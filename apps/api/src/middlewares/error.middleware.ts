@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { UniqueConstraintError } from 'sequelize';
+import * as v from 'valibot';
 import { isAppError } from '@/utils/errors/index.js';
 import { logger } from '@/utils/logger.js';
 
@@ -11,6 +12,23 @@ function translateErrorMessage(req: Request, key: string) {
 }
 
 export function handleErrorApi(err: unknown, req: Request, res: Response, _next: NextFunction) {
+  if (
+    err &&
+    typeof err === 'object' &&
+    'type' in err &&
+    (err.type === 'entity.too.large' || err.type === 'entity.parse.failed')
+  )
+    return res
+      .status(err.type === 'entity.too.large' ? 413 : 400)
+      .json({ code: 'invalid_request_body', message: 'Invalid request body.' });
+
+  if (v.isValiError(err))
+    return res.status(400).json({
+      code: 'input_valid_error',
+      message: req.t('error:input_valid_error'),
+      extensions: { input: err.issues.slice(0, 20).map((issue) => issue.message) },
+    });
+
   if (err instanceof UniqueConstraintError) {
     const fields = new Set([
       ...err.errors.flatMap((error) => (error.path ? [error.path] : [])),
@@ -40,7 +58,13 @@ export function handleErrorApi(err: unknown, req: Request, res: Response, _next:
     });
   }
 
-  logger.error('[api] Unexpected error:', err);
+  logger.error(
+    JSON.stringify({
+      event: 'api.error',
+      requestId: req.requestId,
+      error: err instanceof Error ? err.name : 'UnknownError',
+    }),
+  );
   return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
     message: translateErrorMessage(req, 'server_error'),
     code: 'server_error',

@@ -166,3 +166,7 @@ Requires Node.js >= 22.12 và React 19. Chạy `pnpm install` để cài depende
 - Storybook của thư viện: https://react-ui-one-rose.vercel.app/.
 - Storybook block P4: `pnpm storybook` → http://localhost:6006 (54 stories); build tĩnh bằng `pnpm build:storybook`.
 - Web import `@p4/blocks/styles.css` để Tailwind quét class của block và đăng ký `blockResources` vào namespace `blocks` của i18next.
+
+## Task frontend
+
+Thứ tự triển khai Admin và Storefront: [42 task riêng](documents/frontend/README.md).

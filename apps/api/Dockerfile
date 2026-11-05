@@ -6,12 +6,16 @@ FROM base AS deps
 COPY package.json pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY libs/shared/package.json ./libs/shared/
+COPY libs/processes/package.json ./libs/processes/
+COPY libs/realtime/package.json ./libs/realtime/
 RUN pnpm install --filter @p4/api... --filter @p4/shared...
 
 FROM base AS build
 COPY --from=deps /app ./
 COPY apps/api ./apps/api
 COPY libs/shared ./libs/shared
+COPY libs/processes ./libs/processes
+COPY libs/realtime ./libs/realtime
 COPY tsconfig.base.json ./
 RUN pnpm --filter @p4/api build
 
@@ -29,6 +33,8 @@ COPY --from=build /app/apps/api/src/sequelize ./apps/api/src/sequelize
 COPY --from=build /app/apps/api/src/language ./apps/api/src/language
 COPY --from=build /app/apps/api/docker-entrypoint.sh ./apps/api/docker-entrypoint.sh
 COPY --from=build /app/libs/shared ./libs/shared
+COPY --from=build /app/libs/processes ./libs/processes
+COPY --from=build /app/libs/realtime ./libs/realtime
 
 RUN pnpm install --filter @p4/api... --prod --ignore-scripts \
   && chmod +x /app/apps/api/docker-entrypoint.sh \

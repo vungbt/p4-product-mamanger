@@ -10,12 +10,16 @@ export interface ShipmentAttributes {
   trackingCode: string | null;
   shippedAt: Date | null;
   deliveredAt: Date | null;
+  fulfillmentStatus: import('@p4/shared').FulfillmentStatus;
+  version: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export type ShipmentCreation = Optional<
   ShipmentAttributes,
+  | 'fulfillmentStatus'
+  | 'version'
   | 'id'
   | 'status'
   | 'carrier'
@@ -37,6 +41,8 @@ export class ShipmentModel
   declare trackingCode: string | null;
   declare shippedAt: Date | null;
   declare deliveredAt: Date | null;
+  declare fulfillmentStatus: import('@p4/shared').FulfillmentStatus;
+  declare version: number;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 }
@@ -44,6 +50,8 @@ export class ShipmentModel
 export function initShipmentModel(sequelize: Sequelize) {
   ShipmentModel.init(
     {
+      fulfillmentStatus: { type: DataTypes.STRING, allowNull: false, defaultValue: 'pending_pack' },
+      version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
       id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -52,7 +60,6 @@ export function initShipmentModel(sequelize: Sequelize) {
       orderId: {
         type: DataTypes.UUID,
         allowNull: false,
-        unique: true,
         field: 'order_id',
       },
       status: {

@@ -25,7 +25,7 @@ services:
     restart: unless-stopped
     ports:
       - "3001:3001"
-    environment:
+    environment: &api-environment
       HOST: 0.0.0.0
       PORT: 3001
       NODE_ENV: production
@@ -34,7 +34,7 @@ services:
       DATABASE_NAME: ${DATABASE_NAME:-p4_product_manager}
       DATABASE_USERNAME: ${DATABASE_USERNAME:-postgres}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      CORS_ORIGIN: ${CORS_ORIGIN:?CORS_ORIGIN is required}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
       REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-7d}
@@ -51,7 +51,14 @@ services:
       STRIPE_CURRENCY: ${STRIPE_CURRENCY:-vnd}
       CHECKOUT_SUCCESS_URL: ${CHECKOUT_SUCCESS_URL:-}
       CHECKOUT_CANCEL_URL: ${CHECKOUT_CANCEL_URL:-}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-}
+      MAIL_ENCRYPTION_KEY: ${MAIL_ENCRYPTION_KEY:?MAIL_ENCRYPTION_KEY is required}
+      MAIL_API_URL: ${MAIL_API_URL:-}
+      MAIL_API_TOKEN: ${MAIL_API_TOKEN:-}
+      PROCESS_STORAGE_DIR: /app/process-storage
       RUN_SEED: ${RUN_SEED:-false}
+    volumes:
+      - process-storage:/app/process-storage
     depends_on:
       postgres:
         condition: service_healthy
@@ -64,8 +71,25 @@ services:
     networks:
       - internal
 
+  worker:
+    image: p4-api:latest
+    pull_policy: never
+    restart: unless-stopped
+    command: ["node", "dist/worker.js"]
+    environment:
+      <<: *api-environment
+      RUN_SEED: "false"
+    volumes:
+      - process-storage:/app/process-storage
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - internal
+
 networks:
   internal:
 
 volumes:
+  process-storage:
   pgdata:

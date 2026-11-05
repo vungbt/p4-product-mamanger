@@ -116,7 +116,7 @@ describe('list API integration against the existing local database (read-only re
       const filtered = await get(`/products?categoryId=${category.id}`);
       assert.equal(
         filtered.meta.total,
-        await ProductModel.count({ where: { categoryId: category.id } }),
+        await ProductModel.count({ where: { categoryId: category.id, status: 'active' } }),
       );
     }
   });
@@ -124,7 +124,7 @@ describe('list API integration against the existing local database (read-only re
   test('products: tied sorting yields disjoint pages and complete galleries', async () => {
     const first = await get('/products?sortBy=stock&sortOrder=asc&pageSize=5');
     const second = await get('/products?sortBy=stock&sortOrder=asc&pageSize=5&page=2');
-    assert.equal(first.meta.total, await ProductModel.count());
+    assert.equal(first.meta.total, await ProductModel.count({ where: { status: 'active' } }));
     assert.equal(
       new Set([...first.data, ...second.data].map((row) => row.id)).size,
       first.data.length + second.data.length,
@@ -248,11 +248,17 @@ describe('list API integration against the existing local database (read-only re
     const productId = review?.productId ?? product.id;
     const legacy = await get(`/products/${productId}/reviews`);
     assert.equal(legacy.meta, undefined);
-    assert.equal(legacy.data.length, await ReviewModel.count({ where: { productId } }));
+    assert.equal(
+      legacy.data.length,
+      await ReviewModel.count({ where: { productId, moderationStatus: 'published' } }),
+    );
     const result = await get(
       `/products/${productId}/reviews?rating=5&sortBy=rating&sortOrder=desc`,
     );
-    assert.equal(result.meta.total, await ReviewModel.count({ where: { productId, rating: 5 } }));
+    assert.equal(
+      result.meta.total,
+      await ReviewModel.count({ where: { productId, rating: 5, moderationStatus: 'published' } }),
+    );
     assert.ok(result.data.every((row) => row.productId === productId && row.rating === 5));
   });
 

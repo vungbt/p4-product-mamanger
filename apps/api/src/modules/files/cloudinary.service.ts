@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { cloudinary, isCloudinaryConfigured } from '@/configs/cloudinary.js';
 import { env } from '@/configs/env.js';
 import { errorKeys } from '@/constants/index.js';
@@ -34,14 +35,22 @@ export type SignedUpload = {
   publicId: string;
 };
 
-export function signUploadUrl(name?: string): SignedUpload {
+export function signUploadUrl(
+  name?: string,
+  options?: { publicId: string; private: boolean },
+): SignedUpload {
   assertConfigured();
-  const publicId = `${env.cloudinary.tempFolder}/${formatDate(new Date())}-${slugify(name)}`;
+  const publicId =
+    options?.publicId ??
+    `${env.cloudinary.tempFolder}/${formatDate(new Date())}-${randomUUID()}-${slugify(name)}`;
   const signed = cloudinary.utils.sign_request({
     public_id: publicId,
+    overwrite: false,
+    type: options?.private ? 'authenticated' : 'upload',
+    allowed_formats: 'jpg,jpeg,png,webp',
     timestamp: Math.round(Date.now() / 1000),
   }) as Record<string, unknown>;
-  const uploadUrl = `${env.cloudinary.domain}/${env.cloudinary.cloudName}/auto/upload?${toQuery(signed)}`;
+  const uploadUrl = `${env.cloudinary.domain}/${env.cloudinary.cloudName}/image/upload?${toQuery(signed)}`;
   return { uploadUrl, publicId };
 }
 
@@ -57,21 +66,36 @@ export async function moveToAssets(publicId: string) {
   }
   return cloudinary.uploader.rename(publicId, `${env.cloudinary.assetsFolder}/${name}`, {
     invalidate: true,
-    overwrite: true,
+    overwrite: false,
   });
 }
 
-export async function getResourceInfo(publicId: string) {
+export async function getResourceInfo(publicId: string, privateAsset = false) {
   assertConfigured();
-  return cloudinary.api.resource(publicId);
+  return cloudinary.api.resource(publicId, {
+    type: privateAsset ? 'authenticated' : 'upload',
+    resource_type: 'image',
+    timeout: 15000,
+  });
 }
 
 /** Xóa asset trên Cloudinary — `not found` coi như đã sạch */
-export async function destroyResource(publicId: string) {
+export async function destroyResource(publicId: string, privateAsset = false) {
   assertConfigured();
   const result = await cloudinary.uploader.destroy(publicId, {
     invalidate: true,
     resource_type: 'image',
+    type: privateAsset ? 'authenticated' : 'upload',
   });
   return result;
+}
+
+export function privateDownloadUrl(publicId: string, format: string) {
+  assertConfigured();
+  return cloudinary.utils.private_download_url(publicId, format, {
+    type: 'authenticated',
+    resource_type: 'image',
+    expires_at: Math.floor(Date.now() / 1000) + 60,
+    attachment: true,
+  });
 }

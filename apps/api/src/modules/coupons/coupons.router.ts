@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { authRequired, requireRole } from '@/middlewares/auth.middleware.js';
+import { authRequired } from '@/middlewares/auth.middleware.js';
+import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { validateCouponsListQuery } from '@/modules/coupons/coupons.validation.js';
 import * as couponsController from './coupons.controller.js';
 import { validateCoupon, validatePreview } from './coupons.validation.js';
@@ -10,12 +11,18 @@ router.post('/preview', authRequired, validatePreview, couponsController.preview
 router.get(
   '/',
   authRequired,
-  requireRole('admin'),
+  requirePermission('promotion:read'),
   validateCouponsListQuery,
   couponsController.list,
 );
-router.post('/', authRequired, requireRole('admin'), validateCoupon, couponsController.create);
-router.put('/:id', authRequired, requireRole('admin'), couponsController.update);
-router.delete('/:id', authRequired, requireRole('admin'), couponsController.remove);
+router.post(
+  '/',
+  authRequired,
+  requirePermission('promotion:write'),
+  validateCoupon,
+  couponsController.create,
+);
+router.put('/:id', authRequired, requirePermission('promotion:write'), couponsController.update);
+router.delete('/:id', authRequired, requirePermission('promotion:write'), couponsController.remove);
 
 export default router;

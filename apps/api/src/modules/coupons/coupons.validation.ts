@@ -17,7 +17,7 @@ export const validateCoupon = validate({
 export const validatePreview = validate({
   rules: {
     code: 'required|string',
-    subtotal: 'required|integer|min:0',
+    items: 'required|array|min:1|max:100',
   },
 });
 

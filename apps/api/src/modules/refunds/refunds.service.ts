@@ -1,18 +1,9 @@
 import type { Refund, RefundListQuery } from '@p4/shared';
 import { cast, col, Op, where as sqlWhere, type WhereOptions } from 'sequelize';
-import { errorKeys } from '@/constants/index.js';
-import { sequelize } from '@/sequelize/index.js';
-import {
-  InventoryReservationModel,
-  OrderModel,
-  PaymentModel,
-  ProductModel,
-  RefundModel,
-} from '@/sequelize/models/index.js';
+import { RefundModel } from '@/sequelize/models/index.js';
 import type { RefundAttributes } from '@/sequelize/models/refund.model.js';
 import { dateRange, numberRange, searchPattern } from '@/shared/list-filters.js';
 import type { ModelOrder } from '@/types/database.js';
-import { BadRequest, NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 
@@ -30,61 +21,6 @@ function toRefund(row: RefundModel): Refund {
     ...selectFields(row, refundFields),
     createdAt: row.createdAt.toISOString(),
   };
-}
-
-export async function createRefund(orderId: string, input: { amount?: number; reason?: string }) {
-  return sequelize.transaction(async (transaction) => {
-    const order = await OrderModel.findByPk(orderId, { transaction });
-    if (!order) throw new NotFound(errorKeys.orderNotFound);
-    if (!['paid', 'shipping', 'completed'].includes(order.status)) {
-      throw new BadRequest(errorKeys.refundInvalid);
-    }
-
-    const payment = await PaymentModel.findOne({
-      where: { orderId, status: 'paid' },
-      transaction,
-    });
-    if (!payment) throw new NotFound(errorKeys.paymentNotFound);
-
-    const amount = input.amount != null ? Number(input.amount) : payment.amount;
-    if (amount <= 0 || amount > payment.amount) throw new BadRequest(errorKeys.refundInvalid);
-
-    const existing = await RefundModel.findOne({
-      where: { orderId, status: 'completed' },
-      transaction,
-    });
-    if (existing) throw new BadRequest(errorKeys.refundInvalid);
-
-    const refund = await RefundModel.create(
-      {
-        paymentId: payment.id,
-        orderId,
-        amount,
-        status: 'completed',
-        reason: input.reason ?? null,
-      },
-      { transaction },
-    );
-
-    // Restock from committed reservations
-    const reservations = await InventoryReservationModel.findAll({
-      where: { orderId, status: 'committed' },
-      transaction,
-    });
-    for (const res of reservations) {
-      const product = await ProductModel.findByPk(res.productId, {
-        transaction,
-        lock: transaction.LOCK.UPDATE,
-      });
-      if (product) {
-        await product.update({ stock: product.stock + res.quantity }, { transaction });
-      }
-      await res.update({ status: 'released' }, { transaction });
-    }
-
-    await order.update({ status: 'cancelled' }, { transaction });
-    return toRefund(refund);
-  });
 }
 
 export async function listRefunds(orderId?: string, query?: RefundListQuery) {

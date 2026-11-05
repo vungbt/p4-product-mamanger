@@ -1,6 +1,6 @@
 import { DataTypes, Model, type Optional, type Sequelize } from 'sequelize';
 
-export type PaymentProvider = 'mock' | 'stripe';
+export type PaymentProvider = 'mock' | 'stripe' | 'cod';
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
 export interface PaymentAttributes {
@@ -51,7 +51,7 @@ export function initPaymentModel(sequelize: Sequelize) {
         field: 'order_id',
       },
       provider: {
-        type: DataTypes.ENUM('mock', 'stripe'),
+        type: DataTypes.ENUM('mock', 'stripe', 'cod'),
         allowNull: false,
         defaultValue: 'mock',
       },

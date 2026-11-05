@@ -49,7 +49,7 @@ export function validateListQuery<
   legacy?: boolean;
   unpaginatedFields?: readonly string[];
 }) {
-  return (
+  const middleware = (
     req: Request,
     res: Response<unknown, ListLocals<Query | undefined>>,
     next: NextFunction,
@@ -97,4 +97,5 @@ export function validateListQuery<
       next();
     });
   };
+  return Object.assign(middleware, { querySpec: options });
 }
