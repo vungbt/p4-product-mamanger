@@ -4,9 +4,11 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { ExchangeRequestModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
+import { auditPolicies } from './exchanges.audit.js';
 import * as exchanges from './exchanges.service.js';
 
 const router = Router();
@@ -128,4 +130,4 @@ router.post(
     201,
   ),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

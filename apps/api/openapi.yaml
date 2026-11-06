@@ -131,6 +131,8 @@ tags:
     description: Quyền của người dùng hiện tại và contract trạng thái.
   - name: wishlist
     description: Danh sách yêu thích và đăng ký báo còn hàng.
+  - name: auth-native
+    description: Better Auth native endpoints. Browser clients use @p4/api-sdk/auth and HttpOnly session cookies.
 paths:
   /api/me/capabilities:
     get:
@@ -140,7 +142,9 @@ paths:
       summary: Quyền của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -179,7 +183,9 @@ paths:
       summary: Contract trạng thái của hệ thống
       description: "**Quyền:** `system:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -255,7 +261,9 @@ paths:
 
         **Yêu cầu đăng nhập.** Bắt buộc header `Idempotency-Key`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: import
       parameters:
         - name: resource
           in: path
@@ -405,7 +413,9 @@ paths:
       summary: Tải file mẫu import
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: resource
           in: path
@@ -463,7 +473,9 @@ paths:
       summary: Tạo job export (CSV/XLSX)
       description: "**Yêu cầu đăng nhập.** Bắt buộc header `Idempotency-Key`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: export
       parameters:
         - name: Idempotency-Key
           in: header
@@ -624,7 +636,9 @@ paths:
       summary: Tạo upload ticket cho nhiều file
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -754,7 +768,9 @@ paths:
 
         **Yêu cầu đăng nhập.** Bắt buộc header `Idempotency-Key`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: submit
       parameters:
         - name: Idempotency-Key
           in: header
@@ -901,7 +917,9 @@ paths:
       summary: Danh sách process của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -1060,7 +1078,9 @@ paths:
       summary: Xem trạng thái process
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -1186,7 +1206,9 @@ paths:
       summary: Kết quả và lỗi từng dòng/từng file
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -1302,7 +1324,9 @@ paths:
       summary: Xác nhận áp dụng import
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: confirm
       parameters:
         - name: id
           in: path
@@ -1444,7 +1468,9 @@ paths:
       summary: Huỷ process
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: cancel
       parameters:
         - name: id
           in: path
@@ -1586,7 +1612,9 @@ paths:
       summary: Tải file kết quả của process
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -1617,7 +1645,9 @@ paths:
       summary: Tạo yêu cầu đổi hàng
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -1698,7 +1728,9 @@ paths:
       summary: Yêu cầu đổi hàng của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -1768,7 +1800,9 @@ paths:
       summary: Danh sách yêu cầu đổi hàng (Admin)
       description: "**Quyền:** `return:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -1838,7 +1872,9 @@ paths:
       summary: Chi tiết yêu cầu đổi hàng
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -1875,7 +1911,9 @@ paths:
       summary: Duyệt đổi hàng
       description: "**Quyền:** `return:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: approve
       parameters:
         - name: id
           in: path
@@ -1928,7 +1966,9 @@ paths:
       summary: Từ chối đổi hàng
       description: "**Quyền:** `return:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: reject
       parameters:
         - name: id
           in: path
@@ -1989,7 +2029,9 @@ paths:
 
         **Quyền:** `return:manage`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -2042,7 +2084,9 @@ paths:
       summary: Báo cáo doanh thu
       description: "**Quyền:** `report:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -2111,7 +2155,9 @@ paths:
       summary: Báo cáo đơn hàng
       description: "**Quyền:** `report:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -2180,7 +2226,9 @@ paths:
       summary: Báo cáo tồn kho
       description: "**Quyền:** `report:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -2249,7 +2297,9 @@ paths:
       summary: Báo cáo sản phẩm
       description: "**Quyền:** `report:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -2318,7 +2368,9 @@ paths:
       summary: Tạo file export báo cáo
       description: "**Quyền:** `report:export`. Bắt buộc header `Idempotency-Key`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: export
       parameters:
         - name: Idempotency-Key
           in: header
@@ -2376,7 +2428,9 @@ paths:
       summary: Xem trạng thái export báo cáo
       description: "**Quyền:** `report:export`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -2413,7 +2467,9 @@ paths:
       summary: Tải file export báo cáo
       description: "**Quyền:** `report:export`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -2444,7 +2500,9 @@ paths:
       summary: Metrics vận hành
       description: "**Quyền:** `system:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -2494,7 +2552,9 @@ paths:
       summary: Chạy đối soát tồn kho
       description: "**Quyền:** `system:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: reconcile
       responses:
         "200":
           description: Thành công
@@ -2540,7 +2600,9 @@ paths:
       summary: Danh sách bộ sưu tập (Admin)
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -2609,7 +2671,9 @@ paths:
       summary: Tạo bộ sưu tập
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -2670,7 +2734,9 @@ paths:
       summary: Chi tiết bộ sưu tập (Admin)
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -2706,7 +2772,9 @@ paths:
       summary: Cập nhật bộ sưu tập
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -2779,7 +2847,9 @@ paths:
       summary: Danh sách banner (Admin)
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -2848,7 +2918,9 @@ paths:
       summary: Tạo banner
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -2918,7 +2990,9 @@ paths:
       summary: Chi tiết banner (Admin)
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -2954,7 +3028,9 @@ paths:
       summary: Cập nhật banner
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -3036,6 +3112,7 @@ paths:
       summary: Danh sách bộ sưu tập đang hiển thị
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -3181,6 +3258,7 @@ paths:
       summary: Xem bộ sưu tập
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: slug
           in: path
@@ -3332,7 +3410,9 @@ paths:
       summary: Xem cấu hình điều hướng (Admin)
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: placement
           in: path
@@ -3368,7 +3448,9 @@ paths:
       summary: Cập nhật điều hướng
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: placement
           in: path
@@ -3426,7 +3508,9 @@ paths:
       summary: Xem bố cục trang chủ (Admin)
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -3454,7 +3538,9 @@ paths:
       summary: Cập nhật bố cục trang chủ
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       requestBody:
         required: true
         content:
@@ -3518,6 +3604,7 @@ paths:
       summary: Xem điều hướng đang hiển thị
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: placement
           in: path
@@ -3560,6 +3647,7 @@ paths:
       summary: Dữ liệu trang chủ Storefront
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -3724,6 +3812,7 @@ paths:
       summary: Bộ lọc khả dụng của sản phẩm
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -3887,6 +3976,7 @@ paths:
       summary: Gợi ý tìm kiếm
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: q
           in: query
@@ -3957,7 +4047,9 @@ paths:
       summary: Tạo ticket hỗ trợ
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -4027,7 +4119,9 @@ paths:
       summary: Ticket của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -4097,7 +4191,9 @@ paths:
       summary: Danh sách ticket (Admin)
       description: "**Quyền:** `support:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -4167,7 +4263,9 @@ paths:
       summary: Chi tiết ticket
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -4207,7 +4305,9 @@ paths:
 
         **Yêu cầu đăng nhập.**
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -4283,7 +4383,9 @@ paths:
       summary: Gửi tin nhắn vào ticket
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: reply
       parameters:
         - name: id
           in: path
@@ -4350,7 +4452,9 @@ paths:
       summary: Phân công ticket
       description: "**Quyền:** `support:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: assign
       parameters:
         - name: id
           in: path
@@ -4408,7 +4512,9 @@ paths:
       summary: Đóng ticket
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: close
       parameters:
         - name: id
           in: path
@@ -4466,7 +4572,9 @@ paths:
       summary: Danh sách job nền
       description: "**Quyền:** `system:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -4592,7 +4700,9 @@ paths:
       summary: Chi tiết job nền
       description: "**Quyền:** `system:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -4697,7 +4807,9 @@ paths:
       summary: Chạy lại job nền
       description: "**Quyền:** `system:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: retry
       parameters:
         - name: id
           in: path
@@ -4782,7 +4894,9 @@ paths:
       summary: Hộp thư thông báo của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -4852,7 +4966,9 @@ paths:
       summary: Số thông báo chưa đọc
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -4886,7 +5002,9 @@ paths:
       summary: Đánh dấu đã đọc tất cả
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: mark_read
       responses:
         "200":
           description: Thành công
@@ -4922,7 +5040,9 @@ paths:
       summary: Đánh dấu đã đọc một thông báo
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: mark_read
       parameters:
         - name: id
           in: path
@@ -4966,7 +5086,9 @@ paths:
       summary: Xem tuỳ chọn nhận thông báo
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -4994,7 +5116,9 @@ paths:
       summary: Cập nhật tuỳ chọn nhận thông báo
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       requestBody:
         required: true
         content:
@@ -5048,7 +5172,9 @@ paths:
       summary: Danh sách mẫu thông báo
       description: "**Quyền:** `notification:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -5098,7 +5224,9 @@ paths:
       summary: Lưu mẫu thông báo
       description: "**Quyền:** `notification:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       requestBody:
         required: true
         content:
@@ -5188,6 +5316,7 @@ paths:
       summary: Xem bài viết đã xuất bản
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: slug
           in: path
@@ -5269,7 +5398,9 @@ paths:
       summary: Danh sách bài viết (Admin)
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -5344,7 +5475,9 @@ paths:
       summary: Tạo bài viết nháp
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -5420,7 +5553,9 @@ paths:
       summary: Chi tiết bài viết (Admin)
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -5459,7 +5594,9 @@ paths:
 
         **Quyền:** `content:write`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -5550,7 +5687,9 @@ paths:
 
         **Quyền:** `content:publish`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: publish
       parameters:
         - name: id
           in: path
@@ -5606,7 +5745,9 @@ paths:
       summary: Lưu trữ bài viết
       description: "**Quyền:** `content:publish`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: archive
       parameters:
         - name: id
           in: path
@@ -5659,7 +5800,9 @@ paths:
       summary: Lịch sử revision của bài viết
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -5756,6 +5899,7 @@ paths:
       summary: Xem trang CMS đã xuất bản
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: slug
           in: path
@@ -5837,7 +5981,9 @@ paths:
       summary: Danh sách trang CMS (Admin)
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -5912,7 +6058,9 @@ paths:
       summary: Tạo trang CMS nháp
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -5988,7 +6136,9 @@ paths:
       summary: Chi tiết trang CMS (Admin)
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -6027,7 +6177,9 @@ paths:
 
         **Quyền:** `content:write`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -6118,7 +6270,9 @@ paths:
 
         **Quyền:** `content:publish`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: publish
       parameters:
         - name: id
           in: path
@@ -6174,7 +6328,9 @@ paths:
       summary: Lưu trữ trang CMS
       description: "**Quyền:** `content:publish`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: archive
       parameters:
         - name: id
           in: path
@@ -6227,7 +6383,9 @@ paths:
       summary: Lịch sử revision của trang CMS
       description: "**Quyền:** `content:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -6324,6 +6482,7 @@ paths:
       summary: Danh sách bài viết đã xuất bản
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -6397,6 +6556,7 @@ paths:
       summary: Danh sách chuyên mục bài viết
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -6434,7 +6594,9 @@ paths:
       summary: Tạo chuyên mục bài viết
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -6496,7 +6658,9 @@ paths:
       summary: Cập nhật chuyên mục bài viết
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -6566,6 +6730,7 @@ paths:
       summary: Danh sách thẻ bài viết
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -6603,7 +6768,9 @@ paths:
       summary: Tạo thẻ bài viết
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -6665,7 +6832,9 @@ paths:
       summary: Cập nhật thẻ bài viết
       description: "**Quyền:** `content:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -6735,6 +6904,7 @@ paths:
       summary: Chính sách đang hiệu lực
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -6763,7 +6933,9 @@ paths:
       summary: Danh sách yêu thích của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -6846,7 +7018,9 @@ paths:
       summary: Thêm sản phẩm vào yêu thích
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: productId
           in: path
@@ -6892,7 +7066,9 @@ paths:
       summary: Bỏ sản phẩm khỏi yêu thích
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       parameters:
         - name: productId
           in: path
@@ -6936,7 +7112,9 @@ paths:
       summary: Đăng ký báo còn hàng
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -6997,7 +7175,9 @@ paths:
       summary: Đăng ký báo còn hàng của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -7082,7 +7262,9 @@ paths:
       summary: Huỷ đăng ký báo còn hàng
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       parameters:
         - name: id
           in: path
@@ -7129,7 +7311,9 @@ paths:
 
         **Yêu cầu đăng nhập.**
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -7195,7 +7379,9 @@ paths:
       summary: Sửa đánh giá của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -7258,7 +7444,9 @@ paths:
       summary: Kiểm duyệt đánh giá
       description: "**Quyền:** `review:moderate`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: moderate
       parameters:
         - name: id
           in: path
@@ -7322,7 +7510,9 @@ paths:
       summary: Phản hồi đánh giá
       description: "**Quyền:** `review:reply`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: reply
       parameters:
         - name: id
           in: path
@@ -7380,7 +7570,9 @@ paths:
       summary: Báo cáo đánh giá vi phạm
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -7439,7 +7631,9 @@ paths:
       summary: Danh sách đánh giá (Admin)
       description: "**Quyền:** `review:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -7529,6 +7723,7 @@ paths:
       summary: Tổng hợp điểm đánh giá của sản phẩm
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -7582,7 +7777,9 @@ paths:
       summary: Đối soát hoàn tiền với provider
       description: "**Quyền:** `refund:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: reconcile
       parameters:
         - name: id
           in: path
@@ -7657,7 +7854,9 @@ paths:
 
         **Quyền:** `refund:manage`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: retry
       parameters:
         - name: id
           in: path
@@ -7743,7 +7942,9 @@ paths:
       summary: Xác nhận đã chuyển khoản hoàn tiền
       description: "**Quyền:** `refund:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: confirm
       parameters:
         - name: id
           in: path
@@ -7838,7 +8039,9 @@ paths:
       summary: Tạo yêu cầu trả hàng
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -7907,7 +8110,9 @@ paths:
       summary: Yêu cầu trả hàng của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -7977,7 +8182,9 @@ paths:
       summary: Danh sách yêu cầu trả hàng (Admin)
       description: "**Quyền:** `return:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -8047,7 +8254,9 @@ paths:
       summary: Chi tiết yêu cầu trả hàng
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -8084,7 +8293,9 @@ paths:
       summary: Duyệt trả hàng
       description: "**Quyền:** `return:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: approve
       parameters:
         - name: id
           in: path
@@ -8141,7 +8352,9 @@ paths:
       summary: Từ chối trả hàng
       description: "**Quyền:** `return:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: reject
       parameters:
         - name: id
           in: path
@@ -8198,7 +8411,9 @@ paths:
       summary: Đánh dấu hàng trả đang về
       description: "**Quyền:** `return:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: dispatch
       parameters:
         - name: id
           in: path
@@ -8255,7 +8470,9 @@ paths:
       summary: Đánh dấu đã nhận hàng trả
       description: "**Quyền:** `return:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: receive
       parameters:
         - name: id
           in: path
@@ -8315,7 +8532,9 @@ paths:
 
         **Quyền:** `return:manage`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: inspect
       parameters:
         - name: id
           in: path
@@ -8378,7 +8597,9 @@ paths:
       summary: Hoàn tất trả hàng
       description: "**Quyền:** `return:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: complete
       parameters:
         - name: id
           in: path
@@ -8438,7 +8659,9 @@ paths:
 
         **Quyền:** `fulfillment:manage`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -8499,7 +8722,9 @@ paths:
       summary: Danh sách kiện hàng của đơn
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -8538,7 +8763,9 @@ paths:
       summary: Đóng gói kiện hàng
       description: "**Quyền:** `fulfillment:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: pack
       parameters:
         - name: id
           in: path
@@ -8599,7 +8826,9 @@ paths:
       summary: Đánh dấu sẵn sàng giao
       description: "**Quyền:** `fulfillment:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: ready
       parameters:
         - name: id
           in: path
@@ -8660,7 +8889,9 @@ paths:
       summary: Bàn giao cho đơn vị vận chuyển
       description: "**Quyền:** `fulfillment:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: handover
       parameters:
         - name: id
           in: path
@@ -8721,7 +8952,9 @@ paths:
       summary: Đánh dấu đang giao
       description: "**Quyền:** `fulfillment:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: dispatch
       parameters:
         - name: id
           in: path
@@ -8785,7 +9018,9 @@ paths:
 
         **Quyền:** `fulfillment:manage`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: deliver
       parameters:
         - name: id
           in: path
@@ -8846,7 +9081,9 @@ paths:
       summary: Đánh dấu giao thất bại
       description: "**Quyền:** `fulfillment:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: fail
       parameters:
         - name: id
           in: path
@@ -8907,7 +9144,9 @@ paths:
       summary: Đánh dấu hoàn về
       description: "**Quyền:** `fulfillment:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: return
       parameters:
         - name: id
           in: path
@@ -8968,7 +9207,9 @@ paths:
       summary: Đánh dấu thất lạc
       description: "**Quyền:** `fulfillment:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: lose
       parameters:
         - name: id
           in: path
@@ -9029,7 +9270,9 @@ paths:
       summary: Huỷ kiện hàng
       description: "**Quyền:** `fulfillment:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: cancel
       parameters:
         - name: id
           in: path
@@ -9090,7 +9333,9 @@ paths:
       summary: Lịch sử trạng thái kiện hàng
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -9140,7 +9385,9 @@ paths:
       summary: Tạo lần thanh toán
       description: "**Yêu cầu đăng nhập.** Bắt buộc header `Idempotency-Key`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -9252,7 +9499,9 @@ paths:
       summary: Danh sách lần thanh toán của đơn
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -9291,7 +9540,9 @@ paths:
       summary: Đối soát lần thanh toán với provider
       description: "**Quyền:** `payment:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: reconcile
       parameters:
         - name: id
           in: path
@@ -9376,7 +9627,9 @@ paths:
       summary: Xác nhận đã thu tiền COD
       description: "**Quyền:** `payment:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: collect_payment
       parameters:
         - name: id
           in: path
@@ -9480,7 +9733,9 @@ paths:
       summary: Xác nhận đơn
       description: "**Quyền:** `order:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: confirm
       parameters:
         - name: id
           in: path
@@ -9544,7 +9799,9 @@ paths:
       summary: Bắt đầu xử lý đơn
       description: "**Quyền:** `order:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: process
       parameters:
         - name: id
           in: path
@@ -9608,7 +9865,9 @@ paths:
       summary: Lịch sử trạng thái đơn
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -9699,7 +9958,9 @@ paths:
       summary: Yêu cầu huỷ một phần hoặc toàn bộ đơn
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -9761,7 +10022,9 @@ paths:
       summary: Xem yêu cầu huỷ
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -9798,7 +10061,9 @@ paths:
       summary: Duyệt yêu cầu huỷ
       description: "**Quyền:** `order:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: approve
       parameters:
         - name: id
           in: path
@@ -9855,7 +10120,9 @@ paths:
       summary: Từ chối yêu cầu huỷ
       description: "**Quyền:** `order:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: reject
       parameters:
         - name: id
           in: path
@@ -9912,7 +10179,9 @@ paths:
       summary: Danh sách khuyến mãi
       description: "**Quyền:** `promotion:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -9990,7 +10259,9 @@ paths:
       summary: Tạo khuyến mãi
       description: "**Quyền:** `promotion:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -10058,7 +10329,9 @@ paths:
       summary: Chi tiết khuyến mãi
       description: "**Quyền:** `promotion:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -10094,7 +10367,9 @@ paths:
       summary: Cập nhật khuyến mãi
       description: "**Quyền:** `promotion:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -10174,7 +10449,9 @@ paths:
       summary: Chi tiết coupon
       description: "**Quyền:** `promotion:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -10211,7 +10488,9 @@ paths:
       summary: Lịch sử dùng coupon
       description: "**Quyền:** `promotion:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -10322,7 +10601,9 @@ paths:
 
         **Yêu cầu đăng nhập.**
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: false
         content:
@@ -10375,7 +10656,9 @@ paths:
       summary: Xem báo giá checkout
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -10412,7 +10695,9 @@ paths:
       summary: Xem giỏ hàng
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -10441,7 +10726,9 @@ paths:
       summary: Thêm SKU vào giỏ
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -10494,7 +10781,9 @@ paths:
       summary: Xoá toàn bộ giỏ
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       requestBody:
         required: true
         content:
@@ -10539,7 +10828,9 @@ paths:
       summary: Đổi số lượng một dòng trong giỏ
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -10596,7 +10887,9 @@ paths:
       summary: Xoá một dòng trong giỏ
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       parameters:
         - name: id
           in: path
@@ -10649,7 +10942,9 @@ paths:
       summary: Gộp giỏ khách vãng lai sau khi đăng nhập
       description: "**Yêu cầu đăng nhập.** Bắt buộc header `Idempotency-Key`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: merge
       parameters:
         - name: Idempotency-Key
           in: header
@@ -10710,6 +11005,7 @@ paths:
       summary: Cấu hình shop công khai
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -10734,7 +11030,9 @@ paths:
       summary: Xem cấu hình shop
       description: "**Quyền:** `settings:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -10762,7 +11060,9 @@ paths:
       summary: Cập nhật cấu hình shop
       description: "**Quyền:** `settings:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       requestBody:
         required: true
         content:
@@ -10836,7 +11136,9 @@ paths:
       summary: Xem cấu hình thương mại
       description: "**Quyền:** `settings:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -10864,7 +11166,9 @@ paths:
       summary: Cập nhật cấu hình thương mại
       description: "**Quyền:** `settings:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       requestBody:
         required: true
         content:
@@ -10924,7 +11228,9 @@ paths:
       summary: Danh sách phương thức vận chuyển
       description: "**Quyền:** `settings:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -10995,7 +11301,9 @@ paths:
       summary: Tạo phương thức vận chuyển
       description: "**Quyền:** `settings:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -11067,7 +11375,9 @@ paths:
       summary: Chi tiết phương thức vận chuyển
       description: "**Quyền:** `settings:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -11103,7 +11413,9 @@ paths:
       summary: Cập nhật phương thức vận chuyển
       description: "**Quyền:** `settings:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -11187,6 +11499,7 @@ paths:
       summary: Tính phí vận chuyển
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       requestBody:
         required: true
         content:
@@ -11237,7 +11550,9 @@ paths:
       summary: Danh sách sản phẩm (Admin, gồm bản nháp)
       description: "**Quyền:** `catalog:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -11361,7 +11676,9 @@ paths:
       summary: Chi tiết sản phẩm (Admin)
       description: "**Quyền:** `catalog:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -11401,6 +11718,7 @@ paths:
 
         **Công khai.**
       security: []
+      x-audit-action: read
       parameters:
         - name: slug
           in: path
@@ -11451,7 +11769,9 @@ paths:
       summary: Đổi trạng thái xuất bản sản phẩm
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -11512,6 +11832,7 @@ paths:
       summary: Danh sách SKU đang bán của sản phẩm
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -11545,7 +11866,9 @@ paths:
       summary: Tạo SKU
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -11623,7 +11946,9 @@ paths:
       summary: Danh sách SKU của sản phẩm (Admin)
       description: "**Quyền:** `catalog:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -11662,7 +11987,9 @@ paths:
       summary: Tìm SKU trên toàn catalog
       description: "**Quyền:** `catalog:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -11751,7 +12078,9 @@ paths:
 
         **Quyền:** `catalog:write`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -11831,7 +12160,9 @@ paths:
       summary: Gán ảnh cho SKU
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -11897,7 +12228,9 @@ paths:
       summary: Danh sách bảng size
       description: "**Quyền:** `catalog:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -11967,7 +12300,9 @@ paths:
       summary: Tạo bảng size
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -12030,7 +12365,9 @@ paths:
       summary: Chi tiết bảng size
       description: "**Quyền:** `catalog:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -12066,7 +12403,9 @@ paths:
       summary: Cập nhật bảng size
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -12141,7 +12480,9 @@ paths:
       summary: Tồn kho theo SKU
       description: "**Quyền:** `inventory:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -12227,7 +12568,9 @@ paths:
       summary: Lịch sử biến động kho
       description: "**Quyền:** `inventory:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -12342,7 +12685,9 @@ paths:
       summary: Nhập kho
       description: "**Quyền:** `inventory:write`. Bắt buộc header `Idempotency-Key`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: receipt
       parameters:
         - name: Idempotency-Key
           in: header
@@ -12414,7 +12759,9 @@ paths:
       summary: Điều chỉnh tồn kho
       description: "**Quyền:** `inventory:write`. Bắt buộc header `Idempotency-Key`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: adjust
       parameters:
         - name: Idempotency-Key
           in: header
@@ -12486,7 +12833,9 @@ paths:
       summary: Đối soát tồn kho với ledger
       description: "**Quyền:** `inventory:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -12530,6 +12879,7 @@ paths:
       summary: Đăng ký tài khoản khách hàng
       description: "**Công khai.**"
       security: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -12588,6 +12938,7 @@ paths:
 
         **Công khai.**
       security: []
+      x-audit-action: request_verification
       requestBody:
         required: true
         content:
@@ -12637,6 +12988,7 @@ paths:
 
         **Công khai.**
       security: []
+      x-audit-action: request_password_reset
       requestBody:
         required: true
         content:
@@ -12683,6 +13035,7 @@ paths:
       summary: Xác minh email bằng token
       description: "**Công khai.**"
       security: []
+      x-audit-action: verify
       requestBody:
         required: true
         content:
@@ -12728,6 +13081,7 @@ paths:
       summary: Đặt lại mật khẩu bằng token
       description: "**Công khai.**"
       security: []
+      x-audit-action: reset_password
       requestBody:
         required: true
         content:
@@ -12778,7 +13132,9 @@ paths:
       summary: Xem hồ sơ của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -12806,7 +13162,9 @@ paths:
       summary: Cập nhật hồ sơ của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       requestBody:
         required: true
         content:
@@ -12860,7 +13218,9 @@ paths:
       summary: Xem tuỳ chọn của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -12899,7 +13259,9 @@ paths:
       summary: Cập nhật tuỳ chọn của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       requestBody:
         required: true
         content:
@@ -12966,7 +13328,9 @@ paths:
       summary: Yêu cầu đổi email
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: change_email
       requestBody:
         required: true
         content:
@@ -13022,6 +13386,7 @@ paths:
       summary: Xác nhận đổi email bằng token
       description: "**Công khai.**"
       security: []
+      x-audit-action: confirm
       requestBody:
         required: true
         content:
@@ -13067,7 +13432,9 @@ paths:
       summary: Danh sách phiên đăng nhập của tôi
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -13088,9 +13455,7 @@ paths:
                         expiresAt:
                           type: string
                         revokedAt:
-                          type:
-                            - string
-                            - "null"
+                          type: "null"
                       required:
                         - id
                         - createdAt
@@ -13114,7 +13479,9 @@ paths:
       summary: Thu hồi một phiên đăng nhập
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: revoke_session
       parameters:
         - name: id
           in: path
@@ -13158,7 +13525,9 @@ paths:
       summary: Thu hồi mọi phiên khác
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: revoke_session
       responses:
         "200":
           description: Thành công
@@ -13194,7 +13563,9 @@ paths:
       summary: Danh sách nhật ký thao tác
       description: "**Quyền:** `audit:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -13346,7 +13717,9 @@ paths:
       summary: Chi tiết nhật ký thao tác
       description: "**Quyền:** `audit:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -13424,7 +13797,9 @@ paths:
       summary: Danh sách vai trò và quyền
       description: "**Quyền:** `staff:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -13458,7 +13833,9 @@ paths:
       summary: Danh sách nhân viên
       description: "**Quyền:** `staff:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -13565,7 +13942,9 @@ paths:
       summary: Danh sách khách hàng
       description: "**Quyền:** `customer:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -13672,7 +14051,9 @@ paths:
       summary: Mời nhân viên
       description: "**Quyền:** `staff:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -13732,7 +14113,9 @@ paths:
       summary: Chấp nhận lời mời nhân viên
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: accept
       requestBody:
         required: true
         content:
@@ -13786,7 +14169,9 @@ paths:
       summary: Đổi vai trò nhân viên
       description: "**Quyền:** `staff:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -13878,7 +14263,9 @@ paths:
       summary: Đổi trạng thái nhân viên
       description: "**Quyền:** `staff:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -13966,7 +14353,9 @@ paths:
       summary: Đổi trạng thái khách hàng
       description: "**Quyền:** `customer:manage`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -14054,6 +14443,7 @@ paths:
       summary: Đăng nhập bằng email và mật khẩu
       description: "**Công khai.**"
       security: []
+      x-audit-action: login
       requestBody:
         required: true
         content:
@@ -14096,6 +14486,7 @@ paths:
       summary: Đăng nhập bằng Google ID token
       description: "**Công khai.**"
       security: []
+      x-audit-action: login
       requestBody:
         required: true
         content:
@@ -14135,6 +14526,7 @@ paths:
       summary: Lấy access token mới từ refresh token
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       requestBody:
         required: true
         content:
@@ -14174,7 +14566,9 @@ paths:
       summary: Thông tin người dùng hiện tại
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -14207,7 +14601,9 @@ paths:
       summary: Cập nhật thông tin người dùng hiện tại
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       requestBody:
         required: true
         content:
@@ -14251,7 +14647,9 @@ paths:
       summary: Đặt hoặc đổi mật khẩu
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: change_password
       requestBody:
         required: true
         content:
@@ -14267,7 +14665,12 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: "#/components/schemas/LoginResponse"
+                    type: object
+                    properties:
+                      changed:
+                        type: boolean
+                    required:
+                      - changed
                   message:
                     type: string
                 required:
@@ -14290,6 +14693,7 @@ paths:
       summary: Đăng xuất và thu hồi refresh token
       description: "**Công khai.**"
       security: []
+      x-audit-action: logout
       requestBody:
         required: false
         content:
@@ -14332,6 +14736,7 @@ paths:
       summary: Danh sách sản phẩm
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -14450,7 +14855,9 @@ paths:
       summary: Tạo sản phẩm
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -14544,6 +14951,7 @@ paths:
       summary: Chi tiết sản phẩm
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -14575,7 +14983,9 @@ paths:
       summary: Cập nhật sản phẩm
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -14672,7 +15082,9 @@ paths:
       summary: Xoá sản phẩm
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       parameters:
         - name: id
           in: path
@@ -14711,6 +15123,7 @@ paths:
       summary: Danh sách đánh giá của sản phẩm
       description: "**Công khai.** Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -14788,7 +15201,9 @@ paths:
       summary: Đánh giá sản phẩm (luồng cũ)
       description: "**Vai trò:** user, admin."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -14855,7 +15270,9 @@ paths:
       summary: Xoá đánh giá
       description: "**Vai trò:** user, admin."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       parameters:
         - name: id
           in: path
@@ -14904,7 +15321,9 @@ paths:
       summary: Thêm ảnh sản phẩm
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: id
           in: path
@@ -14968,7 +15387,9 @@ paths:
       summary: Xoá ảnh sản phẩm
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       parameters:
         - name: id
           in: path
@@ -15017,6 +15438,7 @@ paths:
       summary: Danh sách danh mục
       description: "**Công khai.** Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -15088,7 +15510,9 @@ paths:
       summary: Tạo danh mục
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -15139,6 +15563,7 @@ paths:
       summary: Chi tiết danh mục
       description: "**Công khai.**"
       security: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -15170,7 +15595,9 @@ paths:
       summary: Cập nhật danh mục
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -15223,7 +15650,9 @@ paths:
       summary: Xoá danh mục
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       parameters:
         - name: id
           in: path
@@ -15262,7 +15691,9 @@ paths:
       summary: Xem trước số tiền giảm của coupon
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       requestBody:
         required: true
         content:
@@ -15331,7 +15762,9 @@ paths:
       summary: Danh sách coupon
       description: "**Quyền:** `promotion:read`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -15419,7 +15852,9 @@ paths:
       summary: Tạo coupon
       description: "**Quyền:** `promotion:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -15487,7 +15922,9 @@ paths:
       summary: Cập nhật coupon
       description: "**Quyền:** `promotion:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -15567,7 +16004,9 @@ paths:
       summary: Xoá coupon
       description: "**Quyền:** `promotion:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       parameters:
         - name: id
           in: path
@@ -15606,7 +16045,9 @@ paths:
       summary: Danh sách đơn hàng (Admin)
       description: "**Quyền:** `order:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -15732,7 +16173,9 @@ paths:
 
         **Vai trò:** user. Bắt buộc header `Idempotency-Key`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: Idempotency-Key
           in: header
@@ -15806,7 +16249,9 @@ paths:
       summary: Đơn hàng của tôi
       description: "**Vai trò:** user, admin."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -15927,7 +16372,9 @@ paths:
       summary: Chi tiết đơn hàng
       description: "**Vai trò:** user, admin."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -15964,7 +16411,9 @@ paths:
       summary: Huỷ đơn
       description: "**Vai trò:** user, admin."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: cancel
       parameters:
         - name: id
           in: path
@@ -16006,7 +16455,9 @@ paths:
 
         **Quyền:** `refund:manage`. Bắt buộc header `Idempotency-Key`.
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: refund
       parameters:
         - name: id
           in: path
@@ -16113,7 +16564,9 @@ paths:
 
         **Yêu cầu đăng nhập.**
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: pay
       parameters:
         - name: id
           in: path
@@ -16198,7 +16651,9 @@ paths:
       summary: Danh sách hoàn tiền
       description: "**Quyền:** `refund:read`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -16301,7 +16756,9 @@ paths:
       summary: Chi tiết hoàn tiền
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -16371,7 +16828,9 @@ paths:
       summary: Đặt địa chỉ mặc định
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -16410,7 +16869,9 @@ paths:
       summary: Danh sách địa chỉ của tôi
       description: "**Yêu cầu đăng nhập.** Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: page
           in: query
@@ -16491,7 +16952,9 @@ paths:
       summary: Thêm địa chỉ
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -16546,7 +17009,9 @@ paths:
       summary: Cập nhật địa chỉ
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: update
       parameters:
         - name: id
           in: path
@@ -16603,7 +17068,9 @@ paths:
       summary: Xoá địa chỉ
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       parameters:
         - name: id
           in: path
@@ -16642,7 +17109,9 @@ paths:
       summary: Số liệu tổng quan
       description: "**Quyền:** `report:read`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       responses:
         "200":
           description: Thành công
@@ -16671,7 +17140,9 @@ paths:
       summary: Lấy URL ký upload Cloudinary
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: name
           in: query
@@ -16759,7 +17230,9 @@ paths:
       summary: Lấy nhiều URL ký upload Cloudinary
       description: "**Quyền:** `catalog:write`."
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       parameters:
         - name: names
           in: query
@@ -16849,7 +17322,9 @@ paths:
       summary: Tạo upload ticket
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: create
       requestBody:
         required: true
         content:
@@ -16958,7 +17433,9 @@ paths:
 
         **Yêu cầu đăng nhập.**
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: complete
       parameters:
         - name: id
           in: path
@@ -16997,7 +17474,9 @@ paths:
       summary: Xem upload ticket
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -17034,7 +17513,9 @@ paths:
       summary: Tải file riêng tư
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: read
       parameters:
         - name: id
           in: path
@@ -17065,7 +17546,9 @@ paths:
       summary: Xoá file
       description: "**Yêu cầu đăng nhập.**"
       security:
+        - sessionCookie: []
         - bearerAuth: []
+      x-audit-action: delete
       parameters:
         - name: id
           in: path
@@ -17188,12 +17671,3361 @@ paths:
                     type: string
         "503":
           description: Chưa sẵn sàng
+  /api/auth/sign-in/social:
+    post:
+      tags:
+        - auth-native
+      description: Sign in with a social provider
+      operationId: auth_post__sign_in_social
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callbackURL:
+                  type: string
+                  description: Callback URL to redirect to after the user has signed in
+                newUserCallbackURL:
+                  type: string
+                errorCallbackURL:
+                  type: string
+                  description: Callback URL to redirect to if an error happens
+                provider:
+                  anyOf:
+                    - type: string
+                      enum:
+                        - apple
+                        - atlassian
+                        - cloudflare
+                        - cognito
+                        - discord
+                        - facebook
+                        - figma
+                        - github
+                        - microsoft
+                        - google
+                        - huggingface
+                        - slack
+                        - spotify
+                        - twitch
+                        - twitter
+                        - dropbox
+                        - kick
+                        - linear
+                        - linkedin
+                        - gitlab
+                        - tiktok
+                        - reddit
+                        - roblox
+                        - salesforce
+                        - vk
+                        - zoom
+                        - notion
+                        - kakao
+                        - naver
+                        - line
+                        - paybin
+                        - paypal
+                        - polar
+                        - railway
+                        - vercel
+                        - wechat
+                    - type: string
+                disableRedirect:
+                  type: boolean
+                  description: Disable automatic redirection to the provider. Useful for handling the redirection yourself
+                idToken:
+                  type: object
+                  properties:
+                    token:
+                      type: string
+                      description: ID token from the provider
+                    nonce:
+                      type: string
+                      description: Nonce used to generate the token
+                    accessToken:
+                      type: string
+                      description: Access token from the provider
+                    refreshToken:
+                      type: string
+                      description: Refresh token from the provider
+                    expiresAt:
+                      type: number
+                      description: Expiry date of the token
+                    user:
+                      type: object
+                      properties:
+                        name:
+                          type: object
+                          properties:
+                            firstName:
+                              type: string
+                            lastName:
+                              type: string
+                        email:
+                          type: string
+                      description: The user object from the provider. Only available for some providers like Apple.
+                  required:
+                    - token
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of scopes to request from the provider. This will override the default scopes passed.
+                requestSignUp:
+                  type: boolean
+                  description: Explicitly request sign-up. Useful when disableImplicitSignUp is true for this provider
+                loginHint:
+                  type: string
+                  description: The login hint to use for the authorization code request
+                additionalParams:
+                  type: object
+                  propertyNames:
+                    type: string
+                  additionalProperties:
+                    type: string
+                  description: Extra query parameters to append to the provider authorization URL (e.g. Cognito identity_provider, Google
+                    hd).
+                additionalData:
+                  type: object
+                  propertyNames:
+                    type: string
+                  additionalProperties: {}
+              required:
+                - provider
+      responses:
+        "200":
+          description: Success - Returns session details (idToken branch) or an authorize URL (redirect branch)
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Returns session details when idToken is provided, or an authorize URL otherwise
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    $ref: "#/components/schemas/Auth_User"
+                  url:
+                    type: string
+                  redirect:
+                    type: boolean
+                required:
+                  - redirect
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: login
+      summary: Sign in with a social provider
+  /api/auth/callback/{id}:
+    get:
+      tags:
+        - auth-native
+      operationId: auth_get__callback_id_
+      security:
+        - Auth_bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: login
+      summary: "Better Auth: /callback/{id}"
+    post:
+      tags:
+        - auth-native
+      operationId: auth_post__callback_id_
+      security:
+        - Auth_bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                error:
+                  type: string
+                device_id:
+                  type: string
+                error_description:
+                  type: string
+                state:
+                  type: string
+                user:
+                  type: string
+                iss:
+                  type: string
+      responses:
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: login
+      summary: "Better Auth: /callback/{id}"
+  /api/auth/get-session:
+    get:
+      tags:
+        - auth-native
+      description: Get the current session
+      operationId: auth_get__get_session
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  session:
+                    $ref: "#/components/schemas/Auth_Session"
+                  user:
+                    $ref: "#/components/schemas/Auth_User"
+                required:
+                  - session
+                  - user
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: Get the current session
+    post:
+      tags:
+        - auth-native
+      description: Get the current session
+      operationId: auth_post__get_session
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  session:
+                    $ref: "#/components/schemas/Auth_Session"
+                  user:
+                    $ref: "#/components/schemas/Auth_User"
+                required:
+                  - session
+                  - user
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: Get the current session
+  /api/auth/sign-out:
+    post:
+      tags:
+        - auth-native
+      description: Sign out the current user
+      operationId: auth_post__sign_out
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callbackURL:
+                  type: string
+                  description: The URL to redirect to after provider logout
+                disableRedirect:
+                  type: boolean
+                  description: Return the provider logout URL without redirecting
+                state:
+                  type: string
+                  description: State to pass to the provider logout endpoint
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  url:
+                    type: string
+                    description: Provider logout URL when RP-initiated logout is available
+                  redirect:
+                    type: boolean
+                    description: Whether the client should redirect to the provider logout URL
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: logout
+      summary: Sign out the current user
+  /api/auth/sign-up/email:
+    post:
+      tags:
+        - auth-native
+      description: Sign up a user using email and password
+      operationId: auth_post__sign_up_email
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the user
+                email:
+                  type: string
+                  description: The email of the user
+                password:
+                  type: string
+                  description: The password of the user
+                image:
+                  type: string
+                  description: The profile image URL of the user
+                callbackURL:
+                  type: string
+                  description: The URL to use for email verification callback
+                rememberMe:
+                  type: boolean
+                  description: If this is false, the session will not be remembered. Default is `true`.
+              required:
+                - name
+                - email
+                - password
+      responses:
+        "200":
+          description: Successfully created user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    nullable: true
+                    description: Authentication token for the session
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: The unique identifier of the user
+                      email:
+                        type: string
+                        format: email
+                        description: The email address of the user
+                      name:
+                        type: string
+                        description: The name of the user
+                      image:
+                        type: string
+                        format: uri
+                        nullable: true
+                        description: The profile image URL of the user
+                      emailVerified:
+                        type: boolean
+                        description: Whether the email has been verified
+                      createdAt:
+                        type: string
+                        format: date-time
+                        description: When the user was created
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        description: When the user was last updated
+                    required:
+                      - id
+                      - email
+                      - name
+                      - emailVerified
+                      - createdAt
+                      - updatedAt
+                required:
+                  - user
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "422":
+          description: Unprocessable Entity. User already exists or failed to create user.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: create
+      summary: Sign up a user using email and password
+  /api/auth/sign-in/email:
+    post:
+      tags:
+        - auth-native
+      description: Sign in with email and password
+      operationId: auth_post__sign_in_email
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email of the user
+                password:
+                  type: string
+                  description: Password of the user
+                callbackURL:
+                  type: string
+                  description: Callback URL to use as a redirect for email verification
+                rememberMe:
+                  type: boolean
+                  description: If this is false, the session will not be remembered. Default is `true`.
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Success - Returns either session details or redirect URL
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Session response when idToken is provided
+                properties:
+                  redirect:
+                    type: boolean
+                    enum:
+                      - false
+                  token:
+                    type: string
+                    description: Session token
+                  url:
+                    type: string
+                    nullable: true
+                  user:
+                    type: object
+                    $ref: "#/components/schemas/Auth_User"
+                required:
+                  - redirect
+                  - token
+                  - user
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: login
+      summary: Sign in with email and password
+  /api/auth/reset-password:
+    post:
+      tags:
+        - auth-native
+      description: Reset the password for a user
+      operationId: auth_post__reset_password
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  description: The new password to set
+                token:
+                  type: string
+                  description: The token to reset the password
+              required:
+                - newPassword
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: reset_password
+      summary: Reset the password for a user
+  /api/auth/verify-password:
+    post:
+      tags:
+        - auth-native
+      description: Verify the current user's password
+      operationId: auth_post__verify_password
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  description: The password to verify
+              required:
+                - password
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: Verify the current user's password
+  /api/auth/verify-email:
+    get:
+      tags:
+        - auth-native
+      description: Verify the email of the user
+      operationId: auth_get__verify_email
+      security:
+        - Auth_bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          description: The token to verify the email
+          required: true
+          schema:
+            type: string
+        - name: callbackURL
+          in: query
+          description: The URL to redirect to after email verification
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    $ref: "#/components/schemas/Auth_User"
+                  status:
+                    type: boolean
+                    description: Indicates if the email was verified successfully
+                required:
+                  - user
+                  - status
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: verify
+      summary: Verify the email of the user
+  /api/auth/send-verification-email:
+    post:
+      tags:
+        - auth-native
+      description: Send a verification email to the user
+      operationId: auth_post__send_verification_email
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email to send the verification email to
+                  example: user@example.com
+                callbackURL:
+                  type: string
+                  description: The URL to use for email verification callback
+                  example: https://example.com/callback
+                  nullable: true
+              required:
+                - email
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    description: Indicates if the email was sent successfully
+                    example: true
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Verification email isn't enabled
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: request_verification
+      summary: Send a verification email to the user
+  /api/auth/change-email:
+    post:
+      tags:
+        - auth-native
+      operationId: auth_post__change_email
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newEmail:
+                  type: string
+                  description: The new email address to set must be a valid email address
+                callbackURL:
+                  type: string
+                  description: The URL to redirect to after email verification
+              required:
+                - newEmail
+      responses:
+        "200":
+          description: Email change request processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    $ref: "#/components/schemas/Auth_User"
+                  status:
+                    type: boolean
+                    description: Indicates if the request was successful
+                  message:
+                    type: string
+                    enum:
+                      - Email updated
+                      - Verification email sent
+                    description: Status message of the email change process
+                    nullable: true
+                required:
+                  - status
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: change_email
+      summary: "Better Auth: /change-email"
+  /api/auth/change-password:
+    post:
+      tags:
+        - auth-native
+      description: Change the password of the user
+      operationId: auth_post__change_password
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  description: The new password to set
+                currentPassword:
+                  type: string
+                  description: The current password is required
+                revokeOtherSessions:
+                  type: boolean
+                  description: Must be a boolean value
+              required:
+                - newPassword
+                - currentPassword
+      responses:
+        "200":
+          description: Password successfully changed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    nullable: true
+                    description: New session token if other sessions were revoked
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: The unique identifier of the user
+                      email:
+                        type: string
+                        format: email
+                        description: The email address of the user
+                      name:
+                        type: string
+                        description: The name of the user
+                      image:
+                        type: string
+                        format: uri
+                        nullable: true
+                        description: The profile image URL of the user
+                      emailVerified:
+                        type: boolean
+                        description: Whether the email has been verified
+                      createdAt:
+                        type: string
+                        format: date-time
+                        description: When the user was created
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        description: When the user was last updated
+                    required:
+                      - id
+                      - email
+                      - name
+                      - emailVerified
+                      - createdAt
+                      - updatedAt
+                required:
+                  - user
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: change_password
+      summary: Change the password of the user
+  /api/auth/update-session:
+    post:
+      tags:
+        - auth-native
+      description: Update the current session
+      operationId: auth_post__update_session
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              propertyNames:
+                type: string
+                description: Field name must be a string
+              additionalProperties: {}
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session:
+                    type: object
+                    $ref: "#/components/schemas/Auth_Session"
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: update
+      summary: Update the current session
+  /api/auth/update-user:
+    post:
+      tags:
+        - auth-native
+      description: Update the current user
+      operationId: auth_post__update_user
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the user
+                image:
+                  type: string
+                  description: The image of the user
+                  nullable: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    $ref: "#/components/schemas/Auth_User"
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: update
+      summary: Update the current user
+  /api/auth/delete-user:
+    post:
+      tags:
+        - auth-native
+      description: Delete the user
+      operationId: auth_post__delete_user
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callbackURL:
+                  type: string
+                  description: The callback URL to redirect to after the user is deleted
+                password:
+                  type: string
+                  description: The user's password. Required if session is not fresh
+                token:
+                  type: string
+                  description: The deletion verification token
+      responses:
+        "200":
+          description: User deletion processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Indicates if the operation was successful
+                  message:
+                    type: string
+                    enum:
+                      - User deleted
+                      - Verification email sent
+                    description: Status message of the deletion process
+                required:
+                  - success
+                  - message
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: delete
+      summary: Delete the user
+  /api/auth/request-password-reset:
+    post:
+      tags:
+        - auth-native
+      description: Send a password reset email to the user
+      operationId: auth_post__request_password_reset
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email address of the user to send a password reset email to
+                redirectTo:
+                  type: string
+                  description: The URL to redirect the user to reset their password. If the token isn't valid or expired, it'll be
+                    redirected with a query parameter `?error=INVALID_TOKEN`. If the token is valid, it'll be redirected
+                    with a query parameter `?token=VALID_TOKEN
+              required:
+                - email
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                  message:
+                    type: string
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: request_password_reset
+      summary: Send a password reset email to the user
+  /api/auth/reset-password/{token}:
+    get:
+      tags:
+        - auth-native
+      description: Redirects the user to the callback URL with the token
+      operationId: auth_get__reset_password_token_
+      security:
+        - Auth_bearerAuth: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: The token to reset the password
+          schema:
+            type: string
+        - name: callbackURL
+          in: query
+          required: true
+          description: The URL to redirect the user to reset their password
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: Redirects the user to the callback URL with the token
+  /api/auth/list-sessions:
+    get:
+      tags:
+        - auth-native
+      description: List all active sessions for the user
+      operationId: auth_get__list_sessions
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Auth_Session"
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: List all active sessions for the user
+  /api/auth/revoke-session:
+    post:
+      tags:
+        - auth-native
+      description: Revoke a single session
+      operationId: auth_post__revoke_session
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: The token to revoke
+              required:
+                - token
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    description: Indicates if the session was revoked successfully
+                required:
+                  - status
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: revoke_session
+      summary: Revoke a single session
+  /api/auth/revoke-sessions:
+    post:
+      tags:
+        - auth-native
+      description: Revoke all sessions for the user
+      operationId: auth_post__revoke_sessions
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    description: Indicates if all sessions were revoked successfully
+                required:
+                  - status
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: revoke_session
+      summary: Revoke all sessions for the user
+  /api/auth/revoke-other-sessions:
+    post:
+      tags:
+        - auth-native
+      description: Revoke all other sessions for the user except the current one
+      operationId: auth_post__revoke_other_sessions
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    description: Indicates if all other sessions were revoked successfully
+                required:
+                  - status
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: revoke_session
+      summary: Revoke all other sessions for the user except the current one
+  /api/auth/link-social:
+    post:
+      tags:
+        - auth-native
+      description: Link a social account to the user
+      operationId: auth_post__link_social
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callbackURL:
+                  type: string
+                  description: The URL to redirect to after the user has signed in
+                provider:
+                  anyOf:
+                    - type: string
+                      enum:
+                        - apple
+                        - atlassian
+                        - cloudflare
+                        - cognito
+                        - discord
+                        - facebook
+                        - figma
+                        - github
+                        - microsoft
+                        - google
+                        - huggingface
+                        - slack
+                        - spotify
+                        - twitch
+                        - twitter
+                        - dropbox
+                        - kick
+                        - linear
+                        - linkedin
+                        - gitlab
+                        - tiktok
+                        - reddit
+                        - roblox
+                        - salesforce
+                        - vk
+                        - zoom
+                        - notion
+                        - kakao
+                        - naver
+                        - line
+                        - paybin
+                        - paypal
+                        - polar
+                        - railway
+                        - vercel
+                        - wechat
+                    - type: string
+                idToken:
+                  type: object
+                  properties:
+                    token:
+                      type: string
+                    nonce:
+                      type: string
+                    accessToken:
+                      type: string
+                    refreshToken:
+                      type: string
+                  required:
+                    - token
+                requestSignUp:
+                  type: boolean
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  description: Additional scopes to request from the provider
+                errorCallbackURL:
+                  type: string
+                  description: The URL to redirect to if there is an error during the link process
+                disableRedirect:
+                  type: boolean
+                  description: Disable automatic redirection to the provider. Useful for handling the redirection yourself
+                loginHint:
+                  type: string
+                  description: The login hint to use for the authorization code request
+                additionalParams:
+                  type: object
+                  propertyNames:
+                    type: string
+                  additionalProperties:
+                    type: string
+                  description: Extra query parameters to append to the provider authorization URL (e.g. Cognito identity_provider, Google
+                    hd).
+                additionalData:
+                  type: object
+                  propertyNames:
+                    type: string
+                  additionalProperties: {}
+              required:
+                - provider
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: The authorization URL to redirect the user to
+                  redirect:
+                    type: boolean
+                    description: Indicates if the user should be redirected to the authorization URL
+                  status:
+                    type: boolean
+                required:
+                  - redirect
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: update
+      summary: Link a social account to the user
+  /api/auth/list-accounts:
+    get:
+      tags:
+        - auth-native
+      description: List all accounts linked to the user
+      operationId: auth_get__list_accounts
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    providerId:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+                    accountId:
+                      type: string
+                    userId:
+                      type: string
+                    scopes:
+                      type: array
+                      items:
+                        type: string
+                  required:
+                    - id
+                    - providerId
+                    - createdAt
+                    - updatedAt
+                    - accountId
+                    - userId
+                    - scopes
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: List all accounts linked to the user
+  /api/auth/delete-user/callback:
+    get:
+      tags:
+        - auth-native
+      description: Callback to complete user deletion with verification token
+      operationId: auth_get__delete_user_callback
+      security:
+        - Auth_bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          schema:
+            type: string
+            description: The token to verify the deletion request
+        - name: callbackURL
+          in: query
+          schema:
+            type: string
+            description: The URL to redirect to after deletion
+      responses:
+        "200":
+          description: User successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Indicates if the deletion was successful
+                  message:
+                    type: string
+                    enum:
+                      - User deleted
+                    description: Confirmation message
+                required:
+                  - success
+                  - message
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: Callback to complete user deletion with verification token
+  /api/auth/unlink-account:
+    post:
+      tags:
+        - auth-native
+      description: Unlink an account
+      operationId: auth_post__unlink_account
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accountId:
+                  type: string
+                  description: The Better Auth account ID to unlink
+              required:
+                - accountId
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: delete
+      summary: Unlink an account
+  /api/auth/refresh-token:
+    post:
+      tags:
+        - auth-native
+      description: Refresh the access token using a refresh token
+      operationId: auth_post__refresh_token
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - type: object
+                  properties:
+                    accountId:
+                      type: string
+                      description: The Better Auth account ID
+                    userId:
+                      type: string
+                      description: The user ID associated with the account
+                  required:
+                    - accountId
+                - type: object
+                  properties:
+                    useAccountCookie:
+                      enum:
+                        - true
+                      description: Select the current OAuth account from its signed cookie
+                    userId:
+                      type: string
+                      description: The user ID associated with the account
+                  required:
+                    - useAccountCookie
+      responses:
+        "200":
+          description: Access token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokenType:
+                    type: string
+                  idToken:
+                    type: string
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                  accessTokenExpiresAt:
+                    type: string
+                    format: date-time
+                  refreshTokenExpiresAt:
+                    type: string
+                    format: date-time
+        "400":
+          description: Invalid refresh token or provider configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: refresh_session
+      summary: Refresh the access token using a refresh token
+  /api/auth/get-access-token:
+    post:
+      tags:
+        - auth-native
+      description: Get a valid access token, doing a refresh if needed
+      operationId: auth_post__get_access_token
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - type: object
+                  properties:
+                    accountId:
+                      type: string
+                      description: The Better Auth account ID
+                    userId:
+                      type: string
+                      description: The user ID associated with the account
+                  required:
+                    - accountId
+                - type: object
+                  properties:
+                    useAccountCookie:
+                      enum:
+                        - true
+                      description: Select the current OAuth account from its signed cookie
+                    userId:
+                      type: string
+                      description: The user ID associated with the account
+                  required:
+                    - useAccountCookie
+      responses:
+        "200":
+          description: A Valid access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokenType:
+                    type: string
+                  idToken:
+                    type: string
+                  accessToken:
+                    type: string
+                  accessTokenExpiresAt:
+                    type: string
+                    format: date-time
+        "400":
+          description: Invalid refresh token or provider configuration
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: Get a valid access token, doing a refresh if needed
+  /api/auth/account-info:
+    get:
+      tags:
+        - auth-native
+      description: Get the account info provided by the provider
+      operationId: auth_get__account_info
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      email:
+                        type: string
+                        nullable: true
+                      image:
+                        type: string
+                      emailVerified:
+                        type: boolean
+                    required:
+                      - emailVerified
+                  account:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      providerId:
+                        type: string
+                      accountId:
+                        type: string
+                    required:
+                      - id
+                      - providerId
+                      - accountId
+                    additionalProperties: false
+                  data:
+                    type: object
+                    properties: {}
+                    additionalProperties: true
+                required:
+                  - user
+                  - data
+                  - account
+                additionalProperties: false
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: Get the account info provided by the provider
+  /api/auth/ok:
+    get:
+      tags:
+        - auth-native
+      description: Check if the API is working
+      operationId: auth_get__ok
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      responses:
+        "200":
+          description: API is working
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indicates if the API is working
+                required:
+                  - ok
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: Check if the API is working
+  /api/auth/error:
+    get:
+      tags:
+        - auth-native
+      description: Displays an error page
+      operationId: auth_get__error
+      security:
+        - Auth_bearerAuth: []
+      parameters: []
+      responses:
+        "200":
+          description: Success
+          content:
+            text/html:
+              schema:
+                type: string
+                description: The HTML content of the error page
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Bad Request. Usually due to missing parameters, or invalid parameters.
+        "401":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+          description: Unauthorized. Due to missing or invalid authentication.
+        "403":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Forbidden. You do not have permission to access this resource or to perform this action.
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Not Found. The requested resource was not found.
+        "429":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Too Many Requests. You have exceeded the rate limit. Try again later.
+        "500":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Internal Server Error. This is a problem with the server that you cannot fix.
+      x-audit-action: read
+      summary: Displays an error page
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
+      bearerFormat: Better Auth session token
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+    Auth_apiKeyCookie:
+      type: apiKey
+      in: cookie
+      name: apiKeyCookie
+      description: API Key authentication via cookie
+    Auth_bearerAuth:
+      type: http
+      scheme: bearer
+      description: Bearer token authentication
   responses:
     ValidationError:
       description: Dữ liệu không hợp lệ; `extensions` map từng field với thông báo lỗi.
@@ -19315,3 +23147,137 @@ components:
         - id
         - email
         - role
+    Auth_User:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+        email:
+          type: string
+        emailVerified:
+          type: boolean
+          default: false
+          readOnly: true
+        image:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        role:
+          type: string
+          default: user
+          readOnly: true
+        accountStatus:
+          type: string
+          default: active
+          readOnly: true
+      required:
+        - id
+        - name
+        - email
+        - emailVerified
+        - createdAt
+        - updatedAt
+    Auth_Session:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        expiresAt:
+          type: string
+          format: date-time
+        token:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        ipAddress:
+          type: string
+        userAgent:
+          type: string
+        userId:
+          type: string
+      required:
+        - id
+        - expiresAt
+        - token
+        - createdAt
+        - updatedAt
+        - userId
+    Auth_Account:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        accountId:
+          type: string
+        providerId:
+          type: string
+        userId:
+          type: string
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        idToken:
+          type: string
+        accessTokenExpiresAt:
+          type: string
+          format: date-time
+        refreshTokenExpiresAt:
+          type: string
+          format: date-time
+        scope:
+          type: string
+        password:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - accountId
+        - providerId
+        - userId
+        - createdAt
+        - updatedAt
+    Auth_Verification:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        identifier:
+          type: string
+        value:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - identifier
+        - value
+        - expiresAt
+        - createdAt
+        - updatedAt

@@ -25,7 +25,8 @@
     "axios": "catalog:",
     "query-string": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "@p4/api-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "catalog:",

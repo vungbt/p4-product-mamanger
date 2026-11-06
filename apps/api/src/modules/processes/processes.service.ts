@@ -5,18 +5,10 @@ import type { Permission, User } from '@p4/shared';
 import type { Transaction } from 'sequelize';
 import { Op, UniqueConstraintError } from 'sequelize';
 import { permissionsFor } from '@/middlewares/permission.middleware.js';
-import {
-  DomainEventModel,
-  ProcessItemModel,
-  ProcessModel,
-  sequelize,
-} from '@/sequelize/models/index.js';
-import {
-  enqueueEvent,
-  jsonValue,
-  recordAudit,
-  runIdempotent,
-} from '@/shared/commerce/persistence.js';
+import { DomainEventModel, ProcessItemModel, ProcessModel } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent, jsonValue, runIdempotent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, NotFound } from '@/utils/errors/index.js';
@@ -163,7 +155,7 @@ export async function createProcess(user: User, input: ProcessInput, key: string
   return processDto(await ownedProcess(user.id, value.processId));
 }
 export async function confirmProcess(user: User, id: string, expectedVersion: number) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await ownedProcess(user.id, id, transaction, true);
     authorizeProcess(user, row.input);
     assertVersion(row.version, expectedVersion);
@@ -204,7 +196,7 @@ export async function confirmProcess(user: User, id: string, expectedVersion: nu
   });
 }
 export async function cancelProcess(user: User, id: string, expectedVersion: number) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await ownedProcess(user.id, id, transaction, true);
     assertVersion(row.version, expectedVersion);
     if (!['queued', 'running', 'awaiting_confirmation'].includes(row.state))

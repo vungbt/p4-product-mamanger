@@ -1,0 +1,61 @@
+{
+  "name": "@p4/api-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./shared": {
+      "development": "./src/shared/index.ts",
+      "types": "./dist/shared/index.d.ts",
+      "import": "./dist/shared/index.js",
+      "default": "./dist/shared/index.js"
+    },
+    "./react": {
+      "development": "./src/react/index.tsx",
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js",
+      "default": "./dist/react/index.js"
+    },
+    "./auth": {
+      "development": "./src/auth/index.ts",
+      "types": "./dist/auth/index.d.ts",
+      "import": "./dist/auth/index.js",
+      "default": "./dist/auth/index.js"
+    }
+  },
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "check:generated": "node scripts/generate.mjs --check",
+    "build": "pnpm check:generated && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "test": "pnpm typecheck && pnpm build && node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "openapi-fetch": "catalog:",
+    "better-auth": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:react-peer",
+    "@tanstack/react-query": "catalog:"
+  },
+  "devDependencies": {
+    "openapi-typescript": "catalog:",
+    "typescript": "catalog:",
+    "@types/react": "catalog:",
+    "@types/node": "catalog:",
+    "@tanstack/react-query": "catalog:"
+  },
+  "sideEffects": false,
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "@tanstack/react-query": {
+      "optional": true
+    }
+  }
+}

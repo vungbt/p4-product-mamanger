@@ -16,9 +16,10 @@ import {
   PaymentAttemptModel,
   PaymentModel,
   RefundModel,
-  sequelize,
 } from '@/sequelize/models/index.js';
-import { enqueueEvent, jsonValue, recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent, jsonValue } from '@/shared/commerce/persistence.js';
 import { assertTransition, assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, NotFound } from '@/utils/errors/index.js';
@@ -67,7 +68,7 @@ export async function transitionOrder(
   status: OrderLifecycleStatus,
   expectedVersion: number,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await OrderModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
     if (!row) throw new NotFound();
     assertVersion(row.version, expectedVersion);
@@ -133,7 +134,7 @@ export async function requestCancellation(
   items: OrderQuantityInput[],
   reason: string,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const order = await ownedOrder(user, orderId, transaction, true);
     if (order.userId !== user.id && !permissionsFor(user).includes('order:manage'))
       throw new Forbidden();
@@ -367,7 +368,7 @@ export async function resolveCancellation(
 ) {
   const pointer = await CancellationRequestModel.findByPk(id);
   if (!pointer) throw new NotFound();
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const order = await OrderModel.findByPk(pointer.orderId, {
       transaction,
       lock: transaction.LOCK.UPDATE,
@@ -407,7 +408,7 @@ export async function resolveCancellation(
 }
 
 export async function cancelAll(user: User, id: string) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const order = await ownedOrder(user, id, transaction, true);
     if (order.userId !== user.id && !permissionsFor(user).includes('order:manage'))
       throw new Forbidden();

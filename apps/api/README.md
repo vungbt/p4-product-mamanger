@@ -295,84 +295,63 @@ Các thay đổi này hiện chạy trên API local; deploy riêng trước khi 
 
 ## Auth
 
-### POST `/api/auth/login`
+Auth engine là **Better Auth** với PostgreSQL, bcrypt và bearer plugin. Migration
+`20261106000100-better-auth.cjs` giữ user ID/password hash, bổ sung account/session/
+verification tables và thu hồi phiên cũ; người dùng cần đăng nhập lại.
 
-```json
-{ "email": "admin@demo.com", "password": "admin123" }
-```
+- Native endpoints: `/api/auth/sign-in/email`, `/api/auth/sign-out`,
+  `/api/auth/get-session`, reset/verify/change password; xem Scalar `/api/docs`.
+- FE dùng `createP4AuthClient` từ `@p4/api-sdk/auth`; restore qua cookie HttpOnly.
+  Không lưu token/refresh token vào localStorage. Middleware nghiệp vụ nhận cookie
+  hoặc `Authorization: Bearer <opaque Better Auth session token>`.
+- `BETTER_AUTH_SECRET`: secret đủ ngẫu nhiên, tối thiểu 32 ký tự; production bắt buộc.
+  `BETTER_AUTH_URL` là public API origin, phải khớp deployment; `CORS_ORIGIN` chứa
+  đúng origin FE. Đặt web/API cùng site hoặc dùng reverse proxy để browser không
+  chặn third-party cookie; cross-site cần HTTPS, SameSite=None và credentials.
+- Cookie-auth mutation phải có Origin hợp lệ (hoặc request same-origin).
+  Bearer clients không chịu kiểm tra CSRF cookie. Native auth tự kiểm tra bằng lib.
+- Đăng nhập Google dùng cấu hình `GOOGLE_CLIENT_ID`; bổ sung
+  `GOOGLE_CLIENT_SECRET` khi dùng OAuth redirect. Provider thật cần smoke riêng.
+- Email xác minh/reset được mã hóa trong outbox; chạy worker để gửi email.
 
-Response:
+Các endpoint cũ giữ tương thích: `POST /api/auth/login`, `/google`, `/refresh`,
+`/logout`, `GET/PATCH /api/auth/me`, `PATCH /api/auth/password`.
+Login/refresh trả `{ data: { token, refreshToken, user } }`, hai trường token là
+cùng session opaque; không còn JWT hoặc refresh rotation engine riêng.
+Đổi mật khẩu qua endpoint cũ trả `{ data: { changed: true } }` và revoke các phiên,
+FE quay lại đăng nhập. Endpoint account/invitation nghiệp vụ vẫn được giữ.
+Các trigger đồng bộ credential/verification hỗ trợ service account cũ; đây không
+phải trigger audit.
 
-```json
-{
-  "data": {
-    "token": "<access JWT>",
-    "refreshToken": "<opaque refresh>",
-    "user": { "id": "1", "email": "admin@demo.com", "role": "admin" }
-  }
-}
-```
+## Audit nghiệp vụ
 
-| Email | Password | Role |
-|-------|----------|------|
-| admin@demo.com | admin123 | admin |
-| user@demo.com | user123 | user |
+Mỗi router khai báo policy cùng feature (`*.audit.ts`) với action rõ nghĩa:
+`read`, `create`, `update`, `delete`, `approve`, `cancel`, `refund`…
+Khi đăng ký router, thiếu/thừa policy hoặc mutation thiếu audited handler sẽ fail.
+Read chỉ ghi access log; không tạo một bản ghi audit DB cho từng lần đọc.
 
-Gửi access: `Authorization: Bearer <token>`
+`apiHandler` và `auditedCommand` chạy mutation cùng audit trong một PostgreSQL
+transaction. `auditedTransaction` truyền transaction qua CLS cho ORM; service gọi
+trực tiếp cũng dùng command chung. Audit thất bại thì business write rollback.
+Service có thể cung cấp snapshot/facts đã redact bằng `setAuditChanges`; category
+là ví dụ. Domain events audit hiện có được giữ và tránh ghi fallback trùng resource.
 
-- Access JWT: `JWT_SECRET` / `JWT_EXPIRES_IN` (mặc định `15m`)
-- Refresh: opaque, hash lưu DB, TTL `REFRESH_TOKEN_EXPIRES_IN` (mặc định `7d`), **rotation** mỗi lần refresh
+Access log có request ID, actor, route template, action, status và duration, không
+log body/token. Worker kế thừa actor/correlation từ outbox do server ghi. Khi thêm
+worker handler mới vẫn phải dùng command/service đã audit cho business writes.
+Native Better Auth có transaction riêng: hook ghi security observation sau thao tác,
+best-effort; không cam kết atomic cùng transaction nội bộ của thư viện.
 
-### POST `/api/auth/google`
+Xóa file enqueue `file.delete_requested` cùng transaction DB. Worker xóa asset
+Cloudinary sau commit và retry khi provider lỗi; không xóa vật lý trước commit.
+Cần worker đang chạy để hoàn tất cleanup.
 
-Storefront only. Body: `{ "credential": "<Google ID token>" }` (GIS).
+## SDK TypeScript
 
-Cần `GOOGLE_CLIENT_ID` trong `.env`. Find-or-create user `role=user` theo `google_id` / email.
-
-→ `{ data: { token, refreshToken, user } }`
-
-### POST `/api/auth/refresh`
-
-```json
-{ "refreshToken": "<refresh>" }
-```
-
-→ `{ data: { token, refreshToken, user } }` (cặp mới; token cũ bị revoke)
-
-### GET `/api/auth/me` — auth required → `{ data: { user } }`  
-User có `avatarId`, `avatarUrl`.
-
-### PATCH `/api/auth/me` — auth required
-
-```json
-{ "imageStorageId": "p4-product-manager/temp/..." }
-```
-
-→ gán avatar (signed upload như product image). Trả `{ data: { user }, message }`.
-
-### PATCH `/api/auth/password` — auth required
-
-Tài khoản Google chưa có mật khẩu:
-
-```json
-{ "newPassword": "secret123" }
-```
-
-Tài khoản đã có mật khẩu:
-
-```json
-{ "currentPassword": "old-secret", "newPassword": "new-secret" }
-```
-
-Sau khi cập nhật, API revoke toàn bộ refresh token cũ và trả một `LoginResponse` mới. User có trường `hasPassword` để FE hiển thị “Thiết lập mật khẩu” hoặc “Đổi mật khẩu”. Nhờ đó tài khoản Google có thể đăng nhập bằng email/password; tài khoản email có cùng email vẫn tự liên kết khi đăng nhập Google.
-
-### POST `/api/auth/logout`
-
-Body (khuyến nghị): `{ "refreshToken": "<refresh>" }` — revoke token đó.
-
-Nếu kèm `Authorization: Bearer <access>` → revoke **toàn bộ** refresh của user.
-
-FE: lưu `token` + `refreshToken`; khi 401 gọi refresh một lần rồi retry; fail → login lại.
+Xem [@p4/api-sdk](../../libs/api-sdk/README.md). Khi đổi API, chạy
+`pnpm --filter @p4/api openapi:generate` rồi `pnpm --filter @p4/api-sdk generate`.
+Build SDK kiểm tra contract không bị cũ; Scalar giữ server đúng public URL và
+client mặc định Node.js Axios.
 
 ---
 

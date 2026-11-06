@@ -1,14 +1,24 @@
 import { type DataTableState, useDebouncedCallback } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
+import {
+  useCategories,
+  useCreateCategory,
+  useDeleteCategory,
+  useUpdateCategory,
+} from '@p4/api-sdk/react';
+import { getErrorMessage } from '@p4/api-sdk/shared';
 import { type Category, type CategoryInput, DESCRIPTION_FILTER_VALUES } from '@p4/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import useCategories, { categoryErrorMessage } from './use-categories';
 
 export default function useCategoryPage() {
   const { t } = useTranslation();
 
-  const { query, create, update, remove } = useCategories();
+  const query = useCategories();
+
+  const create = useCreateCategory();
+  const update = useUpdateCategory();
+  const remove = useDeleteCategory();
 
   const [viewing, setViewing] = useState<string | null>(null);
 
@@ -125,7 +135,7 @@ export default function useCategoryPage() {
       toast.success(t('categories.deleted'));
       setDeleting(null);
     } catch (error) {
-      toast.error(categoryErrorMessage(error, t('categories.deleteFailed')));
+      toast.error(getErrorMessage(error, t('categories.deleteFailed')));
     }
   };
 
@@ -140,9 +150,7 @@ export default function useCategoryPage() {
     deleting,
     editor,
     loading: query.isPending || query.isFetching,
-    error: query.isError
-      ? categoryErrorMessage(query.error, t('categories.loadFailed'))
-      : undefined,
+    error: query.isError ? getErrorMessage(query.error, t('categories.loadFailed')) : undefined,
     saving: create.isPending || update.isPending,
     deletingPending: remove.isPending,
     changeTableState: setState,

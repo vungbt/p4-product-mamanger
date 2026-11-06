@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Unauthorized } from '@/utils/errors/index.js';
-import { verifyAccessToken } from '@/utils/jwt.js';
 import * as authService from './auth.service.js';
 
 export async function login(req: Request, res: Response, next: NextFunction) {
@@ -70,17 +69,9 @@ export async function updatePassword(req: Request, res: Response, next: NextFunc
 export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
     const { refreshToken } = (req.body ?? {}) as { refreshToken?: string };
-    let userId: string | undefined;
-    const header = req.headers.authorization;
-    if (header?.startsWith('Bearer ')) {
-      try {
-        userId = verifyAccessToken(header.slice(7)).sub;
-      } catch {
-        // Access có thể đã hết hạn — vẫn logout bằng refreshToken
-      }
-    }
+    const token = req.headers.authorization?.replace(/^Bearer /, '');
     return res.jsonApi(StatusCodes.OK, {
-      data: await authService.logout({ refreshToken, userId }),
+      data: await authService.logout({ refreshToken, token }),
     });
   } catch (error) {
     return next(error);

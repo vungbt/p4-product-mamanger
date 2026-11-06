@@ -5,12 +5,14 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission, STAFF_PERMISSIONS } from '@/middlewares/permission.middleware.js';
 import { UserModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { searchPattern } from '@/shared/list-filters.js';
 import { type ListLocals, queryText, validateListQuery } from '@/shared/list-query.js';
 import validate from '@/shared/validation.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
+import { auditPolicies } from './staff.audit.js';
 import * as staff from './staff.service.js';
 
 type Query = ListQuery<'email' | 'displayName' | 'createdAt'>;
@@ -144,4 +146,4 @@ for (const kind of ['staff', 'customers']) {
     }),
   );
 }
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

@@ -7,9 +7,10 @@ import {
   OrderModel,
   SupportMessageModel,
   SupportTicketModel,
-  sequelize,
 } from '@/sequelize/models/index.js';
-import { enqueueEvent, recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, NotFound } from '@/utils/errors/index.js';
@@ -67,7 +68,7 @@ export async function createTicket(
     attachmentIds: string[];
   },
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     if (input.orderId) {
       const order = await OrderModel.findOne({
         where: { id: input.orderId, userId: user.id },
@@ -118,7 +119,7 @@ export async function addMessage(
   expectedVersion: number,
   input: { body: string; internal: boolean; attachmentIds: string[] },
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await ownedTicket(user, id, transaction, true);
     assertVersion(row.version, expectedVersion);
     if (row.status === 'closed') throw new BaseError('ticket_closed', 409, 'ticket_closed');

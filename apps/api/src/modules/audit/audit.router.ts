@@ -6,6 +6,7 @@ import { requirePermission } from '@/middlewares/permission.middleware.js';
 import type { AuditLogAttributes } from '@/sequelize/models/audit-log.model.js';
 import { AuditLogModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { uuidRouteId } from '@/shared/http-input.js';
 import { dateRange } from '@/shared/list-filters.js';
 import {
@@ -20,6 +21,7 @@ import type { ModelOrder } from '@/types/database.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
+import { auditPolicies } from './audit.audit.js';
 
 interface AuditQuery extends ListQuery<'createdAt' | 'action' | 'resourceType'> {
   actorId?: string;
@@ -125,4 +127,4 @@ router.get(
     return { ...selectFields(row, auditFields), createdAt: row.createdAt.toISOString() };
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

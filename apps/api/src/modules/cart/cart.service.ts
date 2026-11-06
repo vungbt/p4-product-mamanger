@@ -8,6 +8,7 @@ import {
   ProductVariantModel,
   sequelize,
 } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
 import { jsonValue, runIdempotent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
@@ -72,7 +73,7 @@ export async function cartSnapshot(cart: CartModel, transaction?: Transaction): 
 }
 
 export async function getCart(userId: string) {
-  return sequelize.transaction(async (transaction) =>
+  return auditedTransaction(async (transaction) =>
     cartSnapshot(await lockCart(userId, transaction), transaction),
   );
 }
@@ -116,7 +117,7 @@ async function addLines(cart: CartModel, lines: CartLineInput[], transaction: Tr
 }
 
 export async function addItem(userId: string, expectedVersion: number, line: CartLineInput) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const cart = await lockCart(userId, transaction);
     assertVersion(cart.version, expectedVersion);
     return addLines(cart, [line], transaction);
@@ -129,7 +130,7 @@ export async function changeItem(
   itemId: string | null,
   quantity: number | null,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const cart = await lockCart(userId, transaction);
     assertVersion(cart.version, expectedVersion);
     if (itemId) {

@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { apiHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { cartLines } from '@/shared/commerce/input.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
+import { auditPolicies } from './cart.audit.js';
 import * as cart from './cart.service.js';
 
 const router = Router();
@@ -64,4 +66,4 @@ router.post(
     ),
   ),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

@@ -8,8 +8,8 @@ export {
 export { AUTH_STORAGE_KEY, FAKE_AUTH, type FakeAuthAccounts } from './fake-auth';
 export {
   type AuthSession,
+  broadcastAuthChange,
   clearAuthSession,
-  getTokenExpiresAt,
   readAuthSession,
   subscribeAuthSession,
   writeAuthSession,

@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Notification, NotificationPreferences } from '@p4/shared';
 import { Op } from 'sequelize';
-import { sequelize } from '@/sequelize/index.js';
 import {
   AccountTokenModel,
   type DomainEventModel,
@@ -15,6 +14,7 @@ import {
   SupportTicketModel,
   UserModel,
 } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
 import { unseal } from '@/shared/commerce/encryption.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { selectFields } from '@/utils/select-fields.js';
@@ -69,6 +69,40 @@ export async function sendEmail(input: { to: string; subject: string; text: stri
   });
   if (!response.ok) throw new BaseError('mail_provider_failed', 502, 'mail_provider_failed');
   return response.headers.get('x-message-id') ?? input.key;
+}
+
+export async function authEmail(event: DomainEventModel) {
+  const account = await UserModel.findByPk(event.aggregateId);
+  if (!account) throw new BaseError('auth_account_pending', 503, 'auth_account_pending');
+  if (account.accountStatus !== 'active') return;
+  const payload = event.payload;
+  if (
+    !payload ||
+    typeof payload !== 'object' ||
+    Array.isArray(payload) ||
+    typeof payload.encrypted !== 'string' ||
+    typeof payload.expiresAt !== 'string'
+  )
+    throw new BaseError('invalid_auth_mail_event');
+  if (Date.parse(payload.expiresAt) <= Date.now()) return;
+  const value: unknown = JSON.parse(unseal(payload.encrypted));
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    !('to' in value) ||
+    !('url' in value) ||
+    !('purpose' in value) ||
+    typeof value.to !== 'string' ||
+    typeof value.url !== 'string' ||
+    typeof value.purpose !== 'string'
+  )
+    throw new BaseError('invalid_auth_mail_event');
+  await sendEmail({
+    to: value.to,
+    subject: `P4: ${value.purpose}`,
+    text: value.url,
+    key: event.id,
+  });
 }
 
 export async function accountEmail(event: DomainEventModel) {
@@ -131,7 +165,7 @@ async function notify(
       readAt: null,
     },
   });
-  await sequelize.transaction(async (transaction) =>
+  await auditedTransaction(async (transaction) =>
     publishRealtime(
       userId,
       { type: 'notification.created', notification: notificationDto(inbox) },
@@ -203,7 +237,7 @@ export async function inventoryNotification(event: DomainEventModel) {
 export async function readNotifications(userId: string, id?: string) {
   if (id) await markNotificationRead(userId, id);
   else
-    await sequelize.transaction(async (transaction) => {
+    await auditedTransaction(async (transaction) => {
       await NotificationModel.update(
         { readAt: new Date() },
         { where: { userId, readAt: null }, transaction },

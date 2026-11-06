@@ -5,11 +5,13 @@ import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import { validateProductsListQuery } from '@/modules/products/products.validation.js';
 import { CategoryModel, ProductModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { searchPattern } from '@/shared/list-filters.js';
 import type { ListLocals } from '@/shared/list-query.js';
 import { queryText } from '@/shared/list-query.js';
 import validate from '@/shared/validation.js';
 import { selectFields } from '@/utils/select-fields.js';
+import { auditPolicies } from './discovery.audit.js';
 import { facets } from './discovery.service.js';
 
 const router = Router();
@@ -52,4 +54,4 @@ router.get(
     };
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

@@ -168,7 +168,7 @@ describe('account/profile/staff APIs on the local stack', { skip: !base }, () =>
     await call('GET', '/orders', undefined, staff.session, 403);
     await call('GET', '/admin/audit-logs', undefined, staff.session, 403);
   });
-  test('refresh is single-use and revoking a session invalidates its access token', async () => {
+  test('Better Auth sessions stay valid across reads and revocation invalidates the session token', async () => {
     const fresh = await login(other.email);
     const results = await Promise.all([
       fetch(base + '/auth/refresh', {
@@ -182,12 +182,13 @@ describe('account/profile/staff APIs on the local stack', { skip: !base }, () =>
         body: JSON.stringify({ refreshToken: fresh.refreshToken }),
       }),
     ]);
-    assert.deepEqual(results.map((r) => r.status).sort(), [200, 401]);
+    assert.deepEqual(results.map((r) => r.status).sort(), [200, 200]);
     const active = await login(other.email);
     const sessions = await call('GET', '/me/sessions', undefined, active);
     assert.ok(sessions.length);
-    const payload = JSON.parse(Buffer.from(active.token.split('.')[1], 'base64url').toString());
-    await call('DELETE', `/me/sessions/${payload.sid}`, undefined, active);
+    const current = sessions[0];
+    assert.ok(current);
+    await call('DELETE', `/me/sessions/${current.id}`, undefined, active);
     await call('GET', '/me/profile', undefined, active, 401);
   });
   test('password reset rotates auth version and revokes previous access sessions', async () => {

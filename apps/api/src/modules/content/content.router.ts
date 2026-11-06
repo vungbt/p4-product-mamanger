@@ -10,6 +10,7 @@ import {
   ContentTaxonomyModel,
 } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
 import { searchPattern } from '@/shared/list-filters.js';
 import { queryText, validateListQuery } from '@/shared/list-query.js';
@@ -18,6 +19,7 @@ import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { normalizedSlug } from '../catalog/catalog.service.js';
+import { auditPolicies } from './content.audit.js';
 import * as content from './content.service.js';
 import { contentInput } from './content.validation.js';
 
@@ -241,4 +243,4 @@ router.get(
     return rows.map((row) => row.publishedSnapshot);
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

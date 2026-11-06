@@ -11,12 +11,8 @@ import {
   ProductModel,
   ProductVariantModel,
 } from '@/sequelize/models/index.js';
-import {
-  enqueueEvent,
-  jsonValue,
-  recordAudit,
-  runIdempotent,
-} from '@/shared/commerce/persistence.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent, jsonValue, runIdempotent } from '@/shared/commerce/persistence.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';

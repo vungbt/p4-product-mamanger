@@ -1,8 +1,7 @@
 import { Button, Form, FormField, FormSubmit, InputPassword, useAppForm } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { axiosClient } from '@p4/api-client';
-import { type AuthSession, writeAuthSession } from '@p4/auth';
-import type { LoginResponse, UpdatePasswordInput } from '@p4/shared';
+import type { UpdatePasswordInput } from '@p4/shared';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
@@ -14,7 +13,7 @@ import BrandLogo from '@/libraries/brand-logo';
 export default function StorefrontPasswordPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const hasPassword = Boolean(user?.hasPassword);
 
   const schema = useMemo(
@@ -41,13 +40,13 @@ export default function StorefrontPasswordPage() {
           currentPassword: hasPassword ? value.currentPassword : undefined,
           newPassword: value.newPassword,
         };
-        const response = await axiosClient.patch<UpdatePasswordInput, { data: LoginResponse }>(
+        await axiosClient.patch<UpdatePasswordInput, { data: { changed: true } }>(
           '/auth/password',
           body,
         );
-        writeAuthSession(response.data as AuthSession);
+        logout();
         toast.success(t('auth.passwordUpdated'));
-        navigate(ROUTES.storefront.shop, { replace: true });
+        navigate(ROUTES.storefront.login, { replace: true });
       } catch (error) {
         const message =
           error && typeof error === 'object' && 'message' in error

@@ -2,8 +2,9 @@ import type { Coupon, CouponInput, CouponListQuery } from '@p4/shared';
 import { Op, type Transaction, type WhereOptions } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
 import type { CouponAttributes } from '@/sequelize/models/coupon.model.js';
-import { CouponModel, sequelize } from '@/sequelize/models/index.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { CouponModel } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { searchPattern } from '@/shared/list-filters.js';
 import { requestStore } from '@/shared/request-store.js';
@@ -91,7 +92,7 @@ export async function listCoupons(query?: CouponListQuery) {
 }
 
 export async function createCoupon(input: CouponInput) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await CouponModel.create(
       {
         code: input.code.trim().toUpperCase(),
@@ -123,7 +124,7 @@ export async function createCoupon(input: CouponInput) {
 }
 
 export async function updateCoupon(id: string, input: CouponInput) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await CouponModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
     if (!row) throw new NotFound(errorKeys.couponNotFound);
     if (input.expectedVersion === undefined) throw new BadRequest('expected_version_required');
@@ -166,7 +167,7 @@ export async function updateCoupon(id: string, input: CouponInput) {
 }
 
 export async function deleteCoupon(id: string) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await CouponModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
     if (!row) throw new NotFound(errorKeys.couponNotFound);
     await row.update({ isActive: false, version: row.version + 1 }, { transaction });

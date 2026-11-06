@@ -8,7 +8,10 @@ import {
   PaymentModel,
   sequelize,
 } from '@/sequelize/models/index.js';
-import { enqueueEvent, recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent } from '@/shared/commerce/persistence.js';
+import { requestStore } from '@/shared/request-store.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { moveInventory } from '../inventory/inventory.service.js';
@@ -37,7 +40,7 @@ export function jobDto(row: DomainEventModel) {
 }
 
 export async function claimEvent(now = new Date(), types?: readonly string[]) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await DomainEventModel.findOne({
       where: {
         ...(types ? { type: { [Op.in]: types } } : {}),
@@ -81,7 +84,7 @@ export async function claimEvent(now = new Date(), types?: readonly string[]) {
 }
 
 export async function finishEvent(event: DomainEventModel, errorCode: string | null) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await DomainEventModel.findOne({
       where: { id: event.id, status: 'processing', leaseToken: event.leaseToken },
       transaction,
@@ -129,7 +132,41 @@ export async function runNextEvent(handlers: EventHandlers) {
   try {
     const handler = handlers.get(event.type);
     if (!handler) throw new BaseError('unsupported_event', 400, 'unsupported_event');
-    await handler(event);
+    const payload = event.payload;
+    const metadata =
+      payload && typeof payload === 'object' && !Array.isArray(payload)
+        ? payload._audit
+        : undefined;
+    const audit =
+      metadata && typeof metadata === 'object' && !Array.isArray(metadata) ? metadata : undefined;
+    const actorId =
+      typeof audit?.actorId === 'string'
+        ? audit.actorId
+        : payload &&
+            typeof payload === 'object' &&
+            !Array.isArray(payload) &&
+            typeof payload.actorId === 'string'
+          ? payload.actorId
+          : undefined;
+    const correlationId =
+      typeof audit?.correlationId === 'string' ? audit.correlationId : undefined;
+    const actor = actorId
+      ? await import('../auth/auth.service.js').then(({ getMe }) =>
+          getMe(actorId)
+            .then(({ user }) => user)
+            .catch(() => undefined),
+        )
+      : undefined;
+    await requestStore.run(
+      {
+        requestId: `job:${event.id}`,
+        source: 'worker',
+        actorId,
+        correlationId,
+        ...(actor ? { user: actor } : {}),
+      },
+      () => handler(event),
+    );
     await finishEvent(event, null);
   } catch (error) {
     await finishEvent(
@@ -211,14 +248,14 @@ export async function sweepExpiredReservations(now = new Date()) {
   });
   let expired = 0;
   for (const orderId of new Set(rows.map((row) => row.orderId))) {
-    if (await sequelize.transaction(async (transaction) => expireOrder(orderId, now, transaction)))
+    if (await auditedTransaction(async (transaction) => expireOrder(orderId, now, transaction)))
       expired++;
   }
   return expired;
 }
 
 export async function retryEvent(actorId: string, id: string, handlers: EventHandlers) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await DomainEventModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
     if (!row) throw new BaseError('job_not_found', 404, 'job_not_found');
     if (!handlers.has(row.type) || row.status !== 'dead_letter')

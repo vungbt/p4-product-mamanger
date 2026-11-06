@@ -5,10 +5,12 @@ import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { validateVariantList } from '@/modules/catalog/catalog.router.js';
 import { InventoryMovementModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody } from '@/shared/http-input.js';
 import { queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
+import { auditPolicies } from './inventory.audit.js';
 import * as inventory from './inventory.service.js';
 
 const router = Router();
@@ -91,4 +93,4 @@ router.get(
   requirePermission('inventory:read'),
   apiHandler(async () => inventory.reconcileInventory()),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

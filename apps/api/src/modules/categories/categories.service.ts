@@ -10,9 +10,8 @@ import { col, fn, Op, type WhereOptions, where } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
 import type { CategoryAttributes } from '@/sequelize/models/category.model.js';
 import { CategoryModel } from '@/sequelize/models/index.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedCommand, setAuditChanges } from '@/shared/audit/audited-command.js';
 import { searchPattern } from '@/shared/list-filters.js';
-import { requestStore } from '@/shared/request-store.js';
 import { inTransaction } from '@/shared/transaction.js';
 import type { ModelOrder, StringField } from '@/types/database.js';
 import { NotFound } from '@/utils/errors/index.js';
@@ -78,26 +77,20 @@ export async function createCategory(
   input: CategoryInput,
   transaction?: Transaction,
 ): Promise<Category> {
-  return inTransaction(transaction, async (transaction) => {
-    const row = await CategoryModel.create(
-      {
-        name: input.name,
-        slug: input.slug.trim().toLowerCase(),
-        description: input.description ?? '',
-      },
-      { transaction },
-    );
-    await recordAudit(
-      {
-        actorId: requestStore.getStore()?.user?.id,
-        action: 'category.created',
-        resourceType: 'category',
-        resourceId: row.id,
-      },
-      transaction,
-    );
-    return selectFields(row, categoryFields);
-  });
+  return auditedCommand({ action: 'create', resourceType: 'category' }, () =>
+    inTransaction(transaction, async (transaction) => {
+      const row = await CategoryModel.create(
+        {
+          name: input.name,
+          slug: input.slug.trim().toLowerCase(),
+          description: input.description ?? '',
+        },
+        { transaction },
+      );
+      setAuditChanges({ after: selectFields(row, categoryFields) });
+      return selectFields(row, categoryFields);
+    }),
+  );
 }
 
 export async function updateCategory(
@@ -105,45 +98,34 @@ export async function updateCategory(
   input: Partial<CategoryInput>,
   transaction?: Transaction,
 ): Promise<Category> {
-  return inTransaction(transaction, async (transaction) => {
-    const row = await CategoryModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
-    if (!row) throw new NotFound(errorKeys.categoryNotFound);
-    await row.update(
-      {
-        name: input.name ?? row.name,
-        slug: input.slug != null ? input.slug.trim().toLowerCase() : row.slug,
-        description: input.description ?? row.description,
-      },
-      { transaction },
-    );
-    await recordAudit(
-      {
-        actorId: requestStore.getStore()?.user?.id,
-        action: 'category.updated',
-        resourceType: 'category',
-        resourceId: row.id,
-      },
-      transaction,
-    );
-    return selectFields(row, categoryFields);
-  });
+  return auditedCommand({ action: 'update', resourceType: 'category', resourceId: id }, () =>
+    inTransaction(transaction, async (transaction) => {
+      const row = await CategoryModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
+      if (!row) throw new NotFound(errorKeys.categoryNotFound);
+      const before = selectFields(row, categoryFields);
+      await row.update(
+        {
+          name: input.name ?? row.name,
+          slug: input.slug != null ? input.slug.trim().toLowerCase() : row.slug,
+          description: input.description ?? row.description,
+        },
+        { transaction },
+      );
+      setAuditChanges({ before, after: selectFields(row, categoryFields) });
+      return selectFields(row, categoryFields);
+    }),
+  );
 }
 
 export async function deleteCategory(id: string): Promise<Category> {
-  return inTransaction(undefined, async (transaction) => {
-    const row = await CategoryModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
-    if (!row) throw new NotFound(errorKeys.categoryNotFound);
-    const data = selectFields(row, categoryFields);
-    await row.destroy({ transaction });
-    await recordAudit(
-      {
-        actorId: requestStore.getStore()?.user?.id,
-        action: 'category.deleted',
-        resourceType: 'category',
-        resourceId: id,
-      },
-      transaction,
-    );
-    return data;
-  });
+  return auditedCommand({ action: 'delete', resourceType: 'category', resourceId: id }, () =>
+    inTransaction(undefined, async (transaction) => {
+      const row = await CategoryModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
+      if (!row) throw new NotFound(errorKeys.categoryNotFound);
+      const data = selectFields(row, categoryFields);
+      await row.destroy({ transaction });
+      setAuditChanges({ before: data });
+      return data;
+    }),
+  );
 }

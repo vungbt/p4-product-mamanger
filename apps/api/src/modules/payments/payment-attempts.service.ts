@@ -16,7 +16,9 @@ import {
   sequelize,
   WebhookReceiptModel,
 } from '@/sequelize/models/index.js';
-import { enqueueEvent, recordAudit, runIdempotent } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent, runIdempotent } from '@/shared/commerce/persistence.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
@@ -182,7 +184,7 @@ export async function provisionCheckout(event: DomainEventModel) {
     description: `Order ${row.orderId}`,
     idempotencyKey: row.id,
   });
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     await OrderModel.findByPk(row.orderId, { transaction, lock: transaction.LOCK.UPDATE });
     const locked = await PaymentAttemptModel.findByPk(row.id, {
       transaction,
@@ -364,7 +366,7 @@ export async function markMockPaid(user: User, id: string) {
   const order = await ownedOrder(user, attempt.orderId);
   if (order.userId !== user.id && !permissionsFor(user).includes('payment:manage'))
     throw new Forbidden();
-  return sequelize.transaction(async (transaction) =>
+  return auditedTransaction(async (transaction) =>
     capturePayment(
       {
         attemptId: attempt.id,
@@ -411,7 +413,7 @@ async function processStripeSession(session: Stripe.Checkout.Session, transactio
 export async function handleStripeEvent(event: Stripe.Event, raw: Buffer) {
   if (event.livemode !== env.payment.stripeSecretKey.startsWith('sk_live_'))
     throw new BaseError('stripe_mode_mismatch');
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     await sequelize.query('SELECT pg_advisory_xact_lock(hashtext(:key))', {
       replacements: { key: `webhook:stripe:${event.id}` },
       transaction,
@@ -483,7 +485,7 @@ export async function reconcilePayment(actorId: string, id: string) {
   const attempt = await PaymentAttemptModel.findByPk(id);
   if (attempt?.provider !== 'stripe' || !attempt.externalId) throw new NotFound();
   const session = await getStripe().checkout.sessions.retrieve(attempt.externalId);
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const result = await processStripeSession(session, transaction);
     await recordAudit(
       {
@@ -499,7 +501,7 @@ export async function reconcilePayment(actorId: string, id: string) {
 }
 
 export async function collectCod(actorId: string, id: string, reference: string, amount: number) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const attempt = await PaymentAttemptModel.findByPk(id, { transaction });
     if (attempt?.provider !== 'cod') throw new NotFound();
     const order = await OrderModel.findByPk(attempt.orderId, {

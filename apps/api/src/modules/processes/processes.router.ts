@@ -13,12 +13,14 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import { ProcessItemModel, ProcessModel, UploadTicketModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
 import { InputValidError, NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { createUpload } from '../files/uploads.service.js';
+import { auditPolicies } from './processes.audit.js';
 import * as processes from './processes.service.js';
 import { processStoragePath, removeProcessFile, storeProcessFile } from './storage.service.js';
 
@@ -301,4 +303,4 @@ router.get(
     })().catch(next);
   },
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

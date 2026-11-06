@@ -98,4 +98,4 @@ export const productKeys = queryKeysFactory<
   { page?: number; pageSize?: number; q?: string }
 >('products');
 export const orderKeys = queryKeysFactory<'orders'>('orders');
-export const categoryKeys = queryKeysFactory<'categories'>('categories');
+export { categoryKeys } from '@p4/api-sdk/react';

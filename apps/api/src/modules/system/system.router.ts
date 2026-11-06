@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { permissionsFor, requirePermission } from '@/middlewares/permission.middleware.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { COMMERCE_POLICY, CONTRACT_VERSION, TRANSITIONS } from '@/shared/commerce/contracts.js';
+import { auditPolicies } from './system.audit.js';
 
 const router = Router();
 router.get('/me/capabilities', authRequired, (req, res) => {
@@ -22,4 +24,4 @@ router.get(
     });
   },
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

@@ -16,7 +16,8 @@ import {
 } from '@/sequelize/models/index.js';
 import type { ProductAttributes } from '@/sequelize/models/product.model.js';
 import type { ProductImageAttributes } from '@/sequelize/models/product-image.model.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { numberRange, searchPattern } from '@/shared/list-filters.js';
 import { requestStore } from '@/shared/request-store.js';
@@ -291,50 +292,54 @@ export async function addProductImage(
   productId: string,
   input: { imageStorageId: string; sortOrder?: number },
 ) {
-  const product = await ProductModel.findByPk(productId);
-  if (!product) throw new NotFound(errorKeys.productNotFound);
-  const fileId = await resolveImageId(input.imageStorageId);
-  if (!fileId) throw new NotFound(errorKeys.uploadFileRequired);
+  return auditedTransaction(async () => {
+    const product = await ProductModel.findByPk(productId);
+    if (!product) throw new NotFound(errorKeys.productNotFound);
+    const fileId = await resolveImageId(input.imageStorageId);
+    if (!fileId) throw new NotFound(errorKeys.uploadFileRequired);
 
-  const maxOrder = (await ProductImageModel.max('sortOrder', { where: { productId } })) ?? -1;
-  const sortOrder = input.sortOrder ?? Number(maxOrder) + 1;
+    const maxOrder = (await ProductImageModel.max('sortOrder', { where: { productId } })) ?? -1;
+    const sortOrder = input.sortOrder ?? Number(maxOrder) + 1;
 
-  const row = await ProductImageModel.create({
-    productId,
-    fileId,
-    sortOrder,
+    const row = await ProductImageModel.create({
+      productId,
+      fileId,
+      sortOrder,
+    });
+
+    if (!product.imageId) {
+      await product.update({ imageId: fileId });
+    }
+
+    const full = (await ProductImageModel.findByPk(row.id, {
+      include: [{ model: FileModel, as: 'file', attributes: ['id', 'url'] }],
+    })) as GalleryRow;
+    return toGalleryImage(full);
   });
-
-  if (!product.imageId) {
-    await product.update({ imageId: fileId });
-  }
-
-  const full = (await ProductImageModel.findByPk(row.id, {
-    include: [{ model: FileModel, as: 'file', attributes: ['id', 'url'] }],
-  })) as GalleryRow;
-  return toGalleryImage(full);
 }
 
 export async function removeProductImage(productId: string, imageRowId: string) {
-  const row = await ProductImageModel.findOne({ where: { id: imageRowId, productId } });
-  if (!row) throw new NotFound(errorKeys.notFound);
-  const fileId = row.fileId;
-  const product = await ProductModel.findByPk(productId);
-  await row.destroy();
-  if (product?.imageId === fileId) {
-    const next = await ProductImageModel.findOne({
-      where: { productId },
-      order: [['sortOrder', 'ASC']] satisfies ModelOrder<ProductImageAttributes>,
-    });
-    await product.update({ imageId: next?.fileId ?? null });
-  }
-  await deleteFileIfUnreferenced(fileId);
-  return { ok: true as const };
+  return auditedTransaction(async () => {
+    const row = await ProductImageModel.findOne({ where: { id: imageRowId, productId } });
+    if (!row) throw new NotFound(errorKeys.notFound);
+    const fileId = row.fileId;
+    const product = await ProductModel.findByPk(productId);
+    await row.destroy();
+    if (product?.imageId === fileId) {
+      const next = await ProductImageModel.findOne({
+        where: { productId },
+        order: [['sortOrder', 'ASC']] satisfies ModelOrder<ProductImageAttributes>,
+      });
+      await product.update({ imageId: next?.fileId ?? null });
+    }
+    await deleteFileIfUnreferenced(fileId);
+    return { ok: true as const };
+  });
 }
 
 export async function deleteProduct(id: string) {
   const product = await getProductById(id, true);
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     const row = await ProductModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
     if (!row) throw new NotFound();
     const variants = await ProductVariantModel.findAll({ where: { productId: id }, transaction });

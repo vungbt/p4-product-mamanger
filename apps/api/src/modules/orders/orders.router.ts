@@ -3,6 +3,8 @@ import { authRequired, requireRole } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { validateOrdersListQuery } from '@/modules/orders/orders.validation.js';
 import * as refundsController from '@/modules/refunds/refunds.controller.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditPolicies } from './orders.audit.js';
 import * as ordersController from './orders.controller.js';
 import { validateCheckoutBody } from './orders.validation.js';
 
@@ -32,4 +34,4 @@ router.post(
   refundsController.create,
 );
 
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

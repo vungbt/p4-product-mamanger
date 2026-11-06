@@ -10,13 +10,16 @@ import {
   sequelize,
 } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
+import { auditPolicies } from './notifications.audit.js';
 import * as notifications from './notifications.service.js';
 
 const router = Router();
@@ -81,7 +84,7 @@ router.patch(
     const body = requestBody(req);
     const userId = currentUser(req).id;
     await notifications.preferences(userId);
-    return sequelize.transaction(async (transaction) => {
+    return auditedTransaction(async (transaction) => {
       const row = await NotificationPreferencesModel.findByPk(userId, {
         transaction,
         lock: transaction.LOCK.UPDATE,
@@ -137,7 +140,7 @@ router.put(
     const subject = body.text('subject', 200);
     const text = body.text('body', 5000);
     if (/[<>]/.test(subject + text)) return body.invalid('body');
-    return sequelize.transaction(async (transaction) => {
+    return auditedTransaction(async (transaction) => {
       await sequelize.query('SELECT pg_advisory_xact_lock(hashtext(:key))', {
         replacements: { key: `template:${type}:${locale}` },
         transaction,
@@ -164,4 +167,4 @@ router.put(
     });
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

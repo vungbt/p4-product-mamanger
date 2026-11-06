@@ -1,7 +1,7 @@
 import type { CommerceSettings, ShippingMethod, ShippingQuote, ShopSettings } from '@p4/shared';
 import type { Transaction } from 'sequelize';
 import { FileModel, ShippingMethodModel, ShopSettingsModel } from '@/sequelize/models/index.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { recordAudit } from '@/shared/audit/record.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { NotFound } from '@/utils/errors/index.js';

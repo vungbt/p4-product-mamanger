@@ -4,9 +4,12 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { DomainEventModel, sequelize } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser } from '@/shared/http-input.js';
 import { reconcileInventory } from '../inventory/inventory.service.js';
+import { auditPolicies } from './operations.audit.js';
 
 const router = Router();
 router.get(
@@ -35,7 +38,7 @@ router.post(
   requirePermission('system:manage'),
   apiHandler(async (req) => {
     const result = await reconcileInventory();
-    await sequelize.transaction(async (transaction) =>
+    await auditedTransaction(async (transaction) =>
       recordAudit(
         {
           actorId: currentUser(req).id,
@@ -50,4 +53,4 @@ router.post(
     return result;
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

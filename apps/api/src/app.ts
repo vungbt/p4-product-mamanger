@@ -1,8 +1,10 @@
+import { toNodeHandler } from 'better-auth/node';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { StatusCodes } from 'http-status-codes';
+import { auth } from '@/configs/better-auth.js';
 import { env } from '@/configs/env.js';
 import { i18nMiddleware } from '@/configs/i18n.js';
 import { mountOpenApiDocs } from '@/configs/openapi-docs.js';
@@ -24,6 +26,25 @@ export function createApp() {
   app.use(compression());
   app.use(cors({ origin: env.corsOrigin, credentials: true }));
 
+  const legacyAuthPaths = new Set([
+    '/api/auth/login',
+    '/api/auth/google',
+    '/api/auth/refresh',
+    '/api/auth/me',
+    '/api/auth/password',
+    '/api/auth/logout',
+    '/api/auth/register',
+    '/api/auth/email-verification-requests',
+    '/api/auth/password-reset-requests',
+    '/api/auth/email-verifications',
+    '/api/auth/password-resets',
+  ]);
+  const nativeAuthHandler = toNodeHandler(auth);
+  app.all('/api/auth/*', (req, res, next) => {
+    if (legacyAuthPaths.has(req.path)) return next();
+    return nativeAuthHandler(req, res);
+  });
+
   app.post(
     '/api/payments/webhook/stripe',
     express.raw({ type: 'application/json' }),
@@ -34,22 +55,6 @@ export function createApp() {
   );
 
   app.use(express.json({ limit: '1mb' }));
-  app.use((req, res, next) => {
-    const started = Date.now();
-    res.on('finish', () => {
-      console.info(
-        JSON.stringify({
-          event: 'http.request',
-          requestId: req.requestId,
-          method: req.method,
-          status: res.statusCode,
-          durationMs: Date.now() - started,
-        }),
-      );
-    });
-    next();
-  });
-
   app.get('/health/live', (_req, res) => {
     res.json({ status: 'ok' });
   });

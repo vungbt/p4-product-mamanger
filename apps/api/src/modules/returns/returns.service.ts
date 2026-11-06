@@ -15,9 +15,10 @@ import {
   ReturnRequestModel,
   ShipmentItemModel,
   ShipmentModel,
-  sequelize,
 } from '@/sequelize/models/index.js';
-import { jsonValue, recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { jsonValue } from '@/shared/commerce/persistence.js';
 import { assertTransition, assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, NotFound } from '@/utils/errors/index.js';
@@ -59,7 +60,7 @@ export async function requestReturn(
   evidenceIds: string[],
   reason: string,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const order = await ownedOrder(user, orderId, transaction, true);
     if (order.userId !== user.id) throw new Forbidden();
     assertVersion(order.version, expectedVersion);
@@ -155,7 +156,7 @@ export async function transitionReturn(
 ) {
   const pointer = await ReturnRequestModel.findByPk(id);
   if (!pointer) throw new NotFound();
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const order = await OrderModel.findByPk(pointer.orderId, {
       transaction,
       lock: transaction.LOCK.UPDATE,

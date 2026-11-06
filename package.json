@@ -20,7 +20,8 @@
     "docker:logs": "docker compose logs -f",
     "deploy:prod": "bash scripts/deploy.prod.sh",
     "db:tunnel": "bash scripts/db-tunnel.sh",
-    "build:storybook": "pnpm --filter @p4/blocks build-storybook"
+    "build:storybook": "pnpm --filter @p4/blocks build-storybook",
+    "deploy:web": "bash scripts/deploy.web.sh"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,html}": [

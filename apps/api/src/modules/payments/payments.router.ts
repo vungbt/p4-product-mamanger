@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditPolicies } from './payments.audit.js';
 import * as paymentsController from './payments.controller.js';
 
 const router = Router();
 router.post('/:id/mock-pay', authRequired, paymentsController.mockPay);
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

@@ -2,7 +2,9 @@ import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { apiHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
+import { auditPolicies } from './refund-processing.audit.js';
 import * as refunds from './refund-processing.service.js';
 
 const router = Router();
@@ -39,4 +41,4 @@ router.post(
     );
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

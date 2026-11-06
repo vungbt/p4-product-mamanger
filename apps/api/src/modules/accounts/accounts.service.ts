@@ -9,18 +9,15 @@ import bcrypt from 'bcryptjs';
 import type { Transaction } from 'sequelize';
 import { getMe } from '@/modules/auth/auth.service.js';
 import { createFromStorageId } from '@/modules/files/files.service.js';
-import {
-  AccountTokenModel,
-  RefreshTokenModel,
-  sequelize,
-  UserModel,
-} from '@/sequelize/models/index.js';
+import { AccountTokenModel, RefreshTokenModel, UserModel } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
 import { seal } from '@/shared/commerce/encryption.js';
-import { enqueueEvent, jsonValue, recordAudit } from '@/shared/commerce/persistence.js';
+import { enqueueEvent, jsonValue } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { BadRequest, Unauthorized } from '@/utils/errors/index.js';
-import { hashToken } from '@/utils/refresh-token.js';
+import { hashToken } from '@/utils/token-hash.js';
 
 export async function issueAccountToken(
   user: UserModel,
@@ -67,7 +64,7 @@ export async function consumeAccountToken<T>(
   token: string,
   work: (user: UserModel, record: AccountTokenModel, transaction: Transaction) => Promise<T>,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const record = await AccountTokenModel.findOne({
       where: { purpose, tokenHash: hashToken(token) },
       transaction,
@@ -88,7 +85,7 @@ export async function consumeAccountToken<T>(
 
 export async function register(input: RegisterInput) {
   const passwordHash = await bcrypt.hash(input.password, 12);
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     const user = await UserModel.create(
       {
         email: input.email.toLowerCase(),
@@ -111,7 +108,7 @@ export async function requestAccountEmail(
   email: string,
   purpose: 'verify_email' | 'password_reset',
 ) {
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     const user = await UserModel.findOne({
       where: { email: email.toLowerCase(), accountStatus: 'active' },
       transaction,
@@ -170,7 +167,7 @@ export async function patchProfile(
   const file = input.imageStorageId
     ? await createFromStorageId(input.imageStorageId, 'avatar')
     : undefined;
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     const user = await UserModel.findByPk(userId, { transaction, lock: transaction.LOCK.UPDATE });
     if (!user) throw new Unauthorized();
     assertVersion(user.version, input.expectedVersion);
@@ -218,7 +215,7 @@ export async function patchPreferences(
   } catch {
     throw new BadRequest('invalid_timezone');
   }
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     const user = await UserModel.findByPk(userId, { transaction, lock: transaction.LOCK.UPDATE });
     if (!user) throw new Unauthorized();
     assertVersion(user.version, input.expectedVersion);
@@ -241,7 +238,7 @@ export async function patchPreferences(
 }
 
 export async function requestEmailChange(userId: string, email: string, currentPassword: string) {
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     const user = await UserModel.findByPk(userId, { transaction, lock: transaction.LOCK.UPDATE });
     if (!user?.passwordHash || !(await bcrypt.compare(currentPassword, user.passwordHash)))
       throw new BadRequest('current_password_invalid');

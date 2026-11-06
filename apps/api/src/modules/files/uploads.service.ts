@@ -2,8 +2,9 @@ import { randomUUID } from 'node:crypto';
 import type { UploadPurpose, UploadTicket, User } from '@p4/shared';
 import { env } from '@/configs/env.js';
 import { permissionsFor } from '@/middlewares/permission.middleware.js';
-import { FileModel, sequelize, UploadTicketModel } from '@/sequelize/models/index.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { FileModel, UploadTicketModel } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, InputValidError, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
@@ -25,30 +26,35 @@ export function uploadDto(row: UploadTicketModel): UploadTicket {
 }
 
 export async function createUpload(user: User, purpose: UploadPurpose, resourceId: string | null) {
-  const permissions = permissionsFor(user);
-  if (purpose === 'product' && !permissions.includes('catalog:write')) throw new Forbidden();
-  if (purpose === 'blog' && !permissions.includes('content:write')) throw new Forbidden();
-  const id = randomUUID();
-  const storageId = `${env.cloudinary.tempFolder}/${user.id}/${id}`;
-  const privateAsset = purpose === 'return' || purpose === 'support';
-  const signed = provider.signUploadUrl(undefined, { publicId: storageId, private: privateAsset });
-  const row = await UploadTicketModel.create({
-    id,
-    ownerId: user.id,
-    purpose,
-    resourceId,
-    storageId,
-    status: 'pending',
-    private: privateAsset,
-    maxBytes: purpose === 'avatar' ? 2_097_152 : 10_485_760,
-    expiresAt: new Date(Date.now() + 600_000),
-    fileId: null,
+  return auditedTransaction(async () => {
+    const permissions = permissionsFor(user);
+    if (purpose === 'product' && !permissions.includes('catalog:write')) throw new Forbidden();
+    if (purpose === 'blog' && !permissions.includes('content:write')) throw new Forbidden();
+    const id = randomUUID();
+    const storageId = `${env.cloudinary.tempFolder}/${user.id}/${id}`;
+    const privateAsset = purpose === 'return' || purpose === 'support';
+    const signed = provider.signUploadUrl(undefined, {
+      publicId: storageId,
+      private: privateAsset,
+    });
+    const row = await UploadTicketModel.create({
+      id,
+      ownerId: user.id,
+      purpose,
+      resourceId,
+      storageId,
+      status: 'pending',
+      private: privateAsset,
+      maxBytes: purpose === 'avatar' ? 2_097_152 : 10_485_760,
+      expiresAt: new Date(Date.now() + 600_000),
+      fileId: null,
+    });
+    return {
+      ...uploadDto(row),
+      ...signed,
+      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+    };
   });
-  return {
-    ...uploadDto(row),
-    ...signed,
-    allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
-  };
 }
 
 export function verifyUploadedImage(
@@ -85,7 +91,7 @@ export function verifyUploadedImage(
 }
 
 export async function completeUpload(userId: string, ticketId: string) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await UploadTicketModel.findOne({
       where: { id: ticketId, ownerId: userId },
       transaction,

@@ -4,10 +4,12 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { ReturnRequestModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { orderQuantities } from '@/shared/commerce/input.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
+import { auditPolicies } from './returns.audit.js';
 import * as returns from './returns.service.js';
 
 const router = Router();
@@ -113,4 +115,4 @@ for (const [action, status] of [
     }),
   );
 }
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { validateCouponsListQuery } from '@/modules/coupons/coupons.validation.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditPolicies } from './coupons.audit.js';
 import * as couponsController from './coupons.controller.js';
 import { validateCoupon, validatePreview } from './coupons.validation.js';
 
@@ -25,4 +27,4 @@ router.post(
 router.put('/:id', authRequired, requirePermission('promotion:write'), couponsController.update);
 router.delete('/:id', authRequired, requirePermission('promotion:write'), couponsController.remove);
 
-export default router;
+export default applyAuditPolicies(router, auditPolicies);
