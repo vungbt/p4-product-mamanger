@@ -1,24 +1,20 @@
 import type { Role } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { errorKeys } from '@/constants/index.js';
-import { findUserByToken } from '@/modules/auth/auth.service.js';
+import { getMe, sessionFromHeaders } from '@/modules/auth/auth.service.js';
 import { requestStore } from '@/shared/request-store.js';
 import { Forbidden, Unauthorized } from '@/utils/errors/index.js';
+import { assertCookieOrigin } from './cookie-origin.js';
 
 export async function authRequired(req: Request, _res: Response, next: NextFunction) {
   try {
-    const header = req.headers.authorization;
-    if (!header?.startsWith('Bearer ')) {
-      throw new Unauthorized();
-    }
-    const token = header.slice(7);
-    const user = await findUserByToken(token);
-    if (!user) {
-      throw new Unauthorized(errorKeys.invalidToken);
-    }
+    const session = await sessionFromHeaders(req.headers);
+    if (!session) throw new Unauthorized(errorKeys.invalidToken);
+    const { user } = await getMe(session.user.id);
     req.user = user;
     const store = requestStore.getStore();
     if (store) store.user = user;
+    assertCookieOrigin(req);
     next();
   } catch (error) {
     next(error);

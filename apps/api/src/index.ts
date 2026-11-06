@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { createApp } from '@/app.js';
+import { authPool } from '@/configs/better-auth.js';
 import { env } from '@/configs/env.js';
 import { assertProductionConfig } from '@/configs/production.js';
 import { attachRealtime } from '@/modules/realtime/realtime.service.js';
@@ -23,6 +24,7 @@ async function main() {
     await realtime.close();
     server.close(async () => {
       try {
+        await authPool.end();
         await sequelize.close();
         logger.info('[DB] Connection closed');
         process.exit(0);

@@ -1,9 +1,9 @@
 import { useAppForm } from '@itclabs/react-ui';
+import { getErrorMessage } from '@p4/api-sdk/shared';
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
 import type { CategoryEditorProps } from '../components/category-editor';
-import { categoryErrorMessage } from './use-categories';
 
 function slugFromName(name: string) {
   return name
@@ -100,7 +100,7 @@ export default function useCategoryEditor({
         }
 
         if (!hasFieldErrors || hasOtherErrors) {
-          setError(categoryErrorMessage(cause, t('categories.saveFailed')));
+          setError(getErrorMessage(cause, t('categories.saveFailed')));
         }
       }
     },

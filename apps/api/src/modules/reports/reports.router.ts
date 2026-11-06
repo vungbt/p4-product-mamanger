@@ -4,8 +4,10 @@ import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import { ReportExportModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { NotFound } from '@/utils/errors/index.js';
+import { auditPolicies } from './reports.audit.js';
 import * as reports from './reports.service.js';
 
 const router = Router();
@@ -69,4 +71,4 @@ router.get(
       .catch(next);
   },
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

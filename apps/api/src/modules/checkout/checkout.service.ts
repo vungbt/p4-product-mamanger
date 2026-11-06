@@ -13,8 +13,8 @@ import {
   FileModel,
   ProductModel,
   ProductVariantModel,
-  sequelize,
 } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
 import { jsonValue } from '@/shared/commerce/persistence.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { NotFound } from '@/utils/errors/index.js';
@@ -136,7 +136,7 @@ export function quoteDto(row: CheckoutQuoteModel): CheckoutQuote {
 }
 
 export async function createQuote(userId: string, input: CheckoutQuoteInput) {
-  return sequelize.transaction(
+  return auditedTransaction(
     { isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ },
     async (transaction) => {
       const snapshot = await buildQuoteSnapshot(userId, input, transaction);

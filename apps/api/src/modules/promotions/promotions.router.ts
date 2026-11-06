@@ -4,14 +4,11 @@ import { Router } from 'express';
 import { Op } from 'sequelize';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
-import {
-  CouponModel,
-  CouponRedemptionModel,
-  PromotionModel,
-  sequelize,
-} from '@/sequelize/models/index.js';
+import { CouponModel, CouponRedemptionModel, PromotionModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { searchPattern } from '@/shared/list-filters.js';
@@ -20,6 +17,7 @@ import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { toCoupon } from '../coupons/coupons.service.js';
+import { auditPolicies } from './promotions.audit.js';
 import { promotionDto } from './promotions.service.js';
 import { ruleInput } from './promotions.validation.js';
 
@@ -83,7 +81,7 @@ for (const method of ['post', 'patch'] as const) {
           name: body.text('name', 120),
           priority: body.data.priority === undefined ? 0 : body.integer('priority', 0, 1000),
         };
-        return sequelize.transaction(async (transaction) => {
+        return auditedTransaction(async (transaction) => {
           let row: PromotionModel | null;
           if (method === 'post')
             row = await PromotionModel.create(
@@ -164,4 +162,4 @@ router.get(
     };
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

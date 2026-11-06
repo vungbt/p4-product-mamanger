@@ -7,16 +7,18 @@ import {
   ProductModel,
   ProductVariantModel,
   ShippingMethodModel,
-  sequelize,
 } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { cartLines } from '@/shared/commerce/input.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
 import { InputValidError, NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
+import { auditPolicies } from './settings.audit.js';
 import * as service from './settings.service.js';
 
 const router = Router();
@@ -48,7 +50,7 @@ router.patch(
     } catch {
       return body.invalid('timezone');
     }
-    return sequelize.transaction(async (transaction) =>
+    return auditedTransaction(async (transaction) =>
       service.shopDto(
         await service.patchSettings(
           currentUser(req).id,
@@ -72,7 +74,7 @@ router.patch(
   ...manage,
   apiHandler(async (req) => {
     const body = requestBody(req);
-    return sequelize.transaction(async (transaction) =>
+    return auditedTransaction(async (transaction) =>
       service.commerceDto(
         await service.patchSettings(
           currentUser(req).id,
@@ -142,7 +144,7 @@ for (const method of ['post', 'patch'] as const) {
           freeAbove: body.data.freeAbove === null ? null : body.integer('freeAbove'),
           estimatedDays: body.integer('estimatedDays', 1, 90),
         };
-        return sequelize.transaction(async (transaction) => {
+        return auditedTransaction(async (transaction) => {
           let row: ShippingMethodModel | null;
           if (method === 'post')
             row = await ShippingMethodModel.create(
@@ -201,4 +203,4 @@ router.post(
     );
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

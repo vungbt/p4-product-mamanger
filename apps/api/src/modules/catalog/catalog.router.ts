@@ -7,15 +7,18 @@ import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { listInventory } from '@/modules/inventory/inventory.service.js';
 import { listProducts } from '@/modules/products/products.service.js';
 import { validateProductsListQuery } from '@/modules/products/products.validation.js';
-import { SizeGuideModel, sequelize } from '@/sequelize/models/index.js';
+import { SizeGuideModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
 import { searchPattern } from '@/shared/list-filters.js';
 import { queryText, validateListQuery } from '@/shared/list-query.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
+import { auditPolicies } from './catalog.audit.js';
 import * as catalog from './catalog.service.js';
 
 const router = Router();
@@ -212,7 +215,7 @@ router.post(
   ...write,
   apiHandler(
     async (req) =>
-      sequelize.transaction(async (transaction) => {
+      auditedTransaction(async (transaction) => {
         const body = requestBody(req);
         const row = await SizeGuideModel.create(
           {
@@ -241,7 +244,7 @@ router.patch(
   '/admin/size-guides/:id',
   ...write,
   apiHandler(async (req) =>
-    sequelize.transaction(async (transaction) => {
+    auditedTransaction(async (transaction) => {
       const body = requestBody(req);
       const row = await SizeGuideModel.findByPk(uuidRouteId(req), {
         transaction,
@@ -266,4 +269,4 @@ router.patch(
     }),
   ),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

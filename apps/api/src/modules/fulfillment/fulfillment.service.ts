@@ -10,9 +10,9 @@ import {
   ShipmentEventModel,
   ShipmentItemModel,
   ShipmentModel,
-  sequelize,
 } from '@/sequelize/models/index.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
 import { assertTransition, assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { NotFound } from '@/utils/errors/index.js';
@@ -51,7 +51,7 @@ export async function createShipment(
   items: OrderQuantityInput[],
   carrier: string,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const order = await OrderModel.findByPk(orderId, {
       transaction,
       lock: transaction.LOCK.UPDATE,
@@ -114,7 +114,7 @@ export async function transitionShipment(
 ) {
   const pointer = await ShipmentModel.findByPk(id);
   if (!pointer) throw new NotFound();
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const order = await OrderModel.findByPk(pointer.orderId, {
       transaction,
       lock: transaction.LOCK.UPDATE,

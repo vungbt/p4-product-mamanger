@@ -44,3 +44,13 @@
 - Run `pnpm --filter @p4/api typecheck` and `pnpm --filter @p4/api test:lists` after API changes. For DB query changes, run the documented local integration suite against the existing development stack.
 
 - Keep DTO field lists in their owning service; inline single-use lists. Services call `selectFields` directly for simple DTO selection; do not create mapper functions that only wrap this helper. Mappers with actual transformations use `selectFields` from `apps/api/src/utils/select-fields.ts` for direct fields and keep explicit DTO return types. Keep date/relationship transformations explicit; never select credential or internal fields into public DTOs. Do not cast mapper output to bypass type errors.
+
+## Auth, audit and SDK
+
+- Better Auth owns sessions; use `@p4/api-sdk/auth` on clients. Never reintroduce
+  localStorage tokens or a parallel JWT refresh engine.
+- Add explicit action policy next to every router. Use `auditedCommand` /
+  `auditedTransaction` for business writes; preserve the transaction isolation
+  required by the service. Do not perform provider side effects before commit.
+- Regenerate OpenAPI then `@p4/api-sdk` after API contract changes. SDK shared/auth
+  exports work without React; React context is an optional separate export.

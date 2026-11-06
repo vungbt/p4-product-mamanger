@@ -10,6 +10,8 @@ import {
   WishlistItemModel,
 } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
 import { BaseError } from '@/utils/errors/base-error.js';
@@ -17,6 +19,7 @@ import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { getCatalogProduct } from '../catalog/catalog.service.js';
+import { auditPolicies } from './wishlist.audit.js';
 
 const router = Router();
 const list = validateListQuery({
@@ -86,7 +89,7 @@ router.post(
     const body = requestBody(req);
     const variantId = body.text('variantId', 36);
     if (!/^[a-f0-9-]{36}$/i.test(variantId)) return body.invalid('variantId');
-    return sequelize.transaction(async (transaction) => {
+    return auditedTransaction(async (transaction) => {
       const variant = await ProductVariantModel.findByPk(variantId, { transaction });
       if (variant?.status !== 'active') throw new NotFound();
       await getCatalogProduct(variant.productId);
@@ -142,4 +145,4 @@ router.delete(
     return { cancelled: true };
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

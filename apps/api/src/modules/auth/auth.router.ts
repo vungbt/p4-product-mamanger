@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditPolicies } from './auth.audit.js';
 import * as authController from './auth.controller.js';
 import {
   validateGoogleLoginBody,
@@ -25,4 +27,4 @@ router.patch('/me', authRequired, validateUpdateProfileBody, authController.upda
 router.patch('/password', authRequired, validateUpdatePasswordBody, authController.updatePassword);
 router.post('/logout', authController.logout);
 
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

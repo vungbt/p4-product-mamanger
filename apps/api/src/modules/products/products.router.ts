@@ -4,6 +4,8 @@ import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { validateProductsListQuery } from '@/modules/products/products.validation.js';
 import * as reviewsController from '@/modules/reviews/reviews.controller.js';
 import { validateReview, validateReviewsListQuery } from '@/modules/reviews/reviews.validation.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditPolicies } from './products.audit.js';
 import * as productsController from './products.controller.js';
 import {
   validateAddImage,
@@ -59,4 +61,4 @@ router.delete(
   productsController.removeImage,
 );
 
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

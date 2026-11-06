@@ -2,13 +2,16 @@ import { Router } from 'express';
 import { Op } from 'sequelize';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
-import { getMe } from '@/modules/auth/auth.service.js';
-import { RefreshTokenModel, sequelize, UserModel } from '@/sequelize/models/index.js';
+import { getMe, sessionFromHeaders } from '@/modules/auth/auth.service.js';
+import { AuthSessionModel, UserModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import validate from '@/shared/validation.js';
 import { NotFound, Unauthorized } from '@/utils/errors/index.js';
+import { auditPolicies } from './accounts.audit.js';
 import * as accounts from './accounts.service.js';
 
 const router = Router();
@@ -137,9 +140,9 @@ router.get(
   '/me/sessions',
   authRequired,
   apiHandler(async (req) => {
-    const rows = await RefreshTokenModel.findAll({
-      where: { userId: currentUser(req).id, expiresAt: { [Op.gt]: new Date() }, revokedAt: null },
-      attributes: ['id', 'createdAt', 'expiresAt', 'revokedAt'],
+    const rows = await AuthSessionModel.findAll({
+      where: { userId: currentUser(req).id, expiresAt: { [Op.gt]: new Date() } },
+      attributes: ['id', 'createdAt', 'expiresAt'],
       order: [['createdAt', 'DESC']],
       limit: 100,
     });
@@ -147,7 +150,7 @@ router.get(
       id: row.id,
       createdAt: row.createdAt.toISOString(),
       expiresAt: row.expiresAt.toISOString(),
-      revokedAt: row.revokedAt?.toISOString() ?? null,
+      revokedAt: null,
     }));
   }),
 );
@@ -156,14 +159,14 @@ router.delete(
   authRequired,
   apiHandler(async (req) => {
     const user = currentUser(req);
-    await sequelize.transaction(async (transaction) => {
-      const row = await RefreshTokenModel.findOne({
+    await auditedTransaction(async (transaction) => {
+      const row = await AuthSessionModel.findOne({
         where: { id: uuidRouteId(req), userId: user.id },
         transaction,
         lock: transaction.LOCK.UPDATE,
       });
       if (!row) throw new NotFound();
-      await row.update({ revokedAt: row.revokedAt ?? new Date() }, { transaction });
+      await row.destroy({ transaction });
       await recordAudit(
         {
           actorId: user.id,
@@ -182,15 +185,13 @@ router.post(
   authRequired,
   apiHandler(async (req) => {
     const user = currentUser(req);
-    const authorization = req.header('authorization') ?? '';
-    const { verifyAccessToken } = await import('@/utils/jwt.js');
-    const token = verifyAccessToken(authorization.slice(7));
-    if (!token.sid) throw new Unauthorized();
-    await sequelize.transaction(async (transaction) => {
-      await RefreshTokenModel.update(
-        { revokedAt: new Date() },
-        { where: { userId: user.id, id: { [Op.ne]: token.sid }, revokedAt: null }, transaction },
-      );
+    const session = await sessionFromHeaders(req.headers);
+    if (!session) throw new Unauthorized();
+    await auditedTransaction(async (transaction) => {
+      await AuthSessionModel.destroy({
+        where: { userId: user.id, id: { [Op.ne]: session.session.id } },
+        transaction,
+      });
       await recordAudit(
         {
           actorId: user.id,
@@ -204,4 +205,4 @@ router.post(
     return { revoked: true };
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

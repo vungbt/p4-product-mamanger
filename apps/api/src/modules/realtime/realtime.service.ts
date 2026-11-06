@@ -6,6 +6,7 @@ import pg from 'pg';
 import { Op, type Transaction } from 'sequelize';
 import { env } from '@/configs/env.js';
 import { NotificationModel, RealtimeEventModel, sequelize } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { findUserByToken } from '../auth/auth.service.js';
 
@@ -49,7 +50,7 @@ export async function replayRealtime(userId: string, offset: string) {
   };
 }
 export async function markNotificationRead(userId: string, id: string) {
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     const row = await NotificationModel.findOne({
       where: { id, userId },
       transaction,

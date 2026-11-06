@@ -6,11 +6,13 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { OrderItemModel, ProductModel, ReviewModel, sequelize } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
 import { searchPattern } from '@/shared/list-filters.js';
 import { queryNumber, queryText, validateListQuery } from '@/shared/list-query.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
+import { auditPolicies } from './reviews.audit.js';
 import * as reviews from './reviews.service.js';
 
 const router = Router();
@@ -164,4 +166,4 @@ router.get(
     };
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

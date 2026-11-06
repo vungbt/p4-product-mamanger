@@ -1,7 +1,9 @@
 import { publishScheduledContent } from '../content/content.service.js';
 import { finishExchanges } from '../exchanges/exchanges.service.js';
+import { deleteStoredFile } from '../files/files.service.js';
 import {
   accountEmail,
+  authEmail,
   inventoryNotification,
   orderNotification,
   refundNotification,
@@ -19,6 +21,8 @@ const handlers = new Map<string, EventHandler>([
   ['exchange.replacement_created', async () => {}],
   ['support.message', supportNotification],
   ['account.mail_requested', accountEmail],
+  ['auth.mail_requested', authEmail],
+  ['file.delete_requested', deleteStoredFile],
   ['inventory.changed', inventoryNotification],
   ['payment.checkout_requested', provisionCheckout],
   ['refund.requested', processRefund],

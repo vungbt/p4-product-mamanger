@@ -1,11 +1,20 @@
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
+import { auditedTransaction } from './audit/audited-command.js';
+import { AUDIT_ACTIONS } from './audit/types.js';
+import { requestStore } from './request-store.js';
 
 export function apiHandler<Data>(
   handler: (req: Request) => Promise<Data>,
   status = 200,
 ): RequestHandler {
   const middleware: RequestHandler = (req, res, next) => {
-    void handler(req)
+    const policy = requestStore.getStore()?.audit;
+    const run = () => handler(req);
+    void (
+      policy && AUDIT_ACTIONS[policy.action].changesData
+        ? auditedTransaction(policy.transaction ?? {}, run)
+        : run()
+    )
       .then((data) => res.jsonApi(status, { data }))
       .catch(next);
   };

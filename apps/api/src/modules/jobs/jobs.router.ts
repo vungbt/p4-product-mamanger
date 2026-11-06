@@ -4,11 +4,13 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { DomainEventModel, sequelize } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, uuidRouteId } from '@/shared/http-input.js';
 import { queryText, validateListQuery } from '@/shared/list-query.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { eventHandlers } from './handlers.js';
+import { auditPolicies } from './jobs.audit.js';
 import { jobDto, retryEvent } from './jobs.service.js';
 
 const router = Router();
@@ -63,4 +65,4 @@ router.post(
   requirePermission('system:manage'),
   apiHandler(async (req) => retryEvent(currentUser(req).id, uuidRouteId(req), eventHandlers)),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditPolicies } from './categories.audit.js';
 import * as categoriesController from './categories.controller.js';
 import { validateCategory, validateCategoryListQuery } from './categories.validation.js';
 
@@ -23,4 +25,4 @@ router.delete(
   categoriesController.remove,
 );
 
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

@@ -73,7 +73,11 @@ test('every operation is documented for FE consumers', async () => {
   }
 
   for (const path of ['/api/addresses', '/api/cart']) {
-    assert.deepEqual(spec.paths[path].get.security, [{ bearerAuth: [] }], path);
+    assert.deepEqual(
+      spec.paths[path].get.security,
+      [{ sessionCookie: [] }, { bearerAuth: [] }],
+      path,
+    );
   }
   assert.ok(spec.paths['/api/orders'].post.requestBody);
   assert.ok(

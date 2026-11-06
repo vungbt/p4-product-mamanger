@@ -16,6 +16,7 @@ p4-product-manager/
 ├── libs/
 │   ├── shared/       ← Types dùng chung (@p4/shared)
 │   ├── blocks/       ← 18 block nghiệp vụ P4 (@p4/blocks), dùng kit npm
+│   ├── api-sdk/      ← SDK TypeScript sinh từ OpenAPI (@p4/api-sdk)
 │   ├── auth/         ← AuthProvider / useAuth (@p4/auth)
 │   └── api-client/   ← Axios + TanStack Query (@p4/api-client)
 ├── tsconfig.base.json
@@ -74,7 +75,7 @@ pnpm docker:up       # postgres + api
 **Deploy production** — cùng VPS coupon-linkh (SSH `couponlinkh`), stack riêng `p4-prod` (Postgres host bind `127.0.0.1:5433`):
 
 ```bash
-cp .env.prod.example .env.prod   # điền JWT, DB, CORS, Cloudinary…
+cp .env.prod.example .env.prod   # điền Better Auth secret, DB, CORS, Cloudinary…
 ./scripts/deploy.prod.sh         # hoặc: pnpm deploy:prod
 ```
 
@@ -86,7 +87,11 @@ Smoke: `curl https://p4-api.couponlinkh.com/health` (nginx → `:3001`)
 pnpm db:tunnel   # giữ terminal mở → IDE: 127.0.0.1:5433 + creds .env.prod
 ```
 
-FE production: **Vercel** — `VITE_API_URL=https://p4-api.couponlinkh.com`
+FE production: **https://p4.couponlinkh.com** — Nginx phục vụ static release và proxy
+`/api` + `/socket.io` vào API hiện có. Build với `VITE_API_URL=''` để dùng cookie
+cùng origin. Chạy `pnpm deploy:web` sau khi provision TLS và cấu hình
+[deploy/nginx/p4.conf](deploy/nginx/p4.conf). Script giữ các release trước trong
+`/var/www/p4/releases`; đổi symlink `current` để rollback web.
 
 ### Lint, format & commit
 
@@ -101,7 +106,7 @@ Pre-commit (Husky): tự format/lint file staged. Commit message theo [COMMIT_CO
 
 ## Học viên làm gì? (`apps/web`)
 
-1. `use-auth` — login/logout gọi `/api/auth/login`, lưu token
+1. `use-auth` — dùng Better Auth qua `@p4/api-sdk/auth`, phục hồi phiên bằng cookie HttpOnly
 2. `protected-route` — guard theo role
 3. **Admin:** CRUD products, dashboard stats, orders list
 4. **Storefront:** shop, cart, checkout → `POST /api/orders`
@@ -170,3 +175,12 @@ Requires Node.js >= 22.12 và React 19. Chạy `pnpm install` để cài depende
 ## Task frontend
 
 Thứ tự triển khai Admin và Storefront: [42 task riêng](documents/frontend/README.md).
+
+## SDK, auth và audit
+
+- SDK build sẵn: [@p4/api-sdk](libs/api-sdk/README.md), contract sinh từ OpenAPI;
+  màn danh mục đã sử dụng client này. `@p4/api-client` giữ TanStack Query và các service cũ.
+- Auth dùng Better Auth; migration giữ user ID và mật khẩu bcrypt, thu hồi phiên cũ
+  để đăng nhập lại. Token chỉ ở memory, phiên browser dùng cookie HttpOnly.
+- Audit nghiệp vụ dùng command/transaction chung; mỗi route khai báo action cụ thể.
+  Quy tắc và giới hạn được ghi trong [API README](apps/api/README.md#auth).

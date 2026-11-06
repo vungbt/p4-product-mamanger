@@ -21,7 +21,7 @@
     "worker": "tsx src/worker.ts",
     "worker:start": "node dist/worker.js",
     "commerce:audit": "tsx src/scripts/commerce-audit.ts --dry-run",
-    "test:commerce": "pnpm typecheck && pnpm build && node --test --test-concurrency=1 tests/categories.test.mjs tests/list-query.test.mjs tests/select-fields.test.mjs tests/commerce-foundations.test.mjs tests/jobs-reports.test.mjs tests/accounts.integration.test.mjs tests/catalog-inventory.integration.test.mjs tests/checkout.integration.test.mjs tests/content-support-notifications.integration.test.mjs tests/list-api.integration.test.mjs tests/processes.integration.test.mjs tests/openapi.test.mjs",
+    "test:commerce": "pnpm typecheck && pnpm build && node --test --test-concurrency=1 tests/categories.test.mjs tests/list-query.test.mjs tests/select-fields.test.mjs tests/commerce-foundations.test.mjs tests/jobs-reports.test.mjs tests/accounts.integration.test.mjs tests/catalog-inventory.integration.test.mjs tests/checkout.integration.test.mjs tests/content-support-notifications.integration.test.mjs tests/list-api.integration.test.mjs tests/processes.integration.test.mjs tests/openapi.test.mjs tests/auth-audit.integration.test.mjs",
     "prebuild": "pnpm --filter @p4/processes build && pnpm --filter @p4/realtime build",
     "predev": "pnpm --filter @p4/processes build && pnpm --filter @p4/realtime build"
   },
@@ -39,7 +39,6 @@
     "i18next": "catalog:",
     "i18next-fs-backend": "catalog:",
     "i18next-http-middleware": "catalog:",
-    "jsonwebtoken": "catalog:",
     "morgan": "catalog:",
     "pg": "catalog:",
     "pg-hstore": "catalog:",
@@ -55,7 +54,9 @@
     "csv-parse": "catalog:",
     "unzipper": "catalog:",
     "valibot": "catalog:",
-    "yaml": "catalog:"
+    "yaml": "catalog:",
+    "better-auth": "catalog:",
+    "cls-hooked": "catalog:"
   },
   "devDependencies": {
     "@types/bcryptjs": "catalog:",
@@ -72,6 +73,8 @@
     "typescript": "catalog:",
     "@types/multer": "catalog:",
     "@types/unzipper": "catalog:",
-    "socket.io-client": "catalog:"
+    "socket.io-client": "catalog:",
+    "@types/cls-hooked": "catalog:",
+    "jsonwebtoken": "catalog:"
   }
 }

@@ -14,7 +14,8 @@ import {
   sequelize,
 } from '@/sequelize/models/index.js';
 import type { ProductVariantAttributes } from '@/sequelize/models/product-variant.model.js';
-import { enqueueEvent, recordAudit, runIdempotent } from '@/shared/commerce/persistence.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent, runIdempotent } from '@/shared/commerce/persistence.js';
 import { searchPattern } from '@/shared/list-filters.js';
 import type { ModelOrder } from '@/types/database.js';
 import { BaseError } from '@/utils/errors/base-error.js';

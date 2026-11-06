@@ -4,9 +4,11 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { UploadTicketModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { privateDownloadUrl } from './cloudinary.service.js';
+import { auditPolicies } from './files.audit.js';
 import * as filesController from './files.controller.js';
 import * as files from './files.service.js';
 import * as uploads from './uploads.service.js';
@@ -73,4 +75,4 @@ router.delete(
     return files.deleteFile(file.id);
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

@@ -13,9 +13,10 @@ import {
   ContentRevisionModel,
   ContentTaxonomyModel,
   FileModel,
-  sequelize,
 } from '@/sequelize/models/index.js';
-import { enqueueEvent, recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { assertTransition, assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, NotFound } from '@/utils/errors/index.js';
@@ -75,7 +76,7 @@ export async function saveContent(
   id?: string,
   expectedVersion?: number,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     await validateMedia(input, actorId, transaction);
     const reserved = await ContentRedirectModel.findOne({
       where: { kind, slug: input.slug },
@@ -133,7 +134,7 @@ export async function publishContent(
   status: ContentStatus,
   scheduledAt?: Date,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await ContentEntryModel.findOne({
       where: { id, kind },
       transaction,

@@ -1,5 +1,7 @@
+import { createP4AuthClient } from '@p4/api-sdk/auth';
+import { createApiSdk } from '@p4/api-sdk/shared';
 import { type AuthSession, clearAuthSession, readAuthSession, writeAuthSession } from '@p4/auth';
-import type { ApiError, LoginResponse } from '@p4/shared';
+import type { ApiError } from '@p4/shared';
 import axios, {
   type AxiosError,
   type AxiosRequestHeaders,
@@ -32,19 +34,45 @@ let apiBaseURL = '/api';
 export function configureApiClient(options: { baseURL: string }) {
   apiBaseURL = options.baseURL.replace(/\/$/, '');
   instance.defaults.baseURL = apiBaseURL;
+  authClient = undefined;
+  sdkClient = undefined;
+}
+
+let authClient: ReturnType<typeof createP4AuthClient> | undefined;
+let sdkClient: ReturnType<typeof createApiSdk> | undefined;
+
+function absoluteApiUrl() {
+  return new URL(
+    apiBaseURL,
+    typeof window === 'undefined' ? 'http://127.0.0.1:3001' : window.location.origin,
+  ).href;
+}
+
+export function getAuthClient() {
+  authClient ??= createP4AuthClient(absoluteApiUrl());
+  return authClient;
+}
+
+export function getApiSdk() {
+  sdkClient ??= createApiSdk({
+    baseUrl: absoluteApiUrl().replace(/\/api\/?$/, ''),
+    getToken: getAccessToken,
+    getHeaders: () => ({
+      'Accept-Language':
+        typeof localStorage === 'undefined' ? 'vi' : (localStorage.getItem('p4_locale') ?? 'vi'),
+    }),
+  });
+  return sdkClient;
 }
 
 export function getAccessToken(): string | null {
   return readAuthSession()?.token ?? null;
 }
 
-export function getRefreshToken(): string | null {
-  return readAuthSession()?.refreshToken ?? null;
-}
-
 export const instance = axios.create({
   baseURL: apiBaseURL,
   timeout: 15_000,
+  withCredentials: true,
   paramsSerializer: (params: Record<string, unknown>) =>
     queryString.stringify(params, {
       arrayFormat: 'bracket',
@@ -81,42 +109,79 @@ instance.interceptors.request.use(
 );
 
 let refreshPromise: Promise<AuthSession | null> | null = null;
+let authEpoch = 0;
+let logoutPromise: Promise<void> | null = null;
 
-async function performRefresh(): Promise<AuthSession | null> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return null;
-
+async function performRefresh(epoch: number, persist = true): Promise<AuthSession | null> {
+  if (logoutPromise) return null;
   try {
-    const { data } = await axios.post<{ data: LoginResponse }>(`${apiBaseURL}/auth/refresh`, {
-      refreshToken,
-    });
-    const next = data.data;
-    const session: AuthSession = {
-      token: next.token,
-      refreshToken: next.refreshToken,
-      user: next.user,
-    };
-    writeAuthSession(session);
+    const { data, error } = await getAuthClient().getSession();
+    if (error || !data) {
+      if (epoch === authEpoch && persist) clearAuthSession();
+      return null;
+    }
+    const response = await axios.get<{ data: { user: import('@p4/shared').User } }>(
+      `${apiBaseURL}/auth/me`,
+      { withCredentials: true },
+    );
+    const session: AuthSession = { token: data.session.token, user: response.data.data.user };
+    if (epoch !== authEpoch) return null;
+    if (persist) writeAuthSession(session);
     return session;
   } catch {
-    clearAuthSession();
+    if (epoch === authEpoch && persist) clearAuthSession();
     return null;
   }
 }
 
-export function refreshAuthSession(): Promise<AuthSession | null> {
-  refreshPromise ??= performRefresh().finally(() => {
-    refreshPromise = null;
+export async function loginAuthSession(email: string, password: string): Promise<AuthSession> {
+  await logoutPromise;
+  const epoch = ++authEpoch;
+  refreshPromise = null;
+  clearAuthSession();
+  const result = await getAuthClient().signIn.email({ email, password });
+  if (result.error) throw new Error(result.error.message ?? 'auth.loginFailed');
+  const session = await performRefresh(epoch, false);
+  if (!session) throw new Error('auth.loginFailed');
+  return session;
+}
+
+export async function loginGoogleAuthSession(credential: string): Promise<AuthSession> {
+  await logoutPromise;
+  const epoch = ++authEpoch;
+  refreshPromise = null;
+  clearAuthSession();
+  const result = await getAuthClient().signIn.social({
+    provider: 'google',
+    idToken: { token: credential },
   });
+  if (result.error) throw new Error(result.error.message ?? 'auth.googleFailed');
+  const session = await performRefresh(epoch, false);
+  if (!session) throw new Error('auth.googleFailed');
+  return session;
+}
+
+export function refreshAuthSession(): Promise<AuthSession | null> {
+  if (!refreshPromise) {
+    const pending: Promise<AuthSession | null> = performRefresh(authEpoch).finally(() => {
+      if (refreshPromise === pending) refreshPromise = null;
+    });
+    refreshPromise = pending;
+  }
   return refreshPromise;
 }
 
-export async function revokeAuthSession(session: AuthSession): Promise<void> {
-  await axios.post(
-    `${apiBaseURL}/auth/logout`,
-    { refreshToken: session.refreshToken },
-    { headers: { Authorization: `Bearer ${session.token}` } },
-  );
+export function revokeAuthSession(_session?: AuthSession): Promise<void> {
+  ++authEpoch;
+  refreshPromise = null;
+  clearAuthSession();
+  logoutPromise ??= getAuthClient()
+    .signOut()
+    .then(() => undefined)
+    .finally(() => {
+      logoutPromise = null;
+    });
+  return logoutPromise;
 }
 
 instance.interceptors.response.use(

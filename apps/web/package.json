@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "pnpm -w exec biome check apps/web/src",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prebuild": "pnpm --filter @p4/api-sdk build",
+    "predev": "pnpm --filter @p4/api-sdk build"
   },
   "dependencies": {
     "@itclabs/react-ui": "0.10.0",
@@ -21,7 +23,8 @@
     "react-i18next": "catalog:",
     "react-router-dom": "catalog:",
     "valibot": "catalog:",
-    "@p4/blocks": "workspace:*"
+    "@p4/blocks": "workspace:*",
+    "@p4/api-sdk": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.4",

@@ -14,9 +14,10 @@ import {
   ProductSlugRedirectModel,
   ProductVariantModel,
   type SizeGuideModel,
-  sequelize,
 } from '@/sequelize/models/index.js';
-import { enqueueEvent, recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { assertTransition, assertVersion } from '@/shared/commerce/transitions.js';
 import { inTransaction } from '@/shared/transaction.js';
 import { BaseError } from '@/utils/errors/base-error.js';
@@ -68,7 +69,7 @@ export async function publishProduct(
   status: ProductPublicationStatus,
   expectedVersion: number,
 ) {
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     const row = await ProductModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
     if (!row) throw new NotFound();
     assertVersion(row.version, expectedVersion);
@@ -230,7 +231,7 @@ export async function setVariantImages(
   expectedVersion: number,
   ids: string[],
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     await ProductModel.findByPk(productId, { transaction, lock: transaction.LOCK.UPDATE });
     const row = await ProductVariantModel.findOne({
       where: { id: variantId, productId },

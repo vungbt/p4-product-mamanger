@@ -10,9 +10,10 @@ import {
   PaymentLedgerModel,
   RefundModel,
   ReturnRequestModel,
-  sequelize,
 } from '@/sequelize/models/index.js';
-import { enqueueEvent, recordAudit, runIdempotent } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent, runIdempotent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, NotFound } from '@/utils/errors/index.js';
@@ -178,7 +179,7 @@ async function lockedRefund(id: string, transaction: Transaction) {
 }
 
 export async function processRefund(event: DomainEventModel) {
-  const prepared = await sequelize.transaction(async (transaction) => {
+  const prepared = await auditedTransaction(async (transaction) => {
     const { row, attempt } = await lockedRefund(event.aggregateId, transaction);
     if (
       row.processingStatus === 'succeeded' ||
@@ -209,7 +210,7 @@ export async function processRefund(event: DomainEventModel) {
         },
         { idempotencyKey: `refund:${row.id}:${row.attemptNumber}` },
       );
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     const locked = await lockedRefund(row.id, transaction);
     if (locked.row.processingStatus === 'succeeded') return;
     await locked.row.update({ externalId: result.id }, { transaction });
@@ -227,7 +228,7 @@ export async function settleRefund(
   actorId: string | null = null,
   expectedVersion?: number,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const { row, attempt } = await lockedRefund(id, transaction);
     if (row.processingStatus === 'succeeded') return refundDto(row);
     if (expectedVersion !== undefined) assertVersion(row.version, expectedVersion);
@@ -309,7 +310,7 @@ export async function reconcileRefund(actorId: string, id: string) {
 }
 
 export async function retryRefund(actorId: string, id: string, expectedVersion: number) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const { row } = await lockedRefund(id, transaction);
     assertVersion(row.version, expectedVersion);
     if (!['processing', 'requested', 'failed'].includes(row.processingStatus))

@@ -768,7 +768,8 @@ for (const mount of indexSource.matchAll(/apiRouter\.use\((?:'([^']+)',\s*)?(\w+
         routePath: layer.route.path,
         prefix,
         tag: relative.split('/')[0],
-        handlers: layer.route.stack.map((item) => item.handle),
+        handlers: layer.route.stack.map((item) => item.handle.originalHandler ?? item.handle),
+        auditPolicy: layer.route.stack.find((item) => item.handle.auditPolicy)?.handle.auditPolicy,
         guarded: guards.some((guard) => guard.regexp.test(layer.route.path)),
         site: findSite(sites, method, layer.route.path),
       });
@@ -1044,7 +1045,8 @@ for (const route of routes) {
     method: route.method,
     spec: {
       description,
-      security: secured ? [{ bearerAuth: [] }] : [],
+      security: secured ? [{ sessionCookie: [] }, { bearerAuth: [] }] : [],
+      ...(route.auditPolicy ? { 'x-audit-action': route.auditPolicy.action } : {}),
       ...(parameters.length ? { parameters } : {}),
       ...(requestBody ? { requestBody } : {}),
       responses: {
@@ -1211,7 +1213,10 @@ const spec = {
   })),
   paths,
   components: {
-    securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } },
+    securitySchemes: {
+      bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'Better Auth session token' },
+      sessionCookie: { type: 'apiKey', in: 'cookie', name: 'better-auth.session_token' },
+    },
     responses: {
       ValidationError: {
         description: 'Dữ liệu không hợp lệ; `extensions` map từng field với thông báo lỗi.',
@@ -1241,6 +1246,51 @@ const spec = {
     schemas: sortObject(schemas),
   },
 };
+
+const { auth, authPool, authAuditActions } = await import(
+  pathToFileURL(path.join(API_ROOT, 'dist/configs/better-auth.js'))
+);
+const nativeAuth = await auth.api.generateOpenAPISchema();
+function authRefs(value) {
+  if (Array.isArray(value)) return value.map(authRefs);
+  if (value && typeof value === 'object')
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, authRefs(item)]));
+  if (typeof value === 'string' && value.startsWith('#/components/schemas/'))
+    return value.replace('#/components/schemas/', '#/components/schemas/Auth_');
+  if (typeof value === 'string' && value.startsWith('#/components/securitySchemes/'))
+    return value.replace('#/components/securitySchemes/', '#/components/securitySchemes/Auth_');
+  return value;
+}
+for (const [name, schema] of Object.entries(nativeAuth.components?.schemas ?? {}))
+  spec.components.schemas[`Auth_${name}`] = authRefs(schema);
+for (const [name, scheme] of Object.entries(nativeAuth.components?.securitySchemes ?? {}))
+  spec.components.securitySchemes[`Auth_${name}`] = scheme;
+for (const [nativePath, item] of Object.entries(nativeAuth.paths)) {
+  const fullPath = `/api/auth${nativePath}`;
+  spec.paths[fullPath] ??= {};
+  for (const [method, operation] of Object.entries(item)) {
+    if (!HTTP_METHODS.has(method)) continue;
+    const translated = authRefs(operation);
+    if (Array.isArray(translated.security))
+      translated.security = translated.security.map((item) =>
+        Object.fromEntries(Object.entries(item).map(([key, value]) => [`Auth_${key}`, value])),
+      );
+    spec.paths[fullPath][method] = {
+      ...translated,
+      tags: ['auth-native'],
+      'x-audit-action':
+        authAuditActions[nativePath] ?? (nativePath.startsWith('/callback/') ? 'login' : 'read'),
+      operationId: `auth_${method}_${nativePath.replace(/[^a-zA-Z0-9]+/g, '_')}`,
+      summary: translated.summary ?? translated.description ?? `Better Auth: ${nativePath}`,
+    };
+  }
+}
+spec.tags.push({
+  name: 'auth-native',
+  description:
+    'Better Auth native endpoints. Browser clients use @p4/api-sdk/auth and HttpOnly session cookies.',
+});
+await authPool.end();
 
 const output = YAML.stringify(spec, { lineWidth: 120, aliasDuplicateObjects: false });
 const operationCount = Object.values(paths).reduce(

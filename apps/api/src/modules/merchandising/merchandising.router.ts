@@ -4,11 +4,13 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { MerchandisingEntryModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { normalizedSlug } from '../catalog/catalog.service.js';
+import { auditPolicies } from './merchandising.audit.js';
 import * as merch from './merchandising.service.js';
 import { merchandisingInput } from './merchandising.validation.js';
 
@@ -169,4 +171,4 @@ router.get(
     return { sections };
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

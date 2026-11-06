@@ -1,8 +1,8 @@
 import type { UploadPurpose } from '@p4/shared';
 import { Op, QueryTypes } from 'sequelize';
-import { isCloudinaryConfigured } from '@/configs/cloudinary.js';
 import { errorKeys } from '@/constants/index.js';
 import { sequelize } from '@/sequelize/index.js';
+import type { DomainEventModel } from '@/sequelize/models/domain-event.model.js';
 import {
   FileModel,
   ProductImageModel,
@@ -12,9 +12,11 @@ import {
   UploadTicketModel,
   UserModel,
 } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { requestStore } from '@/shared/request-store.js';
+import { BaseError } from '@/utils/errors/base-error.js';
 import { BadRequest, Forbidden, NotFound, Unauthorized } from '@/utils/errors/index.js';
-import { logger } from '@/utils/logger.js';
 import * as cloudinaryService from './cloudinary.service.js';
 import { completeUpload, createUpload } from './uploads.service.js';
 
@@ -68,39 +70,48 @@ export async function countFileReferences(fileId: string) {
  * `system` provider chỉ xóa DB.
  */
 export async function deleteFile(fileId: string) {
-  const file = await FileModel.findByPk(fileId);
-  if (!file) {
-    throw new NotFound(errorKeys.fileNotFound);
-  }
-
-  const refs = await countFileReferences(fileId);
-  if (refs > 0) {
-    throw new BadRequest(errorKeys.fileStillInUse);
-  }
-
-  if (file.provider === 'cloudinary' && file.storageId) {
-    if (isCloudinaryConfigured()) {
-      try {
-        const result = await cloudinaryService.destroyResource(
-          file.storageId,
-          file.metadata?.private === true,
-        );
-        const status = (result as { result?: string }).result;
-        if (status && status !== 'ok' && status !== 'not found') {
-          logger.warn('[files] Cloudinary destroy unexpected:', status, file.storageId);
-        }
-      } catch (error) {
-        logger.error('[files] Cloudinary destroy failed:', error);
-        throw new BadRequest(errorKeys.fileDeleteFailed);
-      }
-    } else {
-      logger.warn('[files] Skip Cloudinary destroy — not configured:', file.storageId);
+  return auditedTransaction(async (transaction) => {
+    const file = await FileModel.findByPk(fileId, { transaction, lock: transaction.LOCK.UPDATE });
+    if (!file) throw new NotFound(errorKeys.fileNotFound);
+    if ((await countFileReferences(fileId)) > 0) throw new BadRequest(errorKeys.fileStillInUse);
+    if (file.provider === 'cloudinary' && file.storageId) {
+      await enqueueEvent(
+        {
+          type: 'file.delete_requested',
+          aggregateType: 'file',
+          aggregateId: file.id,
+          payload: { storageId: file.storageId, private: file.metadata?.private === true },
+        },
+        transaction,
+      );
     }
-  }
+    await UploadTicketModel.update(
+      { fileId: null, status: 'rejected' },
+      { where: { fileId }, transaction },
+    );
+    await file.destroy({ transaction });
+    return { ok: true as const, id: fileId };
+  });
+}
 
-  await UploadTicketModel.update({ fileId: null, status: 'rejected' }, { where: { fileId } });
-  await file.destroy();
-  return { ok: true as const, id: fileId };
+export async function deleteStoredFile(event: DomainEventModel) {
+  const data = event.payload;
+  if (
+    !data ||
+    typeof data !== 'object' ||
+    Array.isArray(data) ||
+    typeof data.storageId !== 'string' ||
+    typeof data.private !== 'boolean'
+  )
+    throw new BaseError('invalid_file_delete_event');
+  const result: unknown = await cloudinaryService.destroyResource(data.storageId, data.private);
+  if (
+    !result ||
+    typeof result !== 'object' ||
+    !('result' in result) ||
+    !['ok', 'not found'].includes(String(result.result))
+  )
+    throw new BaseError('storage_delete_failed');
 }
 
 /** Detach xong gọi hàm này — chỉ xóa khi orphan */

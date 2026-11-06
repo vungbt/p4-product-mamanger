@@ -23,8 +23,10 @@ export function ProtectedRoute({
   allowedRoles: Role[];
   loginPath: string;
 }) {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, isLoading } = useAuth();
   const location = useLocation();
+
+  if (isLoading) return null;
 
   if (!isAuthenticated) {
     return <Navigate to={loginPath} replace state={{ from: location.pathname }} />;
@@ -45,7 +47,9 @@ export function GuestRoute({
   allowedRoles: Role[];
   redirectTo: string;
 }) {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, isLoading } = useAuth();
+
+  if (isLoading) return null;
 
   if (isAuthenticated && role && allowedRoles.includes(role)) {
     return <Navigate to={redirectTo} replace />;

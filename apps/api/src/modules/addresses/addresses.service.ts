@@ -10,7 +10,8 @@ import { Op, type WhereOptions } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
 import type { AddressAttributes } from '@/sequelize/models/address.model.js';
 import { AddressModel, sequelize } from '@/sequelize/models/index.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
 import { searchPattern } from '@/shared/list-filters.js';
 import type { ModelOrder, StringField } from '@/types/database.js';
 import { NotFound } from '@/utils/errors/index.js';
@@ -86,7 +87,7 @@ export async function createAddress(
   user: User,
   input: ShippingAddressInput & { isDefault?: boolean },
 ): Promise<Address> {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     await lockAddressOwner(user.id, transaction);
     if (input.isDefault)
       await AddressModel.update({ isDefault: false }, { where: { userId: user.id }, transaction });
@@ -111,7 +112,7 @@ export async function updateAddress(
   id: string,
   input: Partial<ShippingAddressInput> & { isDefault?: boolean },
 ): Promise<Address> {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     await lockAddressOwner(userId, transaction);
     const row = await AddressModel.findOne({
       where: { id, userId },
@@ -140,7 +141,7 @@ export async function updateAddress(
 }
 
 export async function deleteAddress(userId: string, id: string): Promise<Address> {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     await lockAddressOwner(userId, transaction);
     const row = await AddressModel.findOne({
       where: { id, userId },

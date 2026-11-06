@@ -34,6 +34,7 @@ import { initRefundModel, RefundModel } from '@/sequelize/models/refund.model.js
 import { initReviewModel, ReviewModel } from '@/sequelize/models/review.model.js';
 import { initShipmentModel, ShipmentModel } from '@/sequelize/models/shipment.model.js';
 import { initUserModel, UserModel } from '@/sequelize/models/user.model.js';
+import { AuthSessionModel, initAuthSessionModel } from './auth-session.model.js';
 import {
   CancellationRequestModel,
   initCancellationRequestModel,
@@ -152,6 +153,7 @@ initInventoryReservationModel(sequelize);
 initRefundModel(sequelize);
 initReviewModel(sequelize);
 initRefreshTokenModel(sequelize);
+initAuthSessionModel(sequelize);
 
 UserModel.hasMany(OrderModel, { foreignKey: 'userId', as: 'orders' });
 OrderModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user' });
@@ -214,6 +216,7 @@ export {
   AccountTokenModel,
   AddressModel,
   AuditLogModel,
+  AuthSessionModel,
   CancellationRequestModel,
   CartItemModel,
   CartModel,

@@ -3,10 +3,12 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { ShipmentEventModel, ShipmentModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { orderQuantities } from '@/shared/commerce/input.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { ownedOrder } from '../orders/order-lifecycle.service.js';
+import { auditPolicies } from './fulfillment.audit.js';
 import * as fulfillment from './fulfillment.service.js';
 
 const router = Router();
@@ -75,4 +77,4 @@ router.get(
     ).map((row) => ({ id: row.id, type: row.type, occurredAt: row.occurredAt.toISOString() }));
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

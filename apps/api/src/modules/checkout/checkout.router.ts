@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { apiHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { cartLines } from '@/shared/commerce/input.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { getCart } from '../cart/cart.service.js';
+import { auditPolicies } from './checkout.audit.js';
 import * as checkout from './checkout.service.js';
 
 const router = Router();
@@ -33,4 +35,4 @@ router.get(
   '/checkout/quotes/:id',
   apiHandler(async (req) => checkout.getQuote(currentUser(req).id, uuidRouteId(req))),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

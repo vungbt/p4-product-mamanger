@@ -1,12 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import type { MerchandisingEntry, MerchandisingPayload } from '@p4/shared';
-import {
-  FileModel,
-  MerchandisingEntryModel,
-  ProductModel,
-  sequelize,
-} from '@/sequelize/models/index.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { FileModel, MerchandisingEntryModel, ProductModel } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, NotFound } from '@/utils/errors/index.js';
@@ -32,7 +28,7 @@ export async function saveMerchandising(
   id?: string,
   expectedVersion?: number,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     if (startsAt && endsAt && endsAt <= startsAt) throw new BaseError('invalid_schedule');
     if (payload.kind === 'collection')
       for (const productId of payload.productIds)

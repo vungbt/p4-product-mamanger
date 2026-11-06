@@ -1,11 +1,14 @@
 import { Alert, Button, Dialog, Spinner } from '@itclabs/react-ui';
+import { useCategory } from '@p4/api-sdk/react';
+import { getErrorMessage } from '@p4/api-sdk/shared';
 import { useTranslation } from 'react-i18next';
-import useCategoryDetails from '../hooks/use-category-details';
 
 export default function CategoryDetails({ id, onClose }: { id: string; onClose: () => void }) {
   const { t } = useTranslation();
 
-  const { category, loading, error, retry } = useCategoryDetails(id);
+  const query = useCategory(id);
+
+  const category = query.data?.data;
 
   return (
     <Dialog
@@ -15,12 +18,12 @@ export default function CategoryDetails({ id, onClose }: { id: string; onClose: 
       }}
       title={t('categories.details')}
     >
-      {loading ? (
+      {query.isPending ? (
         <Spinner label={t('categories.loading')} />
-      ) : error ? (
+      ) : query.isError ? (
         <div className="grid gap-3">
-          <Alert tone="danger">{error}</Alert>
-          <Button variant="secondary" onClick={retry}>
+          <Alert tone="danger">{getErrorMessage(query.error, t('categories.loadFailed'))}</Alert>
+          <Button variant="secondary" onClick={() => void query.refetch()}>
             {t('categories.retry')}
           </Button>
         </div>

@@ -3,19 +3,17 @@ import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { permissionsFor, requirePermission } from '@/middlewares/permission.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
-import {
-  SupportMessageModel,
-  SupportTicketModel,
-  sequelize,
-  UserModel,
-} from '@/sequelize/models/index.js';
+import { SupportMessageModel, SupportTicketModel, UserModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
+import { auditPolicies } from './support.audit.js';
 import * as support from './support.service.js';
 
 const router = Router();
@@ -129,7 +127,7 @@ router.post(
     const staff = await UserModel.findByPk(assigneeId);
     if (staff?.accountStatus !== 'active' || !permissionsFor(staff).includes('support:manage'))
       throw new NotFound();
-    return sequelize.transaction(async (transaction) => {
+    return auditedTransaction(async (transaction) => {
       const row = await SupportTicketModel.findByPk(uuidRouteId(req), {
         transaction,
         lock: transaction.LOCK.UPDATE,
@@ -160,7 +158,7 @@ router.post(
     const user = currentUser(req);
     const body = requestBody(req);
     const reason = body.text('reason', 1000);
-    return sequelize.transaction(async (transaction) => {
+    return auditedTransaction(async (transaction) => {
       const row = await support.ownedTicket(user, uuidRouteId(req), transaction, true);
       assertVersion(row.version, body.integer('expectedVersion', 1));
       await row.update({ status: 'closed', version: row.version + 1 }, { transaction });
@@ -178,4 +176,4 @@ router.post(
     });
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

@@ -3,8 +3,10 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { PaymentAttemptModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { ownedOrder } from '../orders/order-lifecycle.service.js';
+import { auditPolicies } from './payment-attempts.audit.js';
 import * as service from './payment-attempts.service.js';
 
 const router = Router();
@@ -59,4 +61,4 @@ router.post(
     );
   }),
 );
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

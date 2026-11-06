@@ -11,14 +11,12 @@ import {
 import { AUTH_STORAGE_KEY } from './fake-auth';
 import {
   type AuthSession,
+  broadcastAuthChange,
   clearAuthSession,
-  getTokenExpiresAt,
   readAuthSession,
   subscribeAuthSession,
   writeAuthSession,
 } from './session-store';
-
-const REFRESH_EARLY_MS = 60_000;
 
 export type AuthPortal = 'admin' | 'storefront';
 
@@ -26,6 +24,7 @@ type AuthContextValue = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   role: Role | null;
   isAdmin: boolean;
   isUser: boolean;
@@ -49,14 +48,14 @@ function assertPortalRole(user: User, portal: AuthPortal) {
 export type AuthProviderProps = {
   children: ReactNode;
   storageKey?: string;
-  /** POST /api/auth/login — required for password login */
+  /** Better Auth email/password sign-in. */
   onLogin: (email: string, password: string) => Promise<AuthSession>;
-  /** POST /api/auth/google — storefront */
+  /** Better Auth Google ID-token sign-in — storefront. */
   onGoogleLogin?: (credential: string) => Promise<AuthSession>;
-  /** Refresh session, shared with the API interceptor. */
+  /** Restore the current cookie session, shared with the API interceptor. */
   onRefresh?: () => Promise<AuthSession | null>;
-  /** Revoke the refresh token server-side; the local session is cleared immediately. */
-  onLogout?: (session: AuthSession) => Promise<void>;
+  /** Sign out on the server; clear the in-memory session immediately. */
+  onLogout?: (session?: AuthSession) => Promise<void>;
 };
 
 export function AuthProvider({
@@ -67,13 +66,41 @@ export function AuthProvider({
   onRefresh,
   onLogout,
 }: AuthProviderProps) {
+  const [isLoading, setIsLoading] = useState(Boolean(onRefresh));
   const [session, setSession] = useState<AuthSession | null>(() => readAuthSession(storageKey));
+
+  useEffect(() => {
+    let active = true;
+    clearAuthSession(storageKey);
+    const sync = () => {
+      if (onRefresh)
+        void onRefresh().finally(() => {
+          if (active) setIsLoading(false);
+        });
+      else setIsLoading(false);
+    };
+    sync();
+    const channel =
+      typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel('p4-auth');
+    if (channel) channel.onmessage = sync;
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') sync();
+    }, 5 * 60_000);
+    window.addEventListener('focus', sync);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      channel?.close();
+      window.removeEventListener('focus', sync);
+    };
+  }, [onRefresh, storageKey]);
 
   useEffect(() => subscribeAuthSession(setSession, storageKey), [storageKey]);
 
   const persistSession = useCallback(
     (nextSession: AuthSession) => {
       writeAuthSession(nextSession, storageKey);
+      broadcastAuthChange();
     },
     [storageKey],
   );
@@ -81,44 +108,25 @@ export function AuthProvider({
   const logout = useCallback(() => {
     const current = readAuthSession(storageKey);
     clearAuthSession(storageKey);
-    if (current && onLogout) void onLogout(current).catch(() => undefined);
+    if (onLogout)
+      void onLogout(current ?? undefined)
+        .finally(broadcastAuthChange)
+        .catch(() => undefined);
   }, [onLogout, storageKey]);
-
-  useEffect(() => {
-    if (!session?.refreshToken || !onRefresh) return;
-
-    const expiresAt = getTokenExpiresAt(session.token);
-    if (!expiresAt) return;
-
-    const refreshIfNeeded = () => {
-      if (document.visibilityState !== 'visible') return;
-      if (expiresAt - Date.now() <= REFRESH_EARLY_MS) void onRefresh();
-    };
-    const delay = Math.max(0, expiresAt - Date.now() - REFRESH_EARLY_MS);
-    const timer = window.setTimeout(refreshIfNeeded, delay);
-
-    const handleFocus = () => refreshIfNeeded();
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') refreshIfNeeded();
-    };
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleVisibility);
-    refreshIfNeeded();
-
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, [onRefresh, session?.refreshToken, session?.token]);
 
   const login = useCallback(
     async (email: string, password: string, portal: AuthPortal) => {
       const nextSession = await onLogin(email.trim(), password);
-      assertPortalRole(nextSession.user, portal);
+      try {
+        assertPortalRole(nextSession.user, portal);
+      } catch (error) {
+        clearAuthSession(storageKey);
+        await onLogout?.(nextSession);
+        throw error;
+      }
       persistSession(nextSession);
     },
-    [onLogin, persistSession],
+    [onLogin, persistSession, onLogout, storageKey],
   );
 
   const loginWithGoogle = useCallback(
@@ -148,6 +156,7 @@ export function AuthProvider({
       user,
       token: session?.token ?? null,
       isAuthenticated: Boolean(user),
+      isLoading,
       role,
       isAdmin: role === 'admin',
       isUser: role === 'user',
@@ -155,7 +164,7 @@ export function AuthProvider({
       loginWithGoogle,
       logout,
     };
-  }, [session, login, loginWithGoogle, logout]);
+  }, [session, isLoading, login, loginWithGoogle, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

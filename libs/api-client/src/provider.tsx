@@ -1,6 +1,9 @@
+import { ApiSdkProvider } from '@p4/api-sdk/react';
+import { readAuthSession, subscribeAuthSession } from '@p4/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
+import { getApiSdk } from './axios-client';
 
 export type ApiQueryProviderProps = {
   children: ReactNode;
@@ -23,9 +26,20 @@ export function ApiQueryProvider({ children, enableDevtools = false }: ApiQueryP
       }),
   );
 
+  useEffect(() => {
+    let previous = readAuthSession()?.user.id;
+    return subscribeAuthSession((session) => {
+      const next = session?.user.id;
+      if (next !== previous) {
+        previous = next;
+        client.clear();
+      }
+    });
+  }, [client]);
+
   return (
     <QueryClientProvider client={client}>
-      {children}
+      <ApiSdkProvider sdk={getApiSdk()}>{children}</ApiSdkProvider>
       {enableDevtools ? <ReactQueryDevtools initialIsOpen={false} /> : null}
     </QueryClientProvider>
   );

@@ -4,7 +4,7 @@ set -e
 # ===========================================
 # Deploy P4 Product Manager API — PRODUCTION
 # Cùng VPS với coupon-linkh (SSH host: couponlinkh)
-# FE trên Vercel — chỉ deploy postgres + api
+# Web deploy riêng bằng scripts/deploy.web.sh — script này deploy API + worker
 # ===========================================
 
 SERVER="${SERVER:-couponlinkh}"
@@ -68,4 +68,4 @@ echo ""
 echo "==> PRODUCTION deploy complete!"
 echo "    API: https://p4-api.couponlinkh.com  (health: /health)"
 echo "    Direct: http://140.82.33.237:3001  | Postgres host: 127.0.0.1:5433"
-echo "    Vercel VITE_API_URL=https://p4-api.couponlinkh.com"
+echo "    Web: https://p4.couponlinkh.com (pnpm deploy:web)"

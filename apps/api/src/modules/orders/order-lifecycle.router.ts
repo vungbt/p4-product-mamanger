@@ -4,11 +4,13 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { permissionsFor, requirePermission } from '@/middlewares/permission.middleware.js';
 import { CancellationRequestModel, OrderEventModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { orderQuantities } from '@/shared/commerce/input.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
+import { auditPolicies } from './order-lifecycle.audit.js';
 import * as orders from './order-lifecycle.service.js';
 
 const router = Router();
@@ -108,4 +110,4 @@ for (const action of ['approve', 'reject'] as const) {
     }),
   );
 }
-export default router;
+export default applyAuditPolicies(router, auditPolicies);

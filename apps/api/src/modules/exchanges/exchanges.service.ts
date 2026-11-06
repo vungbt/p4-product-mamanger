@@ -8,9 +8,10 @@ import {
   OrderModel,
   RefundModel,
   ReturnRequestModel,
-  sequelize,
 } from '@/sequelize/models/index.js';
-import { enqueueEvent, recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
+import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, NotFound } from '@/utils/errors/index.js';
@@ -55,7 +56,7 @@ export async function requestExchange(
   items: ExchangeLine[],
   reason: string,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const order = await OrderModel.findOne({
       where: { id: orderId, userId: user.id },
       transaction,
@@ -108,7 +109,7 @@ export async function requestExchange(
   });
 }
 export async function approveExchange(actorId: string, id: string, expectedVersion: number) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const pointer = await ExchangeRequestModel.findByPk(id, { transaction });
     if (!pointer) throw new NotFound();
     const order = await OrderModel.findByPk(pointer.orderId, {
@@ -200,7 +201,7 @@ export async function rejectExchange(
   expectedVersion: number,
   reason: string,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await ExchangeRequestModel.findByPk(id, {
       transaction,
       lock: transaction.LOCK.UPDATE,
@@ -238,7 +239,7 @@ export async function createReplacement(actorId: string, id: string, expectedVer
     }));
   const customer = (await getMe(row.userId)).user;
   const replacement = await placeOrder(customer, row.quoteId, `exchange-replacement:${id}`);
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const locked = await ExchangeRequestModel.findByPk(id, {
       transaction,
       lock: transaction.LOCK.UPDATE,

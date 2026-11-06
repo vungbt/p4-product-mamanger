@@ -2,7 +2,8 @@ import type { AccountStatus, StaffRole, User } from '@p4/shared';
 import { Op } from 'sequelize';
 import { consumeAccountToken, issueAccountToken } from '@/modules/accounts/accounts.service.js';
 import { RefreshTokenModel, sequelize, UserModel } from '@/sequelize/models/index.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { Forbidden, NotFound } from '@/utils/errors/index.js';
@@ -18,7 +19,7 @@ export const STAFF_ROLES: readonly StaffRole[] = [
 
 export async function inviteStaff(actor: User, email: string, role: StaffRole) {
   if (role === 'owner' && actor.staffRole !== 'owner') throw new Forbidden();
-  await sequelize.transaction(async (transaction) => {
+  await auditedTransaction(async (transaction) => {
     const user = await UserModel.findOne({
       where: { email: email.toLowerCase(), accountStatus: 'active' },
       transaction,
@@ -103,7 +104,7 @@ export async function changeAccount(
   },
   staff: boolean,
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     await sequelize.query("SELECT pg_advisory_xact_lock(hashtext('staff-owner-guard'))", {
       transaction,
     });

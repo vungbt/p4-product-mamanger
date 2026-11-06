@@ -12,7 +12,8 @@ import {
   UserModel,
 } from '@/sequelize/models/index.js';
 import type { ReviewAttributes } from '@/sequelize/models/review.model.js';
-import { recordAudit } from '@/shared/commerce/persistence.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
+import { recordAudit } from '@/shared/audit/record.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { searchPattern } from '@/shared/list-filters.js';
 import type { ModelOrder } from '@/types/database.js';
@@ -80,7 +81,7 @@ export async function createReview(user: User, productId: string, input: ReviewI
     input.comment.length > 10000
   )
     throw new BadRequest(errorKeys.invalidQuantity);
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     await sequelize.query('SELECT pg_advisory_xact_lock(hashtext(:key))', {
       replacements: { key: `review:${user.id}:${productId}` },
       transaction,
@@ -152,7 +153,7 @@ export async function createReview(user: User, productId: string, input: ReviewI
 }
 
 export async function deleteReview(user: User, reviewId: string) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await ReviewModel.findByPk(reviewId, {
       transaction,
       lock: transaction.LOCK.UPDATE,
@@ -178,7 +179,7 @@ export async function changeReview(
     | { moderationStatus: 'published' | 'hidden'; reason: string }
     | { reply: string },
 ) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     const row = await ReviewModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
     if (!row) throw new NotFound();
     assertVersion(row.version, version);

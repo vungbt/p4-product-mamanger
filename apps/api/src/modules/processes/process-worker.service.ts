@@ -8,9 +8,9 @@ import {
   type DomainEventModel,
   ProcessItemModel,
   ProcessModel,
-  sequelize,
   UploadTicketModel,
 } from '@/sequelize/models/index.js';
+import { auditedTransaction } from '@/shared/audit/audited-command.js';
 import { jsonValue } from '@/shared/commerce/persistence.js';
 import { requestStore } from '@/shared/request-store.js';
 import { BaseError } from '@/utils/errors/base-error.js';
@@ -28,7 +28,7 @@ import { readSpreadsheet } from './spreadsheets.service.js';
 import { removeProcessFile, storeProcessFile } from './storage.service.js';
 
 async function refreshProgress(id: string, event: DomainEventModel, finish = false) {
-  return sequelize.transaction(async (transaction) => {
+  return auditedTransaction(async (transaction) => {
     await assertProcessLease(event, transaction);
     const row = await ProcessModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
     if (!row || row.state === 'cancelled') return null;
@@ -83,7 +83,7 @@ async function previewImport(row: ProcessModel, event: DomainEventModel) {
   for (const entry of source) {
     if (resource === 'products' && entry.values.initialStock === '')
       delete entry.values.initialStock;
-    await sequelize.transaction(async (transaction) => {
+    await auditedTransaction(async (transaction) => {
       await assertProcessLease(event, transaction);
       const process = await ProcessModel.findByPk(row.id, {
         transaction,
@@ -140,7 +140,7 @@ async function applyImport(row: ProcessModel, event: DomainEventModel, user: Use
   });
   for (const pointer of items) {
     try {
-      await sequelize.transaction(async (transaction) => {
+      await auditedTransaction(async (transaction) => {
         await assertProcessLease(event, transaction);
         const process = await ProcessModel.findByPk(row.id, {
           transaction,
@@ -171,7 +171,7 @@ async function applyImport(row: ProcessModel, event: DomainEventModel, user: Use
         ['process_cancelled', 'process_lease_lost'].includes(error.code)
       )
         throw error;
-      await sequelize.transaction(async (transaction) => {
+      await auditedTransaction(async (transaction) => {
         await assertProcessLease(event, transaction);
         await ProcessItemModel.update(
           { state: 'failed', issues: processFailure(error, pointer.index) },
@@ -202,7 +202,7 @@ async function mediaBatch(row: ProcessModel, event: DomainEventModel, user: User
     } catch (error) {
       issues = processFailure(error, index);
     }
-    await sequelize.transaction(async (transaction) => {
+    await auditedTransaction(async (transaction) => {
       await assertProcessLease(event, transaction);
       const process = await ProcessModel.findByPk(row.id, {
         transaction,
@@ -234,7 +234,7 @@ export async function runProcess(event: DomainEventModel) {
     const user = (await getMe(row.userId)).user;
     authorizeProcess(user, row.input);
     if (row.expiresAt.getTime() <= Date.now()) throw new BaseError('process_expired');
-    await sequelize.transaction(async (transaction) => {
+    await auditedTransaction(async (transaction) => {
       await assertProcessLease(event, transaction);
       const locked = await ProcessModel.findByPk(row.id, {
         transaction,
@@ -244,56 +244,59 @@ export async function runProcess(event: DomainEventModel) {
       await locked.update({ state: 'running', version: locked.version + 1 }, { transaction });
       await publishProcess(locked, transaction);
     });
-    await requestStore.run({ requestId: `process:${row.id}`, user }, async () => {
-      if (row.input.kind === 'data.import') {
-        if (row.phase === 'validate') await previewImport(row, event);
-        else await applyImport(row, event, user);
-      } else if (row.input.kind === 'media.batch') await mediaBatch(row, event, user);
-      else {
-        const result = await exportBuffer(row.input.resource, row.input.format, row.input.query);
-        const key = await storeProcessFile(result.buffer, row.input.format);
-        let retained = false;
-        try {
-          retained = await sequelize.transaction(async (transaction) => {
-            await assertProcessLease(event, transaction);
-            const locked = await ProcessModel.findByPk(row.id, {
-              transaction,
-              lock: transaction.LOCK.UPDATE,
-            });
-            if (!locked || locked.state === 'cancelled') return false;
-            await locked.update(
-              {
-                state: 'completed',
-                total: result.count,
-                processed: result.count,
-                succeeded: result.count,
-                outputKey: key,
-                result: {
-                  resourceIds: [],
+    await requestStore.run(
+      { ...requestStore.getStore(), requestId: `process:${row.id}`, source: 'worker', user },
+      async () => {
+        if (row.input.kind === 'data.import') {
+          if (row.phase === 'validate') await previewImport(row, event);
+          else await applyImport(row, event, user);
+        } else if (row.input.kind === 'media.batch') await mediaBatch(row, event, user);
+        else {
+          const result = await exportBuffer(row.input.resource, row.input.format, row.input.query);
+          const key = await storeProcessFile(result.buffer, row.input.format);
+          let retained = false;
+          try {
+            retained = await auditedTransaction(async (transaction) => {
+              await assertProcessLease(event, transaction);
+              const locked = await ProcessModel.findByPk(row.id, {
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+              });
+              if (!locked || locked.state === 'cancelled') return false;
+              await locked.update(
+                {
+                  state: 'completed',
                   total: result.count,
+                  processed: result.count,
                   succeeded: result.count,
-                  failed: 0,
-                  downloadUrl: `/api/processes/${row.id}/download`,
+                  outputKey: key,
+                  result: {
+                    resourceIds: [],
+                    total: result.count,
+                    succeeded: result.count,
+                    failed: 0,
+                    downloadUrl: `/api/processes/${row.id}/download`,
+                  },
+                  version: locked.version + 1,
                 },
-                version: locked.version + 1,
-              },
-              { transaction },
-            );
-            await publishProcess(locked, transaction);
-            return true;
-          });
-        } finally {
-          if (!retained) await removeProcessFile(key);
+                { transaction },
+              );
+              await publishProcess(locked, transaction);
+              return true;
+            });
+          } finally {
+            if (!retained) await removeProcessFile(key);
+          }
         }
-      }
-    });
+      },
+    );
   } catch (error) {
     if (
       error instanceof BaseError &&
       ['process_cancelled', 'process_lease_lost'].includes(error.code)
     )
       throw error;
-    await sequelize.transaction(async (transaction) => {
+    await auditedTransaction(async (transaction) => {
       await assertProcessLease(event, transaction);
       const locked = await ProcessModel.findByPk(row.id, {
         transaction,
