@@ -469,4 +469,3 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 | `GET /api/auth/account-info` | Không có màn riêng | Provider account/token plumbing do Better Auth quản lý; không expose access token/provider credential hoặc thêm màn account linking ngoài phạm vi config hiện tại. |
 | `GET /api/auth/ok` | Không có màn riêng | Trang/trạng thái nội bộ Better Auth; FE-01/40 hiển thị lỗi ở callback/route, không có màn riêng. |
 | `GET /api/auth/error` | Không có màn riêng | Trang/trạng thái nội bộ Better Auth; FE-01/40 hiển thị lỗi ở callback/route, không có màn riêng. |
-
