@@ -1,4 +1,9 @@
 import type { ListQuery } from '@p4/shared';
+import {
+  SUPPORT_TICKET_CATEGORY_VALUES,
+  SUPPORT_TICKET_STATUS_VALUES,
+  type SupportTicketListQuery,
+} from '@p4/shared';
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { permissionsFor, requirePermission } from '@/middlewares/permission.middleware.js';
@@ -10,7 +15,8 @@ import { recordAudit } from '@/shared/audit/record.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { validateListQuery } from '@/shared/list-query.js';
+import { queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './support.audit.js';
@@ -18,11 +24,24 @@ import * as support from './support.service.js';
 
 const router = Router();
 const list = validateListQuery({
-  sortFields: ['createdAt'],
+  sortFields: ['createdAt', 'subject', 'status'],
   defaultSort: 'createdAt',
   defaultOrder: 'desc',
-  rules: () => ({}),
-  normalize: (_query, base) => base,
+  rules: () => ({
+    status: `sometimes|required|in:${SUPPORT_TICKET_STATUS_VALUES.join(',')}`,
+    category: `sometimes|required|in:${SUPPORT_TICKET_CATEGORY_VALUES.join(',')}`,
+    assigneeId: uuidQueryRule,
+    orderId: uuidQueryRule,
+  }),
+  normalize: (query, base): SupportTicketListQuery => ({
+    ...base,
+    status: SUPPORT_TICKET_STATUS_VALUES.find((value) => value === queryText(query, 'status')),
+    category: SUPPORT_TICKET_CATEGORY_VALUES.find(
+      (value) => value === queryText(query, 'category'),
+    ),
+    assigneeId: queryText(query, 'assigneeId'),
+    orderId: queryText(query, 'orderId'),
+  }),
 });
 router.post(
   '/support/tickets',
@@ -48,11 +67,18 @@ for (const admin of [false, true])
     authRequired,
     ...(admin ? [requirePermission('support:read')] : []),
     list,
-    listHandler(async (req, query: ListQuery<'createdAt'>) => {
+    listHandler(async (req, query: SupportTicketListQuery) => {
       const result = await SupportTicketModel.findAndCountAll({
-        where: admin ? {} : { userId: currentUser(req).id },
+        where: {
+          ...(admin ? {} : { userId: currentUser(req).id }),
+          ...(query.status ? { status: query.status } : {}),
+          ...(query.category ? { category: query.category } : {}),
+          ...(query.assigneeId ? { assigneeId: query.assigneeId } : {}),
+          ...(query.orderId ? { orderId: query.orderId } : {}),
+          ...listSearch(SupportTicketModel, query.q, ['id', 'subject', 'category']),
+        },
         order: [
-          ['createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+          [query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
           ['id', 'ASC'],
         ],
         limit: query.pageSize,
@@ -71,10 +97,16 @@ router.get(
     support.ticketDto(await support.ownedTicket(currentUser(req), uuidRouteId(req))),
   ),
 );
+const messageList = validateListQuery({
+  sortFields: ['createdAt'],
+  defaultSort: 'createdAt',
+  rules: () => ({}),
+  normalize: (_query, base) => base,
+});
 router.get(
   '/support/tickets/:id/messages',
   authRequired,
-  list,
+  messageList,
   listHandler(async (req, query: ListQuery<'createdAt'>) => {
     const id = uuidRouteId(req);
     const user = currentUser(req);
@@ -82,10 +114,11 @@ router.get(
     const result = await SupportMessageModel.findAndCountAll({
       where: {
         ticketId: id,
+        ...listSearch(SupportMessageModel, query.q, ['body']),
         ...(permissionsFor(user).includes('support:read') ? {} : { internal: false }),
       },
       order: [
-        ['createdAt', 'ASC'],
+        ['createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
         ['id', 'ASC'],
       ],
       limit: query.pageSize,

@@ -534,3 +534,22 @@ trong `extensions` (cùng envelope với validation body); cột sort chỉ ch�
 Chạy `pnpm --filter @p4/api test:categories`: kiểm tra parser, controller và query
 Sequelize/SQL được sinh (model stub, không kết nối DB). Chưa thay schema/migration.
 Thay đổi này chỉ ở local, cần deploy trước khi frontend chuyển sang server mode.
+
+## Quy ước API danh sách
+
+Các danh sách phân trang nhận `q`, `sortBy`, `sortOrder`, `page`, `pageSize`, trả
+`{ data, meta: { page, pageSize, total, totalPages } }`. Sort và filter có allowlist
+riêng trong OpenAPI/SDK; không mặc định mọi endpoint hỗ trợ cùng một filter.
+Search là chuỗi con literal, `%` và `_` không trở thành wildcard do client điều khiển.
+Các điều kiện owner/quyền vẫn được áp dụng cùng search/filter.
+
+Tham số query không hỗ trợ trả 400 và lỗi theo field thay vì bị bỏ qua; `lang` vẫn
+được giữ cho middleware ngôn ngữ. Page bắt đầu từ 1; page size API cho phép 1–100,
+UI P4 dùng tối thiểu 10. Sort có tie-breaker để phân trang ổn định.
+
+`GET /api/post-categories`, `/api/post-tags`, `/api/collections` và
+`/api/admin/notification-templates` giữ response không có meta khi không truyền
+query; truyền tham số danh sách sẽ bật search/sort/phân trang kèm meta như category.
+Collection public lọc lịch hiển thị trước khi tính total.
+Các mảng snapshot/thuộc tính lồng trong detail và callback/provider API không bị
+biến thành endpoint danh sách chỉ để thêm tham số không có ý nghĩa.

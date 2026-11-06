@@ -67,6 +67,19 @@ export function validateListQuery<
       ...options.rules(req.query),
     };
 
+    const unsupported = Object.keys(req.query).filter(
+      (field) => field !== 'lang' && !Object.hasOwn(rules, field),
+    );
+    if (unsupported.length)
+      return next(
+        new InputValidError(
+          req.t('error:input_valid_error'),
+          Object.fromEntries(
+            unsupported.map((field) => [field, [req.t('error:unsupported_query_parameter')]]),
+          ),
+        ),
+      );
+
     validate({ source: 'query', rules })(req, res, (error?: unknown) => {
       if (error) return next(error);
 

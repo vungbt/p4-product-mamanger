@@ -1233,8 +1233,10 @@ paths:
           schema:
             type: string
             enum:
+              - index
+              - state
               - createdAt
-            default: createdAt
+            default: index
         - name: sortOrder
           in: query
           schema:
@@ -1242,7 +1244,7 @@ paths:
             enum:
               - asc
               - desc
-            default: desc
+            default: asc
         - name: q
           in: query
           schema:
@@ -1751,6 +1753,7 @@ paths:
             type: string
             enum:
               - createdAt
+              - status
             default: createdAt
         - name: sortOrder
           in: query
@@ -1765,6 +1768,23 @@ paths:
           schema:
             type: string
             maxLength: 255
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - approved
+              - awaiting_return
+              - cancelled
+              - completed
+              - rejected
+              - replacement_processing
+              - requested
+              - return_received
+        - name: orderId
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Thành công
@@ -1823,6 +1843,7 @@ paths:
             type: string
             enum:
               - createdAt
+              - status
             default: createdAt
         - name: sortOrder
           in: query
@@ -1837,6 +1858,23 @@ paths:
           schema:
             type: string
             maxLength: 255
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - approved
+              - awaiting_return
+              - cancelled
+              - completed
+              - rejected
+              - replacement_processing
+              - requested
+              - return_received
+        - name: orderId
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Thành công
@@ -2622,6 +2660,8 @@ paths:
           schema:
             type: string
             enum:
+              - key
+              - active
               - createdAt
             default: createdAt
         - name: sortOrder
@@ -2631,12 +2671,19 @@ paths:
             enum:
               - asc
               - desc
-            default: asc
+            default: desc
         - name: q
           in: query
           schema:
             type: string
             maxLength: 255
+        - name: active
+          in: query
+          schema:
+            type: string
+            enum:
+              - "false"
+              - "true"
       responses:
         "200":
           description: Thành công
@@ -2869,6 +2916,8 @@ paths:
           schema:
             type: string
             enum:
+              - key
+              - active
               - createdAt
             default: createdAt
         - name: sortOrder
@@ -2878,12 +2927,19 @@ paths:
             enum:
               - asc
               - desc
-            default: asc
+            default: desc
         - name: q
           in: query
           schema:
             type: string
             maxLength: 255
+        - name: active
+          in: query
+          schema:
+            type: string
+            enum:
+              - "false"
+              - "true"
       responses:
         "200":
           description: Thành công
@@ -3110,9 +3166,44 @@ paths:
         - merchandising
       operationId: get_api_collections
       summary: Danh sách bộ sưu tập đang hiển thị
-      description: "**Công khai.**"
+      description: "**Công khai.** Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security: []
       x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - key
+              - createdAt
+            default: key
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
       responses:
         "200":
           description: Thành công
@@ -3246,8 +3337,12 @@ paths:
                             - sections
                   message:
                     type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
                 required:
                   - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/collections/{slug}:
@@ -4142,6 +4237,8 @@ paths:
             type: string
             enum:
               - createdAt
+              - subject
+              - status
             default: createdAt
         - name: sortOrder
           in: query
@@ -4156,6 +4253,33 @@ paths:
           schema:
             type: string
             maxLength: 255
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - closed
+              - in_progress
+              - open
+              - resolved
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum:
+              - order
+              - other
+              - payment
+              - product
+              - return
+        - name: assigneeId
+          in: query
+          schema:
+            type: string
+        - name: orderId
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Thành công
@@ -4214,6 +4338,8 @@ paths:
             type: string
             enum:
               - createdAt
+              - subject
+              - status
             default: createdAt
         - name: sortOrder
           in: query
@@ -4228,6 +4354,33 @@ paths:
           schema:
             type: string
             maxLength: 255
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - closed
+              - in_progress
+              - open
+              - resolved
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum:
+              - order
+              - other
+              - payment
+              - product
+              - return
+        - name: assigneeId
+          in: query
+          schema:
+            type: string
+        - name: orderId
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Thành công
@@ -4341,7 +4494,7 @@ paths:
             enum:
               - asc
               - desc
-            default: desc
+            default: asc
         - name: q
           in: query
           schema:
@@ -4917,6 +5070,8 @@ paths:
             type: string
             enum:
               - createdAt
+              - title
+              - type
             default: createdAt
         - name: sortOrder
           in: query
@@ -4931,6 +5086,27 @@ paths:
           schema:
             type: string
             maxLength: 255
+        - name: readStatus
+          in: query
+          schema:
+            type: string
+            enum:
+              - all
+              - read
+              - unread
+        - name: type
+          in: query
+          schema:
+            type: string
+            maxLength: 120
+        - name: createdFrom
+          in: query
+          schema:
+            type: string
+        - name: createdTo
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Thành công
@@ -5170,11 +5346,59 @@ paths:
         - notifications
       operationId: get_api_admin_notification_templates
       summary: Danh sách mẫu thông báo
-      description: "**Quyền:** `notification:read`."
+      description: "**Quyền:** `notification:read`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security:
         - sessionCookie: []
         - bearerAuth: []
       x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - type
+              - locale
+              - updatedAt
+            default: type
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: locale
+          in: query
+          schema:
+            type: string
+            enum:
+              - en
+              - vi
+        - name: type
+          in: query
+          schema:
+            type: string
+            maxLength: 120
       responses:
         "200":
           description: Thành công
@@ -5209,8 +5433,12 @@ paths:
                         - locale
                   message:
                     type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
                 required:
                   - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -5440,7 +5668,15 @@ paths:
           in: query
           schema:
             type: string
-            maxLength: 36
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - archived
+              - draft
+              - published
+              - scheduled
       responses:
         "200":
           description: Thành công
@@ -5827,9 +6063,9 @@ paths:
           schema:
             type: string
             enum:
-              - title
+              - version
               - createdAt
-            default: createdAt
+            default: version
         - name: sortOrder
           in: query
           schema:
@@ -5843,11 +6079,6 @@ paths:
           schema:
             type: string
             maxLength: 255
-        - name: taxonomyId
-          in: query
-          schema:
-            type: string
-            maxLength: 36
       responses:
         "200":
           description: Thành công
@@ -6023,7 +6254,15 @@ paths:
           in: query
           schema:
             type: string
-            maxLength: 36
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - archived
+              - draft
+              - published
+              - scheduled
       responses:
         "200":
           description: Thành công
@@ -6410,9 +6649,9 @@ paths:
           schema:
             type: string
             enum:
-              - title
+              - version
               - createdAt
-            default: createdAt
+            default: version
         - name: sortOrder
           in: query
           schema:
@@ -6426,11 +6665,6 @@ paths:
           schema:
             type: string
             maxLength: 255
-        - name: taxonomyId
-          in: query
-          schema:
-            type: string
-            maxLength: 36
       responses:
         "200":
           description: Thành công
@@ -6522,7 +6756,6 @@ paths:
           in: query
           schema:
             type: string
-            maxLength: 36
       responses:
         "200":
           description: Thành công
@@ -6554,9 +6787,45 @@ paths:
         - content
       operationId: get_api_post_categories
       summary: Danh sách chuyên mục bài viết
-      description: "**Công khai.**"
+      description: "**Công khai.** Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security: []
       x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - name
+              - slug
+              - createdAt
+            default: name
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
       responses:
         "200":
           description: Thành công
@@ -6582,8 +6851,12 @@ paths:
                         - name
                   message:
                     type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
                 required:
                   - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/admin/post-categories:
@@ -6728,9 +7001,45 @@ paths:
         - content
       operationId: get_api_post_tags
       summary: Danh sách thẻ bài viết
-      description: "**Công khai.**"
+      description: "**Công khai.** Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security: []
       x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - name
+              - slug
+              - createdAt
+            default: name
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
       responses:
         "200":
           description: Thành công
@@ -6756,8 +7065,12 @@ paths:
                         - name
                   message:
                     type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
                 required:
                   - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/admin/post-tags:
@@ -8133,6 +8446,7 @@ paths:
             type: string
             enum:
               - createdAt
+              - status
             default: createdAt
         - name: sortOrder
           in: query
@@ -8147,6 +8461,23 @@ paths:
           schema:
             type: string
             maxLength: 255
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - approved
+              - cancelled
+              - completed
+              - in_transit
+              - inspected
+              - received
+              - rejected
+              - requested
+        - name: orderId
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Thành công
@@ -8205,6 +8536,7 @@ paths:
             type: string
             enum:
               - createdAt
+              - status
             default: createdAt
         - name: sortOrder
           in: query
@@ -8219,6 +8551,23 @@ paths:
           schema:
             type: string
             maxLength: 255
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - approved
+              - cancelled
+              - completed
+              - in_transit
+              - inspected
+              - received
+              - rejected
+              - requested
+        - name: orderId
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Thành công
@@ -12610,6 +12959,26 @@ paths:
           in: query
           schema:
             type: string
+        - name: kind
+          in: query
+          schema:
+            type: string
+            enum:
+              - adjust
+              - commit
+              - opening
+              - receipt
+              - release
+              - reserve
+              - return
+        - name: createdFrom
+          in: query
+          schema:
+            type: string
+        - name: createdTo
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Thành công
@@ -15497,6 +15866,8 @@ paths:
                       $ref: "#/components/schemas/Category"
                   message:
                     type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
                 required:
                   - data
         "400":
@@ -16935,6 +17306,8 @@ paths:
                       $ref: "#/components/schemas/Address"
                   message:
                     type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
                 required:
                   - data
         "400":

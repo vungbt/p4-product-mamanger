@@ -1,4 +1,5 @@
-import type { ExchangeLine, ListQuery } from '@p4/shared';
+import type { ExchangeLine } from '@p4/shared';
+import { EXCHANGE_STATUS_VALUES, type ExchangeListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
@@ -6,7 +7,8 @@ import { ExchangeRequestModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { validateListQuery } from '@/shared/list-query.js';
+import { queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './exchanges.audit.js';
 import * as exchanges from './exchanges.service.js';
@@ -55,11 +57,18 @@ router.post(
   }, 201),
 );
 const list = validateListQuery({
-  sortFields: ['createdAt'],
+  sortFields: ['createdAt', 'status'],
   defaultSort: 'createdAt',
   defaultOrder: 'desc',
-  rules: () => ({}),
-  normalize: (_query, base) => base,
+  rules: () => ({
+    status: `sometimes|required|in:${EXCHANGE_STATUS_VALUES.join(',')}`,
+    orderId: uuidQueryRule,
+  }),
+  normalize: (query, base): ExchangeListQuery => ({
+    ...base,
+    status: EXCHANGE_STATUS_VALUES.find((value) => value === queryText(query, 'status')),
+    orderId: queryText(query, 'orderId'),
+  }),
 });
 for (const admin of [false, true])
   router.get(
@@ -67,11 +76,16 @@ for (const admin of [false, true])
     authRequired,
     ...(admin ? [requirePermission('return:read')] : []),
     list,
-    listHandler(async (req, query: ListQuery<'createdAt'>) => {
+    listHandler(async (req, query: ExchangeListQuery) => {
       const result = await ExchangeRequestModel.findAndCountAll({
-        where: admin ? {} : { userId: currentUser(req).id },
+        where: {
+          ...(admin ? {} : { userId: currentUser(req).id }),
+          ...(query.status ? { status: query.status } : {}),
+          ...(query.orderId ? { orderId: query.orderId } : {}),
+          ...listSearch(ExchangeRequestModel, query.q, ['id', 'orderId', 'reason']),
+        },
         order: [
-          ['createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+          [query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
           ['id', 'ASC'],
         ],
         limit: query.pageSize,

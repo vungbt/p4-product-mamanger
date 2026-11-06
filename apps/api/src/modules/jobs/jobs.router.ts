@@ -7,6 +7,7 @@ import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, uuidRouteId } from '@/shared/http-input.js';
 import { queryText, validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { eventHandlers } from './handlers.js';
@@ -29,7 +30,10 @@ router.get(
   listHandler(async (req, query: ListQuery<'createdAt' | 'attempts'>) => {
     const status = queryText(req.query, 'status');
     const result = await DomainEventModel.findAndCountAll({
-      where: status ? { status } : {},
+      where: {
+        ...(status ? { status } : {}),
+        ...listSearch(DomainEventModel, query.q, ['id', 'type', 'aggregateId', 'aggregateType']),
+      },
       attributes: { exclude: ['payload', 'leaseToken'] },
       order: [
         [query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],

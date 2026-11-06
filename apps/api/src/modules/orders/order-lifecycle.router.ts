@@ -8,6 +8,7 @@ import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { orderQuantities } from '@/shared/commerce/input.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './order-lifecycle.audit.js';
@@ -49,6 +50,7 @@ router.get(
     const result = await OrderEventModel.findAndCountAll({
       where: {
         orderId: id,
+        ...listSearch(OrderEventModel, query.q, ['type', 'detail']),
         ...(permissionsFor(user).includes('order:read') ? {} : { public: true }),
       },
       order: [

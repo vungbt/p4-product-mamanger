@@ -84,3 +84,47 @@ test('every operation is documented for FE consumers', async () => {
     spec.paths['/api/orders'].post.parameters.some((item) => item.name === 'Idempotency-Key'),
   );
 });
+
+test('legacy category lists document optional pagination metadata', async () => {
+  const spec = YAML.parse(await readFile(new URL('../openapi.yaml', import.meta.url), 'utf8'));
+  const schema =
+    spec.paths['/api/categories'].get.responses['200'].content['application/json'].schema;
+  assert.equal(schema.properties.meta.$ref, '#/components/schemas/PaginationMeta');
+  assert.ok(!schema.required.includes('meta'), 'unpaginated legacy clients remain supported');
+  assert.deepEqual(
+    spec.components.schemas.PaginationMeta.required.sort(),
+    ['page', 'pageSize', 'total', 'totalPages'].sort(),
+  );
+});
+
+test('list query schemas expose implemented filters and optional metadata for legacy picklists', async () => {
+  const spec = YAML.parse(await readFile(new URL('../openapi.yaml', import.meta.url), 'utf8'));
+  const params = (path) =>
+    Object.fromEntries(
+      spec.paths[path].get.parameters
+        .filter((parameter) => parameter.in === 'query')
+        .map((parameter) => [parameter.name, parameter.schema]),
+    );
+  assert.deepEqual(params('/api/notifications').readStatus.enum, ['all', 'read', 'unread']);
+  assert.ok(params('/api/admin/inventory/movements').kind.enum.includes('return'));
+  assert.ok(params('/api/admin/support/tickets').status.enum.includes('closed'));
+  assert.deepEqual(params('/api/processes/{id}/items').sortBy.enum, [
+    'index',
+    'state',
+    'createdAt',
+  ]);
+  assert.deepEqual(params('/api/admin/posts/{id}/revisions').sortBy.enum, ['version', 'createdAt']);
+  for (const path of [
+    '/api/post-categories',
+    '/api/post-tags',
+    '/api/collections',
+    '/api/admin/notification-templates',
+  ]) {
+    const operation = spec.paths[path].get;
+    const schema = operation.responses['200'].content['application/json'].schema;
+    assert.equal(schema.properties.meta.$ref, '#/components/schemas/PaginationMeta', path);
+    assert.ok(!schema.required.includes('meta'), `${path}: legacy array callers remain compatible`);
+    for (const field of ['q', 'page', 'pageSize', 'sortBy', 'sortOrder'])
+      assert.ok(params(path)[field], `${path}: missing ${field}`);
+  }
+});

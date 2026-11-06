@@ -136,7 +136,7 @@ Page được tổ chức theo feature: `modules/{portal}/{feature}/page.tsx`. C
 
 ## Thứ tự làm (web)
 
-Ưu tiên Admin: xem [các task Admin theo thứ tự](documents/admin/README.md), mỗi task một file.
+Làm theo [62 task Admin + Storefront](documents/frontend/README.md), mỗi task một file; STT thực hiện đã tính phụ thuộc và xen kẽ hai portal.
 
 1. Types/constants + đọc API README
 2. `@p4/api-client` + `use-auth`
@@ -174,7 +174,7 @@ Requires Node.js >= 22.12 và React 19. Chạy `pnpm install` để cài depende
 
 ## Task frontend
 
-Thứ tự triển khai Admin và Storefront: [42 task riêng](documents/frontend/README.md).
+Thứ tự triển khai Admin và Storefront: [62 task riêng](documents/frontend/README.md).
 
 ## SDK, auth và audit
 

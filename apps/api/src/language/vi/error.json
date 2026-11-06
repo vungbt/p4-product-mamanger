@@ -53,5 +53,6 @@
   "last_owner_required": "Cần ít nhất một chủ shop đang hoạt động.",
   "staff_already_exists": "Tài khoản này đã là nhân sự.",
   "account_registration_required": "Người nhận cần đăng ký tài khoản trước.",
-  "rate_limit_exceeded": "Quá nhiều yêu cầu. Vui lòng thử lại sau."
+  "rate_limit_exceeded": "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
+  "unsupported_query_parameter": "Tham số truy vấn này không được hỗ trợ."
 }

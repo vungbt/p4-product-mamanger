@@ -6,41 +6,111 @@ import {
   useDeleteCategory,
   useUpdateCategory,
 } from '@p4/api-sdk/react';
-import { getErrorMessage } from '@p4/api-sdk/shared';
+import { type CategoryListQuery, getErrorMessage } from '@p4/api-sdk/shared';
 import { type Category, type CategoryInput, DESCRIPTION_FILTER_VALUES } from '@p4/shared';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import * as v from 'valibot';
+import useQueryParam from '@/hooks/use-query-param';
+
+const sortFields: NonNullable<CategoryListQuery['sortBy']>[] = ['name', 'slug', 'description'];
+
+const categoryQuerySchema = v.object({
+  page: v.optional(
+    v.fallback(
+      v.pipe(
+        v.string(),
+        v.transform(Number),
+        v.safeInteger(),
+        v.minValue(1),
+        v.maxValue(Math.floor(Number.MAX_SAFE_INTEGER / 50)),
+      ),
+      1,
+    ),
+    '1',
+  ),
+  pageSize: v.optional(
+    v.fallback(
+      v.pipe(
+        v.string(),
+        v.transform(Number),
+        v.check((value) => [10, 20, 50].includes(value)),
+      ),
+      10,
+    ),
+    '10',
+  ),
+  q: v.optional(v.fallback(v.pipe(v.string(), v.trim()), '')),
+  description: v.optional(v.fallback(v.picklist(DESCRIPTION_FILTER_VALUES), 'all')),
+  sortBy: v.optional(v.fallback(v.picklist(sortFields), 'name')),
+  sortOrder: v.optional(v.fallback(v.picklist(['asc', 'desc']), 'asc'), 'asc'),
+});
 
 export default function useCategoryPage() {
   const { t } = useTranslation();
 
-  const query = useCategories();
+  const [params, setQuery] = useQueryParam(categoryQuerySchema);
+
+  const { page, pageSize, sortBy } = params;
+  const sortOrder = sortBy ? params.sortOrder : 'asc';
+  const globalFilter = params.q ?? '';
+  const descriptionFilter = params.description === 'all' ? undefined : params.description;
+
+  const [columnVisibility, setColumnVisibility] = useState<DataTableState['columnVisibility']>({});
+  const [search, setSearch] = useState(globalFilter);
+  const [viewing, setViewing] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<Category | null>(null);
+  const [editor, setEditor] = useState<(CategoryInput & { id?: string }) | null>(null);
+
+  const state: DataTableState = {
+    sorting: sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : [],
+    pagination: { pageIndex: page - 1, pageSize },
+    globalFilter,
+    columnFilters: descriptionFilter ? [{ id: 'description', value: descriptionFilter }] : [],
+    columnVisibility,
+  };
+
+  const query = useCategories({
+    page,
+    pageSize,
+    q: globalFilter || undefined,
+    description: descriptionFilter,
+    sortBy: sortBy ?? 'name',
+    sortOrder,
+  });
 
   const create = useCreateCategory();
   const update = useUpdateCategory();
   const remove = useDeleteCategory();
 
-  const [viewing, setViewing] = useState<string | null>(null);
+  const changeTableState = (next: DataTableState) => {
+    setColumnVisibility(next.columnVisibility);
 
-  const [deleting, setDeleting] = useState<Category | null>(null);
+    const sorting = next.sorting[0];
+    const nextSortBy = sortFields.find((field) => field === sorting?.id);
 
-  const [editor, setEditor] = useState<(CategoryInput & { id?: string }) | null>(null);
+    if (
+      nextSortBy === sortBy &&
+      Boolean(sorting?.desc) === (sortOrder === 'desc') &&
+      next.pagination.pageIndex === state.pagination.pageIndex &&
+      next.pagination.pageSize === pageSize
+    )
+      return;
 
-  const [state, setState] = useState<DataTableState>({
-    sorting: [],
-    pagination: { pageIndex: 0, pageSize: 10 },
-    globalFilter: '',
-    columnFilters: [],
-  });
+    const resetPage =
+      next.pagination.pageSize !== pageSize ||
+      nextSortBy !== sortBy ||
+      Boolean(sorting?.desc) !== (sortOrder === 'desc');
 
-  const [search, setSearch] = useState('');
+    setQuery({
+      page: resetPage ? 1 : next.pagination.pageIndex + 1,
+      pageSize: next.pagination.pageSize,
+      sortBy: nextSortBy,
+      sortOrder: nextSortBy ? (sorting?.desc ? 'desc' : 'asc') : undefined,
+    });
+  };
 
-  const applySearch = (value: string) =>
-    setState((previous) => ({
-      ...previous,
-      globalFilter: value,
-      pagination: { ...previous.pagination, pageIndex: 0 },
-    }));
+  const applySearch = (value: string) => setQuery({ q: value, page: 1 }, { replace: true });
 
   const debouncedSearch = useDebouncedCallback(applySearch, 300);
 
@@ -50,26 +120,19 @@ export default function useCategoryPage() {
     applySearch('');
   };
 
+  useEffect(() => {
+    debouncedSearch.cancel();
+    setSearch(globalFilter);
+  }, [globalFilter, debouncedSearch]);
+
   const resetFilters = () => {
     debouncedSearch.cancel();
     setSearch('');
-    setState((previous) => ({
-      ...previous,
-      globalFilter: '',
-      columnFilters: [],
-      pagination: { ...previous.pagination, pageIndex: 0 },
-    }));
+    setQuery({ q: undefined, description: undefined, page: 1 });
   };
 
   const rows = query.data?.data ?? [];
-
-  const rawDescriptionFilter = state.columnFilters?.find(
-    (filter) => filter.id === 'description',
-  )?.value;
-
-  const descriptionFilter = DESCRIPTION_FILTER_VALUES.find(
-    (value) => value === rawDescriptionFilter,
-  );
+  const rowCount = query.data?.meta?.total ?? 0;
 
   const hasAppliedFilters = Boolean(state.globalFilter || state.columnFilters?.length);
 
@@ -92,18 +155,11 @@ export default function useCategoryPage() {
   const changeDescriptionFilter = (value: string | null) => {
     const filter = DESCRIPTION_FILTER_VALUES.find((option) => option === value) ?? 'all';
 
-    setState((previous) => ({
-      ...previous,
-      columnFilters: filter === 'all' ? [] : [{ id: 'description', value: filter }],
-      pagination: { ...previous.pagination, pageIndex: 0 },
-    }));
+    setQuery({ description: filter === 'all' ? undefined : filter, page: 1 });
   };
 
   const changeColumnVisibility = (id: string, checked: boolean) =>
-    setState((previous) => ({
-      ...previous,
-      columnVisibility: { ...previous.columnVisibility, [id]: checked },
-    }));
+    setColumnVisibility((previous) => ({ ...previous, [id]: checked }));
 
   const openCreate = () => setEditor({ name: '', slug: '', description: '' });
 
@@ -141,6 +197,7 @@ export default function useCategoryPage() {
 
   return {
     rows,
+    rowCount,
     state,
     search,
     descriptionFilter,
@@ -153,7 +210,7 @@ export default function useCategoryPage() {
     error: query.isError ? getErrorMessage(query.error, t('categories.loadFailed')) : undefined,
     saving: create.isPending || update.isPending,
     deletingPending: remove.isPending,
-    changeTableState: setState,
+    changeTableState,
     changeSearch,
     clearSearch,
     resetOrRefresh,

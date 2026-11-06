@@ -1,4 +1,5 @@
-import type { ListQuery, ReturnInspection } from '@p4/shared';
+import type { ReturnInspection } from '@p4/shared';
+import { RETURN_STATUS_VALUES, type ReturnListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
@@ -7,7 +8,8 @@ import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { orderQuantities } from '@/shared/commerce/input.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { validateListQuery } from '@/shared/list-query.js';
+import { queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './returns.audit.js';
 import * as returns from './returns.service.js';
@@ -32,11 +34,18 @@ router.post(
   }, 201),
 );
 const list = validateListQuery({
-  sortFields: ['createdAt'],
+  sortFields: ['createdAt', 'status'],
   defaultSort: 'createdAt',
   defaultOrder: 'desc',
-  rules: () => ({}),
-  normalize: (_query, base) => base,
+  rules: () => ({
+    status: `sometimes|required|in:${RETURN_STATUS_VALUES.join(',')}`,
+    orderId: uuidQueryRule,
+  }),
+  normalize: (query, base): ReturnListQuery => ({
+    ...base,
+    status: RETURN_STATUS_VALUES.find((value) => value === queryText(query, 'status')),
+    orderId: queryText(query, 'orderId'),
+  }),
 });
 for (const admin of [false, true])
   router.get(
@@ -44,11 +53,16 @@ for (const admin of [false, true])
     authRequired,
     ...(admin ? [requirePermission('return:read')] : []),
     list,
-    listHandler(async (req, query: ListQuery<'createdAt'>) => {
+    listHandler(async (req, query: ReturnListQuery) => {
       const result = await ReturnRequestModel.findAndCountAll({
-        where: admin ? {} : { userId: currentUser(req).id },
+        where: {
+          ...(admin ? {} : { userId: currentUser(req).id }),
+          ...(query.status ? { status: query.status } : {}),
+          ...(query.orderId ? { orderId: query.orderId } : {}),
+          ...listSearch(ReturnRequestModel, query.q, ['id', 'orderId', 'reason']),
+        },
         order: [
-          ['createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+          [query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
           ['id', 'ASC'],
         ],
         limit: query.pageSize,

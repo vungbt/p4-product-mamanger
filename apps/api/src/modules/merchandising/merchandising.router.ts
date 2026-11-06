@@ -1,12 +1,14 @@
-import type { ListQuery, MerchandisingPayload } from '@p4/shared';
+import type { MerchandisingListQuery, MerchandisingPayload } from '@p4/shared';
 import { Router } from 'express';
+import { Op } from 'sequelize';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { MerchandisingEntryModel } from '@/sequelize/models/index.js';
-import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { apiHandler, listHandler, optionalListHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
-import { validateListQuery } from '@/shared/list-query.js';
+import { queryText, validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { normalizedSlug } from '../catalog/catalog.service.js';
@@ -18,10 +20,15 @@ const router = Router();
 const read = [authRequired, requirePermission('content:read')];
 const write = [authRequired, requirePermission('content:write')];
 const list = validateListQuery({
-  sortFields: ['createdAt'],
+  sortFields: ['key', 'active', 'createdAt'],
   defaultSort: 'createdAt',
-  rules: () => ({}),
-  normalize: (_query, base) => base,
+  defaultOrder: 'desc',
+  rules: () => ({ active: 'sometimes|required|in:true,false' }),
+  normalize: (query, base): MerchandisingListQuery => ({
+    ...base,
+    active:
+      queryText(query, 'active') === undefined ? undefined : queryText(query, 'active') === 'true',
+  }),
 });
 for (const [path, kind] of [
   ['collections', 'collection'],
@@ -31,11 +38,15 @@ for (const [path, kind] of [
     `/admin/${path}`,
     ...read,
     list,
-    listHandler(async (_req, query: ListQuery<'createdAt'>) => {
+    listHandler(async (_req, query: MerchandisingListQuery) => {
       const result = await MerchandisingEntryModel.findAndCountAll({
-        where: { kind },
+        where: {
+          kind,
+          ...(query.active === undefined ? {} : { active: query.active }),
+          ...listSearch(MerchandisingEntryModel, query.q, ['key', 'payload']),
+        },
         order: [
-          ['createdAt', 'DESC'],
+          [query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
           ['id', 'ASC'],
         ],
         limit: query.pageSize,
@@ -85,18 +96,42 @@ for (const [path, kind] of [
       ),
     );
 }
+const publicCollections = validateListQuery({
+  sortFields: ['key', 'createdAt'],
+  defaultSort: 'key',
+  legacy: true,
+  rules: () => ({}),
+  normalize: (_query, base) => base,
+});
 router.get(
   '/collections',
-  apiHandler(async () => {
-    const rows = await MerchandisingEntryModel.findAll({
-      where: { kind: 'collection', active: true },
-      order: [['key', 'ASC']],
-      limit: 100,
-    });
-    return Promise.all(
-      rows.filter((row) => merch.visible(row)).map((row) => merch.publicMerchandising(row)),
-    );
-  }),
+  publicCollections,
+  optionalListHandler(
+    async (_req, query: import('@p4/shared').ListQuery<'key' | 'createdAt'> | undefined) => {
+      const now = new Date();
+      const result = await MerchandisingEntryModel.findAndCountAll({
+        where: {
+          kind: 'collection',
+          active: true,
+          ...listSearch(MerchandisingEntryModel, query?.q, ['key', 'payload']),
+          [Op.and]: [
+            { [Op.or]: [{ startsAt: null }, { startsAt: { [Op.lte]: now } }] },
+            { [Op.or]: [{ endsAt: null }, { endsAt: { [Op.gt]: now } }] },
+          ],
+        },
+        order: [
+          [query?.sortBy ?? 'key', query?.sortOrder === 'desc' ? 'DESC' : 'ASC'],
+          ['id', 'ASC'],
+        ],
+        limit: query?.pageSize ?? 100,
+        ...(query ? { offset: (query.page - 1) * query.pageSize } : {}),
+      });
+      return {
+        data: await Promise.all(result.rows.map((row) => merch.publicMerchandising(row))),
+        ...(query ? { meta: buildPaginationMeta(query.page, query.pageSize, result.count) } : {}),
+      };
+    },
+  ),
 );
 router.get(
   '/collections/:slug',

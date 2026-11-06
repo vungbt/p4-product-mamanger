@@ -1,3 +1,5 @@
+> **Đã thay thế:** dùng [62 task Admin + Storefront](../frontend/README.md) theo STT thực hiện. Folder này chỉ giữ tham chiếu cũ, không phải backlog đang triển khai.
+
 # P4 — Các task Admin
 
 > Kế hoạch ban đầu được giữ để tham chiếu. Thứ tự mới cho cả hai portal nằm ở

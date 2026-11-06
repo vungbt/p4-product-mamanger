@@ -1,5 +1,4 @@
 import { Alert, Button, Dialog, Form, FormField, Icon, Input, Textarea } from '@itclabs/react-ui';
-import { RefreshIcon } from '@itclabs/react-ui/icons/outline';
 import type { CategoryInput } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
 import useCategoryEditor from '../hooks/use-category-editor';
@@ -72,7 +71,7 @@ export default function CategoryEditor({ initial, pending, onClose, onSave }: Ca
                   disabled={pending}
                   onClick={generateSlug}
                 >
-                  <Icon glyph={RefreshIcon} />
+                  <Icon name="refresh" />
                   {t('categories.generateSlug')}
                 </Button>
               </div>
