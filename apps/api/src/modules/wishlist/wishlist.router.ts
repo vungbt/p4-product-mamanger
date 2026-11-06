@@ -14,6 +14,7 @@ import { auditedTransaction } from '@/shared/audit/audited-command.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { BaseError } from '@/utils/errors/base-error.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
@@ -35,6 +36,22 @@ router.get(
   list,
   listHandler(async (req, query: ListQuery<'createdAt'>) => {
     const result = await WishlistItemModel.findAndCountAll({
+      ...(query.q
+        ? {
+            include: [
+              {
+                model: ProductModel,
+                as: 'product',
+                attributes: [],
+                required: true,
+                where: {
+                  status: 'active',
+                  ...listSearch(ProductModel, query.q, ['name', 'slug'], 'product'),
+                },
+              },
+            ],
+          }
+        : {}),
       where: { userId: currentUser(req).id },
       order: [
         ['createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
@@ -119,7 +136,10 @@ router.get(
   list,
   listHandler(async (req, query: ListQuery<'createdAt'>) => {
     const result = await StockAlertSubscriptionModel.findAndCountAll({
-      where: { userId: currentUser(req).id },
+      where: {
+        userId: currentUser(req).id,
+        ...listSearch(StockAlertSubscriptionModel, query.q, ['variantId', 'status']),
+      },
       order: [
         ['createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
         ['id', 'ASC'],

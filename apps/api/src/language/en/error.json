@@ -53,5 +53,6 @@
   "last_owner_required": "At least one active owner is required.",
   "staff_already_exists": "This account is already a staff member.",
   "account_registration_required": "The recipient must register an account first.",
-  "rate_limit_exceeded": "Too many requests. Please try again later."
+  "rate_limit_exceeded": "Too many requests. Please try again later.",
+  "unsupported_query_parameter": "This query parameter is not supported."
 }

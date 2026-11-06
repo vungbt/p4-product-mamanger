@@ -10,16 +10,6 @@ import {
   Select,
   Tooltip,
 } from '@itclabs/react-ui';
-import {
-  CloseIcon,
-  DeleteIcon,
-  EditIcon,
-  PlusIcon,
-  RefreshIcon,
-  SearchIcon,
-  SettingsIcon,
-  ViewIcon,
-} from '@itclabs/react-ui/icons/outline';
 import { type Category, DESCRIPTION_FILTER_VALUES, type DescriptionFilter } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
 import CategoryDetails from './components/category-details';
@@ -35,6 +25,7 @@ const descriptionLabels: Record<DescriptionFilter, string> = {
 export default function AdminCategoriesPage() {
   const {
     rows,
+    rowCount,
     state,
     search,
     descriptionFilter,
@@ -73,7 +64,6 @@ export default function AdminCategoriesPage() {
     {
       accessorKey: 'description',
       header: t('categories.description'),
-      filterFn: (row, id, value) => Boolean(row.getValue<string>(id).trim()) === (value === 'has'),
       cell: ({ row }) => (
         <span className="block max-w-sm truncate" title={row.original.description}>
           {row.original.description || t('categories.noDescription')}
@@ -90,7 +80,7 @@ export default function AdminCategoriesPage() {
         <div className="flex items-center justify-end gap-1">
           <Tooltip content={t('categories.delete')}>
             <IconButton
-              icon={DeleteIcon}
+              icon="delete"
               variant="ghost"
               size="sm"
               className="bg-danger-50 text-danger-700 hover:bg-danger-50 hover:text-danger-800"
@@ -100,7 +90,7 @@ export default function AdminCategoriesPage() {
           </Tooltip>
           <Tooltip content={t('categories.details')}>
             <IconButton
-              icon={ViewIcon}
+              icon="view"
               variant="ghost"
               size="sm"
               className="bg-info-50 text-info-700 hover:bg-info-50 hover:text-info-700"
@@ -110,7 +100,7 @@ export default function AdminCategoriesPage() {
           </Tooltip>
           <Tooltip content={t('categories.edit')}>
             <IconButton
-              icon={EditIcon}
+              icon="edit"
               variant="ghost"
               size="sm"
               className="bg-warning-50 text-warning-700 hover:bg-warning-50 hover:text-warning-700"
@@ -131,7 +121,7 @@ export default function AdminCategoriesPage() {
           <Input
             aria-label={t('categories.search')}
             placeholder={t('categories.search')}
-            icon={SearchIcon}
+            icon="search"
             size="sm"
             rootClassName="w-full sm:w-72"
             value={search}
@@ -140,7 +130,7 @@ export default function AdminCategoriesPage() {
               search ? (
                 <Tooltip content={t('categories.clearSearch')}>
                   <IconButton
-                    icon={CloseIcon}
+                    icon="close"
                     variant="ghost"
                     size="sm"
                     label={t('categories.clearSearch')}
@@ -173,7 +163,7 @@ export default function AdminCategoriesPage() {
           />
           <Tooltip content={t(hasFilters ? 'categories.clearFilters' : 'categories.refresh')}>
             <IconButton
-              icon={RefreshIcon}
+              icon="refresh"
               variant="secondary"
               size="sm"
               label={t(hasFilters ? 'categories.clearFilters' : 'categories.refresh')}
@@ -185,7 +175,7 @@ export default function AdminCategoriesPage() {
             <DropdownMenu
               trigger={
                 <Button variant="secondary" size="sm">
-                  <Icon glyph={SettingsIcon} />
+                  <Icon name="settings" />
                   {t('categories.columns')}
                 </Button>
               }
@@ -199,7 +189,7 @@ export default function AdminCategoriesPage() {
               }))}
             />
             <Button size="sm" onClick={openCreate}>
-              <Icon glyph={PlusIcon} />
+              <Icon name="plus" />
               {t('categories.add')}
             </Button>
           </div>
@@ -211,6 +201,8 @@ export default function AdminCategoriesPage() {
             row: 'border-line',
             cell: 'align-middle',
           }}
+          mode="server"
+          rowCount={rowCount}
           rows={rows}
           loading={loading}
           error={error}
@@ -221,7 +213,6 @@ export default function AdminCategoriesPage() {
           caption={t('menu.product-categories')}
           state={state}
           onStateChange={changeTableState}
-          pagination
           pageSizeOptions={[10, 20, 50]}
         />
       </div>

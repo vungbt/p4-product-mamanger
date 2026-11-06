@@ -874,3 +874,101 @@ export interface ExchangeRequest {
   version: number;
   settlementPolicy: 'refund_and_repurchase';
 }
+
+/** Query filters shared by API validation and SDK consumers. */
+export type NotificationReadStatus = 'all' | 'read' | 'unread';
+export const NOTIFICATION_READ_STATUS_VALUES: readonly NotificationReadStatus[] = [
+  'all',
+  'read',
+  'unread',
+];
+export interface NotificationListQuery extends ListQuery<'createdAt' | 'title' | 'type'> {
+  readStatus?: NotificationReadStatus;
+  type?: string;
+  createdFrom?: string;
+  createdTo?: string;
+}
+export interface InventoryMovementListQuery extends ListQuery<'createdAt' | 'quantity'> {
+  variantId?: string;
+  kind?: InventoryMovementKind;
+  createdFrom?: string;
+  createdTo?: string;
+}
+export const RETURN_STATUS_VALUES: readonly ReturnStatus[] = [
+  'requested',
+  'approved',
+  'rejected',
+  'in_transit',
+  'received',
+  'inspected',
+  'completed',
+  'cancelled',
+];
+export const EXCHANGE_STATUS_VALUES: readonly ExchangeStatus[] = [
+  'requested',
+  'approved',
+  'rejected',
+  'awaiting_return',
+  'return_received',
+  'replacement_processing',
+  'completed',
+  'cancelled',
+];
+export interface ReturnListQuery extends ListQuery<'createdAt' | 'status'> {
+  status?: ReturnStatus;
+  orderId?: string;
+}
+export interface ExchangeListQuery extends ListQuery<'createdAt' | 'status'> {
+  status?: ExchangeStatus;
+  orderId?: string;
+}
+export const SUPPORT_TICKET_STATUS_VALUES: readonly SupportTicketStatus[] = [
+  'open',
+  'in_progress',
+  'resolved',
+  'closed',
+];
+export type SupportTicketCategory = 'order' | 'return' | 'payment' | 'product' | 'other';
+export const SUPPORT_TICKET_CATEGORY_VALUES: readonly SupportTicketCategory[] = [
+  'order',
+  'return',
+  'payment',
+  'product',
+  'other',
+];
+export interface SupportTicketListQuery extends ListQuery<'createdAt' | 'subject' | 'status'> {
+  status?: SupportTicketStatus;
+  category?: SupportTicketCategory;
+  assigneeId?: string;
+  orderId?: string;
+}
+
+export const INVENTORY_MOVEMENT_KIND_VALUES: readonly InventoryMovementKind[] = [
+  'opening',
+  'receipt',
+  'adjust',
+  'reserve',
+  'release',
+  'commit',
+  'return',
+];
+
+export interface TaxonomyListQuery extends ListQuery<'name' | 'slug' | 'createdAt'> {}
+export interface NotificationTemplateListQuery extends ListQuery<'type' | 'locale' | 'updatedAt'> {
+  type?: string;
+  locale?: 'vi' | 'en';
+}
+export const CONTENT_STATUS_VALUES: readonly ContentStatus[] = [
+  'draft',
+  'scheduled',
+  'published',
+  'archived',
+];
+export interface ContentListQuery extends ListQuery<'title' | 'createdAt'> {
+  status?: ContentStatus;
+  taxonomyId?: string;
+}
+
+export interface MerchandisingListQuery extends ListQuery<'key' | 'active' | 'createdAt'> {
+  active?: boolean;
+}

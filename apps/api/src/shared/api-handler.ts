@@ -40,3 +40,22 @@ export function listHandler<Query, Data>(
   };
   return Object.assign(middleware, { apiHandler: handler, isList: true, successStatus: 200 });
 }
+
+/** Legacy picklists remain arrays; supplying list params enables the normal paginated envelope. */
+export function optionalListHandler<Query, Data>(
+  handler: (
+    req: Request,
+    query: Query | undefined,
+  ) => Promise<{ data: Data; meta?: import('@p4/shared').PaginationMeta }>,
+) {
+  const middleware = (
+    req: Request,
+    res: Response<unknown, import('./list-query.js').ListLocals<Query | undefined>>,
+    next: NextFunction,
+  ) => {
+    void handler(req, res.locals.listQuery)
+      .then((result) => res.jsonApi(200, result))
+      .catch(next);
+  };
+  return Object.assign(middleware, { apiHandler: handler, isList: true, successStatus: 200 });
+}

@@ -694,7 +694,12 @@ function analyzeHandler(site, input) {
     const wrapper = last.expression.text;
     const [fn, statusArg] = last.arguments;
 
-    if ((wrapper === 'apiHandler' || wrapper === 'listHandler') && fn) {
+    if (
+      (wrapper === 'apiHandler' ||
+        wrapper === 'listHandler' ||
+        wrapper === 'optionalListHandler') &&
+      fn
+    ) {
       const handlerFn = ts.isFunctionLike(fn) ? fn : functionOf(resolveDeclaration(fn));
 
       if (handlerFn) collectFromFunction(handlerFn, input);
@@ -702,7 +707,7 @@ function analyzeHandler(site, input) {
       const signature = checker.getTypeAtLocation(fn).getCallSignatures()[0];
       const result = signature ? unwrapPromise(signature.getReturnType()) : null;
 
-      if (wrapper === 'listHandler') {
+      if (wrapper === 'listHandler' || wrapper === 'optionalListHandler') {
         const data = result && propertyType(result, 'data', fn);
 
         return { type: data, list: true, status: 200, raw: input.rawResponse };
@@ -1020,7 +1025,7 @@ for (const route of routes) {
   /* Response */
   const status = analysis.status ?? route.handlers.at(-1)?.successStatus ?? 200;
   const responseSchema = analysis.type ? typeSchema(analysis.type) : {};
-  const listMode = analysis.list ? (query?.legacy ? 'legacy' : true) : false;
+  const listMode = query?.legacy ? 'legacy' : analysis.list;
   const hasBody = status !== 204;
   const description = [
     permissions.length

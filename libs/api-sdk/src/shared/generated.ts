@@ -590,7 +590,7 @@ export interface paths {
     };
     /**
      * Danh sách mẫu thông báo
-     * @description **Quyền:** `notification:read`.
+     * @description **Quyền:** `notification:read`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`.
      */
     get: operations['get_api_admin_notification_templates'];
     /**
@@ -2721,7 +2721,7 @@ export interface paths {
     };
     /**
      * Danh sách bộ sưu tập đang hiển thị
-     * @description **Công khai.**
+     * @description **Công khai.** Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`.
      */
     get: operations['get_api_collections'];
     put?: never;
@@ -3847,7 +3847,7 @@ export interface paths {
     };
     /**
      * Danh sách chuyên mục bài viết
-     * @description **Công khai.**
+     * @description **Công khai.** Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`.
      */
     get: operations['get_api_post_categories'];
     put?: never;
@@ -3867,7 +3867,7 @@ export interface paths {
     };
     /**
      * Danh sách thẻ bài viết
-     * @description **Công khai.**
+     * @description **Công khai.** Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`.
      */
     get: operations['get_api_post_tags'];
     put?: never;
@@ -6080,6 +6080,7 @@ export interface operations {
           'application/json': {
             data: components['schemas']['Address'][];
             message?: string;
+            meta?: components['schemas']['PaginationMeta'];
           };
         };
       };
@@ -6326,10 +6327,11 @@ export interface operations {
   get_api_admin_banners: {
     parameters: {
       query?: {
+        active?: 'false' | 'true';
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'createdAt';
+        sortBy?: 'key' | 'active' | 'createdAt';
         sortOrder?: 'asc' | 'desc';
       };
       header?: never;
@@ -6473,10 +6475,11 @@ export interface operations {
   get_api_admin_collections: {
     parameters: {
       query?: {
+        active?: 'false' | 'true';
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'createdAt';
+        sortBy?: 'key' | 'active' | 'createdAt';
         sortOrder?: 'asc' | 'desc';
       };
       header?: never;
@@ -6793,11 +6796,21 @@ export interface operations {
   get_api_admin_exchanges: {
     parameters: {
       query?: {
+        orderId?: string;
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'createdAt';
+        sortBy?: 'createdAt' | 'status';
         sortOrder?: 'asc' | 'desc';
+        status?:
+          | 'approved'
+          | 'awaiting_return'
+          | 'cancelled'
+          | 'completed'
+          | 'rejected'
+          | 'replacement_processing'
+          | 'requested'
+          | 'return_received';
       };
       header?: never;
       path?: never;
@@ -7161,6 +7174,9 @@ export interface operations {
   get_api_admin_inventory_movements: {
     parameters: {
       query?: {
+        createdFrom?: string;
+        createdTo?: string;
+        kind?: 'adjust' | 'commit' | 'opening' | 'receipt' | 'release' | 'reserve' | 'return';
         page?: number;
         pageSize?: number;
         q?: string;
@@ -7488,7 +7504,15 @@ export interface operations {
   };
   get_api_admin_notification_templates: {
     parameters: {
-      query?: never;
+      query?: {
+        locale?: 'en' | 'vi';
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'type' | 'locale' | 'updatedAt';
+        sortOrder?: 'asc' | 'desc';
+        type?: string;
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -7511,9 +7535,11 @@ export interface operations {
               version: number;
             }[];
             message?: string;
+            meta?: components['schemas']['PaginationMeta'];
           };
         };
       };
+      400: components['responses']['ValidationError'];
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       429: components['responses']['RateLimited'];
@@ -7612,6 +7638,7 @@ export interface operations {
         q?: string;
         sortBy?: 'title' | 'createdAt';
         sortOrder?: 'asc' | 'desc';
+        status?: 'archived' | 'draft' | 'published' | 'scheduled';
         taxonomyId?: string;
       };
       header?: never;
@@ -7835,9 +7862,8 @@ export interface operations {
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'title' | 'createdAt';
+        sortBy?: 'version' | 'createdAt';
         sortOrder?: 'asc' | 'desc';
-        taxonomyId?: string;
       };
       header?: never;
       path: {
@@ -8152,6 +8178,7 @@ export interface operations {
         q?: string;
         sortBy?: 'title' | 'createdAt';
         sortOrder?: 'asc' | 'desc';
+        status?: 'archived' | 'draft' | 'published' | 'scheduled';
         taxonomyId?: string;
       };
       header?: never;
@@ -8375,9 +8402,8 @@ export interface operations {
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'title' | 'createdAt';
+        sortBy?: 'version' | 'createdAt';
         sortOrder?: 'asc' | 'desc';
-        taxonomyId?: string;
       };
       header?: never;
       path: {
@@ -9051,11 +9077,21 @@ export interface operations {
   get_api_admin_returns: {
     parameters: {
       query?: {
+        orderId?: string;
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'createdAt';
+        sortBy?: 'createdAt' | 'status';
         sortOrder?: 'asc' | 'desc';
+        status?:
+          | 'approved'
+          | 'cancelled'
+          | 'completed'
+          | 'in_transit'
+          | 'inspected'
+          | 'received'
+          | 'rejected'
+          | 'requested';
       };
       header?: never;
       path?: never;
@@ -9768,11 +9804,15 @@ export interface operations {
   get_api_admin_support_tickets: {
     parameters: {
       query?: {
+        assigneeId?: string;
+        category?: 'order' | 'other' | 'payment' | 'product' | 'return';
+        orderId?: string;
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'createdAt';
+        sortBy?: 'createdAt' | 'subject' | 'status';
         sortOrder?: 'asc' | 'desc';
+        status?: 'closed' | 'in_progress' | 'open' | 'resolved';
       };
       header?: never;
       path?: never;
@@ -13972,6 +14012,7 @@ export interface operations {
           'application/json': {
             data: components['schemas']['Category'][];
             message?: string;
+            meta?: components['schemas']['PaginationMeta'];
           };
         };
       };
@@ -14179,7 +14220,13 @@ export interface operations {
   };
   get_api_collections: {
     parameters: {
-      query?: never;
+      query?: {
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'key' | 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -14246,9 +14293,11 @@ export interface operations {
                 }
             )[];
             message?: string;
+            meta?: components['schemas']['PaginationMeta'];
           };
         };
       };
+      400: components['responses']['ValidationError'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -14693,11 +14742,21 @@ export interface operations {
   get_api_exchanges_mine: {
     parameters: {
       query?: {
+        orderId?: string;
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'createdAt';
+        sortBy?: 'createdAt' | 'status';
         sortOrder?: 'asc' | 'desc';
+        status?:
+          | 'approved'
+          | 'awaiting_return'
+          | 'cancelled'
+          | 'completed'
+          | 'rejected'
+          | 'replacement_processing'
+          | 'requested'
+          | 'return_received';
       };
       header?: never;
       path?: never;
@@ -15558,11 +15617,15 @@ export interface operations {
   get_api_notifications: {
     parameters: {
       query?: {
+        createdFrom?: string;
+        createdTo?: string;
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'createdAt';
+        readStatus?: 'all' | 'read' | 'unread';
+        sortBy?: 'createdAt' | 'title' | 'type';
         sortOrder?: 'asc' | 'desc';
+        type?: string;
       };
       header?: never;
       path?: never;
@@ -16503,7 +16566,13 @@ export interface operations {
   };
   get_api_post_categories: {
     parameters: {
-      query?: never;
+      query?: {
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'name' | 'slug' | 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -16523,15 +16592,23 @@ export interface operations {
               slug: string;
             }[];
             message?: string;
+            meta?: components['schemas']['PaginationMeta'];
           };
         };
       };
+      400: components['responses']['ValidationError'];
       429: components['responses']['RateLimited'];
     };
   };
   get_api_post_tags: {
     parameters: {
-      query?: never;
+      query?: {
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'name' | 'slug' | 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -16551,9 +16628,11 @@ export interface operations {
               slug: string;
             }[];
             message?: string;
+            meta?: components['schemas']['PaginationMeta'];
           };
         };
       };
+      400: components['responses']['ValidationError'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -16928,7 +17007,7 @@ export interface operations {
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'createdAt';
+        sortBy?: 'index' | 'state' | 'createdAt';
         sortOrder?: 'asc' | 'desc';
       };
       header?: never;
@@ -18011,11 +18090,21 @@ export interface operations {
   get_api_returns_mine: {
     parameters: {
       query?: {
+        orderId?: string;
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'createdAt';
+        sortBy?: 'createdAt' | 'status';
         sortOrder?: 'asc' | 'desc';
+        status?:
+          | 'approved'
+          | 'cancelled'
+          | 'completed'
+          | 'in_transit'
+          | 'inspected'
+          | 'received'
+          | 'rejected'
+          | 'requested';
       };
       header?: never;
       path?: never;
@@ -19093,11 +19182,15 @@ export interface operations {
   get_api_support_tickets_mine: {
     parameters: {
       query?: {
+        assigneeId?: string;
+        category?: 'order' | 'other' | 'payment' | 'product' | 'return';
+        orderId?: string;
         page?: number;
         pageSize?: number;
         q?: string;
-        sortBy?: 'createdAt';
+        sortBy?: 'createdAt' | 'subject' | 'status';
         sortOrder?: 'asc' | 'desc';
+        status?: 'closed' | 'in_progress' | 'open' | 'resolved';
       };
       header?: never;
       path?: never;

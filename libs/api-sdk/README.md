@@ -86,3 +86,9 @@ dùng được cho prefetch/cache invalidation và cấu hình TanStack nâng ca
 
 Category là resource đầu tiên có hook nghiệp vụ. Các API còn lại đã có typed client,
 chưa có named hooks; bổ sung theo resource khi ghép màn tương ứng.
+
+Kiểm chứng filter/sort/paging bằng API local thật (chỉ đọc seed categories):
+
+```sh
+P4_TEST_API_URL=http://127.0.0.1:3001 pnpm --filter @p4/api-sdk test:local
+```

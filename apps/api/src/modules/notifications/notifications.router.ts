@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import type { ListQuery } from '@p4/shared';
+import {
+  NOTIFICATION_READ_STATUS_VALUES,
+  type NotificationListQuery,
+  type NotificationTemplateListQuery,
+} from '@p4/shared';
 import { Router } from 'express';
+import { Op } from 'sequelize';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
 import {
@@ -9,13 +14,15 @@ import {
   NotificationTemplateModel,
   sequelize,
 } from '@/sequelize/models/index.js';
-import { apiHandler, listHandler } from '@/shared/api-handler.js';
+import { apiHandler, listHandler, optionalListHandler } from '@/shared/api-handler.js';
 import { auditedTransaction } from '@/shared/audit/audited-command.js';
 import { recordAudit } from '@/shared/audit/record.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { validateListQuery } from '@/shared/list-query.js';
+import { dateRange } from '@/shared/list-filters.js';
+import { dateFilters, dateQueryRule, queryText, validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
@@ -24,21 +31,45 @@ import * as notifications from './notifications.service.js';
 
 const router = Router();
 const list = validateListQuery({
-  sortFields: ['createdAt'],
+  sortFields: ['createdAt', 'title', 'type'],
   defaultSort: 'createdAt',
   defaultOrder: 'desc',
-  rules: () => ({}),
-  normalize: (_query, base) => base,
+  rules: () => ({
+    readStatus: `sometimes|required|in:${NOTIFICATION_READ_STATUS_VALUES.join(',')}`,
+    type: 'sometimes|required|string|max:120',
+    createdFrom: dateQueryRule,
+    createdTo: dateQueryRule,
+  }),
+  normalize: (query, base, req): NotificationListQuery => ({
+    ...base,
+    readStatus: NOTIFICATION_READ_STATUS_VALUES.find(
+      (value) => value === queryText(query, 'readStatus'),
+    ),
+    type: queryText(query, 'type'),
+    ...dateFilters(query, req.t),
+  }),
 });
 router.get(
   '/notifications',
   authRequired,
   list,
-  listHandler(async (req, query: ListQuery<'createdAt'>) => {
+  listHandler(async (req, query: NotificationListQuery) => {
     const result = await NotificationModel.findAndCountAll({
-      where: { userId: currentUser(req).id },
+      where: {
+        userId: currentUser(req).id,
+        ...listSearch(NotificationModel, query.q, ['title', 'body', 'type']),
+        ...(query.type ? { type: query.type } : {}),
+        ...(query.readStatus === 'read'
+          ? { readAt: { [Op.ne]: null } }
+          : query.readStatus === 'unread'
+            ? { readAt: null }
+            : {}),
+        ...(query.createdFrom || query.createdTo
+          ? { createdAt: dateRange(query.createdFrom, query.createdTo) }
+          : {}),
+      },
       order: [
-        ['createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+        [query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
         ['id', 'ASC'],
       ],
       limit: query.pageSize,
@@ -113,21 +144,49 @@ router.patch(
     });
   }),
 );
+const templateList = validateListQuery({
+  sortFields: ['type', 'locale', 'updatedAt'],
+  defaultSort: 'type',
+  legacy: true,
+  rules: () => ({
+    locale: 'sometimes|required|in:vi,en',
+    type: 'sometimes|required|string|max:120',
+  }),
+  normalize: (query, base): NotificationTemplateListQuery => ({
+    ...base,
+    locale: ['vi', 'en'].find(
+      (value): value is 'vi' | 'en' => value === queryText(query, 'locale'),
+    ),
+    type: queryText(query, 'type'),
+  }),
+});
 router.get(
   '/admin/notification-templates',
   authRequired,
   requirePermission('notification:read'),
-  apiHandler(async () =>
-    (
-      await NotificationTemplateModel.findAll({
-        order: [
-          ['type', 'ASC'],
-          ['locale', 'ASC'],
-        ],
-        limit: 100,
-      })
-    ).map((row) => selectFields(row, ['id', 'type', 'locale', 'subject', 'body', 'version'])),
-  ),
+  templateList,
+  optionalListHandler(async (_req, query: NotificationTemplateListQuery | undefined) => {
+    const result = await NotificationTemplateModel.findAndCountAll({
+      where: {
+        ...listSearch(NotificationTemplateModel, query?.q, ['subject', 'body', 'type']),
+        ...(query?.locale ? { locale: query.locale } : {}),
+        ...(query?.type ? { type: query.type } : {}),
+      },
+      order: [
+        [query?.sortBy ?? 'type', query?.sortOrder === 'desc' ? 'DESC' : 'ASC'],
+        ['locale', 'ASC'],
+        ['id', 'ASC'],
+      ],
+      limit: query?.pageSize ?? 100,
+      ...(query ? { offset: (query.page - 1) * query.pageSize } : {}),
+    });
+    return {
+      data: result.rows.map((row) =>
+        selectFields(row, ['id', 'type', 'locale', 'subject', 'body', 'version']),
+      ),
+      ...(query ? { meta: buildPaginationMeta(query.page, query.pageSize, result.count) } : {}),
+    };
+  }),
 );
 router.put(
   '/admin/notification-templates',

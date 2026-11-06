@@ -155,6 +155,8 @@ initReviewModel(sequelize);
 initRefreshTokenModel(sequelize);
 initAuthSessionModel(sequelize);
 
+WishlistItemModel.belongsTo(ProductModel, { as: 'product', foreignKey: 'productId' });
+
 UserModel.hasMany(OrderModel, { foreignKey: 'userId', as: 'orders' });
 OrderModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user' });
 

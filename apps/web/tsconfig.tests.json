@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": ["tests/query-param.test.ts", "src/hooks/use-query-param.ts"],
+  "compilerOptions": {
+    "types": ["node"]
+  }
+}

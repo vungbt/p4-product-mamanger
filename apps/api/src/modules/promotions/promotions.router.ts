@@ -13,6 +13,7 @@ import { assertVersion } from '@/shared/commerce/transitions.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { searchPattern } from '@/shared/list-filters.js';
 import { queryText, validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
@@ -137,7 +138,10 @@ router.get(
     const couponId = uuidRouteId(req);
     if (!(await CouponModel.findByPk(couponId))) throw new NotFound();
     const result = await CouponRedemptionModel.findAndCountAll({
-      where: { couponId },
+      where: {
+        couponId,
+        ...listSearch(CouponRedemptionModel, query.q, ['orderId', 'userId', 'status']),
+      },
       order: [
         [query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
         ['id', 'ASC'],

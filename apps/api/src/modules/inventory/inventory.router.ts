@@ -1,4 +1,5 @@
-import type { InventoryListQuery, ListQuery } from '@p4/shared';
+import type { InventoryListQuery } from '@p4/shared';
+import { INVENTORY_MOVEMENT_KIND_VALUES, type InventoryMovementListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { requirePermission } from '@/middlewares/permission.middleware.js';
@@ -7,7 +8,15 @@ import { InventoryMovementModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody } from '@/shared/http-input.js';
-import { queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
+import { dateRange } from '@/shared/list-filters.js';
+import {
+  dateFilters,
+  dateQueryRule,
+  queryText,
+  uuidQueryRule,
+  validateListQuery,
+} from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { auditPolicies } from './inventory.audit.js';
@@ -25,17 +34,34 @@ const movements = validateListQuery({
   sortFields: ['createdAt', 'quantity'],
   defaultSort: 'createdAt',
   defaultOrder: 'desc',
-  rules: () => ({ variantId: uuidQueryRule }),
-  normalize: (_query, base) => base,
+  rules: () => ({
+    variantId: uuidQueryRule,
+    kind: `sometimes|required|in:${INVENTORY_MOVEMENT_KIND_VALUES.join(',')}`,
+    createdFrom: dateQueryRule,
+    createdTo: dateQueryRule,
+  }),
+  normalize: (query, base, req): InventoryMovementListQuery => ({
+    ...base,
+    variantId: queryText(query, 'variantId'),
+    kind: INVENTORY_MOVEMENT_KIND_VALUES.find((value) => value === queryText(query, 'kind')),
+    ...dateFilters(query, req.t),
+  }),
 });
 router.get(
   '/admin/inventory/movements',
   ...read,
   movements,
-  listHandler(async (req, query: ListQuery<'createdAt' | 'quantity'>) => {
-    const variantId = queryText(req.query, 'variantId');
+  listHandler(async (_req, query: InventoryMovementListQuery) => {
+    const variantId = query.variantId;
     const result = await InventoryMovementModel.findAndCountAll({
-      where: variantId ? { variantId } : {},
+      where: {
+        ...(variantId ? { variantId } : {}),
+        ...(query.kind ? { kind: query.kind } : {}),
+        ...(query.createdFrom || query.createdTo
+          ? { createdAt: dateRange(query.createdFrom, query.createdTo) }
+          : {}),
+        ...listSearch(InventoryMovementModel, query.q, ['id', 'variantId', 'kind', 'reason']),
+      },
       order: [
         [query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
         ['id', 'ASC'],

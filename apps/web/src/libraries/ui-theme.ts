@@ -5,6 +5,9 @@ import {
   BriefcaseIcon,
   ChartIcon,
   ChevronDownIcon,
+  CloseIcon,
+  DeleteIcon,
+  EditIcon,
   GridIcon,
   HomeIcon,
   KeyIcon,
@@ -12,12 +15,15 @@ import {
   MailIcon,
   MoonIcon,
   PhoneIcon,
+  PlusIcon,
   ReceiptSearchIcon,
+  RefreshIcon,
   SearchIcon,
   SettingsIcon,
   ShieldCheckIcon,
   StoreIcon,
   SunIcon,
+  ViewIcon,
 } from '@itclabs/react-ui/icons/outline';
 
 // Register only the glyphs P4 uses, keeping the full catalog out of the bundle.
@@ -42,6 +48,12 @@ export const uiTheme = defineTheme({
       settings: SettingsIcon,
       logout: LogoutIcon,
       search: SearchIcon,
+      close: CloseIcon,
+      delete: DeleteIcon,
+      edit: EditIcon,
+      view: ViewIcon,
+      refresh: RefreshIcon,
+      plus: PlusIcon,
     },
   },
 });

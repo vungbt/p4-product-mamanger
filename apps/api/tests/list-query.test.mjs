@@ -58,6 +58,7 @@ for (const [index, validator] of validators.entries()) {
       { page: '9007199254740991', pageSize: '100' },
       { q: [] },
       { q: {} },
+      { unsupportedFilter: 'ignored-before' },
       { sortBy: 'name; SELECT 1' },
       { sortOrder: 'descending' },
     ]) {

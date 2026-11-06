@@ -31,3 +31,10 @@ export const invalidWhere: WhereOptions<CategoryAttributes> = {
   // @ts-expect-error Model-specific filters must reject unknown attribute names.
   missingAttribute: 'value',
 };
+
+import { CategoryModel } from '@/sequelize/models/category.model.js';
+import { listSearch } from '@/shared/list-search.js';
+
+void listSearch(CategoryModel, 'test', ['name', 'slug']);
+// @ts-expect-error Search helper field names are checked against the model attributes.
+void listSearch(CategoryModel, 'test', ['categoryName']);

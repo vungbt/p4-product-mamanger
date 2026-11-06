@@ -16,6 +16,7 @@ import { cartLines } from '@/shared/commerce/input.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { InputValidError, NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './settings.audit.js';
@@ -102,6 +103,7 @@ router.get(
   list,
   listHandler(async (_req, query: ListQuery<'name' | 'fee' | 'createdAt'>) => {
     const result = await ShippingMethodModel.findAndCountAll({
+      where: listSearch(ShippingMethodModel, query.q, ['name', 'cities']),
       order: [
         [query.sortBy ?? 'name', query.sortOrder === 'desc' ? 'DESC' : 'ASC'],
         ['id', 'ASC'],

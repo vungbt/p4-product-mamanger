@@ -16,6 +16,7 @@ import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
 import { validateListQuery } from '@/shared/list-query.js';
+import { listSearch } from '@/shared/list-search.js';
 import { InputValidError, NotFound } from '@/utils/errors/index.js';
 import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
@@ -208,7 +209,10 @@ router.get(
   list,
   listHandler(async (req, query: ListQuery<'createdAt'>) => {
     const result = await ProcessModel.findAndCountAll({
-      where: { userId: currentUser(req).id },
+      where: {
+        userId: currentUser(req).id,
+        ...listSearch(ProcessModel, query.q, ['id', 'kind', 'state', 'errorCode']),
+      },
       order: [
         ['createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
         ['id', 'ASC'],
@@ -229,15 +233,27 @@ router.get(
     processes.processDto(await processes.ownedProcess(currentUser(req).id, uuidRouteId(req))),
   ),
 );
+const itemList = validateListQuery({
+  sortFields: ['index', 'state', 'createdAt'],
+  defaultSort: 'index',
+  rules: () => ({}),
+  normalize: (_query, base) => base,
+});
 router.get(
   '/processes/:id/items',
   authRequired,
-  list,
-  listHandler(async (req, query: ListQuery<'createdAt'>) => {
+  itemList,
+  listHandler(async (req, query: ListQuery<'index' | 'state' | 'createdAt'>) => {
     const row = await processes.ownedProcess(currentUser(req).id, uuidRouteId(req));
     const result = await ProcessItemModel.findAndCountAll({
-      where: { processId: row.id },
-      order: [['index', 'ASC']],
+      where: {
+        processId: row.id,
+        ...listSearch(ProcessItemModel, query.q, ['data', 'issues', 'state']),
+      },
+      order: [
+        [query.sortBy ?? 'index', query.sortOrder === 'desc' ? 'DESC' : 'ASC'],
+        ['id', 'ASC'],
+      ],
       limit: query.pageSize,
       offset: (query.page - 1) * query.pageSize,
     });

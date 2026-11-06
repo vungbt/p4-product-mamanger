@@ -32,7 +32,8 @@
     "build": "pnpm check:generated && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "dev": "tsc -p tsconfig.build.json --watch",
-    "test": "pnpm typecheck && pnpm build && node --test tests/*.test.mjs"
+    "test": "pnpm typecheck && pnpm build && node --test tests/*.test.mjs",
+    "test:local": "pnpm build && node --test tests/integration/categories.mjs"
   },
   "dependencies": {
     "openapi-fetch": "catalog:",
