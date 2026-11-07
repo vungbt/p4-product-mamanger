@@ -6,6 +6,8 @@ Nền tảng Better Auth, SDK và category CRUD đã có một phần từ PR #3
 
 Task Admin cũ ở [documents/admin](../admin/README.md) chỉ là tham chiếu, đã được thay bằng kế hoạch này; không triển khai song song.
 
+[Spec, plan, tasks và checklist nghiệm thu](../../specs/README.md).
+
 ## Thứ tự triển khai
 
 | STT | Mã | Task | Portal | Phụ thuộc | Trạng thái |
