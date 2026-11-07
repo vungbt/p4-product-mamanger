@@ -1,4 +1,5 @@
 import { Icon, type IconName } from '@itclabs/react-ui';
+import type { Permission } from '@p4/shared';
 import { type ComponentType, createElement, type LazyExoticComponent, type ReactNode } from 'react';
 import type { Role } from '@/types/types';
 
@@ -16,6 +17,7 @@ export interface IRoute {
   exact?: boolean;
   /** Allowed roles — portal or leaf (e.g. checkout). Unset = public */
   authority?: Role[];
+  permission?: Permission;
   loginPath?: string;
   /** Login page — redirect if already logged in with the correct role */
   guestOnly?: boolean;

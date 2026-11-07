@@ -31,6 +31,7 @@ export const adminPortalRoutes: IRoute[] = [
       {
         path: ROUTES.admin.dashboard,
         name: 'admin-dashboard',
+        permission: 'report:read',
         label: 'Dashboard',
         iconName: 'chart',
         component: AdminDashboardScreen,
@@ -47,6 +48,7 @@ export const adminPortalRoutes: IRoute[] = [
           {
             path: ROUTES.admin.products,
             name: 'product-list',
+            permission: 'catalog:read',
             label: 'Product list',
             component: AdminProductsScreen,
             exact: true,
@@ -54,6 +56,7 @@ export const adminPortalRoutes: IRoute[] = [
           {
             path: ROUTES.admin['product-categories'],
             name: 'product-categories',
+            permission: 'catalog:read',
             label: 'Categories',
             component: AdminCategoriesScreen,
             exact: true,
@@ -61,6 +64,7 @@ export const adminPortalRoutes: IRoute[] = [
           {
             path: ROUTES.admin['product-new'],
             name: 'product-new',
+            permission: 'catalog:write',
             label: 'Create product',
             component: AdminProductsScreen,
             exact: true,
@@ -68,6 +72,7 @@ export const adminPortalRoutes: IRoute[] = [
           {
             path: '/admin/products/:id/edit',
             name: 'product-edit',
+            permission: 'catalog:write',
             label: 'Edit product',
             component: AdminProductsScreen,
             hideInMenu: true,
@@ -77,6 +82,7 @@ export const adminPortalRoutes: IRoute[] = [
       {
         path: ROUTES.admin.orders,
         name: 'admin-orders',
+        permission: 'order:read',
         label: 'Orders',
         iconName: 'receiptSearch',
         component: AdminOrdersScreen,

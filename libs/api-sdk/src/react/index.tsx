@@ -1,5 +1,6 @@
 'use client';
 
+export { useCapabilities } from './capabilities.js';
 export {
   categoryKeys,
   categoryMutationOptions,
