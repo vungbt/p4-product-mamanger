@@ -429,22 +429,6 @@ describe('worker processes and realtime local API', { skip: !base }, () => {
       ),
     );
     socket.disconnect();
-    // DIAGNOSTIC (temporary): widen the race window past one idle worker poll (1s).
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    const diag = await db.DomainEventModel.findAll({
-      where: { aggregateId: process.id, type: 'process.requested' },
-    });
-    console.log(
-      '[diag] jobs',
-      JSON.stringify(
-        diag.map((row) => ({
-          status: row.status,
-          attempts: row.attempts,
-          deliveredAt: row.deliveredAt,
-          lastErrorCode: row.lastErrorCode,
-        })),
-      ),
-    );
     await drive(process.id);
     const replay = [];
     const reconnected = io(url, {
