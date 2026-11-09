@@ -19,10 +19,14 @@ servers:
   - url: /
     description: Current API server
 tags:
+  - name: buildings
+    description: Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.
   - name: me
     description: Người dùng hiện tại và quyền CASL.
   - name: operations
     description: Kiểm tra trạng thái dịch vụ.
+  - name: settings
+    description: "Cấu hình hệ thống: kỳ thu mặc định và danh mục dịch vụ, đơn giá mặc định."
   - name: auth-native
     description: Better Auth native endpoints. Browser clients use @stay/sdk/auth and HttpOnly `stay.*` session cookies.
 paths:
@@ -92,6 +96,862 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/settings:
+    get:
+      tags:
+        - settings
+      operationId: get_api_settings
+      summary: Kỳ thu mặc định
+      description: >-
+        Ngày chốt số, ngày phát hành, hạn thanh toán, đơn vị làm tròn, hoàn tiền phòng và mẫu nội dung chuyển khoản. Toà
+        để trống trường nào thì theo giá trị ở đây.
+
+
+        **Quyền:** `read:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StaySettings"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - settings
+      operationId: put_api_settings
+      summary: Cập nhật kỳ thu mặc định
+      description: >-
+        Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. Làm tròn 1, 100 hoặc
+        1.000đ. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+
+
+        **Quyền:** `manage:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                readingDay:
+                  type: integer
+                  minimum: 1
+                  maximum: 31
+                issueDay:
+                  type: integer
+                  minimum: 1
+                  maximum: 31
+                dueDay:
+                  type: integer
+                  minimum: 1
+                  maximum: 31
+                roundingUnit:
+                  type: integer
+                  enum:
+                    - 1
+                    - 100
+                    - 1000
+                refundUnusedRent:
+                  type: boolean
+                transferContentTemplate:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                version:
+                  type: integer
+                  minimum: 1
+              required:
+                - readingDay
+                - issueDay
+                - dueDay
+                - roundingUnit
+                - refundUnusedRent
+                - transferContentTemplate
+                - version
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StaySettings"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/services:
+    get:
+      tags:
+        - settings
+      operationId: get_api_services
+      summary: Danh mục dịch vụ
+      description: |-
+        Mọi dịch vụ (cả đã tắt, xem `active`), theo `sortOrder`.
+
+        **Quyền:** `read:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayService"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - settings
+      operationId: post_api_services
+      summary: Thêm dịch vụ
+      description: >-
+        Tên không trùng (không phân biệt hoa thường); đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và một
+        `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.
+
+
+        **Quyền:** `manage:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                kind:
+                  type: string
+                  enum:
+                    - electricity
+                    - per_person
+                    - per_room
+                    - per_vehicle
+                    - water
+                unit:
+                  type: string
+                  minLength: 1
+                  maxLength: 20
+                defaultPrice:
+                  type: integer
+                  minimum: 0
+                  maximum: 1000000000
+                sortOrder:
+                  type: integer
+                  minimum: 0
+                  maximum: 1000000
+                active:
+                  type: boolean
+              required:
+                - name
+                - kind
+                - unit
+                - defaultPrice
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayService"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/services/{id}:
+    put:
+      tags:
+        - settings
+      operationId: put_api_services_id
+      summary: Sửa dịch vụ
+      description: >-
+        Sửa tên, đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn
+        đã phát hành. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+
+
+        **Quyền:** `manage:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                unit:
+                  type: string
+                  minLength: 1
+                  maxLength: 20
+                defaultPrice:
+                  type: integer
+                  minimum: 0
+                  maximum: 1000000000
+                sortOrder:
+                  type: integer
+                  minimum: 0
+                  maximum: 1000000
+                active:
+                  type: boolean
+                version:
+                  type: integer
+                  minimum: 1
+              required:
+                - name
+                - unit
+                - defaultPrice
+                - sortOrder
+                - active
+                - version
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayService"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings:
+    get:
+      tags:
+        - buildings
+      operationId: get_api_buildings
+      summary: Danh sách toà
+      description: |-
+        Chỉ các toà người dùng được xem (người quản lý: toà được gán). Mặc định ẩn toà đã lưu trữ (`status=active`).
+
+        **Quyền:** `read:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - code
+              - name
+              - createdAt
+            default: code
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - active
+              - all
+              - archived
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayBuilding"
+                  message:
+                    type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - buildings
+      operationId: post_api_buildings
+      summary: Tạo toà
+      description: >-
+        Mã A–Z, 0–9, tối đa 6 ký tự, duy nhất. Kỳ thu, làm tròn, hoàn tiền phòng để `null` = theo hệ thống. Ngày trong
+        tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. Tài khoản ngân hàng nhập đủ cả ba
+        trường (BIN VietQR 6 số, số tài khoản, tên chủ tài khoản in hoa không dấu) hoặc bỏ trống.
+
+
+        **Quyền:** `manage:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  minLength: 1
+                  maxLength: 6
+                  pattern: ^[A-Za-z0-9]{1,6}$
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                address:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+                readingDay:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 1
+                  maximum: 31
+                issueDay:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 1
+                  maximum: 31
+                dueDay:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 1
+                  maximum: 31
+                roundingUnit:
+                  type:
+                    - integer
+                    - "null"
+                  enum:
+                    - 1
+                    - 100
+                    - 1000
+                    - null
+                refundUnusedRent:
+                  type:
+                    - boolean
+                    - "null"
+                bankBin:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^[0-9]{6}$
+                bankAccount:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 19
+                bankAccountName:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 50
+                rulesText:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 5000
+                contactPhone:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 20
+              required:
+                - code
+                - name
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayBuildingDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{id}:
+    get:
+      tags:
+        - buildings
+      operationId: get_api_buildings_id
+      summary: Chi tiết toà
+      description: |-
+        Kèm thống kê nhanh, kỳ thu đang áp dụng (`billing`) và `codeLocked`. Toà ngoài phạm vi của người dùng trả 404.
+
+        **Quyền:** `read:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayBuildingDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - buildings
+      operationId: put_api_buildings_id
+      summary: Sửa toà
+      description: >-
+        Gửi đủ các trường như khi tạo (trường bỏ trống = `null`). Không đổi được mã khi toà đã có hoá đơn
+        (`codeLocked`). Toà đã lưu trữ trả 409. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409
+        `version_conflict`.
+
+
+        **Quyền:** `manage:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: integer
+                  minimum: 1
+                code:
+                  type: string
+                  minLength: 1
+                  maxLength: 6
+                  pattern: ^[A-Za-z0-9]{1,6}$
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                address:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+                readingDay:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 1
+                  maximum: 31
+                issueDay:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 1
+                  maximum: 31
+                dueDay:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 1
+                  maximum: 31
+                roundingUnit:
+                  type:
+                    - integer
+                    - "null"
+                  enum:
+                    - 1
+                    - 100
+                    - 1000
+                    - null
+                refundUnusedRent:
+                  type:
+                    - boolean
+                    - "null"
+                bankBin:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^[0-9]{6}$
+                bankAccount:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 19
+                bankAccountName:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 50
+                rulesText:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 5000
+                contactPhone:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 20
+              required:
+                - version
+                - code
+                - name
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayBuildingDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{id}/archive:
+    post:
+      tags:
+        - buildings
+      operationId: post_api_buildings_id_archive
+      summary: Lưu trữ toà
+      description: |-
+        Trả 409 `building_has_active_contracts` kèm `extensions.rooms` khi còn phòng có hợp đồng hiệu lực.
+
+        **Quyền:** `manage:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: archive
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayBuildingDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{id}/prices:
+    get:
+      tags:
+        - buildings
+      operationId: get_api_buildings_id_prices
+      summary: Đơn giá của toà
+      description: >-
+        Giá từng dịch vụ tại ngày `date` (`YYYY-MM-DD`, mặc định hôm nay theo Asia/Ho_Chi_Minh): bản ghi ghi đè có
+        `effectiveFrom` lớn nhất ≤ ngày đó, không có thì giá mặc định. Kèm lịch sử ghi đè.
+
+
+        **Quyền:** `read:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/BuildingPriceList"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - buildings
+      operationId: put_api_buildings_id_prices
+      summary: Đặt giá riêng từ một ngày
+      description: >-
+        `price: null` = quay về giá mặc định từ `effectiveFrom`. Đã có bản ghi cùng ngày thì thay thế, trừ khi hoá đơn
+        đã phát hành dùng giá đó (409 `price_history_locked`).
+
+
+        **Quyền:** `manage:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                serviceId:
+                  type: string
+                  format: uuid
+                effectiveFrom:
+                  type: string
+                  format: date
+                price:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 0
+                  maximum: 1000000000
+              required:
+                - serviceId
+                - effectiveFrom
+                - price
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/BuildingPriceOverride"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/RateLimited"
   /health/live:
@@ -3547,6 +4407,340 @@ components:
           additionalProperties: {}
       required:
         - message
+    BillingSettings:
+      type: object
+      properties:
+        readingDay:
+          type: number
+        issueDay:
+          type: number
+        dueDay:
+          type: number
+        roundingUnit:
+          anyOf:
+            - type: number
+              enum:
+                - 1
+            - type: number
+              enum:
+                - 1000
+            - type: number
+              enum:
+                - 100
+        refundUnusedRent:
+          type: boolean
+      required:
+        - readingDay
+        - issueDay
+        - dueDay
+        - roundingUnit
+        - refundUnusedRent
+    BuildingPriceList:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        date:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BuildingServicePrice"
+      required:
+        - buildingId
+        - date
+        - items
+    BuildingPriceOverride:
+      type: object
+      properties:
+        id:
+          type: string
+        serviceId:
+          type: string
+        price:
+          type:
+            - number
+            - "null"
+        effectiveFrom:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - serviceId
+        - price
+        - effectiveFrom
+        - createdAt
+    BuildingServicePrice:
+      type: object
+      properties:
+        serviceId:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+          enum:
+            - electricity
+            - per_person
+            - per_room
+            - per_vehicle
+            - water
+        unit:
+          type: string
+        active:
+          type: boolean
+        defaultPrice:
+          type: number
+        price:
+          type: number
+        source:
+          type: string
+          enum:
+            - default
+            - override
+        effectiveFrom:
+          type:
+            - string
+            - "null"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/BuildingPriceOverride"
+      required:
+        - serviceId
+        - code
+        - name
+        - kind
+        - unit
+        - active
+        - defaultPrice
+        - price
+        - source
+        - effectiveFrom
+        - history
+    BuildingStats:
+      type: object
+      properties:
+        roomCount:
+          type: number
+        occupiedRoomCount:
+          type: number
+      required:
+        - roomCount
+        - occupiedRoomCount
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: number
+        pageSize:
+          type: number
+        total:
+          type: number
+        totalPages:
+          type: number
+      required:
+        - page
+        - pageSize
+        - total
+        - totalPages
+    StayBuilding:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        address:
+          type:
+            - string
+            - "null"
+        readingDay:
+          type:
+            - number
+            - "null"
+        issueDay:
+          type:
+            - number
+            - "null"
+        dueDay:
+          type:
+            - number
+            - "null"
+        roundingUnit:
+          anyOf:
+            - anyOf:
+                - type: number
+                  enum:
+                    - 1
+                - type: number
+                  enum:
+                    - 1000
+                - type: number
+                  enum:
+                    - 100
+            - type: "null"
+        refundUnusedRent:
+          type:
+            - boolean
+            - "null"
+        bankBin:
+          type:
+            - string
+            - "null"
+        bankAccount:
+          type:
+            - string
+            - "null"
+        bankAccountName:
+          type:
+            - string
+            - "null"
+        rulesText:
+          type:
+            - string
+            - "null"
+        contactPhone:
+          type:
+            - string
+            - "null"
+        archivedAt:
+          type:
+            - string
+            - "null"
+        stats:
+          $ref: "#/components/schemas/BuildingStats"
+        version:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - code
+        - name
+        - address
+        - readingDay
+        - issueDay
+        - dueDay
+        - roundingUnit
+        - refundUnusedRent
+        - bankBin
+        - bankAccount
+        - bankAccountName
+        - rulesText
+        - contactPhone
+        - archivedAt
+        - stats
+        - version
+        - createdAt
+        - updatedAt
+    StayBuildingDetail:
+      type: object
+      properties:
+        billing:
+          $ref: "#/components/schemas/BillingSettings"
+        codeLocked:
+          type: boolean
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        address:
+          type:
+            - string
+            - "null"
+        readingDay:
+          type:
+            - number
+            - "null"
+        issueDay:
+          type:
+            - number
+            - "null"
+        dueDay:
+          type:
+            - number
+            - "null"
+        roundingUnit:
+          anyOf:
+            - anyOf:
+                - type: number
+                  enum:
+                    - 1
+                - type: number
+                  enum:
+                    - 1000
+                - type: number
+                  enum:
+                    - 100
+            - type: "null"
+        refundUnusedRent:
+          type:
+            - boolean
+            - "null"
+        bankBin:
+          type:
+            - string
+            - "null"
+        bankAccount:
+          type:
+            - string
+            - "null"
+        bankAccountName:
+          type:
+            - string
+            - "null"
+        rulesText:
+          type:
+            - string
+            - "null"
+        contactPhone:
+          type:
+            - string
+            - "null"
+        archivedAt:
+          type:
+            - string
+            - "null"
+        stats:
+          $ref: "#/components/schemas/BuildingStats"
+        version:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - billing
+        - codeLocked
+        - id
+        - code
+        - name
+        - address
+        - readingDay
+        - issueDay
+        - dueDay
+        - roundingUnit
+        - refundUnusedRent
+        - bankBin
+        - bankAccount
+        - bankAccountName
+        - rulesText
+        - contactPhone
+        - archivedAt
+        - stats
+        - version
+        - createdAt
+        - updatedAt
     StayCapabilities:
       type: object
       properties:
@@ -3685,6 +4879,77 @@ components:
       required:
         - action
         - subject
+    StayService:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+          enum:
+            - electricity
+            - per_person
+            - per_room
+            - per_vehicle
+            - water
+        unit:
+          type: string
+        defaultPrice:
+          type: number
+        active:
+          type: boolean
+        sortOrder:
+          type: number
+        version:
+          type: number
+      required:
+        - id
+        - code
+        - name
+        - kind
+        - unit
+        - defaultPrice
+        - active
+        - sortOrder
+        - version
+    StaySettings:
+      type: object
+      properties:
+        transferContentTemplate:
+          type: string
+        version:
+          type: number
+        readingDay:
+          type: number
+        issueDay:
+          type: number
+        dueDay:
+          type: number
+        roundingUnit:
+          anyOf:
+            - type: number
+              enum:
+                - 1
+            - type: number
+              enum:
+                - 1000
+            - type: number
+              enum:
+                - 100
+        refundUnusedRent:
+          type: boolean
+      required:
+        - transferContentTemplate
+        - version
+        - readingDay
+        - issueDay
+        - dueDay
+        - roundingUnit
+        - refundUnusedRent
     StayUser:
       type: object
       properties:
