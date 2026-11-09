@@ -6,6 +6,7 @@ export {
   createAnonymousAbility,
   createAppAbility,
   defineAbilityFor,
+  p4AbilityKit,
   rulesForStaffRole,
 } from './builder.js';
 export type {

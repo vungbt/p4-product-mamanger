@@ -16,8 +16,7 @@ export const ABILITY_ACTIONS = [
   'export',
 ] as const satisfies readonly AbilityAction[];
 
-export const ANY_ACTION = '*';
-export const ANY_SUBJECT = 'all';
+export { ANY_ACTION, ANY_SUBJECT } from '../core/index.js';
 
 /** Business areas protected by CASL. Customer-owned subjects carry a `userId`. */
 export const ABILITY_SUBJECTS = [

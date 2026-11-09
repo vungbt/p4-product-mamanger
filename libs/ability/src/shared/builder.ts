@@ -1,11 +1,9 @@
-import { AbilityBuilder, createMongoAbility, type RawRuleOf } from '@casl/ability';
-import type { AbilityRule, StaffRole } from '@p4/shared';
-import { ANY_ACTION, ANY_SUBJECT } from './actions.js';
-import type { AbilityUser, AppAbility } from './types.js';
+import type { AbilityAction, AbilityRule, AbilitySubject, StaffRole } from '@p4/shared';
+import { createAbilityKit, type KitBuilder } from '../core/index.js';
+import { ABILITY_ACTIONS, ABILITY_SUBJECTS, ANY_ACTION, ANY_SUBJECT } from './actions.js';
+import type { AbilityUser, AppAbility, OwnedRecord } from './types.js';
 
-type Builder = AbilityBuilder<AppAbility>;
-
-const abilityOptions = { anyAction: ANY_ACTION, anySubjectType: ANY_SUBJECT } as const;
+type Builder = KitBuilder<AbilityAction, AbilitySubject, OwnedRecord>;
 
 /**
  * Staff rules per role. Every staff role keeps the exact access of the former
@@ -52,8 +50,25 @@ function defineOwnerRules({ can }: Builder, userId: string) {
   can('moderate', 'Review', own);
 }
 
+/** The P4 kit: actions, subjects and staff/owner rules on top of `@p4/ability/core`. */
+export const p4AbilityKit = createAbilityKit<
+  AbilityAction,
+  AbilitySubject,
+  AbilityUser,
+  OwnedRecord
+>({
+  actions: ABILITY_ACTIONS,
+  subjects: ABILITY_SUBJECTS,
+  define(builder, user) {
+    defineOwnerRules(builder, user.id);
+    if (user.role === 'admin') STAFF_ROLE_DEFINITIONS[user.staffRole ?? 'owner'](builder);
+  },
+  // Owner conditions only reference `userId`; other record fields are never matched.
+  recordAttributes: (record) => ({ userId: record.userId }),
+});
+
 export function createAppAbility(rules: readonly AbilityRule[] = []): AppAbility {
-  return createMongoAbility<AppAbility>(rules as RawRuleOf<AppAbility>[], abilityOptions);
+  return p4AbilityKit.createAppAbility(rules);
 }
 
 export function createAnonymousAbility(): AppAbility {
@@ -61,24 +76,15 @@ export function createAnonymousAbility(): AppAbility {
 }
 
 export function defineAbilityFor(user: AbilityUser): AppAbility {
-  const builder = new AbilityBuilder<AppAbility>(createMongoAbility);
-
-  defineOwnerRules(builder, user.id);
-  if (user.role === 'admin') STAFF_ROLE_DEFINITIONS[user.staffRole ?? 'owner'](builder);
-
-  return builder.build(abilityOptions);
+  return p4AbilityKit.defineAbilityFor(user);
 }
 
 /** Unconditional rules granted by a staff role, for role listings. */
 export function rulesForStaffRole(role: StaffRole): AbilityRule[] {
-  const builder = new AbilityBuilder<AppAbility>(createMongoAbility);
-
-  STAFF_ROLE_DEFINITIONS[role](builder);
-
-  return builder.rules as AbilityRule[];
+  return p4AbilityKit.rulesFrom(STAFF_ROLE_DEFINITIONS[role]) as AbilityRule[];
 }
 
 /** Serializable rules for clients; owner conditions only reference the user's own id. */
 export function abilityRules(ability: AppAbility): AbilityRule[] {
-  return ability.rules as AbilityRule[];
+  return p4AbilityKit.abilityRules(ability) as AbilityRule[];
 }

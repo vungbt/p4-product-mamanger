@@ -4,6 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./core": {
+      "types": "./src/core/index.ts",
+      "development": "./src/core/index.ts",
+      "import": "./dist/core/index.js",
+      "default": "./dist/core/index.js"
+    },
     "./shared": {
       "types": "./src/shared/index.ts",
       "development": "./src/shared/index.ts",
