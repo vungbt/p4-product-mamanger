@@ -59,10 +59,18 @@ ssh "$SERVER" bash -s <<EOF
   set -e
   cd $REMOTE_DIR
   chmod 600 $ENV_FILE
+  if docker image inspect p4-api:latest >/dev/null 2>&1; then
+    echo "  Keeping the running image as p4-api:previous for rollback..."
+    docker tag p4-api:latest p4-api:previous
+  fi
   echo "  Loading p4-api.tar.gz..."
   docker load < p4-api.tar.gz
   rm -f p4-api.tar.gz
   docker compose $COMPOSE_FILES --env-file $ENV_FILE -p $PROJECT_NAME up -d postgres api worker
+  echo "  Removing p4-api tags other than latest and previous..."
+  docker images p4-api --format '{{.Repository}}:{{.Tag}}' \
+    | grep -vxE 'p4-api:(latest|previous)' \
+    | xargs -r docker rmi || true
   docker image prune -f
   echo ""
   docker compose -p $PROJECT_NAME ps
@@ -70,8 +78,15 @@ EOF
 
 rm -f p4-api.tar.gz
 
+echo "==> Cleaning local p4-api images (keeping p4-api:latest)..."
+docker images p4-api --format '{{.Repository}}:{{.Tag}}' \
+  | grep -vx 'p4-api:latest' \
+  | while read -r image; do docker rmi "$image" || true; done
+docker image prune -f
+
 echo ""
 echo "==> PRODUCTION deploy complete!"
 echo "    API: https://p4-api.couponlinkh.com  (health: /health)"
 echo "    API :3001 and Postgres :5433 listen on the server loopback only."
+echo "    Rollback: docker tag p4-api:previous p4-api:latest, then compose up -d api worker on $SERVER."
 echo "    Web: https://p4.couponlinkh.com (pnpm deploy:web)"
