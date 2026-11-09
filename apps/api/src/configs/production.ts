@@ -10,6 +10,14 @@ function assertSecret(name: string, value: string | undefined, minLength: number
     );
 }
 
+/** Passwords published in this public repository (seeders and docs). */
+const PUBLIC_DEMO_PASSWORDS = new Set(['admin123', 'user123', 'password123']);
+
+/** In production, published demo passwords never authenticate and cannot be set. */
+export function isBlockedPassword(password: string): boolean {
+  return env.isProd && PUBLIC_DEMO_PASSWORDS.has(password);
+}
+
 export function assertProductionConfig() {
   if (!env.isProd) return;
 

@@ -29,3 +29,30 @@ api:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
+
+api-integration:
+  stage: check
+  image: node:22-alpine
+  services:
+    - name: postgres:17-alpine
+      alias: postgres
+  variables:
+    POSTGRES_DB: p4_product_manager
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    DATABASE_HOST: postgres
+    DATABASE_PORT: "5432"
+    DATABASE_NAME: p4_product_manager
+    DATABASE_USERNAME: postgres
+    DATABASE_PASSWORD: postgres
+    SEED: "1"
+  before_script:
+    - apk add --no-cache bash
+    - corepack enable
+    - pnpm install --frozen-lockfile
+  script:
+    - pnpm --filter @p4/api-client typecheck && pnpm --filter @p4/auth typecheck
+    - bash scripts/test-api-integration.sh
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"

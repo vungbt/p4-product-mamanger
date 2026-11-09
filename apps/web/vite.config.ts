@@ -26,6 +26,23 @@ export default defineConfig({
       },
     ],
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        // Long-lived vendor chunks keep the entry small and cache across releases.
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react',
+              test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/,
+            },
+            { name: 'query', test: /[\\/]node_modules[\\/]@tanstack[\\/]/ },
+            { name: 'i18n', test: /[\\/]node_modules[\\/](i18next|react-i18next)[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {

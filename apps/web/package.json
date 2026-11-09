@@ -15,7 +15,9 @@
     "@itclabs/react-ui": "0.13.0",
     "@p4/ability": "workspace:*",
     "@p4/api-client": "workspace:*",
+    "@p4/api-sdk": "workspace:*",
     "@p4/auth": "workspace:*",
+    "@p4/blocks": "workspace:*",
     "@p4/i18n": "workspace:*",
     "@p4/shared": "workspace:*",
     "i18next": "catalog:",
@@ -23,18 +25,16 @@
     "react-dom": "catalog:",
     "react-i18next": "catalog:",
     "react-router-dom": "catalog:",
-    "valibot": "catalog:",
-    "@p4/blocks": "workspace:*",
-    "@p4/api-sdk": "workspace:*"
+    "valibot": "catalog:"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.4",
+    "@tailwindcss/vite": "^4.3.5",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "sass": "catalog:",
-    "tailwindcss": "^4.3.4",
+    "tailwindcss": "^4.3.5",
     "typescript": "catalog:",
     "vite": "catalog:"
   }

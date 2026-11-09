@@ -18,3 +18,35 @@ jobs:
       - run: pnpm --filter @p4/api lint
       - run: pnpm --filter @p4/ability test
       - run: pnpm --filter @p4/api test:lists
+  api-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: p4_product_manager
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 5432
+      DATABASE_NAME: p4_product_manager
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      SEED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @p4/api-client typecheck && pnpm --filter @p4/auth typecheck
+      - run: bash scripts/test-api-integration.sh
