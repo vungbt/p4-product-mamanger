@@ -1,5 +1,5 @@
-import { subject as caslSubject } from '@casl/ability';
 import type { AbilityAction, AbilitySubject } from '@p4/shared';
+import { p4AbilityKit } from './builder.js';
 import type { AppAbility, OwnedRecord } from './types.js';
 
 /**
@@ -15,12 +15,7 @@ export function canAccess(
   action: AbilityAction,
   subjectType: AbilitySubject,
 ): boolean {
-  for (const rule of ability.rulesFor(action, subjectType)) {
-    if (rule.inverted) return false;
-    if (!rule.conditions) return true;
-  }
-
-  return false;
+  return p4AbilityKit.canAccess(ability, action, subjectType);
 }
 
 /** Whether `ability` grants `action` on one record, honouring owner conditions. */
@@ -30,5 +25,5 @@ export function canOn(
   subjectType: AbilitySubject,
   record: OwnedRecord,
 ): boolean {
-  return ability.can(action, caslSubject(subjectType, { userId: record.userId }));
+  return p4AbilityKit.canOn(ability, action, subjectType, record);
 }
