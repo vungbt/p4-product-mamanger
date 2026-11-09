@@ -1,10 +1,10 @@
+import { applyAuditPolicies } from '@p4/server-core';
 import { Router } from 'express';
 import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired, requireRole } from '@/middlewares/auth.middleware.js';
 import { validateProductsListQuery } from '@/modules/products/products.validation.js';
 import * as reviewsController from '@/modules/reviews/reviews.controller.js';
 import { validateReview, validateReviewsListQuery } from '@/modules/reviews/reviews.validation.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { auditPolicies } from './products.audit.js';
 import * as productsController from './products.controller.js';
 import {

@@ -11,6 +11,7 @@ export interface AuditScope {
   isolationLevel?: TransactionOptions['isolationLevel'];
 }
 
+/** The audited transaction currently running, shared by nested commands. */
 export const auditScope = new AsyncLocalStorage<AuditScope>();
 
 export interface AuditRouteContext extends RouteAuditPolicy {

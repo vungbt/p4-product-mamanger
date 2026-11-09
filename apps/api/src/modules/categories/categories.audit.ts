@@ -1,4 +1,4 @@
-import type { RouteAuditPolicies } from '@/shared/audit/types.js';
+import type { RouteAuditPolicies } from '@p4/server-core';
 import * as categoriesController from './categories.controller.js';
 
 export const auditPolicies = {

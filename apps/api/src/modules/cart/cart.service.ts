@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, NotFound } from '@p4/server-core';
 import type { Cart, CartLineInput, CartWarning, JsonValue } from '@p4/shared';
 import type { Transaction } from 'sequelize';
 import {
@@ -11,8 +12,6 @@ import {
 import { auditedTransaction } from '@/shared/audit/audited-command.js';
 import { jsonValue, runIdempotent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { NotFound } from '@/utils/errors/index.js';
 import { settings } from '../settings/settings.service.js';
 
 export async function lockCart(userId: string, transaction: Transaction) {

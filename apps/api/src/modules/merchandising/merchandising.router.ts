@@ -1,3 +1,15 @@
+import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  listSearch,
+  NotFound,
+  queryText,
+  requestBody,
+  routeId,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
 import type { MerchandisingListQuery, MerchandisingPayload } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
@@ -5,12 +17,6 @@ import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { MerchandisingEntryModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler, optionalListHandler } from '@/shared/api-handler.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
-import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
-import { queryText, validateListQuery } from '@/shared/list-query.js';
-import { listSearch } from '@/shared/list-search.js';
-import { NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { normalizedSlug } from '../catalog/catalog.service.js';
 import { auditPolicies } from './merchandising.audit.js';
 import * as merch from './merchandising.service.js';

@@ -1,3 +1,15 @@
+import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  listSearch,
+  NotFound,
+  queryText,
+  requestBody,
+  uuidQueryRule,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
 import type { ListQuery } from '@p4/shared';
 import {
   SUPPORT_TICKET_CATEGORY_VALUES,
@@ -10,15 +22,8 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import { SupportMessageModel, SupportTicketModel, UserModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
-import { listSearch } from '@/shared/list-search.js';
-import { NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './support.audit.js';
 import * as support from './support.service.js';
 

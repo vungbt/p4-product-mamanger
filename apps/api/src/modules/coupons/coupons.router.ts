@@ -1,8 +1,8 @@
+import { applyAuditPolicies } from '@p4/server-core';
 import { Router } from 'express';
 import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { validateCouponsListQuery } from '@/modules/coupons/coupons.validation.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { auditPolicies } from './coupons.audit.js';
 import * as couponsController from './coupons.controller.js';
 import { validateCoupon, validatePreview } from './coupons.validation.js';

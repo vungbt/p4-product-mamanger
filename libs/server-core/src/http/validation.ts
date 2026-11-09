@@ -1,6 +1,13 @@
 import type { NextFunction, Request, Response } from 'express';
-import Validator, { type ValidationConfig } from '@/configs/validator.js';
-import { InputValidError } from '@/utils/errors/index.js';
+import Validator from 'validatorjs';
+import { InputValidError } from '../shared/errors.js';
+
+export type ValidationConfig = {
+  data?: Record<string, unknown>;
+  rules: Record<string, string>;
+  attributes?: Record<string, string>;
+  messages?: Record<string, string>;
+};
 
 type AttributeMap = Record<string, string>;
 type ValidationOptions = Omit<ValidationConfig, 'data'> & {
@@ -73,5 +80,3 @@ export function validate(config: ValidationOptions) {
     }
   };
 }
-
-export default validate;

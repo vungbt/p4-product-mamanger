@@ -1,12 +1,10 @@
+import { BaseError, Forbidden, NotFound } from '@p4/server-core';
 import type { AccountStatus, StaffRole, User } from '@p4/shared';
 import { Op } from 'sequelize';
 import { consumeAccountToken, issueAccountToken } from '@/modules/accounts/accounts.service.js';
 import { RefreshTokenModel, sequelize, UserModel } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
 
 export const STAFF_ROLES: readonly StaffRole[] = [
   'owner',

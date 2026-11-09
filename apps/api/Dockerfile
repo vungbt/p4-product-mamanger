@@ -6,6 +6,7 @@ FROM base AS build
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY libs/ability/package.json ./libs/ability/
+COPY libs/server-core/package.json ./libs/server-core/
 COPY libs/shared/package.json ./libs/shared/
 COPY libs/processes/package.json ./libs/processes/
 COPY libs/realtime/package.json ./libs/realtime/
@@ -14,6 +15,7 @@ RUN pnpm install --frozen-lockfile --filter @p4/api...
 COPY tsconfig.base.json ./
 COPY apps/api ./apps/api
 COPY libs/ability ./libs/ability
+COPY libs/server-core ./libs/server-core
 COPY libs/shared ./libs/shared
 COPY libs/processes ./libs/processes
 COPY libs/realtime ./libs/realtime
@@ -25,6 +27,7 @@ FROM base AS prod-deps
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY libs/ability/package.json ./libs/ability/
+COPY libs/server-core/package.json ./libs/server-core/
 COPY libs/shared/package.json ./libs/shared/
 COPY libs/processes/package.json ./libs/processes/
 COPY libs/realtime/package.json ./libs/realtime/
@@ -42,6 +45,7 @@ COPY --from=build /app/apps/api/src/sequelize ./apps/api/src/sequelize
 COPY --from=build /app/apps/api/src/language ./apps/api/src/language
 COPY --from=build /app/apps/api/docker-entrypoint.sh ./apps/api/docker-entrypoint.sh
 COPY --from=build /app/libs/ability/dist ./libs/ability/dist
+COPY --from=build /app/libs/server-core/dist ./libs/server-core/dist
 COPY --from=build /app/libs/processes/dist ./libs/processes/dist
 COPY --from=build /app/libs/realtime/dist ./libs/realtime/dist
 COPY --from=build /app/libs/shared/src ./libs/shared/src

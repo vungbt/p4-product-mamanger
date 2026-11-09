@@ -1,9 +1,9 @@
 import type { ListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { Op } from 'sequelize';
-import { InputValidError } from '@/utils/errors/index.js';
+import { validate } from '../http/validation.js';
+import { InputValidError } from '../shared/errors.js';
 import { dateRange } from './list-filters.js';
-import validate from './validation.js';
 
 export const uuidQueryRule =
   'sometimes|required|regex:/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/';

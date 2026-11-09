@@ -1,10 +1,10 @@
 import { setTimeout } from 'node:timers/promises';
+import { logger } from '@p4/server-core';
 import { assertProductionConfig } from '@/configs/production.js';
 import { eventHandlers, scheduledContentSweep } from '@/modules/jobs/handlers.js';
 import { runNextEvent, sweepExpiredReservations } from '@/modules/jobs/jobs.service.js';
 import { sweepProcessFiles } from '@/modules/processes/process-retention.service.js';
 import { sequelize } from '@/sequelize/models/index.js';
-import { logger } from '@/utils/logger.js';
 
 let stopped = false;
 process.on('SIGTERM', () => {

@@ -1,6 +1,5 @@
+import { queryNumber, validate, validateListQuery } from '@p4/server-core';
 import type { ReviewListQuery } from '@p4/shared';
-import { queryNumber, validateListQuery } from '@/shared/list-query.js';
-import validate from '@/shared/validation.js';
 
 export const validateReview = validate({
   rules: {

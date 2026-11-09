@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BaseError } from '@/utils/errors/base-error.js';
+import { BaseError } from '@p4/server-core';
 
 export const processStorageRoot =
   process.env.PROCESS_STORAGE_DIR ??

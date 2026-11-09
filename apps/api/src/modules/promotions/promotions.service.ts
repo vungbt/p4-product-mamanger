@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError } from '@p4/server-core';
 import type { DiscountLine, DiscountResult, Promotion } from '@p4/shared';
 import { Op, type Transaction } from 'sequelize';
 import { CouponModel, CouponRedemptionModel, PromotionModel } from '@/sequelize/models/index.js';
-import { BaseError } from '@/utils/errors/base-error.js';
 import { selectFields } from '@/utils/select-fields.js';
 
 export function promotionDto(row: PromotionModel): Promotion {

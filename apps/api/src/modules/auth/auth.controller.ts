@@ -1,6 +1,6 @@
+import { Unauthorized } from '@p4/server-core';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Unauthorized } from '@/utils/errors/index.js';
 import * as authService from './auth.service.js';
 
 export async function login(req: Request, res: Response, next: NextFunction) {

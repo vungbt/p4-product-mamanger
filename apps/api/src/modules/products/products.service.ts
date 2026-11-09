@@ -1,4 +1,13 @@
 import { randomUUID } from 'node:crypto';
+import {
+  BaseError,
+  buildPaginationMeta,
+  InputValidError,
+  NotFound,
+  numberRange,
+  requestStore,
+  searchPattern,
+} from '@p4/server-core';
 import type { Product, ProductImage, ProductInput, ProductListQuery } from '@p4/shared';
 import type { Transaction, WhereOptions } from 'sequelize';
 import { literal, Op } from 'sequelize';
@@ -16,16 +25,9 @@ import {
 } from '@/sequelize/models/index.js';
 import type { ProductAttributes } from '@/sequelize/models/product.model.js';
 import type { ProductImageAttributes } from '@/sequelize/models/product-image.model.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, inTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { numberRange, searchPattern } from '@/shared/list-filters.js';
-import { requestStore } from '@/shared/request-store.js';
-import { inTransaction } from '@/shared/transaction.js';
 import type { ModelOrder } from '@/types/database.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { InputValidError, NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { createDefaultVariant, normalizedSlug } from '../catalog/catalog.service.js';
 import { eligibleVariantSql } from '../discovery/discovery.service.js';
