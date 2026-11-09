@@ -34,25 +34,40 @@ describe('worker processes and realtime local API', { skip: !base }, () => {
     assert.equal(response.status, expected, `${method} ${path}: ${JSON.stringify(result)}`);
     return result.data;
   }
-  async function drive(id) {
-    const event = await db.DomainEventModel.findOne({
-      where: { aggregateId: id, type: 'process.requested', status: 'pending' },
-      order: [['createdAt', 'ASC']],
-    });
-    assert.ok(event);
-    // Fence the exact fixture job; never consume unrelated business/mail events.
-    await db.DomainEventModel.update(
+  // Runs the queued `process.requested` job of one fixture process and returns the process.
+  // The integration stack also runs the background worker, which claims every pending event as
+  // soon as it is committed, so the job may already belong to the worker when this is called.
+  async function drive(id, { inProcess = false } = {}) {
+    // Fence the exact fixture job atomically; never consume unrelated business/mail events.
+    const [, fenced] = await db.DomainEventModel.update(
       {
         status: 'processing',
         leaseToken: randomUUID(),
         leaseUntil: new Date(Date.now() + 90000),
-        attempts: event.attempts + 1,
+        attempts: db.sequelize.literal('attempts + 1'),
       },
-      { where: { id: event.id, status: 'pending' } },
+      { where: { aggregateId: id, type: 'process.requested', status: 'pending' }, returning: true },
     );
-    await event.reload();
-    await runProcess(event);
-    await finishEvent(event, null);
+    assert.ok(fenced.length <= 1, `process ${id} has ${fenced.length} pending jobs`);
+    if (fenced.length) {
+      await runProcess(fenced[0]);
+      assert.equal(await finishEvent(fenced[0], null), true);
+      return call('GET', `/processes/${id}`);
+    }
+    // Stubs installed in this test process (e.g. the media provider) do not reach the worker.
+    assert.ok(!inProcess, `the worker claimed process ${id} before the test could run it`);
+    const jobs = { aggregateId: id, type: 'process.requested' };
+    assert.ok(await db.DomainEventModel.count({ where: jobs }), `process ${id} has no job`);
+    // The worker owns the job: wait until it has delivered every job of this process.
+    const deadline = Date.now() + 30000;
+    for (;;) {
+      const rows = await db.DomainEventModel.findAll({ where: jobs });
+      const failed = rows.find((row) => row.lastErrorCode || row.status === 'dead_letter');
+      assert.ok(!failed, `worker failed process ${id}: ${failed?.lastErrorCode}`);
+      if (rows.every((row) => row.status === 'delivered')) break;
+      assert.ok(Date.now() < deadline, `worker did not finish process ${id} in time`);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
     return call('GET', `/processes/${id}`);
   }
   async function importFile(content, resource = 'categories') {
@@ -231,7 +246,7 @@ describe('worker processes and realtime local API', { skip: !base }, () => {
         `batch-${suffix}`,
       );
       ids.push(process.id);
-      const result = await drive(process.id);
+      const result = await drive(process.id, { inProcess: true });
       assert.equal(result.state, 'completed_with_errors');
       assert.equal(result.succeeded, 1);
       assert.equal(result.failed, 1);
