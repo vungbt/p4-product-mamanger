@@ -1,7 +1,12 @@
+import {
+  queryNumber,
+  queryText,
+  uuidQueryRule,
+  validate,
+  validateListQuery,
+} from '@p4/server-core';
 import type { ProductListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
-import { queryNumber, queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
-import validate from '@/shared/validation.js';
 
 export const validateCreateProduct = (req: Request, res: Response, next: NextFunction) =>
   validate({

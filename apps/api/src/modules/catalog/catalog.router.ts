@@ -1,4 +1,16 @@
 import { randomUUID } from 'node:crypto';
+import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  NotFound,
+  queryText,
+  requestBody,
+  routeId,
+  searchPattern,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
 import type { InventoryListQuery, ListQuery, ProductListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
@@ -9,15 +21,8 @@ import { listProducts } from '@/modules/products/products.service.js';
 import { validateProductsListQuery } from '@/modules/products/products.validation.js';
 import { SizeGuideModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
-import { searchPattern } from '@/shared/list-filters.js';
-import { queryText, validateListQuery } from '@/shared/list-query.js';
-import { NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './catalog.audit.js';
 import * as catalog from './catalog.service.js';
 

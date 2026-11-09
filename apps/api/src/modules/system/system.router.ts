@@ -1,8 +1,8 @@
 import { abilityRules, createAnonymousAbility } from '@p4/ability/shared';
+import { applyAuditPolicies } from '@p4/server-core';
 import { Router } from 'express';
 import { abilityOf, requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { COMMERCE_POLICY, CONTRACT_VERSION, TRANSITIONS } from '@/shared/commerce/contracts.js';
 import { auditPolicies } from './system.audit.js';
 

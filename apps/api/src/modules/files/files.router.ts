@@ -1,12 +1,16 @@
+import {
+  applyAuditPolicies,
+  currentUser,
+  NotFound,
+  requestBody,
+  uuidRouteId,
+} from '@p4/server-core';
 import { UPLOAD_PURPOSES } from '@p4/shared';
 import { Router } from 'express';
 import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { UploadTicketModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { NotFound } from '@/utils/errors/index.js';
 import { privateDownloadUrl } from './cloudinary.service.js';
 import { auditPolicies } from './files.audit.js';
 import * as filesController from './files.controller.js';

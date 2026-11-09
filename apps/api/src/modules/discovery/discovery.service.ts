@@ -1,6 +1,6 @@
+import { searchPattern } from '@p4/server-core';
 import type { ProductListQuery } from '@p4/shared';
 import { sequelize } from '@/sequelize/models/index.js';
-import { searchPattern } from '@/shared/list-filters.js';
 
 /** SQL identifiers are fixed; every untrusted value is escaped by the PostgreSQL dialect. */
 export function eligibleVariantSql(query: ProductListQuery, alias = 'v') {

@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto';
 import type { ImportResource, ParsedImportRow } from '@p4/processes/shared';
 import { parseImportRow } from '@p4/processes/shared';
+import { BaseError } from '@p4/server-core';
 import type { JsonValue, User } from '@p4/shared';
 import type { Transaction } from 'sequelize';
 import { CategoryModel, ProductModel, ProductVariantModel } from '@/sequelize/models/index.js';
 import { jsonValue } from '@/shared/commerce/persistence.js';
-import { BaseError } from '@/utils/errors/base-error.js';
 import { createVariant, updateVariant } from '../catalog/catalog.service.js';
 import { createCategory, updateCategory } from '../categories/categories.service.js';
 import { moveInventory } from '../inventory/inventory.service.js';

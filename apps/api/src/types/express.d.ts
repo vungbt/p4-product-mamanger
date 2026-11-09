@@ -1,21 +1,11 @@
-import type { ApiPaginatedSuccess, ApiSuccess, PaginationMeta } from '@p4/shared';
+import type { User as P4User } from '@p4/shared';
 
-export type JsonApiBody<T = unknown> =
-  | ApiSuccess<T>
-  | ApiPaginatedSuccess<T extends unknown[] ? T[number] : T>;
-
+// `req.user`, `req.requestId` and `res.jsonApi` are declared by @p4/server-core.
 declare global {
   namespace Express {
-    interface Request {
-      requestId?: string;
-      user?: import('@p4/shared').User;
-    }
-
-    interface Response {
-      /** Envelope response — giống next-chapter `res.jsonApi(status, body)` */
-      jsonApi: <T>(status: number, body: ApiSuccess<T> | ApiPaginatedSuccess<T>) => this;
-    }
+    interface User extends P4User {}
   }
 }
 
-export type { PaginationMeta };
+export type { JsonApiBody } from '@p4/server-core';
+export type { PaginationMeta } from '@p4/shared';

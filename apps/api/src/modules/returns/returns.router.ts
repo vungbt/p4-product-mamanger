@@ -1,3 +1,14 @@
+import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  listSearch,
+  queryText,
+  requestBody,
+  uuidQueryRule,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
 import type { ReturnInspection } from '@p4/shared';
 import { RETURN_STATUS_VALUES, type ReturnListQuery } from '@p4/shared';
 import { Router } from 'express';
@@ -5,12 +16,7 @@ import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { ReturnRequestModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { orderQuantities } from '@/shared/commerce/input.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
-import { listSearch } from '@/shared/list-search.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './returns.audit.js';
 import * as returns from './returns.service.js';
 

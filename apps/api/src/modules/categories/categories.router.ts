@@ -1,7 +1,7 @@
+import { applyAuditPolicies } from '@p4/server-core';
 import { Router } from 'express';
 import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { auditPolicies } from './categories.audit.js';
 import * as categoriesController from './categories.controller.js';
 import { validateCategory, validateCategoryListQuery } from './categories.validation.js';

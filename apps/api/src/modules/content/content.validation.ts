@@ -1,6 +1,6 @@
+import { requestBody } from '@p4/server-core';
 import type { ContentBlock, ContentDraftInput } from '@p4/shared';
 import type { Request } from 'express';
-import { requestBody } from '@/shared/http-input.js';
 import { normalizedSlug } from '../catalog/catalog.service.js';
 
 export function safeContentUrl(value: string) {

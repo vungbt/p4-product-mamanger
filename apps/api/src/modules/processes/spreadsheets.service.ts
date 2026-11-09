@@ -1,9 +1,9 @@
 import type { FileFormat, ImportResource, ProcessIssue } from '@p4/processes/shared';
 import { IMPORT_COLUMNS } from '@p4/processes/shared';
+import { BaseError } from '@p4/server-core';
 import { parse } from 'csv-parse/sync';
 import ExcelJS from 'exceljs';
 import { Open } from 'unzipper';
-import { BaseError } from '@/utils/errors/base-error.js';
 import { processStoragePath, readProcessFile } from './storage.service.js';
 
 export const MAX_IMPORT_ROWS = 5000;

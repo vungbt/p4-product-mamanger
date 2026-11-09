@@ -1,9 +1,9 @@
+import type { ListLocals } from '@p4/server-core';
+import { currentUser, requestBody, uuidRouteId } from '@p4/server-core';
 import type { CouponInput, CouponListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { cartLines } from '@/shared/commerce/input.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import type { ListLocals } from '@/shared/list-query.js';
 import { priceLines } from '../checkout/checkout.service.js';
 import { calculateDiscount } from '../promotions/promotions.service.js';
 import { ruleInput } from '../promotions/promotions.validation.js';

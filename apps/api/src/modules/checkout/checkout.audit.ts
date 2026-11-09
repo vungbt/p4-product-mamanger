@@ -1,5 +1,5 @@
+import type { RouteAuditPolicies } from '@p4/server-core';
 import { Transaction } from 'sequelize';
-import type { RouteAuditPolicies } from '@/shared/audit/types.js';
 
 export const auditPolicies = {
   'POST /checkout/quotes': {

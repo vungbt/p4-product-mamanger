@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
+import { BadRequest } from '@p4/server-core';
 import { cloudinary, isCloudinaryConfigured } from '@/configs/cloudinary.js';
 import { env } from '@/configs/env.js';
 import { errorKeys } from '@/constants/index.js';
-import { BadRequest } from '@/utils/errors/index.js';
 
 function assertConfigured() {
   if (!isCloudinaryConfigured()) {

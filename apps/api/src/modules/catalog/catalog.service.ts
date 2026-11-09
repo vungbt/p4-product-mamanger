@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, InputValidError, NotFound } from '@p4/server-core';
 import type {
   CatalogProduct,
   ProductPublicationStatus,
@@ -15,13 +16,9 @@ import {
   ProductVariantModel,
   type SizeGuideModel,
 } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, inTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { assertTransition, assertVersion } from '@/shared/commerce/transitions.js';
-import { inTransaction } from '@/shared/transaction.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, InputValidError, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { syncProductBalance, variantDto } from '../inventory/inventory.service.js';
 import { getProductById } from '../products/products.service.js';

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, NotFound } from '@p4/server-core';
 import type { ExchangeLine, ExchangeRequest, User } from '@p4/shared';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
@@ -9,12 +10,9 @@ import {
   RefundModel,
   ReturnRequestModel,
 } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { getMe } from '../auth/auth.service.js';
 import { buildQuoteSnapshot, quoteFingerprint } from '../checkout/checkout.service.js';

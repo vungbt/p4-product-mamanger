@@ -1,11 +1,11 @@
 import { createServer } from 'node:http';
+import { logger } from '@p4/server-core';
 import { createApp } from '@/app.js';
 import { authPool } from '@/configs/better-auth.js';
 import { env } from '@/configs/env.js';
 import { assertProductionConfig } from '@/configs/production.js';
 import { attachRealtime } from '@/modules/realtime/realtime.service.js';
 import { sequelize } from '@/sequelize/models/index.js';
-import { logger } from '@/utils/logger.js';
 
 async function main() {
   assertProductionConfig();

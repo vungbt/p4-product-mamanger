@@ -25,6 +25,7 @@ api:
   script:
     - pnpm --filter @p4/api lint
     - pnpm --filter @p4/ability test
+    - pnpm --filter @p4/server-core test
     - pnpm --filter @stay/shared test
     - pnpm --filter @stay/billing test
     - pnpm --filter @p4/api test:lists

@@ -1,6 +1,6 @@
 import type { Request } from 'express';
-import { InputValidError, Unauthorized } from '@/utils/errors/index.js';
-import { jsonValue } from './commerce/persistence.js';
+import { InputValidError, Unauthorized } from '../shared/errors.js';
+import { jsonValue } from '../shared/json.js';
 
 export function currentUser(req: Request) {
   if (!req.user) throw new Unauthorized();

@@ -17,6 +17,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @p4/api lint
       - run: pnpm --filter @p4/ability test
+      - run: pnpm --filter @p4/server-core test
       - run: pnpm --filter @stay/shared test
       - run: pnpm --filter @stay/billing test
       - run: pnpm --filter @p4/api test:lists

@@ -22,11 +22,12 @@
     "worker:start": "node dist/worker.js",
     "commerce:audit": "tsx src/scripts/commerce-audit.ts --dry-run",
     "test:commerce": "pnpm typecheck && pnpm build && node --test --test-concurrency=1 tests/categories.test.mjs tests/list-query.test.mjs tests/select-fields.test.mjs tests/commerce-foundations.test.mjs tests/production-config.test.mjs tests/jobs-reports.test.mjs tests/accounts.integration.test.mjs tests/catalog-inventory.integration.test.mjs tests/checkout.integration.test.mjs tests/content-support-notifications.integration.test.mjs tests/list-api.integration.test.mjs tests/processes.integration.test.mjs tests/openapi.test.mjs tests/auth-audit.integration.test.mjs tests/list-standards.integration.test.mjs",
-    "prebuild": "pnpm --filter @p4/ability build && pnpm --filter @p4/processes build && pnpm --filter @p4/realtime build",
-    "predev": "pnpm --filter @p4/ability build && pnpm --filter @p4/processes build && pnpm --filter @p4/realtime build"
+    "prebuild": "pnpm --filter @p4/ability build && pnpm --filter @p4/server-core build && pnpm --filter @p4/processes build && pnpm --filter @p4/realtime build",
+    "predev": "pnpm --filter @p4/ability build && pnpm --filter @p4/server-core build && pnpm --filter @p4/processes build && pnpm --filter @p4/realtime build"
   },
   "dependencies": {
     "@p4/ability": "workspace:*",
+    "@p4/server-core": "workspace:*",
     "@p4/shared": "workspace:*",
     "@scalar/express-api-reference": "catalog:",
     "bcryptjs": "catalog:",
@@ -47,7 +48,6 @@
     "sequelize-cli": "catalog:",
     "stripe": "catalog:",
     "uuid": "catalog:",
-    "validatorjs": "catalog:",
     "@p4/processes": "workspace:*",
     "@p4/realtime": "workspace:*",
     "exceljs": "catalog:",
@@ -68,7 +68,6 @@
     "@types/morgan": "catalog:",
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
-    "@types/validatorjs": "catalog:",
     "tsc-alias": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",

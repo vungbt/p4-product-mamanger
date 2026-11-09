@@ -1,4 +1,4 @@
-import { BaseError } from '@/utils/errors/base-error.js';
+import { BaseError } from '@p4/server-core';
 import { type LifecycleStates, TRANSITIONS } from './contracts.js';
 
 export function canTransition<Kind extends keyof LifecycleStates>(

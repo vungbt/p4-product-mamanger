@@ -1,6 +1,6 @@
+import { requestBody } from '@p4/server-core';
 import type { MerchandisingPayload, NavigationItem } from '@p4/shared';
 import type { Request } from 'express';
-import { requestBody } from '@/shared/http-input.js';
 import { safeContentUrl } from '../content/content.validation.js';
 
 export function merchandisingInput(

@@ -1,0 +1,46 @@
+{
+  "name": "@p4/server-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./shared": {
+      "types": "./src/shared/index.ts",
+      "development": "./src/shared/index.ts",
+      "import": "./dist/shared/index.js",
+      "default": "./dist/shared/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "test": "pnpm build && node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@p4/shared": "workspace:*",
+    "bcryptjs": "catalog:",
+    "better-auth": "catalog:",
+    "express": "catalog:",
+    "http-status-codes": "catalog:",
+    "i18next-http-middleware": "catalog:",
+    "pg": "catalog:",
+    "pg-hstore": "catalog:",
+    "sequelize": "catalog:",
+    "valibot": "catalog:",
+    "validatorjs": "catalog:"
+  },
+  "devDependencies": {
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@types/validatorjs": "catalog:",
+    "typescript": "catalog:"
+  }
+}

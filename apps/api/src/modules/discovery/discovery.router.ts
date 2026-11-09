@@ -1,3 +1,5 @@
+import type { ListLocals } from '@p4/server-core';
+import { applyAuditPolicies, queryText, searchPattern, validate } from '@p4/server-core';
 import type { ProductListQuery } from '@p4/shared';
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import { Op } from 'sequelize';
@@ -5,11 +7,6 @@ import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import { validateProductsListQuery } from '@/modules/products/products.validation.js';
 import { CategoryModel, ProductModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
-import { searchPattern } from '@/shared/list-filters.js';
-import type { ListLocals } from '@/shared/list-query.js';
-import { queryText } from '@/shared/list-query.js';
-import validate from '@/shared/validation.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { auditPolicies } from './discovery.audit.js';
 import { facets } from './discovery.service.js';
