@@ -3,7 +3,7 @@ import type { ProcessIssue } from '@p4/processes/shared';
 import { parseImportRow } from '@p4/processes/shared';
 import type { User } from '@p4/shared';
 import * as v from 'valibot';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { hasAccess } from '@/middlewares/ability.middleware.js';
 import {
   type DomainEventModel,
   ProcessItemModel,
@@ -193,8 +193,8 @@ async function mediaBatch(row: ProcessModel, event: DomainEventModel, user: User
       const ticket = await UploadTicketModel.findOne({ where: { id, ownerId: user.id } });
       if (!ticket) throw new BaseError('upload_not_found');
       if (
-        (ticket.purpose === 'product' && !permissionsFor(user).includes('catalog:write')) ||
-        (ticket.purpose === 'blog' && !permissionsFor(user).includes('content:write'))
+        (ticket.purpose === 'product' && !hasAccess(user, 'write', 'Catalog')) ||
+        (ticket.purpose === 'blog' && !hasAccess(user, 'write', 'Content'))
       )
         throw new BaseError('permission_revoked');
       const result = await completeUpload(user.id, id);

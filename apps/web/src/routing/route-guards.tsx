@@ -1,4 +1,10 @@
+import { Alert, Button, Spinner } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
+import { useCanAccess } from '@p4/ability/browser';
+import type { AbilityCheck } from '@p4/ability/shared';
+import { useCapabilities } from '@p4/api-sdk/react';
+import { ApiSdkError } from '@p4/api-sdk/shared';
+import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
@@ -56,4 +62,41 @@ export function GuestRoute({
   }
 
   return <Outlet />;
+}
+
+export function CapabilityRoute({
+  ability,
+  children,
+}: {
+  ability: AbilityCheck;
+  children: ReactNode;
+}) {
+  const { user, logout } = useAuth();
+  const { t } = useTranslation();
+  const query = useCapabilities(user?.id);
+  const allowed = useCanAccess(ability.action, ability.subject);
+  const status = query.error instanceof ApiSdkError ? query.error.status : undefined;
+
+  useEffect(() => {
+    if (status === 401) logout();
+  }, [status, logout]);
+
+  if (query.isPending || status === 401) return <Spinner label={t('app.loading')} />;
+
+  if (status === 403 || (!query.isError && !allowed)) {
+    return <Alert tone="danger">403 — {t('auth.unauthorized')}</Alert>;
+  }
+
+  if (query.isError) {
+    return (
+      <div className="grid gap-3">
+        <Alert tone="danger">{query.error.message}</Alert>
+        <Button variant="secondary" onClick={() => void query.refetch()}>
+          {t('categories.retry')}
+        </Button>
+      </div>
+    );
+  }
+
+  return children;
 }

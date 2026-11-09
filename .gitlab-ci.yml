@@ -24,6 +24,7 @@ api:
     - pnpm install --no-frozen-lockfile
   script:
     - pnpm --filter @p4/api lint
+    - pnpm --filter @p4/ability test
     - pnpm --filter @p4/api test:lists
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"

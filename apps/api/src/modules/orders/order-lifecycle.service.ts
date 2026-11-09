@@ -6,7 +6,7 @@ import type {
   User,
 } from '@p4/shared';
 import { Op, type Transaction } from 'sequelize';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   CancellationRequestModel,
   InventoryReservationModel,
@@ -33,7 +33,7 @@ export async function ownedOrder(user: User, id: string, transaction?: Transacti
     ...(lock && transaction ? { lock: transaction.LOCK.UPDATE } : {}),
   });
   if (!row) throw new NotFound();
-  if (row.userId !== user.id && !permissionsFor(user).includes('order:read')) throw new Forbidden();
+  if (!canAccessRecord(user, 'read', 'Order', row)) throw new Forbidden();
   return row;
 }
 
@@ -136,8 +136,7 @@ export async function requestCancellation(
 ) {
   return auditedTransaction(async (transaction) => {
     const order = await ownedOrder(user, orderId, transaction, true);
-    if (order.userId !== user.id && !permissionsFor(user).includes('order:manage'))
-      throw new Forbidden();
+    if (!canAccessRecord(user, 'manage', 'Order', order)) throw new Forbidden();
     assertVersion(order.version, expectedVersion);
     cancellable(order);
     for (const input of items) {
@@ -410,8 +409,7 @@ export async function resolveCancellation(
 export async function cancelAll(user: User, id: string) {
   return auditedTransaction(async (transaction) => {
     const order = await ownedOrder(user, id, transaction, true);
-    if (order.userId !== user.id && !permissionsFor(user).includes('order:manage'))
-      throw new Forbidden();
+    if (!canAccessRecord(user, 'manage', 'Order', order)) throw new Forbidden();
     if (order.lifecycleStatus === 'cancelled') return { id, cancelled: true };
     if (
       order.lifecycleStatus !== 'pending_confirmation' ||

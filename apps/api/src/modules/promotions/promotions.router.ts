@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { ListQuery, PromotionListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { CouponModel, CouponRedemptionModel, PromotionModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { auditedTransaction } from '@/shared/audit/audited-command.js';
@@ -23,8 +23,8 @@ import { promotionDto } from './promotions.service.js';
 import { ruleInput } from './promotions.validation.js';
 
 const router = Router();
-const read = [authRequired, requirePermission('promotion:read')];
-const write = [authRequired, requirePermission('promotion:write')];
+const read = [authRequired, requireAbility('read', 'Promotion')];
+const write = [authRequired, requireAbility('write', 'Promotion')];
 const list = validateListQuery({
   sortFields: ['name', 'priority', 'createdAt'],
   defaultSort: 'createdAt',

@@ -1,6 +1,6 @@
 # Đối chiếu API với task Frontend
 
-Nguồn: `apps/api/openapi.yaml` tại main `96b0389` (2026-11-06). **291 operations: 271 có task FE sở hữu, 20 được phân loại không có màn riêng; 0 chưa phân loại.** Đây là bản đồ phạm vi triển khai, không phải tài liệu schema API và không xác nhận các màn đã hoàn thành.
+Nguồn: `apps/api/openapi.yaml` tại `309998f`. **291 operations: 251 dùng trong luồng FE, 20 tham chiếu contract, 20 không có màn riêng; 0 chưa phân loại.** Đây là bản đồ phạm vi triển khai, không phải tài liệu schema API và không xác nhận các màn đã hoàn thành.
 
 Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở hữu chính. Các endpoint native auth được sinh bởi lib không mặc nhiên là feature đã bật; không thêm UI/action khi config hoặc nghiệp vụ chưa cho phép. Sau mỗi thay đổi API, rà lại bảng để không bỏ sót màn hoặc để endpoint cũ làm task bị lệch.
 
@@ -8,7 +8,7 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 
 | Operation | Task sở hữu | Ghi chú |
 | --- | --- | --- |
-| `GET /api/me/capabilities` | [FE-62](fe-62.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `GET /api/me/capabilities` | [FE-01](fe-01.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/admin/system/contracts` | Không có màn riêng | Contract tham chiếu cho state/action; FE dùng generated/shared types, không dựng màn chỉnh schema. |
 
 ## processes
@@ -21,7 +21,7 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 | `POST /api/files/uploads/batch` | [FE-38](fe-38.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/files/uploads/batch/complete` | [FE-38](fe-38.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/processes` | [FE-10](fe-10.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `GET /api/processes/{id}` | [FE-48](fe-48.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `GET /api/processes/{id}` | [FE-10](fe-10.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/processes/{id}/items` | [FE-10](fe-10.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/processes/{id}/confirm` | [FE-11](fe-11.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/processes/{id}/cancel` | [FE-10](fe-10.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
@@ -59,7 +59,7 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 | `POST /api/admin/operations/inventory-reconciliation` | [FE-35](fe-35.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /health` | Không có màn riêng | Health probe hạ tầng, không có màn nghiệp vụ. |
 | `GET /health/live` | Không có màn riêng | Liveness probe hạ tầng, không có màn nghiệp vụ. |
-| `GET /health/ready` | [FE-36](fe-36.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `GET /health/ready` | [FE-36](fe-36.md) | Kiểm tra readiness môi trường nghiệm thu; không gọi từ UI nghiệp vụ. |
 
 ## merchandising
 
@@ -86,7 +86,7 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 
 | Operation | Task sở hữu | Ghi chú |
 | --- | --- | --- |
-| `GET /api/products/facets` | [FE-43](fe-43.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `GET /api/products/facets` | [FE-07](fe-07.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/search/suggestions` | [FE-43](fe-43.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 
 ## support
@@ -279,7 +279,7 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 
 | Operation | Task sở hữu | Ghi chú |
 | --- | --- | --- |
-| `GET /api/shop/config` | [FE-06](fe-06.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `GET /api/shop/config` | [FE-40](fe-40.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/admin/settings/shop` | [FE-13](fe-13.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `PATCH /api/admin/settings/shop` | [FE-13](fe-13.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/admin/settings/commerce` | [FE-13](fe-13.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
@@ -304,7 +304,7 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 | `GET /api/admin/variants` | [FE-05](fe-05.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `PATCH /api/products/{id}/variants/{variantId}` | [FE-05](fe-05.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `PATCH /api/products/{id}/variants/{variantId}/images` | [FE-05](fe-05.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `GET /api/admin/size-guides` | [FE-04](fe-04.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `GET /api/admin/size-guides` | [FE-41](fe-41.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/admin/size-guides` | [FE-41](fe-41.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/admin/size-guides/{id}` | [FE-41](fe-41.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `PATCH /api/admin/size-guides/{id}` | [FE-41](fe-41.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
@@ -323,11 +323,11 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 
 | Operation | Task sở hữu | Ghi chú |
 | --- | --- | --- |
-| `POST /api/auth/register` | [FE-08](fe-08.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `POST /api/auth/email-verification-requests` | [FE-08](fe-08.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `POST /api/auth/password-reset-requests` | [FE-08](fe-08.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `POST /api/auth/email-verifications` | [FE-08](fe-08.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `POST /api/auth/password-resets` | [FE-08](fe-08.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `POST /api/auth/register` | [FE-08](fe-08.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `POST /api/auth/email-verification-requests` | [FE-08](fe-08.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `POST /api/auth/password-reset-requests` | [FE-08](fe-08.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `POST /api/auth/email-verifications` | [FE-08](fe-08.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `POST /api/auth/password-resets` | [FE-08](fe-08.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
 | `GET /api/me/profile` | [FE-09](fe-09.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `PATCH /api/me/profile` | [FE-09](fe-09.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/me/preferences` | [FE-09](fe-09.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
@@ -362,19 +362,19 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 
 | Operation | Task sở hữu | Ghi chú |
 | --- | --- | --- |
-| `POST /api/auth/login` | [FE-01](fe-01.md) | Tương thích cũ; màn mới ưu tiên Better Auth SDK, không dựng engine auth thứ hai. |
-| `POST /api/auth/google` | [FE-01](fe-01.md) | Tương thích cũ; màn mới ưu tiên Better Auth SDK, không dựng engine auth thứ hai. |
-| `POST /api/auth/refresh` | [FE-01](fe-01.md) | Tương thích cũ; màn mới ưu tiên Better Auth SDK, không dựng engine auth thứ hai. |
-| `GET /api/auth/me` | [FE-62](fe-62.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `PATCH /api/auth/me` | [FE-09](fe-09.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `PATCH /api/auth/password` | [FE-46](fe-46.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `POST /api/auth/logout` | [FE-01](fe-01.md) | Tương thích cũ; màn mới ưu tiên Better Auth SDK, không dựng engine auth thứ hai. |
+| `POST /api/auth/login` | [FE-01](fe-01.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `POST /api/auth/google` | [FE-01](fe-01.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `POST /api/auth/refresh` | [FE-01](fe-01.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `GET /api/auth/me` | [FE-01](fe-01.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `PATCH /api/auth/me` | [FE-09](fe-09.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `PATCH /api/auth/password` | [FE-46](fe-46.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `POST /api/auth/logout` | [FE-01](fe-01.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
 
 ## products
 
 | Operation | Task sở hữu | Ghi chú |
 | --- | --- | --- |
-| `GET /api/products` | [FE-43](fe-43.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `GET /api/products` | [FE-07](fe-07.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/products` | [FE-04](fe-04.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/products/{id}` | [FE-44](fe-44.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `PUT /api/products/{id}` | [FE-04](fe-04.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
@@ -425,8 +425,8 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 
 | Operation | Task sở hữu | Ghi chú |
 | --- | --- | --- |
-| `GET /api/files/sign-upload-url` | [FE-38](fe-38.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `GET /api/files/sign-upload-urls` | [FE-38](fe-38.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `GET /api/files/sign-upload-url` | [FE-38](fe-38.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `GET /api/files/sign-upload-urls` | [FE-38](fe-38.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
 | `POST /api/files/uploads` | [FE-38](fe-38.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/files/uploads/{id}/complete` | [FE-38](fe-38.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/files/uploads/{id}` | [FE-38](fe-38.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
@@ -441,12 +441,12 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 | `GET /api/auth/callback/{id}` | Không có màn riêng | Callback/redirect do Better Auth xử lý; FE-01/08 xử lý trang đích, không tạo action thủ công. |
 | `POST /api/auth/callback/{id}` | Không có màn riêng | Callback/redirect do Better Auth xử lý; FE-01/08 xử lý trang đích, không tạo action thủ công. |
 | `GET /api/auth/get-session` | [FE-01](fe-01.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `POST /api/auth/get-session` | [FE-01](fe-01.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `POST /api/auth/get-session` | [FE-01](fe-01.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
 | `POST /api/auth/sign-out` | [FE-01](fe-01.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/auth/sign-up/email` | [FE-08](fe-08.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/auth/sign-in/email` | [FE-01](fe-01.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/auth/reset-password` | [FE-08](fe-08.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `POST /api/auth/verify-password` | [FE-46](fe-46.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `POST /api/auth/verify-password` | [FE-46](fe-46.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
 | `GET /api/auth/verify-email` | [FE-08](fe-08.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/auth/send-verification-email` | [FE-08](fe-08.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `POST /api/auth/change-email` | Không có màn riêng | FE-09 dùng luồng email-change account hiện có; không chạy song song token native và compatibility. |
@@ -456,10 +456,10 @@ Một endpoint có thể dùng chung nhiều màn; bảng chỉ chọn task sở
 | `POST /api/auth/delete-user` | Không có màn riêng | Chưa bật account deletion trong auth config; không dựng UI tự xóa tài khoản. Cần quyết định vòng đời dữ liệu trước. |
 | `POST /api/auth/request-password-reset` | [FE-08](fe-08.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
 | `GET /api/auth/reset-password/{token}` | Không có màn riêng | Callback/redirect do Better Auth xử lý; FE-01/08 xử lý trang đích, không tạo action thủ công. |
-| `GET /api/auth/list-sessions` | [FE-46](fe-46.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `POST /api/auth/revoke-session` | [FE-46](fe-46.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `POST /api/auth/revoke-sessions` | [FE-46](fe-46.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
-| `POST /api/auth/revoke-other-sessions` | [FE-46](fe-46.md) | Triển khai và nghiệm thu trong task; endpoint có thể được tái sử dụng ở màn khác. |
+| `GET /api/auth/list-sessions` | [FE-46](fe-46.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `POST /api/auth/revoke-session` | [FE-46](fe-46.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `POST /api/auth/revoke-sessions` | [FE-46](fe-46.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
+| `POST /api/auth/revoke-other-sessions` | [FE-46](fe-46.md) | Tham chiếu contract. FE dùng luồng đã chọn trong plan, không tạo thêm thao tác riêng cho endpoint này. |
 | `POST /api/auth/link-social` | Không có màn riêng | Provider account/token plumbing do Better Auth quản lý; không expose access token/provider credential hoặc thêm màn account linking ngoài phạm vi config hiện tại. |
 | `GET /api/auth/list-accounts` | Không có màn riêng | Provider account/token plumbing do Better Auth quản lý; không expose access token/provider credential hoặc thêm màn account linking ngoài phạm vi config hiện tại. |
 | `GET /api/auth/delete-user/callback` | Không có màn riêng | Callback/redirect do Better Auth xử lý; FE-01/08 xử lý trang đích, không tạo action thủ công. |

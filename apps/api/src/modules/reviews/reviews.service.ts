@@ -1,7 +1,7 @@
 import type { Review, ReviewInput, ReviewListQuery, User } from '@p4/shared';
 import { Op, type WhereOptions } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord, hasAccess } from '@/middlewares/ability.middleware.js';
 import {
   FileModel,
   OrderItemModel,
@@ -159,8 +159,7 @@ export async function deleteReview(user: User, reviewId: string) {
       lock: transaction.LOCK.UPDATE,
     });
     if (!row) throw new NotFound(errorKeys.notFound);
-    if (row.userId !== user.id && !permissionsFor(user).includes('review:moderate'))
-      throw new Forbidden();
+    if (!canAccessRecord(user, 'moderate', 'Review', row)) throw new Forbidden();
     await row.update({ moderationStatus: 'hidden', version: row.version + 1 }, { transaction });
     await recordAudit(
       { actorId: user.id, action: 'review.removed', resourceType: 'review', resourceId: row.id },
@@ -195,10 +194,10 @@ export async function changeReview(
         { transaction },
       );
     } else if ('reply' in input) {
-      if (!permissionsFor(user).includes('review:reply')) throw new Forbidden();
+      if (!hasAccess(user, 'reply', 'Review')) throw new Forbidden();
       await row.update({ reply: input.reply, version: row.version + 1 }, { transaction });
     } else {
-      if (!permissionsFor(user).includes('review:moderate')) throw new Forbidden();
+      if (!hasAccess(user, 'moderate', 'Review')) throw new Forbidden();
       await row.update(
         {
           moderationStatus: input.moderationStatus,

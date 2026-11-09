@@ -1,7 +1,7 @@
 import { UPLOAD_PURPOSES } from '@p4/shared';
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { UploadTicketModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
@@ -18,14 +18,14 @@ const router = Router();
 router.get(
   '/sign-upload-url',
   authRequired,
-  requirePermission('catalog:write'),
+  requireAbility('write', 'Catalog'),
   filesController.getSignUploadUrl,
 );
 
 router.get(
   '/sign-upload-urls',
   authRequired,
-  requirePermission('catalog:write'),
+  requireAbility('write', 'Catalog'),
   filesController.getSignUploadUrls,
 );
 

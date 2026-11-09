@@ -5,52 +5,12 @@ import type {
   JobStatus,
   OrderLifecycleStatus,
   PaymentAttemptStatus,
-  Permission,
   ProductPublicationStatus,
   RefundAttemptStatus,
   ReturnStatus,
 } from '@p4/shared';
 
-export const CONTRACT_VERSION = '2026-11-05.1';
-export const PERMISSIONS: readonly Permission[] = [
-  'system:read',
-  'system:manage',
-  'staff:read',
-  'staff:manage',
-  'customer:read',
-  'customer:manage',
-  'audit:read',
-  'catalog:read',
-  'catalog:write',
-  'inventory:read',
-  'inventory:write',
-  'settings:manage',
-  'promotion:read',
-  'promotion:write',
-  'order:read',
-  'order:manage',
-  'payment:read',
-  'payment:manage',
-  'fulfillment:read',
-  'fulfillment:manage',
-  'return:read',
-  'return:manage',
-  'refund:read',
-  'refund:manage',
-  'review:read',
-  'review:moderate',
-  'review:reply',
-  'content:read',
-  'content:write',
-  'content:publish',
-  'support:read',
-  'support:manage',
-  'notification:read',
-  'notification:manage',
-  'report:read',
-  'report:export',
-];
-
+export const CONTRACT_VERSION = '2026-11-09.1';
 export interface LifecycleStates {
   order: OrderLifecycleStatus;
   payment: PaymentAttemptStatus;

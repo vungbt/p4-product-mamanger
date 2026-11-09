@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { InventoryListQuery, ListQuery, ProductListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { listInventory } from '@/modules/inventory/inventory.service.js';
 import { listProducts } from '@/modules/products/products.service.js';
 import { validateProductsListQuery } from '@/modules/products/products.validation.js';
@@ -22,8 +22,8 @@ import { auditPolicies } from './catalog.audit.js';
 import * as catalog from './catalog.service.js';
 
 const router = Router();
-const read = [authRequired, requirePermission('catalog:read')];
-const write = [authRequired, requirePermission('catalog:write')];
+const read = [authRequired, requireAbility('read', 'Catalog')];
+const write = [authRequired, requireAbility('write', 'Catalog')];
 
 export const validateVariantList = validateListQuery({
   sortFields: ['sku', 'price', 'onHand', 'reserved', 'createdAt'] satisfies NonNullable<

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { after, describe, test } from 'node:test';
-import { permissionsFor } from '../dist/middlewares/permission.middleware.js';
+import { hasAccess } from '../dist/middlewares/ability.middleware.js';
 import {
   AuditLogModel,
   DomainEventModel,
@@ -32,8 +32,8 @@ test('state graph and version guards reject backwards transitions', () => {
     () => assertVersion(2, 1),
     (e) => e.code === 'version_conflict',
   );
-  assert.equal(permissionsFor({ role: 'user' }).length, 0);
-  assert.ok(permissionsFor({ role: 'admin' }).includes('system:read'));
+  assert.equal(hasAccess({ id: 'u1', role: 'user' }, 'read', 'System'), false);
+  assert.ok(hasAccess({ id: 'a1', role: 'admin' }, 'read', 'System'));
 });
 
 test('JSON fingerprint input is canonical and audit redaction is recursive', () => {

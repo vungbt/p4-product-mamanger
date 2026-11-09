@@ -1,8 +1,8 @@
 import type { ReturnInspection } from '@p4/shared';
 import { RETURN_STATUS_VALUES, type ReturnListQuery } from '@p4/shared';
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { ReturnRequestModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
@@ -51,7 +51,7 @@ for (const admin of [false, true])
   router.get(
     admin ? '/admin/returns' : '/returns/mine',
     authRequired,
-    ...(admin ? [requirePermission('return:read')] : []),
+    ...(admin ? [requireAbility('read', 'Return')] : []),
     list,
     listHandler(async (req, query: ReturnListQuery) => {
       const result = await ReturnRequestModel.findAndCountAll({
@@ -92,7 +92,7 @@ for (const [action, status] of [
   router.post(
     `/returns/:id/${action}`,
     authRequired,
-    requirePermission('return:manage'),
+    requireAbility('manage', 'Return'),
     apiHandler(async (req) => {
       const body = requestBody(req);
       let inspection: ReturnInspection[] | undefined;

@@ -3,7 +3,7 @@ import type { PaymentAttempt, PaymentProvider, User } from '@p4/shared';
 import { Op, type Transaction } from 'sequelize';
 import type Stripe from 'stripe';
 import { env } from '@/configs/env.js';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   type DomainEventModel,
   InventoryReservationModel,
@@ -364,8 +364,7 @@ export async function markMockPaid(user: User, id: string) {
   const attempt = await PaymentAttemptModel.findByPk(id);
   if (attempt?.provider !== 'mock') throw new NotFound();
   const order = await ownedOrder(user, attempt.orderId);
-  if (order.userId !== user.id && !permissionsFor(user).includes('payment:manage'))
-    throw new Forbidden();
+  if (!canAccessRecord(user, 'manage', 'Payment', order)) throw new Forbidden();
   return auditedTransaction(async (transaction) =>
     capturePayment(
       {

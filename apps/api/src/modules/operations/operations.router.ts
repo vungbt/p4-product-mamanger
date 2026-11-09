@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Op, QueryTypes } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { DomainEventModel, sequelize } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
 import { auditedTransaction } from '@/shared/audit/audited-command.js';
@@ -15,7 +15,7 @@ const router = Router();
 router.get(
   '/internal/metrics',
   authRequired,
-  requirePermission('system:read'),
+  requireAbility('read', 'System'),
   apiHandler(async () => {
     const pending = await DomainEventModel.count({ where: { status: 'pending' } });
     const deadLetter = await DomainEventModel.count({ where: { status: 'dead_letter' } });
@@ -35,7 +35,7 @@ router.get(
 router.post(
   '/admin/operations/inventory-reconciliation',
   authRequired,
-  requirePermission('system:manage'),
+  requireAbility('manage', 'System'),
   apiHandler(async (req) => {
     const result = await reconcileInventory();
     await auditedTransaction(async (transaction) =>

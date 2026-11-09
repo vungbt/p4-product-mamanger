@@ -1,7 +1,7 @@
 import type { Order, OrderItem, OrderListQuery, Payment, Shipment, User } from '@p4/shared';
 import { cast, col, literal, Op, type WhereOptions, where } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import { sequelize } from '@/sequelize/index.js';
 import {
   OrderCouponModel,
@@ -196,7 +196,7 @@ export async function listMyOrders(userId: string, query: OrderListQuery) {
 export async function getOrderById(id: string, user?: User) {
   const row = (await OrderModel.findByPk(id, { include: orderInclude })) as OrderEager | null;
   if (!row) throw new NotFound(errorKeys.orderNotFound);
-  if (user && row.userId !== user.id && !permissionsFor(user).includes('order:read')) {
+  if (user && !canAccessRecord(user, 'read', 'Order', row)) {
     throw new Forbidden(errorKeys.forbidden);
   }
   return toOrder(row);

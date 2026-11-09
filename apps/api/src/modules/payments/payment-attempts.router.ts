@@ -1,6 +1,6 @@
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { PaymentAttemptModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
@@ -44,13 +44,13 @@ router.get(
 router.post(
   '/admin/payments/:id/reconcile',
   authRequired,
-  requirePermission('payment:manage'),
+  requireAbility('manage', 'Payment'),
   apiHandler(async (req) => service.reconcilePayment(currentUser(req).id, uuidRouteId(req))),
 );
 router.post(
   '/admin/payments/:id/cod-collection',
   authRequired,
-  requirePermission('payment:manage'),
+  requireAbility('manage', 'Payment'),
   apiHandler(async (req) => {
     const body = requestBody(req);
     return service.collectCod(

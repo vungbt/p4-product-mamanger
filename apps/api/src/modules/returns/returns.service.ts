@@ -7,7 +7,7 @@ import type {
   User,
 } from '@p4/shared';
 import { Op } from 'sequelize';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   FileModel,
   OrderItemModel,
@@ -47,8 +47,7 @@ export function returnDto(row: ReturnRequestModel): ReturnRequest {
 export async function getReturn(user: User, id: string) {
   const row = await ReturnRequestModel.findByPk(id);
   if (!row) throw new NotFound();
-  if (row.userId !== user.id && !permissionsFor(user).includes('return:read'))
-    throw new Forbidden();
+  if (!canAccessRecord(user, 'read', 'Return', row)) throw new Forbidden();
   return row;
 }
 

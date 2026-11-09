@@ -1,8 +1,9 @@
+import { rulesForStaffRole } from '@p4/ability/shared';
 import type { ListQuery } from '@p4/shared';
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission, STAFF_PERMISSIONS } from '@/middlewares/permission.middleware.js';
 import { UserModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
@@ -31,13 +32,15 @@ router.use(
 );
 router.get(
   '/admin/roles',
-  requirePermission('staff:read'),
-  apiHandler(async () => STAFF_PERMISSIONS),
+  requireAbility('read', 'Staff'),
+  apiHandler(async () =>
+    Object.fromEntries(staff.STAFF_ROLES.map((role) => [role, rulesForStaffRole(role)])),
+  ),
 );
 for (const kind of ['staff', 'customers']) {
   router.get(
     `/admin/${kind}`,
-    requirePermission(kind === 'staff' ? 'staff:read' : 'customer:read'),
+    requireAbility('read', kind === 'staff' ? 'Staff' : 'Customer'),
     listQuery,
     async (req: Request, res: Response<unknown, ListLocals<Query>>, next: NextFunction) => {
       try {
@@ -93,7 +96,7 @@ for (const kind of ['staff', 'customers']) {
 }
 router.post(
   '/admin/staff/invitations',
-  requirePermission('staff:manage'),
+  requireAbility('manage', 'Staff'),
   validate({ rules: { email: 'required|email' } }),
   apiHandler(async (req) => {
     const body = requestBody(req);
@@ -112,7 +115,7 @@ router.post(
 );
 router.patch(
   '/admin/staff/:id/role',
-  requirePermission('staff:manage'),
+  requireAbility('manage', 'Staff'),
   apiHandler(async (req) => {
     const body = requestBody(req);
     return staff.changeAccount(
@@ -130,7 +133,7 @@ router.patch(
 for (const kind of ['staff', 'customers']) {
   router.patch(
     `/admin/${kind}/:id/status`,
-    requirePermission(kind === 'staff' ? 'staff:manage' : 'customer:manage'),
+    requireAbility('manage', kind === 'staff' ? 'Staff' : 'Customer'),
     apiHandler(async (req) => {
       const body = requestBody(req);
       return staff.changeAccount(

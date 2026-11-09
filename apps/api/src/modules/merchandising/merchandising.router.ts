@@ -1,8 +1,8 @@
 import type { MerchandisingListQuery, MerchandisingPayload } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { MerchandisingEntryModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler, optionalListHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
@@ -17,8 +17,8 @@ import * as merch from './merchandising.service.js';
 import { merchandisingInput } from './merchandising.validation.js';
 
 const router = Router();
-const read = [authRequired, requirePermission('content:read')];
-const write = [authRequired, requirePermission('content:write')];
+const read = [authRequired, requireAbility('read', 'Content')];
+const write = [authRequired, requireAbility('write', 'Content')];
 const list = validateListQuery({
   sortFields: ['key', 'active', 'createdAt'],
   defaultSort: 'createdAt',

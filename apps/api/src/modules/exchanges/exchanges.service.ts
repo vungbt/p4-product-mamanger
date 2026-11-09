@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { ExchangeLine, ExchangeRequest, User } from '@p4/shared';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   CheckoutQuoteModel,
   ExchangeRequestModel,
@@ -45,8 +45,7 @@ export function exchangeDto(row: ExchangeRequestModel): ExchangeRequest {
 export async function ownedExchange(user: User, id: string) {
   const row = await ExchangeRequestModel.findByPk(id);
   if (!row) throw new NotFound();
-  if (row.userId !== user.id && !permissionsFor(user).includes('return:read'))
-    throw new Forbidden();
+  if (!canAccessRecord(user, 'read', 'Return', row)) throw new Forbidden();
   return row;
 }
 export async function requestExchange(

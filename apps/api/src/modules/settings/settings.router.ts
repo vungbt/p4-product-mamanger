@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import type { ListQuery } from '@p4/shared';
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import {
   ProductModel,
   ProductVariantModel,
@@ -23,7 +23,7 @@ import { auditPolicies } from './settings.audit.js';
 import * as service from './settings.service.js';
 
 const router = Router();
-const manage = [authRequired, requirePermission('settings:manage')];
+const manage = [authRequired, requireAbility('manage', 'Settings')];
 router.get(
   '/shop/config',
   apiHandler(async () => service.shopDto(await service.settings())),

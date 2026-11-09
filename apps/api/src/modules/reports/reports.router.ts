@@ -1,6 +1,6 @@
 import { type NextFunction, type Request, type Response, Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import { ReportExportModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
@@ -15,7 +15,7 @@ for (const kind of ['sales', 'orders', 'inventory', 'products'] as const)
   router.get(
     `/admin/reports/${kind}`,
     authRequired,
-    requirePermission('report:read'),
+    requireAbility('read', 'Report'),
     rateLimit('reports', 30),
     apiHandler(async (req) => ({
       definition:
@@ -31,7 +31,7 @@ for (const kind of ['sales', 'orders', 'inventory', 'products'] as const)
 router.post(
   '/admin/report-exports',
   authRequired,
-  requirePermission('report:export'),
+  requireAbility('export', 'Report'),
   rateLimit('report-export', 10, 3600000),
   apiHandler(async (req) => {
     const body = requestBody(req);
@@ -46,7 +46,7 @@ router.post(
 router.get(
   '/admin/report-exports/:id',
   authRequired,
-  requirePermission('report:export'),
+  requireAbility('export', 'Report'),
   apiHandler(async (req) => {
     const row = await ReportExportModel.findOne({
       where: { id: uuidRouteId(req), userId: currentUser(req).id },
@@ -58,7 +58,7 @@ router.get(
 router.get(
   '/admin/report-exports/:id/download',
   authRequired,
-  requirePermission('report:export'),
+  requireAbility('export', 'Report'),
   (req: Request, res: Response, next: NextFunction) => {
     void ReportExportModel.findOne({
       where: { id: uuidRouteId(req), userId: currentUser(req).id, status: 'ready' },

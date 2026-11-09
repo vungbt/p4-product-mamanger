@@ -1,6 +1,6 @@
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { ShipmentEventModel, ShipmentModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
@@ -15,7 +15,7 @@ const router = Router();
 router.post(
   '/orders/:id/shipments',
   authRequired,
-  requirePermission('fulfillment:manage'),
+  requireAbility('manage', 'Fulfillment'),
   apiHandler(async (req) => {
     const body = requestBody(req);
     return fulfillment.createShipment(
@@ -46,7 +46,7 @@ for (const [action, state] of [
   router.post(
     `/shipments/:id/${action}`,
     authRequired,
-    requirePermission('fulfillment:manage'),
+    requireAbility('manage', 'Fulfillment'),
     apiHandler(async (req) => {
       const body = requestBody(req);
       return fulfillment.transitionShipment(
