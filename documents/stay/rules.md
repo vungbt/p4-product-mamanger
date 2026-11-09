@@ -1,6 +1,6 @@
 # Quy tắc tính tiền và trạng thái
 
-Tài liệu nguồn cho mọi task liên quan tới tiền. Công thức được cài **ở server** và có unit test bao phủ từng ví dụ trong file này. Thay đổi quy tắc phải sửa file này trước, rồi mới sửa code.
+Tài liệu nguồn cho mọi task liên quan tới tiền. Công thức được cài trong `@stay/billing` (thư viện thuần, không truy cập DB), chạy **ở server** và có unit test bao phủ từng ví dụ trong file này. Thay đổi quy tắc phải sửa file này trước, rồi mới sửa code.
 
 ## Thuật ngữ
 

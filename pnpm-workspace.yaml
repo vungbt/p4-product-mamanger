@@ -1,6 +1,8 @@
 packages:
   - 'apps/*'
+  - 'apps/stay/*'
   - 'libs/*'
+  - 'libs/stay/*'
 
 catalog:
   '@biomejs/biome': 2.5.11

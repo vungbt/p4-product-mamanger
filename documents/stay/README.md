@@ -1,6 +1,16 @@
 # Stay — Quản lý nhà trọ
 
-Ứng dụng quản lý nhà trọ chạy trong monorepo P4 (`apps/stay-api`, `apps/stay-web`). Người dùng chính là **chủ trọ** (hiện tại một người, một toà nhà). Mô hình dữ liệu và phân quyền vẫn thiết kế cho **nhiều toà** và **nhiều người quản lý** để mở rộng không phải viết lại.
+Ứng dụng quản lý nhà trọ chạy trong monorepo P4, nhóm theo dự án:
+
+```
+apps/stay/api     @stay/api     Express + Sequelize, cổng 3011
+apps/stay/web     @stay/web     Vite + @itclabs/react-ui, cổng 5174
+libs/stay/shared  @stay/shared  enum, type, schema Valibot dùng chung API/web
+libs/stay/billing @stay/billing công thức tính tiền thuần (không DB), có unit test
+libs/stay/sdk     @stay/sdk     sinh từ OpenAPI của stay
+libs/server-core, libs/ability  dùng chung với P4
+```
+ Người dùng chính là **chủ trọ** (hiện tại một người, một toà nhà). Mô hình dữ liệu và phân quyền vẫn thiết kế cho **nhiều toà** và **nhiều người quản lý** để mở rộng không phải viết lại.
 
 Đây là kế hoạch triển khai, không phải checklist. Task chỉ đổi trạng thái sau khi chạy thật và ghi kết quả kiểm chứng vào phần cuối file task.
 
