@@ -1,15 +1,9 @@
-import type { ApiSuccess } from '@p4/shared';
-import { axiosClient } from './axios-client';
+import { unwrap } from '@p4/api-sdk/shared';
+import { getApiSdk } from './session';
 
-type SignedUpload = {
-  uploadUrl: string;
-  publicId: string;
-};
-
-async function getSignedUpload(name: string): Promise<SignedUpload> {
-  const res = await axiosClient.get<{ name: string }, ApiSuccess<SignedUpload>>(
-    '/files/sign-upload-url',
-    { name },
+async function getSignedUpload(name: string) {
+  const res = unwrap(
+    await getApiSdk().GET('/api/files/sign-upload-url', { params: { query: { name } } }),
   );
   return res.data;
 }
@@ -28,9 +22,8 @@ async function uploadToCloudinary(uploadUrl: string, file: File): Promise<string
 }
 
 /**
- * Ký URL upload qua `/files/sign-upload-url` (admin-only) rồi POST file thẳng lên Cloudinary.
- * Không đi qua `axiosClient` cho bước upload — `uploadUrl` đã tự mang public_id/timestamp/
- * signature/api_key, còn `axiosClient` cố định baseURL `/api` và ép `Content-Type: application/json`.
+ * Ký URL upload qua `/files/sign-upload-url` (cần quyền `write:Catalog`) rồi POST file thẳng lên
+ * Cloudinary. Bước upload dùng `fetch` vì `uploadUrl` đã mang sẵn public_id/timestamp/signature.
  */
 export function useUploadFile() {
   const uploadFile = async (file: File): Promise<{ url: string }> => {

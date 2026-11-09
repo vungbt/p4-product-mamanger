@@ -201,14 +201,28 @@ describe('cart/quote/order/payment on local API', { skip: !base }, () => {
           },
         });
         const attempts = payments.map((row) => row.id);
-        await db.DomainEventModel.destroy({
-          where: {
-            [Op.or]: [
-              { aggregateId: [...ids, ...variantIds, ...attempts] },
-              { payload: { userId: { [Op.in]: users } } },
-            ],
-          },
-        });
+        const eventWhere = {
+          [Op.or]: [
+            { aggregateId: [...ids, ...variantIds, ...attempts] },
+            { payload: { userId: { [Op.in]: users } } },
+          ],
+        };
+        // A running worker may already have delivered these events as notifications.
+        const events = await db.DomainEventModel.findAll({ attributes: ['id'], where: eventWhere });
+        const eventIds = events.map((row) => row.id);
+        await db.NotificationDeliveryModel.destroy({ where: { eventId: eventIds } });
+        await db.NotificationModel.destroy({ where: { eventId: eventIds } });
+        await db.DomainEventModel.destroy({ where: eventWhere });
+        // Rows the worker creates for these users while the suite runs.
+        for (const table of [
+          'notification_deliveries',
+          'notifications',
+          'notification_preferences',
+          'realtime_events',
+        ])
+          await db.sequelize.query(`DELETE FROM ${table} WHERE user_id IN (:users)`, {
+            replacements: { users },
+          });
         await db.UserModel.destroy({ where: { id: users } });
       }
     } finally {

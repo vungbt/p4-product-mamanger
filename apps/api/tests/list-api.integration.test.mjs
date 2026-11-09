@@ -53,7 +53,11 @@ describe('list API integration against the existing local database (read-only re
     );
     await sequelize.authenticate();
     admin = await login('admin@example.com');
-    const account = await UserModel.findOne({ where: { role: 'user' }, order: [['id', 'ASC']] });
+    // Seeded customers only; other suites create temporary users with other passwords.
+    const account = await UserModel.findOne({
+      where: { role: 'user', email: { [Op.like]: '%@example.com' } },
+      order: [['id', 'ASC']],
+    });
     assert.ok(account, 'Existing local seed user required');
     user = await login(account.email);
     product = await ProductModel.findOne({ order: [['id', 'ASC']] });

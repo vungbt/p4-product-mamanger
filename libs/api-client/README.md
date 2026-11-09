@@ -1,39 +1,42 @@
 # `@p4/api-client`
 
-HTTP client + TanStack Query cho P4 — pattern tham khảo [smart-connection-monorepo/libs/api-client](https://github.com/vungbt/smart-connection-monorepo/tree/develop/libs/api-client).
+Web glue around the typed SDK (`@p4/api-sdk`): the Better Auth session, the shared TanStack `QueryClient` and query-key helpers. There is no hand-written HTTP client; every request goes through the SDK generated from `apps/api/openapi.yaml`.
 
-## Cài trong web
+## Setup in the web app
 
 ```tsx
-import { ApiQueryProvider, axiosClient, useApiQuery, productKeys } from '@p4/api-client';
-import type { ApiPaginatedSuccess, Product } from '@p4/shared';
+import { ApiQueryProvider, configureApiClient } from '@p4/api-client';
 
-// app.tsx
-<ApiQueryProvider enableDevtools={import.meta.env.DEV}>
-  ...
-</ApiQueryProvider>
+configureApiClient({ baseURL: API_BASE_URL });
 
-// hook / page
-const { data, isLoading } = useApiQuery<ApiPaginatedSuccess<Product>>({
-  endpoint: '/products',
-  params: { page: 1, pageSize: 20 },
-  queryKey: productKeys.list({ page: 1, pageSize: 20 }),
-  headerConf: { authorization: false }, // public
-});
+<ApiQueryProvider enableDevtools={import.meta.env.DEV}>{children}</ApiQueryProvider>;
 ```
 
-## API
+## Calling the API
 
-| Export | Mô tả |
-|--------|--------|
-| `axiosClient` | get/post/put/patch/delete — interceptor trả envelope `{ data, meta }` |
-| `useApiQuery` / `useApiMutation` | wrapper TanStack Query |
-| `queryKeysFactory` / `productKeys`… | factory queryKey |
-| `ApiQueryProvider` | QueryClientProvider + optional Devtools |
-| `getAccessToken` | đọc token từ `@p4/auth` storage |
+```ts
+import { getApiSdk, productKeys, useQuery } from '@p4/api-client';
+import { unwrap } from '@p4/api-sdk/shared';
 
-- Base URL: gọi `configureApiClient({ baseURL })` từ web (`API_BASE_URL`)
-- `Authorization` + `Accept-Language` (từ `p4_locale`)
-- Chủ động refresh trước khi access token hết hạn 60 giây và khi tab active trở lại
-- 401 → `POST /auth/refresh` một lần rồi retry (fallback)
-- Các request đồng thời dùng chung một refresh; session mới được đồng bộ với `AuthProvider`
+const products = useQuery({
+  queryKey: productKeys.list({ page: 1, pageSize: 20 }),
+  queryFn: async ({ signal }) =>
+    unwrap(await getApiSdk().GET('/api/products', { params: { query: { page: 1, pageSize: 20 } }, signal })),
+});
+
+unwrap(await getApiSdk().PATCH('/api/auth/password', { body }));
+```
+
+Paths, params, bodies and responses are typed from the contract. `unwrap` throws `ApiSdkError` (status, code, field errors) for non-2xx responses.
+
+## Exports
+
+| Export | Purpose |
+|--------|---------|
+| `getApiSdk` | Typed SDK client (cookies, bearer token, `Accept-Language` from `p4_locale`) |
+| `loginAuthSession`, `loginGoogleAuthSession`, `refreshAuthSession`, `revokeAuthSession` | Better Auth session helpers for `AuthProvider` |
+| `ApiQueryProvider` | `QueryClientProvider` + SDK context; clears the cache when the user changes |
+| `queryKeysFactory`, `productKeys`, `orderKeys`, `categoryKeys` | Query-key factories |
+| `useUploadFile` | Signs an upload with the API, then posts the file to Cloudinary |
+
+A 401 from the SDK re-syncs the session; an expired session signs the user out in `AuthProvider`.

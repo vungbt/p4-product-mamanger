@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
 cd /app/apps/api
-pnpm exec sequelize-cli db:migrate
+./node_modules/.bin/sequelize-cli db:migrate
 if [ "$RUN_SEED" = "true" ]; then
-  pnpm exec sequelize-cli db:seed:all || true
+  ./node_modules/.bin/sequelize-cli db:seed:all || true
 fi
 if [ "$#" -gt 0 ]; then
   exec "$@"

@@ -1,24 +1,20 @@
-// TODO: trainee implement CRUD — use @p4/api-client
-// Example:
-// const { data, isLoading } = useApiQuery<ApiPaginatedSuccess<Product>>({
-//   endpoint: '/products',
-//   params: { page: 1, pageSize: 20 },
-//   queryKey: productKeys.list({ page: 1, pageSize: 20 }),
-//   headerConf: { authorization: false },
-// });
+import { getApiSdk, productKeys, useQuery } from '@p4/api-client';
+import { unwrap } from '@p4/api-sdk/shared';
 
-import { productKeys, useApiQuery } from '@p4/api-client';
-import type { ApiPaginatedSuccess, Product } from '@p4/shared';
-
+/** Public product list from the typed SDK (`GET /api/products`). */
 export default function useProducts(params?: { page?: number; pageSize?: number; q?: string }) {
   const page = params?.page ?? 1;
   const pageSize = params?.pageSize ?? 20;
   const q = params?.q ?? '';
 
-  return useApiQuery<ApiPaginatedSuccess<Product>>({
-    endpoint: '/products',
-    params: { page, pageSize, q },
+  return useQuery({
     queryKey: productKeys.list({ page, pageSize, q }),
-    headerConf: { authorization: false },
+    queryFn: async ({ signal }) =>
+      unwrap(
+        await getApiSdk().GET('/api/products', {
+          params: { query: { page, pageSize, ...(q ? { q } : {}) } },
+          signal,
+        }),
+      ),
   });
 }
