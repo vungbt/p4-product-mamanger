@@ -1,0 +1,60 @@
+/* Stay — teal brand on cool grey neutrals, light mode only.
+   Single source of Stay's brand colours: change the palette here (the favicon, browser
+   theme colour and logo read these tokens at runtime; the name lives in src/brand.ts).
+   Guide: https://react-ui-one-rose.vercel.app/?path=/docs/guides-theming--docs
+   Load after the kit CSS. Root scope also covers dialogs, menus, drawers and toasts.
+   Typography (Be Vietnam Pro), radius, control sizes, motion and z-index stay with the kit.
+
+   WCAG AA (sRGB relative luminance):
+   ink/surface 14.68 · ink/canvas 13.44 · muted/surface 6.38 · muted/canvas 5.84
+   on-brand/brand-700 5.47 · selected-ink/selected 6.73 · focus/canvas 5.01
+   control-border/surface 3.07 · info 6.16 · success 4.79 · warning 6.62 · danger 5.91 */
+:root {
+  color-scheme: light;
+
+  /* Surfaces and content: cool greys */
+  --color-canvas: #f3f5f8;
+  --color-surface: #ffffff;
+  --color-sidebar: #ffffff;
+  --color-ink: #1f2937;
+  --color-muted: #556070;
+  --color-line: #e2e6ec;
+  --color-control-border: #8a94a3;
+
+  /* Teal brand; filled controls use brand-700 so white labels stay readable. */
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-500: #14b8a6;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-on-brand: #ffffff;
+
+  /* Neutral hover, teal selection and focus */
+  --color-hover: #eef1f5;
+  --color-hover-strong: #e2e6ec;
+  --color-selected: var(--color-brand-100);
+  --color-selected-ink: var(--color-brand-800);
+  --color-focus: var(--color-brand-700);
+  --color-accent: var(--color-brand-700);
+
+  /* Status colours, distinct from the teal brand */
+  --color-info-50: #eff6ff;
+  --color-info-700: #1d4ed8;
+  --color-success-50: #f0fdf4;
+  --color-success-700: #15803d;
+  --color-warning-50: #fefce8;
+  --color-warning-700: #854d0e;
+  --color-danger-50: #fef2f2;
+  --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+  --color-rating: #b45309;
+  --color-rating-empty: #e2e6ec;
+
+  /* Data visualisation */
+  --color-chart-1: #0f766e;
+  --color-chart-2: #2563eb;
+  --color-chart-3: #b45309;
+  --color-chart-4: #7c3aed;
+  --color-chart-5: #be185d;
+  --color-chart-6: #475569;
+}

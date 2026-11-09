@@ -1,0 +1,42 @@
+{
+  "name": "@stay/web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
+    "lint": "pnpm -w exec biome check apps/stay/web",
+    "preview": "vite preview",
+    "e2e": "playwright test",
+    "prebuild": "pnpm --filter @stay/shared build && pnpm --filter @stay/sdk build",
+    "predev": "pnpm --filter @stay/shared build && pnpm --filter @stay/sdk build",
+    "pretypecheck": "pnpm --filter @stay/shared build && pnpm --filter @stay/sdk build"
+  },
+  "dependencies": {
+    "@itclabs/react-ui": "0.13.0",
+    "@p4/ability": "workspace:*",
+    "@p4/i18n": "workspace:*",
+    "@stay/sdk": "workspace:*",
+    "@stay/shared": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "i18next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-i18next": "catalog:",
+    "react-router-dom": "catalog:",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "tailwindcss": "^4.3.5",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}

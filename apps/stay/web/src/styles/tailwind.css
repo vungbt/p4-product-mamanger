@@ -1,0 +1,36 @@
+@import "@itclabs/react-ui/theme/styles.css";
+@import "./stay-theme.css";
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* One visible focus style for host links and buttons (kit controls bring their own ring). */
+  :where(a[href], button, [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Mobile uses the bottom navigation: drop the kit Sidebar's drawer trigger. */
+  .stay-shell > div:first-child {
+    display: none;
+  }
+}
+
+/* Keep page content clear of the fixed bottom navigation and the iOS home indicator. */
+@utility pb-bottom-nav {
+  padding-bottom: calc(var(--spacing) * 24 + env(safe-area-inset-bottom));
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}

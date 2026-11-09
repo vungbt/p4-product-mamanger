@@ -1,0 +1,104 @@
+{
+  "app": {
+    "tagline": "Boarding house management",
+    "loading": "Loading…",
+    "skipToContent": "Skip to main content"
+  },
+  "nav": {
+    "main": "Main navigation",
+    "mobile": "Quick navigation",
+    "overview": "Overview",
+    "rooms": "Rooms",
+    "readings": "Meter readings",
+    "invoices": "Invoices",
+    "receivables": "Receivables",
+    "contracts": "Contracts",
+    "tenants": "Tenants",
+    "requests": "Requests",
+    "expenses": "Expenses",
+    "reports": "Reports",
+    "settings": "Settings",
+    "more": "More",
+    "moreTitle": "All features",
+    "openMenu": "Open menu"
+  },
+  "header": {
+    "back": "Back",
+    "requests": "New requests",
+    "requestsSoon": "Tenant requests are coming in a later release."
+  },
+  "building": {
+    "label": "Building",
+    "placeholder": "Choose a building"
+  },
+  "account": {
+    "menu": "Account",
+    "changePassword": "Change password",
+    "changePasswordSoon": "Changing your password is coming in a later release.",
+    "signOut": "Sign out",
+    "signedOut": "You have signed out."
+  },
+  "roles": {
+    "owner": "Owner",
+    "manager": "Manager",
+    "tenant": "Tenant"
+  },
+  "auth": {
+    "title": "Sign in",
+    "subtitle": "Sign in to manage your boarding house",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "emailInvalid": "Enter a valid email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "passwordMin": "Password must be at least 8 characters",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "rememberEmail": "Remember my email on this device",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "forgotPassword": "Forgot password?",
+    "forgotPasswordSoon": "Password reset by email is coming in a later release. Please contact the owner.",
+    "invalidCredentials": "Incorrect email or password",
+    "tooManyAttempts": "Too many attempts. Try again in {{count}} minutes.",
+    "failed": "Could not sign in. Check your connection and try again.",
+    "sessionExpired": "Your session has expired. Please sign in again."
+  },
+  "errors": {
+    "forbiddenTitle": "You don't have permission to view this page",
+    "forbiddenDescription": "Contact the owner if you need access.",
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "This page does not exist or belongs to another building.",
+    "backHome": "Back to Overview",
+    "offline": "You are offline. Data will reload when the connection returns.",
+    "loadFailed": "Could not load data.",
+    "retry": "Retry"
+  },
+  "placeholder": {
+    "title": "Coming soon",
+    "description": "The {{name}} screen is being built and will arrive in a later release."
+  },
+  "overview": {
+    "title": "Overview",
+    "greeting": "Hello, {{name}}",
+    "signedInAs": "Signed in as {{email}} · {{role}}",
+    "onboardingTitle": "Get started with your building",
+    "onboardingDescription": "This building has no rooms yet. Follow 3 steps to issue your first invoices.",
+    "stepLabel": "Step {{step}}",
+    "steps": {
+      "prices": {
+        "title": "Set up prices",
+        "description": "Electricity, water and monthly services."
+      },
+      "rooms": {
+        "title": "Create rooms",
+        "description": "Add rooms, rents and the initial meter readings."
+      },
+      "contracts": {
+        "title": "Create contracts",
+        "description": "Assign tenants to rooms and record deposits."
+      }
+    },
+    "soon": "Coming soon"
+  }
+}
