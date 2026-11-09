@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { ReviewListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { OrderItemModel, ProductModel, ReviewModel, sequelize } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
@@ -64,7 +64,7 @@ router.patch(
 router.post(
   '/reviews/:id/moderation',
   authRequired,
-  requirePermission('review:moderate'),
+  requireAbility('moderate', 'Review'),
   apiHandler(async (req) => {
     const body = requestBody(req);
     return reviews.changeReview(
@@ -81,7 +81,7 @@ router.post(
 router.put(
   '/reviews/:id/reply',
   authRequired,
-  requirePermission('review:reply'),
+  requireAbility('reply', 'Review'),
   apiHandler(async (req) => {
     const body = requestBody(req);
     return reviews.changeReview(
@@ -116,7 +116,7 @@ router.post(
 router.get(
   '/admin/reviews',
   authRequired,
-  requirePermission('review:read'),
+  requireAbility('read', 'Review'),
   adminList,
   listHandler(async (req, query: ReviewListQuery) => {
     const page = query?.page ?? 1;

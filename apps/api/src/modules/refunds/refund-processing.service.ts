@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { User } from '@p4/shared';
 import { Op, type Transaction } from 'sequelize';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   type DomainEventModel,
   OrderItemModel,
@@ -41,8 +41,7 @@ export async function ownedRefund(user: User, id: string) {
   const row = await RefundModel.findByPk(id);
   if (!row) throw new NotFound();
   const order = await OrderModel.findByPk(row.orderId);
-  if (!order || (order.userId !== user.id && !permissionsFor(user).includes('refund:read')))
-    throw new Forbidden();
+  if (!order || !canAccessRecord(user, 'read', 'Refund', order)) throw new Forbidden();
   return row;
 }
 

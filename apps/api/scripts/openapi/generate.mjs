@@ -935,7 +935,7 @@ for (const route of routes) {
 
   const argsText = route.site?.call.arguments.map((arg) => arg.getText()).join(' ') ?? '';
   const permissions = route.handlers.flatMap((fn) =>
-    fn.requiredPermission ? [fn.requiredPermission] : [],
+    fn.requiredAbility ? [fn.requiredAbility] : [],
   );
   const roles = [...argsText.matchAll(/requireRole\(([^)]*)\)/g)].flatMap((m) =>
     m[1].split(',').map((role) => role.trim().replace(/['"]/g, '')),

@@ -3,8 +3,8 @@ import type { ContentKind, ListQuery } from '@p4/shared';
 import { CONTENT_STATUS_VALUES, type ContentListQuery, type TaxonomyListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import {
   ContentEntryModel,
   ContentRevisionModel,
@@ -26,9 +26,9 @@ import * as content from './content.service.js';
 import { contentInput } from './content.validation.js';
 
 const router = Router();
-const read = [authRequired, requirePermission('content:read')];
-const write = [authRequired, requirePermission('content:write')];
-const publish = [authRequired, requirePermission('content:publish')];
+const read = [authRequired, requireAbility('read', 'Content')];
+const write = [authRequired, requireAbility('write', 'Content')];
+const publish = [authRequired, requireAbility('publish', 'Content')];
 const list = validateListQuery({
   sortFields: ['title', 'createdAt'],
   defaultSort: 'createdAt',

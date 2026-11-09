@@ -1,6 +1,6 @@
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { validateRefundsListQuery } from '@/modules/refunds/refunds.validation.js';
 import { apiHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
@@ -14,7 +14,7 @@ const router = Router();
 router.get(
   '/',
   authRequired,
-  requirePermission('refund:read'),
+  requireAbility('read', 'Refund'),
   validateRefundsListQuery,
   refundsController.list,
 );

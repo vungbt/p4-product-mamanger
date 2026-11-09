@@ -31,7 +31,7 @@ export const adminPortalRoutes: IRoute[] = [
       {
         path: ROUTES.admin.dashboard,
         name: 'admin-dashboard',
-        permission: 'report:read',
+        ability: { action: 'read', subject: 'Report' },
         label: 'Dashboard',
         iconName: 'chart',
         component: AdminDashboardScreen,
@@ -48,7 +48,7 @@ export const adminPortalRoutes: IRoute[] = [
           {
             path: ROUTES.admin.products,
             name: 'product-list',
-            permission: 'catalog:read',
+            ability: { action: 'read', subject: 'Catalog' },
             label: 'Product list',
             component: AdminProductsScreen,
             exact: true,
@@ -56,7 +56,7 @@ export const adminPortalRoutes: IRoute[] = [
           {
             path: ROUTES.admin['product-categories'],
             name: 'product-categories',
-            permission: 'catalog:read',
+            ability: { action: 'read', subject: 'Catalog' },
             label: 'Categories',
             component: AdminCategoriesScreen,
             exact: true,
@@ -64,7 +64,7 @@ export const adminPortalRoutes: IRoute[] = [
           {
             path: ROUTES.admin['product-new'],
             name: 'product-new',
-            permission: 'catalog:write',
+            ability: { action: 'write', subject: 'Catalog' },
             label: 'Create product',
             component: AdminProductsScreen,
             exact: true,
@@ -72,7 +72,7 @@ export const adminPortalRoutes: IRoute[] = [
           {
             path: '/admin/products/:id/edit',
             name: 'product-edit',
-            permission: 'catalog:write',
+            ability: { action: 'write', subject: 'Catalog' },
             label: 'Edit product',
             component: AdminProductsScreen,
             hideInMenu: true,
@@ -82,7 +82,7 @@ export const adminPortalRoutes: IRoute[] = [
       {
         path: ROUTES.admin.orders,
         name: 'admin-orders',
-        permission: 'order:read',
+        ability: { action: 'read', subject: 'Order' },
         label: 'Orders',
         iconName: 'receiptSearch',
         component: AdminOrdersScreen,

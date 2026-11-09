@@ -365,44 +365,6 @@ export interface AddressListQuery
   isDefault?: boolean;
 }
 
-export type Permission =
-  | 'system:read'
-  | 'system:manage'
-  | 'staff:read'
-  | 'staff:manage'
-  | 'customer:read'
-  | 'customer:manage'
-  | 'audit:read'
-  | 'catalog:read'
-  | 'catalog:write'
-  | 'inventory:read'
-  | 'inventory:write'
-  | 'settings:manage'
-  | 'promotion:read'
-  | 'promotion:write'
-  | 'order:read'
-  | 'order:manage'
-  | 'payment:read'
-  | 'payment:manage'
-  | 'fulfillment:read'
-  | 'fulfillment:manage'
-  | 'return:read'
-  | 'return:manage'
-  | 'refund:read'
-  | 'refund:manage'
-  | 'review:read'
-  | 'review:moderate'
-  | 'review:reply'
-  | 'content:read'
-  | 'content:write'
-  | 'content:publish'
-  | 'support:read'
-  | 'support:manage'
-  | 'notification:read'
-  | 'notification:manage'
-  | 'report:read'
-  | 'report:export';
-
 export type StaffRole =
   | 'owner'
   | 'administrator'
@@ -464,7 +426,46 @@ export type JsonValue =
   | null
   | JsonValue[]
   | { [key: string]: JsonValue };
-export type CapabilityResponse = { contractVersion: string; permissions: Permission[] };
+/** Actions checked by CASL. `manage` is an ordinary action here; `*` matches every action. */
+export type AbilityAction =
+  | 'read'
+  | 'write'
+  | 'manage'
+  | 'publish'
+  | 'moderate'
+  | 'reply'
+  | 'export';
+
+/** Subjects checked by CASL; `all` matches every subject. */
+export type AbilitySubject =
+  | 'System'
+  | 'Staff'
+  | 'Customer'
+  | 'AuditLog'
+  | 'Catalog'
+  | 'Inventory'
+  | 'Settings'
+  | 'Promotion'
+  | 'Order'
+  | 'Payment'
+  | 'Fulfillment'
+  | 'Return'
+  | 'Refund'
+  | 'Review'
+  | 'Content'
+  | 'Support'
+  | 'Notification'
+  | 'Report';
+
+/** Serializable CASL rule sent to clients. Conditions use CASL's Mongo query syntax. */
+export interface AbilityRule {
+  action: AbilityAction | '*' | Array<AbilityAction | '*'>;
+  subject: AbilitySubject | 'all' | Array<AbilitySubject | 'all'>;
+  conditions?: Record<string, JsonValue>;
+  inverted?: boolean;
+}
+
+export type CapabilityResponse = { contractVersion: string; rules: AbilityRule[] };
 
 export interface ProfilePreferences {
   locale: 'vi' | 'en';

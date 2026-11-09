@@ -50,8 +50,8 @@ function LazyPage({ component: Page }: { component: LazyExoticComponent<Componen
 
 function renderLeafRoutes(routes: IRoute[]): React.ReactNode {
   return flattenRouteElements(routes).map((route) => {
-    const page = route.permission ? (
-      <CapabilityRoute permission={route.permission}>
+    const page = route.ability ? (
+      <CapabilityRoute ability={route.ability}>
         <LazyPage component={route.component} />
       </CapabilityRoute>
     ) : (

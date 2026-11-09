@@ -1,39 +1,40 @@
 import { createHash, randomUUID } from 'node:crypto';
+import type { AbilityAction, AbilitySubject } from '@p4/ability/shared';
 import type { ProcessInput, ProcessIssue, ProcessSnapshot } from '@p4/processes/shared';
 import { processProgress } from '@p4/processes/shared';
-import type { Permission, User } from '@p4/shared';
+import type { User } from '@p4/shared';
 import type { Transaction } from 'sequelize';
 import { Op, UniqueConstraintError } from 'sequelize';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { assertAccess } from '@/middlewares/ability.middleware.js';
 import { DomainEventModel, ProcessItemModel, ProcessModel } from '@/sequelize/models/index.js';
 import { auditedTransaction } from '@/shared/audit/audited-command.js';
 import { recordAudit } from '@/shared/audit/record.js';
 import { enqueueEvent, jsonValue, runIdempotent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
+import { NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { publishRealtime } from '../realtime/realtime.service.js';
 import { readProcessFile } from './storage.service.js';
 
-export function processPermission(input: ProcessInput): Permission | null {
+export function processAccess(input: ProcessInput): [AbilityAction, AbilitySubject] | null {
   if (input.kind === 'media.batch') return null;
   if (input.kind === 'data.import')
-    return input.resource === 'inventory' ? 'inventory:write' : 'catalog:write';
+    return input.resource === 'inventory' ? ['write', 'Inventory'] : ['write', 'Catalog'];
   switch (input.resource) {
     case 'inventory':
-      return 'inventory:read';
+      return ['read', 'Inventory'];
     case 'orders':
-      return 'order:read';
+      return ['read', 'Order'];
     case 'sales-report':
-      return 'report:export';
+      return ['export', 'Report'];
     default:
-      return 'catalog:read';
+      return ['read', 'Catalog'];
   }
 }
 export function authorizeProcess(user: User, input: ProcessInput) {
-  const permission = processPermission(input);
-  if (permission && !permissionsFor(user).includes(permission)) throw new Forbidden();
+  const access = processAccess(input);
+  if (access) assertAccess(user, ...access);
 }
 export function processDto(row: ProcessModel): ProcessSnapshot {
   return {

@@ -1,6 +1,6 @@
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { auditPolicies } from './categories.audit.js';
 import * as categoriesController from './categories.controller.js';
@@ -13,15 +13,15 @@ router.get('/:id', categoriesController.getById);
 router.post(
   '/',
   authRequired,
-  requirePermission('catalog:write'),
+  requireAbility('write', 'Catalog'),
   validateCategory,
   categoriesController.create,
 );
-router.put('/:id', authRequired, requirePermission('catalog:write'), categoriesController.update);
+router.put('/:id', authRequired, requireAbility('write', 'Catalog'), categoriesController.update);
 router.delete(
   '/:id',
   authRequired,
-  requirePermission('catalog:write'),
+  requireAbility('write', 'Catalog'),
   categoriesController.remove,
 );
 

@@ -1,7 +1,7 @@
 import type { ListQuery } from '@p4/shared';
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { DomainEventModel, sequelize } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
@@ -25,7 +25,7 @@ const list = validateListQuery({
 router.get(
   '/admin/jobs',
   authRequired,
-  requirePermission('system:read'),
+  requireAbility('read', 'System'),
   list,
   listHandler(async (req, query: ListQuery<'createdAt' | 'attempts'>) => {
     const status = queryText(req.query, 'status');
@@ -51,7 +51,7 @@ router.get(
 router.get(
   '/admin/jobs/:id',
   authRequired,
-  requirePermission('system:read'),
+  requireAbility('read', 'System'),
   apiHandler(async (req) => {
     const id = uuidRouteId(req);
     const row = await DomainEventModel.findByPk(id);
@@ -66,7 +66,7 @@ router.get(
 router.post(
   '/admin/jobs/:id/retry',
   authRequired,
-  requirePermission('system:manage'),
+  requireAbility('manage', 'System'),
   apiHandler(async (req) => retryEvent(currentUser(req).id, uuidRouteId(req), eventHandlers)),
 );
 export default applyAuditPolicies(router, auditPolicies);

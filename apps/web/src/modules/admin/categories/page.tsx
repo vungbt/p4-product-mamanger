@@ -10,10 +10,9 @@ import {
   Select,
   Tooltip,
 } from '@itclabs/react-ui';
-import { useCapabilities } from '@p4/api-sdk/react';
+import { useCanAccess } from '@p4/ability/browser';
 import { type Category, DESCRIPTION_FILTER_VALUES, type DescriptionFilter } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
-import useAuth from '@/hooks/use-auth';
 import CategoryDetails from './components/category-details';
 import CategoryEditor from './components/category-editor';
 import useCategoryPage from './hooks/use-category-page';
@@ -25,10 +24,7 @@ const descriptionLabels: Record<DescriptionFilter, string> = {
 };
 
 export default function AdminCategoriesPage() {
-  const { user } = useAuth();
-  const capabilities = useCapabilities(user?.id);
-  const canWrite =
-    !capabilities.isError && capabilities.data?.data.permissions.includes('catalog:write');
+  const canWrite = useCanAccess('write', 'Catalog');
   const {
     rows,
     rowCount,

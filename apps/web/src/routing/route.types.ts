@@ -1,5 +1,5 @@
 import { Icon, type IconName } from '@itclabs/react-ui';
-import type { Permission } from '@p4/shared';
+import type { AbilityCheck } from '@p4/ability/shared';
 import { type ComponentType, createElement, type LazyExoticComponent, type ReactNode } from 'react';
 import type { Role } from '@/types/types';
 
@@ -17,7 +17,8 @@ export interface IRoute {
   exact?: boolean;
   /** Allowed roles — portal or leaf (e.g. checkout). Unset = public */
   authority?: Role[];
-  permission?: Permission;
+  /** Unconditional CASL access required to open the route and show it in menus. */
+  ability?: AbilityCheck;
   loginPath?: string;
   /** Login page — redirect if already logged in with the correct role */
   guestOnly?: boolean;

@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Link } from 'react-router-dom';
 import { API_BASE_URL } from '@/constants/constants';
 import { AuthProvider } from '@/contexts/auth-context';
+import CapabilityAbilityProvider from '@/libraries/capability-ability-provider';
 import { uiTheme } from '@/libraries/ui-theme';
 import RouteConfigs from '@/routing/config.route';
 import MasterRoutes from '@/routing/master.route';
@@ -44,7 +45,9 @@ export default function App() {
               onRefresh={refreshAuthSession}
               onLogout={revokeAuthSession}
             >
-              <MasterRoutes routes={RouteConfigs} />
+              <CapabilityAbilityProvider>
+                <MasterRoutes routes={RouteConfigs} />
+              </CapabilityAbilityProvider>
             </AuthProvider>
           </ApiQueryProvider>
         </ToastProvider>

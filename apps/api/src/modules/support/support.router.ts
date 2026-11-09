@@ -5,8 +5,8 @@ import {
   type SupportTicketListQuery,
 } from '@p4/shared';
 import { Router } from 'express';
+import { hasAccess, requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { permissionsFor, requirePermission } from '@/middlewares/permission.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import { SupportMessageModel, SupportTicketModel, UserModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
@@ -65,7 +65,7 @@ for (const admin of [false, true])
   router.get(
     admin ? '/admin/support/tickets' : '/support/tickets/mine',
     authRequired,
-    ...(admin ? [requirePermission('support:read')] : []),
+    ...(admin ? [requireAbility('read', 'Support')] : []),
     list,
     listHandler(async (req, query: SupportTicketListQuery) => {
       const result = await SupportTicketModel.findAndCountAll({
@@ -115,7 +115,7 @@ router.get(
       where: {
         ticketId: id,
         ...listSearch(SupportMessageModel, query.q, ['body']),
-        ...(permissionsFor(user).includes('support:read') ? {} : { internal: false }),
+        ...(hasAccess(user, 'read', 'Support') ? {} : { internal: false }),
       },
       order: [
         ['createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
@@ -152,13 +152,13 @@ router.post(
 router.post(
   '/admin/support/tickets/:id/assign',
   authRequired,
-  requirePermission('support:manage'),
+  requireAbility('manage', 'Support'),
   apiHandler(async (req) => {
     const body = requestBody(req);
     const assigneeId = body.text('assigneeId', 36);
     if (!/^[a-f0-9-]{36}$/i.test(assigneeId)) return body.invalid('assigneeId');
     const staff = await UserModel.findByPk(assigneeId);
-    if (staff?.accountStatus !== 'active' || !permissionsFor(staff).includes('support:manage'))
+    if (staff?.accountStatus !== 'active' || !hasAccess(staff, 'manage', 'Support'))
       throw new NotFound();
     return auditedTransaction(async (transaction) => {
       const row = await SupportTicketModel.findByPk(uuidRouteId(req), {

@@ -1,0 +1,45 @@
+{
+  "name": "@p4/ability",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./shared": {
+      "types": "./src/shared/index.ts",
+      "development": "./src/shared/index.ts",
+      "import": "./dist/shared/index.js",
+      "default": "./dist/shared/index.js"
+    },
+    "./browser": {
+      "types": "./src/browser/index.tsx",
+      "development": "./src/browser/index.tsx",
+      "import": "./dist/browser/index.js",
+      "default": "./dist/browser/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "test": "pnpm build && node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@casl/ability": "catalog:",
+    "@casl/react": "catalog:",
+    "@p4/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:react-peer"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  }
+}

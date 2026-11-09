@@ -1,8 +1,8 @@
 import type { ListQuery } from '@p4/shared';
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import type { WhereOptions } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import type { AuditLogAttributes } from '@/sequelize/models/audit-log.model.js';
 import { AuditLogModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
@@ -79,7 +79,7 @@ const router = Router();
 router.get(
   '/admin/audit-logs',
   authRequired,
-  requirePermission('audit:read'),
+  requireAbility('read', 'AuditLog'),
   listQuery,
   async (_req: Request, res: Response<unknown, ListLocals<AuditQuery>>, next: NextFunction) => {
     try {
@@ -120,7 +120,7 @@ router.get(
 router.get(
   '/admin/audit-logs/:id',
   authRequired,
-  requirePermission('audit:read'),
+  requireAbility('read', 'AuditLog'),
   apiHandler(async (req) => {
     const row = await AuditLogModel.findByPk(uuidRouteId(req));
     if (!row) throw new NotFound();

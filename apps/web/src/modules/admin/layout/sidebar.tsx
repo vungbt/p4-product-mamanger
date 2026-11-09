@@ -1,9 +1,9 @@
 import { Sidebar, type SidebarEntry } from '@itclabs/react-ui';
-import { useCapabilities } from '@p4/api-sdk/react';
+import { useAbility } from '@p4/ability/browser';
+import { canAccess } from '@p4/ability/shared';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { ROUTES } from '@/constants/constants';
-import useAuth from '@/hooks/use-auth';
 import BrandLogo from '@/libraries/brand-logo';
 import UserAccountMenu from '@/libraries/user-account-menu';
 import RouteConfigs from '@/routing/config.route';
@@ -11,14 +11,14 @@ import { getPortalMenuRoutes, type IRoute } from '@/routing/route.types';
 export default function AdminSidebar() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const { user } = useAuth();
-  const capabilities = useCapabilities(user?.id);
-  const permissions = capabilities.isError ? [] : (capabilities.data?.data.permissions ?? []);
+  const ability = useAbility();
+
   const toItems = (routes: IRoute[]): SidebarEntry[] =>
     routes
       .filter(
         (route) =>
-          !route.hideInMenu && (!route.permission || permissions.includes(route.permission)),
+          !route.hideInMenu &&
+          (!route.ability || canAccess(ability, route.ability.action, route.ability.subject)),
       )
       .map<SidebarEntry>((route) => {
         const base = {

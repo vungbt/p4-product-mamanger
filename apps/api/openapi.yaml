@@ -158,13 +158,13 @@ paths:
                     properties:
                       contractVersion:
                         type: string
-                      permissions:
+                      rules:
                         type: array
                         items:
-                          $ref: "#/components/schemas/Permission"
+                          $ref: "#/components/schemas/AbilityRule"
                     required:
                       - contractVersion
-                      - permissions
+                      - rules
                   message:
                     type: string
                 required:
@@ -181,7 +181,7 @@ paths:
         - system
       operationId: get_api_admin_system_contracts
       summary: Contract trạng thái của hệ thống
-      description: "**Quyền:** `system:read`."
+      description: "**Quyền:** `read:System`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -1818,7 +1818,7 @@ paths:
         - exchanges
       operationId: get_api_admin_exchanges
       summary: Danh sách yêu cầu đổi hàng (Admin)
-      description: "**Quyền:** `return:read`."
+      description: "**Quyền:** `read:Return`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -1947,7 +1947,7 @@ paths:
         - exchanges
       operationId: post_api_exchanges_id_approve
       summary: Duyệt đổi hàng
-      description: "**Quyền:** `return:manage`."
+      description: "**Quyền:** `manage:Return`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2002,7 +2002,7 @@ paths:
         - exchanges
       operationId: post_api_exchanges_id_reject
       summary: Từ chối đổi hàng
-      description: "**Quyền:** `return:manage`."
+      description: "**Quyền:** `manage:Return`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2065,7 +2065,7 @@ paths:
       description: |-
         Gọi lặp không tạo đơn thứ hai.
 
-        **Quyền:** `return:manage`.
+        **Quyền:** `manage:Return`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2120,7 +2120,7 @@ paths:
         - reports
       operationId: get_api_admin_reports_sales
       summary: Báo cáo doanh thu
-      description: "**Quyền:** `report:read`."
+      description: "**Quyền:** `read:Report`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2191,7 +2191,7 @@ paths:
         - reports
       operationId: get_api_admin_reports_orders
       summary: Báo cáo đơn hàng
-      description: "**Quyền:** `report:read`."
+      description: "**Quyền:** `read:Report`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2262,7 +2262,7 @@ paths:
         - reports
       operationId: get_api_admin_reports_inventory
       summary: Báo cáo tồn kho
-      description: "**Quyền:** `report:read`."
+      description: "**Quyền:** `read:Report`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2333,7 +2333,7 @@ paths:
         - reports
       operationId: get_api_admin_reports_products
       summary: Báo cáo sản phẩm
-      description: "**Quyền:** `report:read`."
+      description: "**Quyền:** `read:Report`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2404,7 +2404,7 @@ paths:
         - reports
       operationId: post_api_admin_report_exports
       summary: Tạo file export báo cáo
-      description: "**Quyền:** `report:export`. Bắt buộc header `Idempotency-Key`."
+      description: "**Quyền:** `export:Report`. Bắt buộc header `Idempotency-Key`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2464,7 +2464,7 @@ paths:
         - reports
       operationId: get_api_admin_report_exports_id
       summary: Xem trạng thái export báo cáo
-      description: "**Quyền:** `report:export`."
+      description: "**Quyền:** `export:Report`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2503,7 +2503,7 @@ paths:
         - reports
       operationId: get_api_admin_report_exports_id_download
       summary: Tải file export báo cáo
-      description: "**Quyền:** `report:export`."
+      description: "**Quyền:** `export:Report`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2536,7 +2536,7 @@ paths:
         - operations
       operationId: get_api_internal_metrics
       summary: Metrics vận hành
-      description: "**Quyền:** `system:read`."
+      description: "**Quyền:** `read:System`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2588,7 +2588,7 @@ paths:
         - operations
       operationId: post_api_admin_operations_inventory_reconciliation
       summary: Chạy đối soát tồn kho
-      description: "**Quyền:** `system:manage`."
+      description: "**Quyền:** `manage:System`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2636,7 +2636,7 @@ paths:
         - merchandising
       operationId: get_api_admin_collections
       summary: Danh sách bộ sưu tập (Admin)
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2716,7 +2716,7 @@ paths:
         - merchandising
       operationId: post_api_admin_collections
       summary: Tạo bộ sưu tập
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2779,7 +2779,7 @@ paths:
         - merchandising
       operationId: get_api_admin_collections_id
       summary: Chi tiết bộ sưu tập (Admin)
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2817,7 +2817,7 @@ paths:
         - merchandising
       operationId: patch_api_admin_collections_id
       summary: Cập nhật bộ sưu tập
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2892,7 +2892,7 @@ paths:
         - merchandising
       operationId: get_api_admin_banners
       summary: Danh sách banner (Admin)
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -2972,7 +2972,7 @@ paths:
         - merchandising
       operationId: post_api_admin_banners
       summary: Tạo banner
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -3044,7 +3044,7 @@ paths:
         - merchandising
       operationId: get_api_admin_banners_id
       summary: Chi tiết banner (Admin)
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -3082,7 +3082,7 @@ paths:
         - merchandising
       operationId: patch_api_admin_banners_id
       summary: Cập nhật banner
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -3503,7 +3503,7 @@ paths:
         - merchandising
       operationId: get_api_admin_navigation_placement
       summary: Xem cấu hình điều hướng (Admin)
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -3541,7 +3541,7 @@ paths:
         - merchandising
       operationId: patch_api_admin_navigation_placement
       summary: Cập nhật điều hướng
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -3601,7 +3601,7 @@ paths:
         - merchandising
       operationId: get_api_admin_home_layout
       summary: Xem bố cục trang chủ (Admin)
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -3631,7 +3631,7 @@ paths:
         - merchandising
       operationId: patch_api_admin_home_layout
       summary: Cập nhật bố cục trang chủ
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -4313,7 +4313,7 @@ paths:
         - support
       operationId: get_api_admin_support_tickets
       summary: Danh sách ticket (Admin)
-      description: "**Quyền:** `support:read`."
+      description: "**Quyền:** `read:Support`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -4603,7 +4603,7 @@ paths:
         - support
       operationId: post_api_admin_support_tickets_id_assign
       summary: Phân công ticket
-      description: "**Quyền:** `support:manage`."
+      description: "**Quyền:** `manage:Support`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -4723,7 +4723,7 @@ paths:
         - jobs
       operationId: get_api_admin_jobs
       summary: Danh sách job nền
-      description: "**Quyền:** `system:read`."
+      description: "**Quyền:** `read:System`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -4851,7 +4851,7 @@ paths:
         - jobs
       operationId: get_api_admin_jobs_id
       summary: Chi tiết job nền
-      description: "**Quyền:** `system:read`."
+      description: "**Quyền:** `read:System`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -4958,7 +4958,7 @@ paths:
         - jobs
       operationId: post_api_admin_jobs_id_retry
       summary: Chạy lại job nền
-      description: "**Quyền:** `system:manage`."
+      description: "**Quyền:** `manage:System`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -5346,7 +5346,7 @@ paths:
         - notifications
       operationId: get_api_admin_notification_templates
       summary: Danh sách mẫu thông báo
-      description: "**Quyền:** `notification:read`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
+      description: "**Quyền:** `read:Notification`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -5450,7 +5450,7 @@ paths:
         - notifications
       operationId: put_api_admin_notification_templates
       summary: Lưu mẫu thông báo
-      description: "**Quyền:** `notification:manage`."
+      description: "**Quyền:** `manage:Notification`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -5624,7 +5624,7 @@ paths:
         - content
       operationId: get_api_admin_posts
       summary: Danh sách bài viết (Admin)
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -5709,7 +5709,7 @@ paths:
         - content
       operationId: post_api_admin_posts
       summary: Tạo bài viết nháp
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -5787,7 +5787,7 @@ paths:
         - content
       operationId: get_api_admin_posts_id
       summary: Chi tiết bài viết (Admin)
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -5828,7 +5828,7 @@ paths:
       description: |-
         Bản đang xuất bản giữ nguyên cho đến khi publish lại.
 
-        **Quyền:** `content:write`.
+        **Quyền:** `write:Content`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -5921,7 +5921,7 @@ paths:
       description: |-
         Có `scheduledAt` thì lên lịch; không có thì xuất bản ngay.
 
-        **Quyền:** `content:publish`.
+        **Quyền:** `publish:Content`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -5979,7 +5979,7 @@ paths:
         - content
       operationId: post_api_admin_posts_id_archive
       summary: Lưu trữ bài viết
-      description: "**Quyền:** `content:publish`."
+      description: "**Quyền:** `publish:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -6034,7 +6034,7 @@ paths:
         - content
       operationId: get_api_admin_posts_id_revisions
       summary: Lịch sử revision của bài viết
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -6210,7 +6210,7 @@ paths:
         - content
       operationId: get_api_admin_pages
       summary: Danh sách trang CMS (Admin)
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -6295,7 +6295,7 @@ paths:
         - content
       operationId: post_api_admin_pages
       summary: Tạo trang CMS nháp
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -6373,7 +6373,7 @@ paths:
         - content
       operationId: get_api_admin_pages_id
       summary: Chi tiết trang CMS (Admin)
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -6414,7 +6414,7 @@ paths:
       description: |-
         Bản đang xuất bản giữ nguyên cho đến khi publish lại.
 
-        **Quyền:** `content:write`.
+        **Quyền:** `write:Content`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -6507,7 +6507,7 @@ paths:
       description: |-
         Có `scheduledAt` thì lên lịch; không có thì xuất bản ngay.
 
-        **Quyền:** `content:publish`.
+        **Quyền:** `publish:Content`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -6565,7 +6565,7 @@ paths:
         - content
       operationId: post_api_admin_pages_id_archive
       summary: Lưu trữ trang CMS
-      description: "**Quyền:** `content:publish`."
+      description: "**Quyền:** `publish:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -6620,7 +6620,7 @@ paths:
         - content
       operationId: get_api_admin_pages_id_revisions
       summary: Lịch sử revision của trang CMS
-      description: "**Quyền:** `content:read`."
+      description: "**Quyền:** `read:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -6865,7 +6865,7 @@ paths:
         - content
       operationId: post_api_admin_post_categories
       summary: Tạo chuyên mục bài viết
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -6929,7 +6929,7 @@ paths:
         - content
       operationId: patch_api_admin_post_categories_id
       summary: Cập nhật chuyên mục bài viết
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -7079,7 +7079,7 @@ paths:
         - content
       operationId: post_api_admin_post_tags
       summary: Tạo thẻ bài viết
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -7143,7 +7143,7 @@ paths:
         - content
       operationId: patch_api_admin_post_tags_id
       summary: Cập nhật thẻ bài viết
-      description: "**Quyền:** `content:write`."
+      description: "**Quyền:** `write:Content`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -7755,7 +7755,7 @@ paths:
         - reviews
       operationId: post_api_reviews_id_moderation
       summary: Kiểm duyệt đánh giá
-      description: "**Quyền:** `review:moderate`."
+      description: "**Quyền:** `moderate:Review`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -7821,7 +7821,7 @@ paths:
         - reviews
       operationId: put_api_reviews_id_reply
       summary: Phản hồi đánh giá
-      description: "**Quyền:** `review:reply`."
+      description: "**Quyền:** `reply:Review`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -7942,7 +7942,7 @@ paths:
         - reviews
       operationId: get_api_admin_reviews
       summary: Danh sách đánh giá (Admin)
-      description: "**Quyền:** `review:read`."
+      description: "**Quyền:** `read:Review`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -8088,7 +8088,7 @@ paths:
         - refunds
       operationId: post_api_admin_refunds_id_reconcile
       summary: Đối soát hoàn tiền với provider
-      description: "**Quyền:** `refund:manage`."
+      description: "**Quyền:** `manage:Refund`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -8165,7 +8165,7 @@ paths:
       description: |-
         Chỉ áp dụng khi provider đã xác nhận thất bại; trường hợp chưa rõ kết quả phải đối soát trước.
 
-        **Quyền:** `refund:manage`.
+        **Quyền:** `manage:Refund`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -8253,7 +8253,7 @@ paths:
         - refunds
       operationId: post_api_admin_refunds_id_manual_confirmation
       summary: Xác nhận đã chuyển khoản hoàn tiền
-      description: "**Quyền:** `refund:manage`."
+      description: "**Quyền:** `manage:Refund`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -8511,7 +8511,7 @@ paths:
         - returns
       operationId: get_api_admin_returns
       summary: Danh sách yêu cầu trả hàng (Admin)
-      description: "**Quyền:** `return:read`."
+      description: "**Quyền:** `read:Return`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -8640,7 +8640,7 @@ paths:
         - returns
       operationId: post_api_returns_id_approve
       summary: Duyệt trả hàng
-      description: "**Quyền:** `return:manage`."
+      description: "**Quyền:** `manage:Return`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -8699,7 +8699,7 @@ paths:
         - returns
       operationId: post_api_returns_id_reject
       summary: Từ chối trả hàng
-      description: "**Quyền:** `return:manage`."
+      description: "**Quyền:** `manage:Return`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -8758,7 +8758,7 @@ paths:
         - returns
       operationId: post_api_returns_id_in_transit
       summary: Đánh dấu hàng trả đang về
-      description: "**Quyền:** `return:manage`."
+      description: "**Quyền:** `manage:Return`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -8817,7 +8817,7 @@ paths:
         - returns
       operationId: post_api_returns_id_receive
       summary: Đánh dấu đã nhận hàng trả
-      description: "**Quyền:** `return:manage`."
+      description: "**Quyền:** `manage:Return`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -8879,7 +8879,7 @@ paths:
       description: |-
         Chỉ số lượng `saleableQuantity` được cộng lại tồn kho.
 
-        **Quyền:** `return:manage`.
+        **Quyền:** `manage:Return`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -8944,7 +8944,7 @@ paths:
         - returns
       operationId: post_api_returns_id_complete
       summary: Hoàn tất trả hàng
-      description: "**Quyền:** `return:manage`."
+      description: "**Quyền:** `manage:Return`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9006,7 +9006,7 @@ paths:
       description: |-
         Một đơn có thể tách nhiều kiện; không chia vượt số lượng đã đặt.
 
-        **Quyền:** `fulfillment:manage`.
+        **Quyền:** `manage:Fulfillment`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9110,7 +9110,7 @@ paths:
         - fulfillment
       operationId: post_api_shipments_id_pack
       summary: Đóng gói kiện hàng
-      description: "**Quyền:** `fulfillment:manage`."
+      description: "**Quyền:** `manage:Fulfillment`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9173,7 +9173,7 @@ paths:
         - fulfillment
       operationId: post_api_shipments_id_ready
       summary: Đánh dấu sẵn sàng giao
-      description: "**Quyền:** `fulfillment:manage`."
+      description: "**Quyền:** `manage:Fulfillment`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9236,7 +9236,7 @@ paths:
         - fulfillment
       operationId: post_api_shipments_id_handover
       summary: Bàn giao cho đơn vị vận chuyển
-      description: "**Quyền:** `fulfillment:manage`."
+      description: "**Quyền:** `manage:Fulfillment`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9299,7 +9299,7 @@ paths:
         - fulfillment
       operationId: post_api_shipments_id_out_for_delivery
       summary: Đánh dấu đang giao
-      description: "**Quyền:** `fulfillment:manage`."
+      description: "**Quyền:** `manage:Fulfillment`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9365,7 +9365,7 @@ paths:
       description: |-
         Với COD, giao xong chưa đồng nghĩa đã thu tiền; xác nhận riêng qua `cod-collection`.
 
-        **Quyền:** `fulfillment:manage`.
+        **Quyền:** `manage:Fulfillment`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9428,7 +9428,7 @@ paths:
         - fulfillment
       operationId: post_api_shipments_id_fail
       summary: Đánh dấu giao thất bại
-      description: "**Quyền:** `fulfillment:manage`."
+      description: "**Quyền:** `manage:Fulfillment`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9491,7 +9491,7 @@ paths:
         - fulfillment
       operationId: post_api_shipments_id_return
       summary: Đánh dấu hoàn về
-      description: "**Quyền:** `fulfillment:manage`."
+      description: "**Quyền:** `manage:Fulfillment`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9554,7 +9554,7 @@ paths:
         - fulfillment
       operationId: post_api_shipments_id_lose
       summary: Đánh dấu thất lạc
-      description: "**Quyền:** `fulfillment:manage`."
+      description: "**Quyền:** `manage:Fulfillment`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9617,7 +9617,7 @@ paths:
         - fulfillment
       operationId: post_api_shipments_id_cancel
       summary: Huỷ kiện hàng
-      description: "**Quyền:** `fulfillment:manage`."
+      description: "**Quyền:** `manage:Fulfillment`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9887,7 +9887,7 @@ paths:
         - payments
       operationId: post_api_admin_payments_id_reconcile
       summary: Đối soát lần thanh toán với provider
-      description: "**Quyền:** `payment:manage`."
+      description: "**Quyền:** `manage:Payment`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -9974,7 +9974,7 @@ paths:
         - payments
       operationId: post_api_admin_payments_id_cod_collection
       summary: Xác nhận đã thu tiền COD
-      description: "**Quyền:** `payment:manage`."
+      description: "**Quyền:** `manage:Payment`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -10080,7 +10080,7 @@ paths:
         - orders
       operationId: post_api_orders_id_confirm
       summary: Xác nhận đơn
-      description: "**Quyền:** `order:manage`."
+      description: "**Quyền:** `manage:Order`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -10146,7 +10146,7 @@ paths:
         - orders
       operationId: post_api_orders_id_start_processing
       summary: Bắt đầu xử lý đơn
-      description: "**Quyền:** `order:manage`."
+      description: "**Quyền:** `manage:Order`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -10408,7 +10408,7 @@ paths:
         - orders
       operationId: post_api_cancellation_requests_id_approve
       summary: Duyệt yêu cầu huỷ
-      description: "**Quyền:** `order:manage`."
+      description: "**Quyền:** `manage:Order`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -10467,7 +10467,7 @@ paths:
         - orders
       operationId: post_api_cancellation_requests_id_reject
       summary: Từ chối yêu cầu huỷ
-      description: "**Quyền:** `order:manage`."
+      description: "**Quyền:** `manage:Order`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -10526,7 +10526,7 @@ paths:
         - promotions
       operationId: get_api_admin_promotions
       summary: Danh sách khuyến mãi
-      description: "**Quyền:** `promotion:read`."
+      description: "**Quyền:** `read:Promotion`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -10606,7 +10606,7 @@ paths:
         - promotions
       operationId: post_api_admin_promotions
       summary: Tạo khuyến mãi
-      description: "**Quyền:** `promotion:write`."
+      description: "**Quyền:** `write:Promotion`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -10676,7 +10676,7 @@ paths:
         - promotions
       operationId: get_api_admin_promotions_id
       summary: Chi tiết khuyến mãi
-      description: "**Quyền:** `promotion:read`."
+      description: "**Quyền:** `read:Promotion`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -10714,7 +10714,7 @@ paths:
         - promotions
       operationId: patch_api_admin_promotions_id
       summary: Cập nhật khuyến mãi
-      description: "**Quyền:** `promotion:write`."
+      description: "**Quyền:** `write:Promotion`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -10796,7 +10796,7 @@ paths:
         - promotions
       operationId: get_api_admin_coupons_id
       summary: Chi tiết coupon
-      description: "**Quyền:** `promotion:read`."
+      description: "**Quyền:** `read:Promotion`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -10835,7 +10835,7 @@ paths:
         - promotions
       operationId: get_api_admin_coupons_id_redemptions
       summary: Lịch sử dùng coupon
-      description: "**Quyền:** `promotion:read`."
+      description: "**Quyền:** `read:Promotion`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -11377,7 +11377,7 @@ paths:
         - settings
       operationId: get_api_admin_settings_shop
       summary: Xem cấu hình shop
-      description: "**Quyền:** `settings:manage`."
+      description: "**Quyền:** `manage:Settings`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -11407,7 +11407,7 @@ paths:
         - settings
       operationId: patch_api_admin_settings_shop
       summary: Cập nhật cấu hình shop
-      description: "**Quyền:** `settings:manage`."
+      description: "**Quyền:** `manage:Settings`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -11483,7 +11483,7 @@ paths:
         - settings
       operationId: get_api_admin_settings_commerce
       summary: Xem cấu hình thương mại
-      description: "**Quyền:** `settings:manage`."
+      description: "**Quyền:** `manage:Settings`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -11513,7 +11513,7 @@ paths:
         - settings
       operationId: patch_api_admin_settings_commerce
       summary: Cập nhật cấu hình thương mại
-      description: "**Quyền:** `settings:manage`."
+      description: "**Quyền:** `manage:Settings`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -11575,7 +11575,7 @@ paths:
         - settings
       operationId: get_api_admin_shipping_methods
       summary: Danh sách phương thức vận chuyển
-      description: "**Quyền:** `settings:manage`."
+      description: "**Quyền:** `manage:Settings`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -11648,7 +11648,7 @@ paths:
         - settings
       operationId: post_api_admin_shipping_methods
       summary: Tạo phương thức vận chuyển
-      description: "**Quyền:** `settings:manage`."
+      description: "**Quyền:** `manage:Settings`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -11722,7 +11722,7 @@ paths:
         - settings
       operationId: get_api_admin_shipping_methods_id
       summary: Chi tiết phương thức vận chuyển
-      description: "**Quyền:** `settings:manage`."
+      description: "**Quyền:** `manage:Settings`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -11760,7 +11760,7 @@ paths:
         - settings
       operationId: patch_api_admin_shipping_methods_id
       summary: Cập nhật phương thức vận chuyển
-      description: "**Quyền:** `settings:manage`."
+      description: "**Quyền:** `manage:Settings`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -11897,7 +11897,7 @@ paths:
         - catalog
       operationId: get_api_admin_products
       summary: Danh sách sản phẩm (Admin, gồm bản nháp)
-      description: "**Quyền:** `catalog:read`."
+      description: "**Quyền:** `read:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12023,7 +12023,7 @@ paths:
         - catalog
       operationId: get_api_admin_products_id
       summary: Chi tiết sản phẩm (Admin)
-      description: "**Quyền:** `catalog:read`."
+      description: "**Quyền:** `read:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12116,7 +12116,7 @@ paths:
         - catalog
       operationId: patch_api_products_id_publication
       summary: Đổi trạng thái xuất bản sản phẩm
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12213,7 +12213,7 @@ paths:
         - catalog
       operationId: post_api_products_id_variants
       summary: Tạo SKU
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12293,7 +12293,7 @@ paths:
         - catalog
       operationId: get_api_admin_products_id_variants
       summary: Danh sách SKU của sản phẩm (Admin)
-      description: "**Quyền:** `catalog:read`."
+      description: "**Quyền:** `read:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12334,7 +12334,7 @@ paths:
         - catalog
       operationId: get_api_admin_variants
       summary: Tìm SKU trên toàn catalog
-      description: "**Quyền:** `catalog:read`."
+      description: "**Quyền:** `read:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12425,7 +12425,7 @@ paths:
       description: |-
         Không nhận `stock`, `onHand`, `reserved`: tồn kho chỉ đổi qua ledger ở nhóm inventory.
 
-        **Quyền:** `catalog:write`.
+        **Quyền:** `write:Catalog`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12507,7 +12507,7 @@ paths:
         - catalog
       operationId: patch_api_products_id_variants_variantId_images
       summary: Gán ảnh cho SKU
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12575,7 +12575,7 @@ paths:
         - catalog
       operationId: get_api_admin_size_guides
       summary: Danh sách bảng size
-      description: "**Quyền:** `catalog:read`."
+      description: "**Quyền:** `read:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12647,7 +12647,7 @@ paths:
         - catalog
       operationId: post_api_admin_size_guides
       summary: Tạo bảng size
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12712,7 +12712,7 @@ paths:
         - catalog
       operationId: get_api_admin_size_guides_id
       summary: Chi tiết bảng size
-      description: "**Quyền:** `catalog:read`."
+      description: "**Quyền:** `read:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12750,7 +12750,7 @@ paths:
         - catalog
       operationId: patch_api_admin_size_guides_id
       summary: Cập nhật bảng size
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12827,7 +12827,7 @@ paths:
         - inventory
       operationId: get_api_admin_inventory
       summary: Tồn kho theo SKU
-      description: "**Quyền:** `inventory:read`."
+      description: "**Quyền:** `read:Inventory`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -12915,7 +12915,7 @@ paths:
         - inventory
       operationId: get_api_admin_inventory_movements
       summary: Lịch sử biến động kho
-      description: "**Quyền:** `inventory:read`."
+      description: "**Quyền:** `read:Inventory`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -13052,7 +13052,7 @@ paths:
         - inventory
       operationId: post_api_admin_inventory_receipts
       summary: Nhập kho
-      description: "**Quyền:** `inventory:write`. Bắt buộc header `Idempotency-Key`."
+      description: "**Quyền:** `write:Inventory`. Bắt buộc header `Idempotency-Key`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -13126,7 +13126,7 @@ paths:
         - inventory
       operationId: post_api_admin_inventory_adjustments
       summary: Điều chỉnh tồn kho
-      description: "**Quyền:** `inventory:write`. Bắt buộc header `Idempotency-Key`."
+      description: "**Quyền:** `write:Inventory`. Bắt buộc header `Idempotency-Key`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -13200,7 +13200,7 @@ paths:
         - inventory
       operationId: get_api_admin_inventory_reconciliation
       summary: Đối soát tồn kho với ledger
-      description: "**Quyền:** `inventory:read`."
+      description: "**Quyền:** `read:Inventory`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -13930,7 +13930,7 @@ paths:
         - audit
       operationId: get_api_admin_audit_logs
       summary: Danh sách nhật ký thao tác
-      description: "**Quyền:** `audit:read`."
+      description: "**Quyền:** `read:AuditLog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -14084,7 +14084,7 @@ paths:
         - audit
       operationId: get_api_admin_audit_logs_id
       summary: Chi tiết nhật ký thao tác
-      description: "**Quyền:** `audit:read`."
+      description: "**Quyền:** `read:AuditLog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -14164,7 +14164,7 @@ paths:
         - staff
       operationId: get_api_admin_roles
       summary: Danh sách vai trò và quyền
-      description: "**Quyền:** `staff:read`."
+      description: "**Quyền:** `read:Staff`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -14200,7 +14200,7 @@ paths:
         - staff
       operationId: get_api_admin_staff
       summary: Danh sách nhân viên
-      description: "**Quyền:** `staff:read`."
+      description: "**Quyền:** `read:Staff`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -14254,8 +14254,12 @@ paths:
                     items:
                       type: object
                       properties:
-                        role:
-                          $ref: "#/components/schemas/Role"
+                        version:
+                          type: number
+                        id:
+                          type: string
+                        accountStatus:
+                          $ref: "#/components/schemas/AccountStatus"
                         staffRole:
                           type:
                             - string
@@ -14268,26 +14272,22 @@ paths:
                             - owner
                             - support
                             - null
-                        version:
-                          type: number
-                        id:
-                          type: string
-                        accountStatus:
-                          $ref: "#/components/schemas/AccountStatus"
                         displayName:
                           type:
                             - string
                             - "null"
                         email:
                           type: string
+                        role:
+                          $ref: "#/components/schemas/Role"
                       required:
-                        - role
-                        - staffRole
                         - version
                         - id
                         - accountStatus
+                        - staffRole
                         - displayName
                         - email
+                        - role
                   message:
                     type: string
                   meta:
@@ -14309,7 +14309,7 @@ paths:
         - staff
       operationId: get_api_admin_customers
       summary: Danh sách khách hàng
-      description: "**Quyền:** `customer:read`."
+      description: "**Quyền:** `read:Customer`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -14363,8 +14363,12 @@ paths:
                     items:
                       type: object
                       properties:
-                        role:
-                          $ref: "#/components/schemas/Role"
+                        version:
+                          type: number
+                        id:
+                          type: string
+                        accountStatus:
+                          $ref: "#/components/schemas/AccountStatus"
                         staffRole:
                           type:
                             - string
@@ -14377,26 +14381,22 @@ paths:
                             - owner
                             - support
                             - null
-                        version:
-                          type: number
-                        id:
-                          type: string
-                        accountStatus:
-                          $ref: "#/components/schemas/AccountStatus"
                         displayName:
                           type:
                             - string
                             - "null"
                         email:
                           type: string
+                        role:
+                          $ref: "#/components/schemas/Role"
                       required:
-                        - role
-                        - staffRole
                         - version
                         - id
                         - accountStatus
+                        - staffRole
                         - displayName
                         - email
+                        - role
                   message:
                     type: string
                   meta:
@@ -14418,7 +14418,7 @@ paths:
         - staff
       operationId: post_api_admin_staff_invitations
       summary: Mời nhân viên
-      description: "**Quyền:** `staff:manage`."
+      description: "**Quyền:** `manage:Staff`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -14536,7 +14536,7 @@ paths:
         - staff
       operationId: patch_api_admin_staff_id_role
       summary: Đổi vai trò nhân viên
-      description: "**Quyền:** `staff:manage`."
+      description: "**Quyền:** `manage:Staff`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -14630,7 +14630,7 @@ paths:
         - staff
       operationId: patch_api_admin_staff_id_status
       summary: Đổi trạng thái nhân viên
-      description: "**Quyền:** `staff:manage`."
+      description: "**Quyền:** `manage:Staff`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -14720,7 +14720,7 @@ paths:
         - staff
       operationId: patch_api_admin_customers_id_status
       summary: Đổi trạng thái khách hàng
-      description: "**Quyền:** `customer:manage`."
+      description: "**Quyền:** `manage:Customer`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -15222,7 +15222,7 @@ paths:
         - products
       operationId: post_api_products
       summary: Tạo sản phẩm
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -15350,7 +15350,7 @@ paths:
         - products
       operationId: put_api_products_id
       summary: Cập nhật sản phẩm
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -15449,7 +15449,7 @@ paths:
         - products
       operationId: delete_api_products_id
       summary: Xoá sản phẩm
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -15688,7 +15688,7 @@ paths:
         - products
       operationId: post_api_products_id_images
       summary: Thêm ảnh sản phẩm
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -15754,7 +15754,7 @@ paths:
         - products
       operationId: delete_api_products_id_images_imageId
       summary: Xoá ảnh sản phẩm
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -15879,7 +15879,7 @@ paths:
         - categories
       operationId: post_api_categories
       summary: Tạo danh mục
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -15964,7 +15964,7 @@ paths:
         - categories
       operationId: put_api_categories_id
       summary: Cập nhật danh mục
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -16019,7 +16019,7 @@ paths:
         - categories
       operationId: delete_api_categories_id
       summary: Xoá danh mục
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -16131,7 +16131,7 @@ paths:
         - coupons
       operationId: get_api_coupons
       summary: Danh sách coupon
-      description: "**Quyền:** `promotion:read`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
+      description: "**Quyền:** `read:Promotion`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -16221,7 +16221,7 @@ paths:
         - coupons
       operationId: post_api_coupons
       summary: Tạo coupon
-      description: "**Quyền:** `promotion:write`."
+      description: "**Quyền:** `write:Promotion`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -16291,7 +16291,7 @@ paths:
         - coupons
       operationId: put_api_coupons_id
       summary: Cập nhật coupon
-      description: "**Quyền:** `promotion:write`."
+      description: "**Quyền:** `write:Promotion`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -16373,7 +16373,7 @@ paths:
         - coupons
       operationId: delete_api_coupons_id
       summary: Xoá coupon
-      description: "**Quyền:** `promotion:write`."
+      description: "**Quyền:** `write:Promotion`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -16414,7 +16414,7 @@ paths:
         - orders
       operationId: get_api_orders
       summary: Danh sách đơn hàng (Admin)
-      description: "**Quyền:** `order:read`."
+      description: "**Quyền:** `read:Order`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -16824,7 +16824,7 @@ paths:
       description: |-
         Chỉ tạo yêu cầu `pending`; tiền và tồn kho được xử lý ở bước riêng.
 
-        **Quyền:** `refund:manage`. Bắt buộc header `Idempotency-Key`.
+        **Quyền:** `manage:Refund`. Bắt buộc header `Idempotency-Key`.
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -17020,7 +17020,7 @@ paths:
         - refunds
       operationId: get_api_refunds
       summary: Danh sách hoàn tiền
-      description: "**Quyền:** `refund:read`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
+      description: "**Quyền:** `read:Refund`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -17480,7 +17480,7 @@ paths:
         - dashboard
       operationId: get_api_dashboard_stats
       summary: Số liệu tổng quan
-      description: "**Quyền:** `report:read`."
+      description: "**Quyền:** `read:Report`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -17511,7 +17511,7 @@ paths:
         - files
       operationId: get_api_files_sign_upload_url
       summary: Lấy URL ký upload Cloudinary
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -17601,7 +17601,7 @@ paths:
         - files
       operationId: get_api_files_sign_upload_urls
       summary: Lấy nhiều URL ký upload Cloudinary
-      description: "**Quyền:** `catalog:write`."
+      description: "**Quyền:** `write:Catalog`."
       security:
         - sessionCookie: []
         - bearerAuth: []
@@ -21437,6 +21437,138 @@ components:
           schema:
             $ref: "#/components/schemas/ApiError"
   schemas:
+    AbilityRule:
+      type: object
+      properties:
+        action:
+          anyOf:
+            - type: string
+              enum:
+                - read
+            - type: string
+              enum:
+                - write
+            - type: string
+              enum:
+                - manage
+            - type: string
+              enum:
+                - publish
+            - type: string
+              enum:
+                - moderate
+            - type: string
+              enum:
+                - reply
+            - type: string
+              enum:
+                - export
+            - type: string
+              enum:
+                - "*"
+            - type: array
+              items:
+                type: string
+                enum:
+                  - "*"
+                  - export
+                  - manage
+                  - moderate
+                  - publish
+                  - read
+                  - reply
+                  - write
+        subject:
+          anyOf:
+            - type: string
+              enum:
+                - System
+            - type: string
+              enum:
+                - Staff
+            - type: string
+              enum:
+                - Customer
+            - type: string
+              enum:
+                - AuditLog
+            - type: string
+              enum:
+                - Catalog
+            - type: string
+              enum:
+                - Inventory
+            - type: string
+              enum:
+                - Settings
+            - type: string
+              enum:
+                - Promotion
+            - type: string
+              enum:
+                - Order
+            - type: string
+              enum:
+                - Payment
+            - type: string
+              enum:
+                - Fulfillment
+            - type: string
+              enum:
+                - Return
+            - type: string
+              enum:
+                - Refund
+            - type: string
+              enum:
+                - Review
+            - type: string
+              enum:
+                - Content
+            - type: string
+              enum:
+                - Support
+            - type: string
+              enum:
+                - Notification
+            - type: string
+              enum:
+                - Report
+            - type: string
+              enum:
+                - all
+            - type: array
+              items:
+                type: string
+                enum:
+                  - AuditLog
+                  - Catalog
+                  - Content
+                  - Customer
+                  - Fulfillment
+                  - Inventory
+                  - Notification
+                  - Order
+                  - Payment
+                  - Promotion
+                  - Refund
+                  - Report
+                  - Return
+                  - Review
+                  - Settings
+                  - Staff
+                  - Support
+                  - System
+                  - all
+        conditions:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/JsonValue"
+        inverted:
+          type: boolean
+      required:
+        - action
+        - subject
     AccountStatus:
       type: string
       enum:
@@ -22696,45 +22828,6 @@ components:
         - failed
         - paid
         - pending
-    Permission:
-      type: string
-      enum:
-        - audit:read
-        - catalog:read
-        - catalog:write
-        - content:publish
-        - content:read
-        - content:write
-        - customer:manage
-        - customer:read
-        - fulfillment:manage
-        - fulfillment:read
-        - inventory:read
-        - inventory:write
-        - notification:manage
-        - notification:read
-        - order:manage
-        - order:read
-        - payment:manage
-        - payment:read
-        - promotion:read
-        - promotion:write
-        - refund:manage
-        - refund:read
-        - report:export
-        - report:read
-        - return:manage
-        - return:read
-        - review:moderate
-        - review:read
-        - review:reply
-        - settings:manage
-        - staff:manage
-        - staff:read
-        - support:manage
-        - support:read
-        - system:manage
-        - system:read
     Product:
       type: object
       properties:

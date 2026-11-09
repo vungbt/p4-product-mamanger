@@ -84,7 +84,7 @@ export interface paths {
     };
     /**
      * Danh sách nhật ký thao tác
-     * @description **Quyền:** `audit:read`.
+     * @description **Quyền:** `read:AuditLog`.
      */
     get: operations['get_api_admin_audit_logs'];
     put?: never;
@@ -104,7 +104,7 @@ export interface paths {
     };
     /**
      * Chi tiết nhật ký thao tác
-     * @description **Quyền:** `audit:read`.
+     * @description **Quyền:** `read:AuditLog`.
      */
     get: operations['get_api_admin_audit_logs_id'];
     put?: never;
@@ -124,13 +124,13 @@ export interface paths {
     };
     /**
      * Danh sách banner (Admin)
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_banners'];
     put?: never;
     /**
      * Tạo banner
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     post: operations['post_api_admin_banners'];
     delete?: never;
@@ -148,7 +148,7 @@ export interface paths {
     };
     /**
      * Chi tiết banner (Admin)
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_banners_id'];
     put?: never;
@@ -158,7 +158,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật banner
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     patch: operations['patch_api_admin_banners_id'];
     trace?: never;
@@ -172,13 +172,13 @@ export interface paths {
     };
     /**
      * Danh sách bộ sưu tập (Admin)
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_collections'];
     put?: never;
     /**
      * Tạo bộ sưu tập
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     post: operations['post_api_admin_collections'];
     delete?: never;
@@ -196,7 +196,7 @@ export interface paths {
     };
     /**
      * Chi tiết bộ sưu tập (Admin)
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_collections_id'];
     put?: never;
@@ -206,7 +206,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật bộ sưu tập
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     patch: operations['patch_api_admin_collections_id'];
     trace?: never;
@@ -220,7 +220,7 @@ export interface paths {
     };
     /**
      * Chi tiết coupon
-     * @description **Quyền:** `promotion:read`.
+     * @description **Quyền:** `read:Promotion`.
      */
     get: operations['get_api_admin_coupons_id'];
     put?: never;
@@ -240,7 +240,7 @@ export interface paths {
     };
     /**
      * Lịch sử dùng coupon
-     * @description **Quyền:** `promotion:read`.
+     * @description **Quyền:** `read:Promotion`.
      */
     get: operations['get_api_admin_coupons_id_redemptions'];
     put?: never;
@@ -260,7 +260,7 @@ export interface paths {
     };
     /**
      * Danh sách khách hàng
-     * @description **Quyền:** `customer:read`.
+     * @description **Quyền:** `read:Customer`.
      */
     get: operations['get_api_admin_customers'];
     put?: never;
@@ -286,7 +286,7 @@ export interface paths {
     head?: never;
     /**
      * Đổi trạng thái khách hàng
-     * @description **Quyền:** `customer:manage`.
+     * @description **Quyền:** `manage:Customer`.
      */
     patch: operations['patch_api_admin_customers_id_status'];
     trace?: never;
@@ -300,7 +300,7 @@ export interface paths {
     };
     /**
      * Danh sách yêu cầu đổi hàng (Admin)
-     * @description **Quyền:** `return:read`.
+     * @description **Quyền:** `read:Return`.
      */
     get: operations['get_api_admin_exchanges'];
     put?: never;
@@ -340,7 +340,7 @@ export interface paths {
     };
     /**
      * Xem bố cục trang chủ (Admin)
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_home_layout'];
     put?: never;
@@ -350,7 +350,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật bố cục trang chủ
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     patch: operations['patch_api_admin_home_layout'];
     trace?: never;
@@ -406,7 +406,7 @@ export interface paths {
     };
     /**
      * Tồn kho theo SKU
-     * @description **Quyền:** `inventory:read`.
+     * @description **Quyền:** `read:Inventory`.
      */
     get: operations['get_api_admin_inventory'];
     put?: never;
@@ -428,7 +428,7 @@ export interface paths {
     put?: never;
     /**
      * Điều chỉnh tồn kho
-     * @description **Quyền:** `inventory:write`. Bắt buộc header `Idempotency-Key`.
+     * @description **Quyền:** `write:Inventory`. Bắt buộc header `Idempotency-Key`.
      */
     post: operations['post_api_admin_inventory_adjustments'];
     delete?: never;
@@ -446,7 +446,7 @@ export interface paths {
     };
     /**
      * Lịch sử biến động kho
-     * @description **Quyền:** `inventory:read`.
+     * @description **Quyền:** `read:Inventory`.
      */
     get: operations['get_api_admin_inventory_movements'];
     put?: never;
@@ -468,7 +468,7 @@ export interface paths {
     put?: never;
     /**
      * Nhập kho
-     * @description **Quyền:** `inventory:write`. Bắt buộc header `Idempotency-Key`.
+     * @description **Quyền:** `write:Inventory`. Bắt buộc header `Idempotency-Key`.
      */
     post: operations['post_api_admin_inventory_receipts'];
     delete?: never;
@@ -486,7 +486,7 @@ export interface paths {
     };
     /**
      * Đối soát tồn kho với ledger
-     * @description **Quyền:** `inventory:read`.
+     * @description **Quyền:** `read:Inventory`.
      */
     get: operations['get_api_admin_inventory_reconciliation'];
     put?: never;
@@ -506,7 +506,7 @@ export interface paths {
     };
     /**
      * Danh sách job nền
-     * @description **Quyền:** `system:read`.
+     * @description **Quyền:** `read:System`.
      */
     get: operations['get_api_admin_jobs'];
     put?: never;
@@ -526,7 +526,7 @@ export interface paths {
     };
     /**
      * Chi tiết job nền
-     * @description **Quyền:** `system:read`.
+     * @description **Quyền:** `read:System`.
      */
     get: operations['get_api_admin_jobs_id'];
     put?: never;
@@ -548,7 +548,7 @@ export interface paths {
     put?: never;
     /**
      * Chạy lại job nền
-     * @description **Quyền:** `system:manage`.
+     * @description **Quyền:** `manage:System`.
      */
     post: operations['post_api_admin_jobs_id_retry'];
     delete?: never;
@@ -566,7 +566,7 @@ export interface paths {
     };
     /**
      * Xem cấu hình điều hướng (Admin)
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_navigation_placement'];
     put?: never;
@@ -576,7 +576,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật điều hướng
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     patch: operations['patch_api_admin_navigation_placement'];
     trace?: never;
@@ -590,12 +590,12 @@ export interface paths {
     };
     /**
      * Danh sách mẫu thông báo
-     * @description **Quyền:** `notification:read`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`.
+     * @description **Quyền:** `read:Notification`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`.
      */
     get: operations['get_api_admin_notification_templates'];
     /**
      * Lưu mẫu thông báo
-     * @description **Quyền:** `notification:manage`.
+     * @description **Quyền:** `manage:Notification`.
      */
     put: operations['put_api_admin_notification_templates'];
     post?: never;
@@ -616,7 +616,7 @@ export interface paths {
     put?: never;
     /**
      * Chạy đối soát tồn kho
-     * @description **Quyền:** `system:manage`.
+     * @description **Quyền:** `manage:System`.
      */
     post: operations['post_api_admin_operations_inventory_reconciliation'];
     delete?: never;
@@ -634,13 +634,13 @@ export interface paths {
     };
     /**
      * Danh sách trang CMS (Admin)
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_pages'];
     put?: never;
     /**
      * Tạo trang CMS nháp
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     post: operations['post_api_admin_pages'];
     delete?: never;
@@ -658,7 +658,7 @@ export interface paths {
     };
     /**
      * Chi tiết trang CMS (Admin)
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_pages_id'];
     put?: never;
@@ -670,7 +670,7 @@ export interface paths {
      * Cập nhật trang CMS nháp
      * @description Bản đang xuất bản giữ nguyên cho đến khi publish lại.
      *
-     *     **Quyền:** `content:write`.
+     *     **Quyền:** `write:Content`.
      */
     patch: operations['patch_api_admin_pages_id'];
     trace?: never;
@@ -686,7 +686,7 @@ export interface paths {
     put?: never;
     /**
      * Lưu trữ trang CMS
-     * @description **Quyền:** `content:publish`.
+     * @description **Quyền:** `publish:Content`.
      */
     post: operations['post_api_admin_pages_id_archive'];
     delete?: never;
@@ -708,7 +708,7 @@ export interface paths {
      * Xuất bản hoặc lên lịch trang CMS
      * @description Có `scheduledAt` thì lên lịch; không có thì xuất bản ngay.
      *
-     *     **Quyền:** `content:publish`.
+     *     **Quyền:** `publish:Content`.
      */
     post: operations['post_api_admin_pages_id_publish'];
     delete?: never;
@@ -726,7 +726,7 @@ export interface paths {
     };
     /**
      * Lịch sử revision của trang CMS
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_pages_id_revisions'];
     put?: never;
@@ -748,7 +748,7 @@ export interface paths {
     put?: never;
     /**
      * Xác nhận đã thu tiền COD
-     * @description **Quyền:** `payment:manage`.
+     * @description **Quyền:** `manage:Payment`.
      */
     post: operations['post_api_admin_payments_id_cod_collection'];
     delete?: never;
@@ -768,7 +768,7 @@ export interface paths {
     put?: never;
     /**
      * Đối soát lần thanh toán với provider
-     * @description **Quyền:** `payment:manage`.
+     * @description **Quyền:** `manage:Payment`.
      */
     post: operations['post_api_admin_payments_id_reconcile'];
     delete?: never;
@@ -788,7 +788,7 @@ export interface paths {
     put?: never;
     /**
      * Tạo chuyên mục bài viết
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     post: operations['post_api_admin_post_categories'];
     delete?: never;
@@ -812,7 +812,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật chuyên mục bài viết
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     patch: operations['patch_api_admin_post_categories_id'];
     trace?: never;
@@ -828,7 +828,7 @@ export interface paths {
     put?: never;
     /**
      * Tạo thẻ bài viết
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     post: operations['post_api_admin_post_tags'];
     delete?: never;
@@ -852,7 +852,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật thẻ bài viết
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     patch: operations['patch_api_admin_post_tags_id'];
     trace?: never;
@@ -866,13 +866,13 @@ export interface paths {
     };
     /**
      * Danh sách bài viết (Admin)
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_posts'];
     put?: never;
     /**
      * Tạo bài viết nháp
-     * @description **Quyền:** `content:write`.
+     * @description **Quyền:** `write:Content`.
      */
     post: operations['post_api_admin_posts'];
     delete?: never;
@@ -890,7 +890,7 @@ export interface paths {
     };
     /**
      * Chi tiết bài viết (Admin)
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_posts_id'];
     put?: never;
@@ -902,7 +902,7 @@ export interface paths {
      * Cập nhật bài viết nháp
      * @description Bản đang xuất bản giữ nguyên cho đến khi publish lại.
      *
-     *     **Quyền:** `content:write`.
+     *     **Quyền:** `write:Content`.
      */
     patch: operations['patch_api_admin_posts_id'];
     trace?: never;
@@ -918,7 +918,7 @@ export interface paths {
     put?: never;
     /**
      * Lưu trữ bài viết
-     * @description **Quyền:** `content:publish`.
+     * @description **Quyền:** `publish:Content`.
      */
     post: operations['post_api_admin_posts_id_archive'];
     delete?: never;
@@ -940,7 +940,7 @@ export interface paths {
      * Xuất bản hoặc lên lịch bài viết
      * @description Có `scheduledAt` thì lên lịch; không có thì xuất bản ngay.
      *
-     *     **Quyền:** `content:publish`.
+     *     **Quyền:** `publish:Content`.
      */
     post: operations['post_api_admin_posts_id_publish'];
     delete?: never;
@@ -958,7 +958,7 @@ export interface paths {
     };
     /**
      * Lịch sử revision của bài viết
-     * @description **Quyền:** `content:read`.
+     * @description **Quyền:** `read:Content`.
      */
     get: operations['get_api_admin_posts_id_revisions'];
     put?: never;
@@ -978,7 +978,7 @@ export interface paths {
     };
     /**
      * Danh sách sản phẩm (Admin, gồm bản nháp)
-     * @description **Quyền:** `catalog:read`.
+     * @description **Quyền:** `read:Catalog`.
      */
     get: operations['get_api_admin_products'];
     put?: never;
@@ -998,7 +998,7 @@ export interface paths {
     };
     /**
      * Chi tiết sản phẩm (Admin)
-     * @description **Quyền:** `catalog:read`.
+     * @description **Quyền:** `read:Catalog`.
      */
     get: operations['get_api_admin_products_id'];
     put?: never;
@@ -1018,7 +1018,7 @@ export interface paths {
     };
     /**
      * Danh sách SKU của sản phẩm (Admin)
-     * @description **Quyền:** `catalog:read`.
+     * @description **Quyền:** `read:Catalog`.
      */
     get: operations['get_api_admin_products_id_variants'];
     put?: never;
@@ -1038,13 +1038,13 @@ export interface paths {
     };
     /**
      * Danh sách khuyến mãi
-     * @description **Quyền:** `promotion:read`.
+     * @description **Quyền:** `read:Promotion`.
      */
     get: operations['get_api_admin_promotions'];
     put?: never;
     /**
      * Tạo khuyến mãi
-     * @description **Quyền:** `promotion:write`.
+     * @description **Quyền:** `write:Promotion`.
      */
     post: operations['post_api_admin_promotions'];
     delete?: never;
@@ -1062,7 +1062,7 @@ export interface paths {
     };
     /**
      * Chi tiết khuyến mãi
-     * @description **Quyền:** `promotion:read`.
+     * @description **Quyền:** `read:Promotion`.
      */
     get: operations['get_api_admin_promotions_id'];
     put?: never;
@@ -1072,7 +1072,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật khuyến mãi
-     * @description **Quyền:** `promotion:write`.
+     * @description **Quyền:** `write:Promotion`.
      */
     patch: operations['patch_api_admin_promotions_id'];
     trace?: never;
@@ -1088,7 +1088,7 @@ export interface paths {
     put?: never;
     /**
      * Xác nhận đã chuyển khoản hoàn tiền
-     * @description **Quyền:** `refund:manage`.
+     * @description **Quyền:** `manage:Refund`.
      */
     post: operations['post_api_admin_refunds_id_manual_confirmation'];
     delete?: never;
@@ -1108,7 +1108,7 @@ export interface paths {
     put?: never;
     /**
      * Đối soát hoàn tiền với provider
-     * @description **Quyền:** `refund:manage`.
+     * @description **Quyền:** `manage:Refund`.
      */
     post: operations['post_api_admin_refunds_id_reconcile'];
     delete?: never;
@@ -1130,7 +1130,7 @@ export interface paths {
      * Chạy lại hoàn tiền thất bại
      * @description Chỉ áp dụng khi provider đã xác nhận thất bại; trường hợp chưa rõ kết quả phải đối soát trước.
      *
-     *     **Quyền:** `refund:manage`.
+     *     **Quyền:** `manage:Refund`.
      */
     post: operations['post_api_admin_refunds_id_retry'];
     delete?: never;
@@ -1150,7 +1150,7 @@ export interface paths {
     put?: never;
     /**
      * Tạo file export báo cáo
-     * @description **Quyền:** `report:export`. Bắt buộc header `Idempotency-Key`.
+     * @description **Quyền:** `export:Report`. Bắt buộc header `Idempotency-Key`.
      */
     post: operations['post_api_admin_report_exports'];
     delete?: never;
@@ -1168,7 +1168,7 @@ export interface paths {
     };
     /**
      * Xem trạng thái export báo cáo
-     * @description **Quyền:** `report:export`.
+     * @description **Quyền:** `export:Report`.
      */
     get: operations['get_api_admin_report_exports_id'];
     put?: never;
@@ -1188,7 +1188,7 @@ export interface paths {
     };
     /**
      * Tải file export báo cáo
-     * @description **Quyền:** `report:export`.
+     * @description **Quyền:** `export:Report`.
      */
     get: operations['get_api_admin_report_exports_id_download'];
     put?: never;
@@ -1208,7 +1208,7 @@ export interface paths {
     };
     /**
      * Báo cáo tồn kho
-     * @description **Quyền:** `report:read`.
+     * @description **Quyền:** `read:Report`.
      */
     get: operations['get_api_admin_reports_inventory'];
     put?: never;
@@ -1228,7 +1228,7 @@ export interface paths {
     };
     /**
      * Báo cáo đơn hàng
-     * @description **Quyền:** `report:read`.
+     * @description **Quyền:** `read:Report`.
      */
     get: operations['get_api_admin_reports_orders'];
     put?: never;
@@ -1248,7 +1248,7 @@ export interface paths {
     };
     /**
      * Báo cáo sản phẩm
-     * @description **Quyền:** `report:read`.
+     * @description **Quyền:** `read:Report`.
      */
     get: operations['get_api_admin_reports_products'];
     put?: never;
@@ -1268,7 +1268,7 @@ export interface paths {
     };
     /**
      * Báo cáo doanh thu
-     * @description **Quyền:** `report:read`.
+     * @description **Quyền:** `read:Report`.
      */
     get: operations['get_api_admin_reports_sales'];
     put?: never;
@@ -1288,7 +1288,7 @@ export interface paths {
     };
     /**
      * Danh sách yêu cầu trả hàng (Admin)
-     * @description **Quyền:** `return:read`.
+     * @description **Quyền:** `read:Return`.
      */
     get: operations['get_api_admin_returns'];
     put?: never;
@@ -1308,7 +1308,7 @@ export interface paths {
     };
     /**
      * Danh sách đánh giá (Admin)
-     * @description **Quyền:** `review:read`.
+     * @description **Quyền:** `read:Review`.
      */
     get: operations['get_api_admin_reviews'];
     put?: never;
@@ -1328,7 +1328,7 @@ export interface paths {
     };
     /**
      * Danh sách vai trò và quyền
-     * @description **Quyền:** `staff:read`.
+     * @description **Quyền:** `read:Staff`.
      */
     get: operations['get_api_admin_roles'];
     put?: never;
@@ -1348,7 +1348,7 @@ export interface paths {
     };
     /**
      * Xem cấu hình thương mại
-     * @description **Quyền:** `settings:manage`.
+     * @description **Quyền:** `manage:Settings`.
      */
     get: operations['get_api_admin_settings_commerce'];
     put?: never;
@@ -1358,7 +1358,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật cấu hình thương mại
-     * @description **Quyền:** `settings:manage`.
+     * @description **Quyền:** `manage:Settings`.
      */
     patch: operations['patch_api_admin_settings_commerce'];
     trace?: never;
@@ -1372,7 +1372,7 @@ export interface paths {
     };
     /**
      * Xem cấu hình shop
-     * @description **Quyền:** `settings:manage`.
+     * @description **Quyền:** `manage:Settings`.
      */
     get: operations['get_api_admin_settings_shop'];
     put?: never;
@@ -1382,7 +1382,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật cấu hình shop
-     * @description **Quyền:** `settings:manage`.
+     * @description **Quyền:** `manage:Settings`.
      */
     patch: operations['patch_api_admin_settings_shop'];
     trace?: never;
@@ -1396,13 +1396,13 @@ export interface paths {
     };
     /**
      * Danh sách phương thức vận chuyển
-     * @description **Quyền:** `settings:manage`.
+     * @description **Quyền:** `manage:Settings`.
      */
     get: operations['get_api_admin_shipping_methods'];
     put?: never;
     /**
      * Tạo phương thức vận chuyển
-     * @description **Quyền:** `settings:manage`.
+     * @description **Quyền:** `manage:Settings`.
      */
     post: operations['post_api_admin_shipping_methods'];
     delete?: never;
@@ -1420,7 +1420,7 @@ export interface paths {
     };
     /**
      * Chi tiết phương thức vận chuyển
-     * @description **Quyền:** `settings:manage`.
+     * @description **Quyền:** `manage:Settings`.
      */
     get: operations['get_api_admin_shipping_methods_id'];
     put?: never;
@@ -1430,7 +1430,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật phương thức vận chuyển
-     * @description **Quyền:** `settings:manage`.
+     * @description **Quyền:** `manage:Settings`.
      */
     patch: operations['patch_api_admin_shipping_methods_id'];
     trace?: never;
@@ -1444,13 +1444,13 @@ export interface paths {
     };
     /**
      * Danh sách bảng size
-     * @description **Quyền:** `catalog:read`.
+     * @description **Quyền:** `read:Catalog`.
      */
     get: operations['get_api_admin_size_guides'];
     put?: never;
     /**
      * Tạo bảng size
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     post: operations['post_api_admin_size_guides'];
     delete?: never;
@@ -1468,7 +1468,7 @@ export interface paths {
     };
     /**
      * Chi tiết bảng size
-     * @description **Quyền:** `catalog:read`.
+     * @description **Quyền:** `read:Catalog`.
      */
     get: operations['get_api_admin_size_guides_id'];
     put?: never;
@@ -1478,7 +1478,7 @@ export interface paths {
     head?: never;
     /**
      * Cập nhật bảng size
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     patch: operations['patch_api_admin_size_guides_id'];
     trace?: never;
@@ -1492,7 +1492,7 @@ export interface paths {
     };
     /**
      * Danh sách nhân viên
-     * @description **Quyền:** `staff:read`.
+     * @description **Quyền:** `read:Staff`.
      */
     get: operations['get_api_admin_staff'];
     put?: never;
@@ -1518,7 +1518,7 @@ export interface paths {
     head?: never;
     /**
      * Đổi vai trò nhân viên
-     * @description **Quyền:** `staff:manage`.
+     * @description **Quyền:** `manage:Staff`.
      */
     patch: operations['patch_api_admin_staff_id_role'];
     trace?: never;
@@ -1538,7 +1538,7 @@ export interface paths {
     head?: never;
     /**
      * Đổi trạng thái nhân viên
-     * @description **Quyền:** `staff:manage`.
+     * @description **Quyền:** `manage:Staff`.
      */
     patch: operations['patch_api_admin_staff_id_status'];
     trace?: never;
@@ -1554,7 +1554,7 @@ export interface paths {
     put?: never;
     /**
      * Mời nhân viên
-     * @description **Quyền:** `staff:manage`.
+     * @description **Quyền:** `manage:Staff`.
      */
     post: operations['post_api_admin_staff_invitations'];
     delete?: never;
@@ -1572,7 +1572,7 @@ export interface paths {
     };
     /**
      * Danh sách ticket (Admin)
-     * @description **Quyền:** `support:read`.
+     * @description **Quyền:** `read:Support`.
      */
     get: operations['get_api_admin_support_tickets'];
     put?: never;
@@ -1594,7 +1594,7 @@ export interface paths {
     put?: never;
     /**
      * Phân công ticket
-     * @description **Quyền:** `support:manage`.
+     * @description **Quyền:** `manage:Support`.
      */
     post: operations['post_api_admin_support_tickets_id_assign'];
     delete?: never;
@@ -1612,7 +1612,7 @@ export interface paths {
     };
     /**
      * Contract trạng thái của hệ thống
-     * @description **Quyền:** `system:read`.
+     * @description **Quyền:** `read:System`.
      */
     get: operations['get_api_admin_system_contracts'];
     put?: never;
@@ -1632,7 +1632,7 @@ export interface paths {
     };
     /**
      * Tìm SKU trên toàn catalog
-     * @description **Quyền:** `catalog:read`.
+     * @description **Quyền:** `read:Catalog`.
      */
     get: operations['get_api_admin_variants'];
     put?: never;
@@ -2501,7 +2501,7 @@ export interface paths {
     put?: never;
     /**
      * Duyệt yêu cầu huỷ
-     * @description **Quyền:** `order:manage`.
+     * @description **Quyền:** `manage:Order`.
      */
     post: operations['post_api_cancellation_requests_id_approve'];
     delete?: never;
@@ -2521,7 +2521,7 @@ export interface paths {
     put?: never;
     /**
      * Từ chối yêu cầu huỷ
-     * @description **Quyền:** `order:manage`.
+     * @description **Quyền:** `manage:Order`.
      */
     post: operations['post_api_cancellation_requests_id_reject'];
     delete?: never;
@@ -2633,7 +2633,7 @@ export interface paths {
     put?: never;
     /**
      * Tạo danh mục
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     post: operations['post_api_categories'];
     delete?: never;
@@ -2656,13 +2656,13 @@ export interface paths {
     get: operations['get_api_categories_id'];
     /**
      * Cập nhật danh mục
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     put: operations['put_api_categories_id'];
     post?: never;
     /**
      * Xoá danh mục
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     delete: operations['delete_api_categories_id'];
     options?: never;
@@ -2761,13 +2761,13 @@ export interface paths {
     };
     /**
      * Danh sách coupon
-     * @description **Quyền:** `promotion:read`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`.
+     * @description **Quyền:** `read:Promotion`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`.
      */
     get: operations['get_api_coupons'];
     put?: never;
     /**
      * Tạo coupon
-     * @description **Quyền:** `promotion:write`.
+     * @description **Quyền:** `write:Promotion`.
      */
     post: operations['post_api_coupons'];
     delete?: never;
@@ -2786,13 +2786,13 @@ export interface paths {
     get?: never;
     /**
      * Cập nhật coupon
-     * @description **Quyền:** `promotion:write`.
+     * @description **Quyền:** `write:Promotion`.
      */
     put: operations['put_api_coupons_id'];
     post?: never;
     /**
      * Xoá coupon
-     * @description **Quyền:** `promotion:write`.
+     * @description **Quyền:** `write:Promotion`.
      */
     delete: operations['delete_api_coupons_id'];
     options?: never;
@@ -2829,7 +2829,7 @@ export interface paths {
     };
     /**
      * Số liệu tổng quan
-     * @description **Quyền:** `report:read`.
+     * @description **Quyền:** `read:Report`.
      */
     get: operations['get_api_dashboard_stats'];
     put?: never;
@@ -2871,7 +2871,7 @@ export interface paths {
     put?: never;
     /**
      * Duyệt đổi hàng
-     * @description **Quyền:** `return:manage`.
+     * @description **Quyền:** `manage:Return`.
      */
     post: operations['post_api_exchanges_id_approve'];
     delete?: never;
@@ -2893,7 +2893,7 @@ export interface paths {
      * Tạo đơn thay thế
      * @description Gọi lặp không tạo đơn thứ hai.
      *
-     *     **Quyền:** `return:manage`.
+     *     **Quyền:** `manage:Return`.
      */
     post: operations['post_api_exchanges_id_create_replacement'];
     delete?: never;
@@ -2913,7 +2913,7 @@ export interface paths {
     put?: never;
     /**
      * Từ chối đổi hàng
-     * @description **Quyền:** `return:manage`.
+     * @description **Quyền:** `manage:Return`.
      */
     post: operations['post_api_exchanges_id_reject'];
     delete?: never;
@@ -2991,7 +2991,7 @@ export interface paths {
     };
     /**
      * Lấy URL ký upload Cloudinary
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     get: operations['get_api_files_sign_upload_url'];
     put?: never;
@@ -3011,7 +3011,7 @@ export interface paths {
     };
     /**
      * Lấy nhiều URL ký upload Cloudinary
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     get: operations['get_api_files_sign_upload_urls'];
     put?: never;
@@ -3135,7 +3135,7 @@ export interface paths {
     };
     /**
      * Metrics vận hành
-     * @description **Quyền:** `system:read`.
+     * @description **Quyền:** `read:System`.
      */
     get: operations['get_api_internal_metrics'];
     put?: never;
@@ -3469,7 +3469,7 @@ export interface paths {
     };
     /**
      * Danh sách đơn hàng (Admin)
-     * @description **Quyền:** `order:read`.
+     * @description **Quyền:** `read:Order`.
      */
     get: operations['get_api_orders'];
     put?: never;
@@ -3557,7 +3557,7 @@ export interface paths {
     put?: never;
     /**
      * Xác nhận đơn
-     * @description **Quyền:** `order:manage`.
+     * @description **Quyền:** `manage:Order`.
      */
     post: operations['post_api_orders_id_confirm'];
     delete?: never;
@@ -3659,7 +3659,7 @@ export interface paths {
      * Tạo yêu cầu hoàn tiền
      * @description Chỉ tạo yêu cầu `pending`; tiền và tồn kho được xử lý ở bước riêng.
      *
-     *     **Quyền:** `refund:manage`. Bắt buộc header `Idempotency-Key`.
+     *     **Quyền:** `manage:Refund`. Bắt buộc header `Idempotency-Key`.
      */
     post: operations['post_api_orders_id_refunds'];
     delete?: never;
@@ -3705,7 +3705,7 @@ export interface paths {
      * Tạo kiện hàng
      * @description Một đơn có thể tách nhiều kiện; không chia vượt số lượng đã đặt.
      *
-     *     **Quyền:** `fulfillment:manage`.
+     *     **Quyền:** `manage:Fulfillment`.
      */
     post: operations['post_api_orders_id_shipments'];
     delete?: never;
@@ -3725,7 +3725,7 @@ export interface paths {
     put?: never;
     /**
      * Bắt đầu xử lý đơn
-     * @description **Quyền:** `order:manage`.
+     * @description **Quyền:** `manage:Order`.
      */
     post: operations['post_api_orders_id_start_processing'];
     delete?: never;
@@ -4053,7 +4053,7 @@ export interface paths {
     put?: never;
     /**
      * Tạo sản phẩm
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     post: operations['post_api_products'];
     delete?: never;
@@ -4076,13 +4076,13 @@ export interface paths {
     get: operations['get_api_products_id'];
     /**
      * Cập nhật sản phẩm
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     put: operations['put_api_products_id'];
     post?: never;
     /**
      * Xoá sản phẩm
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     delete: operations['delete_api_products_id'];
     options?: never;
@@ -4101,7 +4101,7 @@ export interface paths {
     put?: never;
     /**
      * Thêm ảnh sản phẩm
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     post: operations['post_api_products_id_images'];
     delete?: never;
@@ -4122,7 +4122,7 @@ export interface paths {
     post?: never;
     /**
      * Xoá ảnh sản phẩm
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     delete: operations['delete_api_products_id_images_imageId'];
     options?: never;
@@ -4145,7 +4145,7 @@ export interface paths {
     head?: never;
     /**
      * Đổi trạng thái xuất bản sản phẩm
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     patch: operations['patch_api_products_id_publication'];
     trace?: never;
@@ -4229,7 +4229,7 @@ export interface paths {
     put?: never;
     /**
      * Tạo SKU
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     post: operations['post_api_products_id_variants'];
     delete?: never;
@@ -4255,7 +4255,7 @@ export interface paths {
      * Cập nhật SKU
      * @description Không nhận `stock`, `onHand`, `reserved`: tồn kho chỉ đổi qua ledger ở nhóm inventory.
      *
-     *     **Quyền:** `catalog:write`.
+     *     **Quyền:** `write:Catalog`.
      */
     patch: operations['patch_api_products_id_variants_variantId'];
     trace?: never;
@@ -4275,7 +4275,7 @@ export interface paths {
     head?: never;
     /**
      * Gán ảnh cho SKU
-     * @description **Quyền:** `catalog:write`.
+     * @description **Quyền:** `write:Catalog`.
      */
     patch: operations['patch_api_products_id_variants_variantId_images'];
     trace?: never;
@@ -4331,7 +4331,7 @@ export interface paths {
     };
     /**
      * Danh sách hoàn tiền
-     * @description **Quyền:** `refund:read`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`.
+     * @description **Quyền:** `read:Refund`. Không gửi tham số phân trang thì trả toàn bộ dưới dạng mảng, không có `meta`.
      */
     get: operations['get_api_refunds'];
     put?: never;
@@ -4393,7 +4393,7 @@ export interface paths {
     put?: never;
     /**
      * Duyệt trả hàng
-     * @description **Quyền:** `return:manage`.
+     * @description **Quyền:** `manage:Return`.
      */
     post: operations['post_api_returns_id_approve'];
     delete?: never;
@@ -4413,7 +4413,7 @@ export interface paths {
     put?: never;
     /**
      * Hoàn tất trả hàng
-     * @description **Quyền:** `return:manage`.
+     * @description **Quyền:** `manage:Return`.
      */
     post: operations['post_api_returns_id_complete'];
     delete?: never;
@@ -4433,7 +4433,7 @@ export interface paths {
     put?: never;
     /**
      * Đánh dấu hàng trả đang về
-     * @description **Quyền:** `return:manage`.
+     * @description **Quyền:** `manage:Return`.
      */
     post: operations['post_api_returns_id_in_transit'];
     delete?: never;
@@ -4455,7 +4455,7 @@ export interface paths {
      * Kiểm tra hàng trả
      * @description Chỉ số lượng `saleableQuantity` được cộng lại tồn kho.
      *
-     *     **Quyền:** `return:manage`.
+     *     **Quyền:** `manage:Return`.
      */
     post: operations['post_api_returns_id_inspect'];
     delete?: never;
@@ -4475,7 +4475,7 @@ export interface paths {
     put?: never;
     /**
      * Đánh dấu đã nhận hàng trả
-     * @description **Quyền:** `return:manage`.
+     * @description **Quyền:** `manage:Return`.
      */
     post: operations['post_api_returns_id_receive'];
     delete?: never;
@@ -4495,7 +4495,7 @@ export interface paths {
     put?: never;
     /**
      * Từ chối trả hàng
-     * @description **Quyền:** `return:manage`.
+     * @description **Quyền:** `manage:Return`.
      */
     post: operations['post_api_returns_id_reject'];
     delete?: never;
@@ -4555,7 +4555,7 @@ export interface paths {
     put?: never;
     /**
      * Kiểm duyệt đánh giá
-     * @description **Quyền:** `review:moderate`.
+     * @description **Quyền:** `moderate:Review`.
      */
     post: operations['post_api_reviews_id_moderation'];
     delete?: never;
@@ -4574,7 +4574,7 @@ export interface paths {
     get?: never;
     /**
      * Phản hồi đánh giá
-     * @description **Quyền:** `review:reply`.
+     * @description **Quyền:** `reply:Review`.
      */
     put: operations['put_api_reviews_id_reply'];
     post?: never;
@@ -4635,7 +4635,7 @@ export interface paths {
     put?: never;
     /**
      * Huỷ kiện hàng
-     * @description **Quyền:** `fulfillment:manage`.
+     * @description **Quyền:** `manage:Fulfillment`.
      */
     post: operations['post_api_shipments_id_cancel'];
     delete?: never;
@@ -4657,7 +4657,7 @@ export interface paths {
      * Đánh dấu đã giao
      * @description Với COD, giao xong chưa đồng nghĩa đã thu tiền; xác nhận riêng qua `cod-collection`.
      *
-     *     **Quyền:** `fulfillment:manage`.
+     *     **Quyền:** `manage:Fulfillment`.
      */
     post: operations['post_api_shipments_id_deliver'];
     delete?: never;
@@ -4697,7 +4697,7 @@ export interface paths {
     put?: never;
     /**
      * Đánh dấu giao thất bại
-     * @description **Quyền:** `fulfillment:manage`.
+     * @description **Quyền:** `manage:Fulfillment`.
      */
     post: operations['post_api_shipments_id_fail'];
     delete?: never;
@@ -4717,7 +4717,7 @@ export interface paths {
     put?: never;
     /**
      * Bàn giao cho đơn vị vận chuyển
-     * @description **Quyền:** `fulfillment:manage`.
+     * @description **Quyền:** `manage:Fulfillment`.
      */
     post: operations['post_api_shipments_id_handover'];
     delete?: never;
@@ -4737,7 +4737,7 @@ export interface paths {
     put?: never;
     /**
      * Đánh dấu thất lạc
-     * @description **Quyền:** `fulfillment:manage`.
+     * @description **Quyền:** `manage:Fulfillment`.
      */
     post: operations['post_api_shipments_id_lose'];
     delete?: never;
@@ -4757,7 +4757,7 @@ export interface paths {
     put?: never;
     /**
      * Đánh dấu đang giao
-     * @description **Quyền:** `fulfillment:manage`.
+     * @description **Quyền:** `manage:Fulfillment`.
      */
     post: operations['post_api_shipments_id_out_for_delivery'];
     delete?: never;
@@ -4777,7 +4777,7 @@ export interface paths {
     put?: never;
     /**
      * Đóng gói kiện hàng
-     * @description **Quyền:** `fulfillment:manage`.
+     * @description **Quyền:** `manage:Fulfillment`.
      */
     post: operations['post_api_shipments_id_pack'];
     delete?: never;
@@ -4797,7 +4797,7 @@ export interface paths {
     put?: never;
     /**
      * Đánh dấu sẵn sàng giao
-     * @description **Quyền:** `fulfillment:manage`.
+     * @description **Quyền:** `manage:Fulfillment`.
      */
     post: operations['post_api_shipments_id_ready'];
     delete?: never;
@@ -4817,7 +4817,7 @@ export interface paths {
     put?: never;
     /**
      * Đánh dấu hoàn về
-     * @description **Quyền:** `fulfillment:manage`.
+     * @description **Quyền:** `manage:Fulfillment`.
      */
     post: operations['post_api_shipments_id_return'];
     delete?: never;
@@ -5180,6 +5180,63 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    AbilityRule: {
+      action:
+        | 'read'
+        | 'write'
+        | 'manage'
+        | 'publish'
+        | 'moderate'
+        | 'reply'
+        | 'export'
+        | '*'
+        | ('*' | 'export' | 'manage' | 'moderate' | 'publish' | 'read' | 'reply' | 'write')[];
+      conditions?: {
+        [key: string]: components['schemas']['JsonValue'];
+      };
+      inverted?: boolean;
+      subject:
+        | 'System'
+        | 'Staff'
+        | 'Customer'
+        | 'AuditLog'
+        | 'Catalog'
+        | 'Inventory'
+        | 'Settings'
+        | 'Promotion'
+        | 'Order'
+        | 'Payment'
+        | 'Fulfillment'
+        | 'Return'
+        | 'Refund'
+        | 'Review'
+        | 'Content'
+        | 'Support'
+        | 'Notification'
+        | 'Report'
+        | 'all'
+        | (
+            | 'AuditLog'
+            | 'Catalog'
+            | 'Content'
+            | 'Customer'
+            | 'Fulfillment'
+            | 'Inventory'
+            | 'Notification'
+            | 'Order'
+            | 'Payment'
+            | 'Promotion'
+            | 'Refund'
+            | 'Report'
+            | 'Return'
+            | 'Review'
+            | 'Settings'
+            | 'Staff'
+            | 'Support'
+            | 'System'
+            | 'all'
+          )[];
+    };
     /** @enum {string} */
     AccountStatus: 'active' | 'blocked' | 'closed';
     Address: {
@@ -5684,44 +5741,6 @@ export interface components {
     PaymentProvider: 'cod' | 'mock' | 'stripe';
     /** @enum {string} */
     PaymentStatus: 'failed' | 'paid' | 'pending';
-    /** @enum {string} */
-    Permission:
-      | 'audit:read'
-      | 'catalog:read'
-      | 'catalog:write'
-      | 'content:publish'
-      | 'content:read'
-      | 'content:write'
-      | 'customer:manage'
-      | 'customer:read'
-      | 'fulfillment:manage'
-      | 'fulfillment:read'
-      | 'inventory:read'
-      | 'inventory:write'
-      | 'notification:manage'
-      | 'notification:read'
-      | 'order:manage'
-      | 'order:read'
-      | 'payment:manage'
-      | 'payment:read'
-      | 'promotion:read'
-      | 'promotion:write'
-      | 'refund:manage'
-      | 'refund:read'
-      | 'report:export'
-      | 'report:read'
-      | 'return:manage'
-      | 'return:read'
-      | 'review:moderate'
-      | 'review:read'
-      | 'review:reply'
-      | 'settings:manage'
-      | 'staff:manage'
-      | 'staff:read'
-      | 'support:manage'
-      | 'support:read'
-      | 'system:manage'
-      | 'system:read';
     Product: {
       category?: components['schemas']['Category'] | null;
       categoryId?: string | null;
@@ -15212,7 +15231,7 @@ export interface operations {
           'application/json': {
             data: {
               contractVersion: string;
-              permissions: components['schemas']['Permission'][];
+              rules: components['schemas']['AbilityRule'][];
             };
             message?: string;
           };

@@ -49,6 +49,9 @@
 
 - Better Auth owns sessions; use `@p4/api-sdk/auth` on clients. Never reintroduce
   localStorage tokens or a parallel JWT refresh engine.
+- Authorization uses CASL via `@p4/ability` (see its README). Guard routes with
+  `requireAbility(action, subject)`; check owned records with `canAccessRecord`, not
+  inline `userId` comparisons. On the web use route `ability` and `useCanAccess`.
 - Add explicit action policy next to every router. Use `auditedCommand` /
   `auditedTransaction` for business writes; preserve the transaction isolation
   required by the service. Do not perform provider side effects before commit.

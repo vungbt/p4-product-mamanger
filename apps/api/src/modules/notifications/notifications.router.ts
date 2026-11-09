@@ -6,8 +6,8 @@ import {
 } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import {
   NotificationModel,
   NotificationPreferencesModel,
@@ -163,7 +163,7 @@ const templateList = validateListQuery({
 router.get(
   '/admin/notification-templates',
   authRequired,
-  requirePermission('notification:read'),
+  requireAbility('read', 'Notification'),
   templateList,
   optionalListHandler(async (_req, query: NotificationTemplateListQuery | undefined) => {
     const result = await NotificationTemplateModel.findAndCountAll({
@@ -191,7 +191,7 @@ router.get(
 router.put(
   '/admin/notification-templates',
   authRequired,
-  requirePermission('notification:manage'),
+  requireAbility('manage', 'Notification'),
   apiHandler(async (req) => {
     const body = requestBody(req);
     const type = body.enum('type', notifications.TEMPLATE_TYPES);

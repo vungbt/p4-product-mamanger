@@ -1,8 +1,9 @@
 import { Alert, Button, Spinner } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
+import { useCanAccess } from '@p4/ability/browser';
+import type { AbilityCheck } from '@p4/ability/shared';
 import { useCapabilities } from '@p4/api-sdk/react';
 import { ApiSdkError } from '@p4/api-sdk/shared';
-import type { Permission } from '@p4/shared';
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -64,15 +65,16 @@ export function GuestRoute({
 }
 
 export function CapabilityRoute({
-  permission,
+  ability,
   children,
 }: {
-  permission: Permission;
+  ability: AbilityCheck;
   children: ReactNode;
 }) {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
   const query = useCapabilities(user?.id);
+  const allowed = useCanAccess(ability.action, ability.subject);
   const status = query.error instanceof ApiSdkError ? query.error.status : undefined;
 
   useEffect(() => {
@@ -81,7 +83,7 @@ export function CapabilityRoute({
 
   if (query.isPending || status === 401) return <Spinner label={t('app.loading')} />;
 
-  if (status === 403 || (!query.isError && !query.data?.data.permissions.includes(permission))) {
+  if (status === 403 || (!query.isError && !allowed)) {
     return <Alert tone="danger">403 — {t('auth.unauthorized')}</Alert>;
   }
 
