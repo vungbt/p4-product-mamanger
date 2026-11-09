@@ -1,6 +1,6 @@
 # Spec — FE-25 · Kiểm duyệt đánh giá
 
-Nguồn [FE-25](../../documents/frontend/fe-25.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-25](../../documents/p4/frontend/fe-25.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện kiểm duyệt đánh giá theo contract API hiện hành. Task ch
 
 ## Phụ thuộc
 
-[FE-24](../../documents/frontend/fe-24.md)
+[FE-24](../../documents/p4/frontend/fe-24.md)
 
 ## Yêu cầu
 

@@ -1,6 +1,6 @@
 # Spec — FE-08 · Đăng ký, xác minh và khôi phục tài khoản
 
-Nguồn [FE-08](../../documents/frontend/fe-08.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-08](../../documents/p4/frontend/fe-08.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện đăng ký, xác minh và khôi phục tài khoản theo contract 
 
 ## Phụ thuộc
 
-[FE-01](../../documents/frontend/fe-01.md), [FE-40](../../documents/frontend/fe-40.md)
+[FE-01](../../documents/p4/frontend/fe-01.md), [FE-40](../../documents/p4/frontend/fe-40.md)
 
 ## Yêu cầu
 

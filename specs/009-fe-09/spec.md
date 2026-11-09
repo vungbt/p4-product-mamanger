@@ -1,6 +1,6 @@
 # Spec — FE-09 · Hồ sơ và tùy chọn tài khoản
 
-Nguồn [FE-09](../../documents/frontend/fe-09.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-09](../../documents/p4/frontend/fe-09.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện hồ sơ và tùy chọn tài khoản theo contract API hiện hà
 
 ## Phụ thuộc
 
-[FE-08](../../documents/frontend/fe-08.md), [FE-38](../../documents/frontend/fe-38.md), [FE-40](../../documents/frontend/fe-40.md)
+[FE-08](../../documents/p4/frontend/fe-08.md), [FE-38](../../documents/p4/frontend/fe-38.md), [FE-40](../../documents/p4/frontend/fe-40.md)
 
 ## Ranh giới
 

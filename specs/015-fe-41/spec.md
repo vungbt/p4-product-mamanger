@@ -1,6 +1,6 @@
 # Spec — FE-41 · Quản lý bảng size
 
-Nguồn [FE-41](../../documents/frontend/fe-41.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-41](../../documents/p4/frontend/fe-41.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện quản lý bảng size theo contract API hiện hành. Task chỉ 
 
 ## Phụ thuộc
 
-[FE-37](../../documents/frontend/fe-37.md)
+[FE-37](../../documents/p4/frontend/fe-37.md)
 
 ## Yêu cầu
 

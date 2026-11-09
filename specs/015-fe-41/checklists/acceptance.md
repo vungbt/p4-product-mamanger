@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-41 · Quản lý bảng size
 
-[Task nguồn](../../../documents/frontend/fe-41.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-41.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Tạo và sửa bảng size với nhiều dòng; mỗi dòng có `size` và các số đo lớn hơn 0, tối đa 1000.
 - [ ] AC-002 (FR-002) — Giới hạn 1–100 dòng, lỗi `measurements` hiển thị rõ tại form.

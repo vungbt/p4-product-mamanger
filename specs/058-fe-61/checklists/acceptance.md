@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-61 · Dashboard quản trị và trạng thái rỗng
 
-[Task nguồn](../../../documents/frontend/fe-61.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-61.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Thay dashboard placeholder hiện có bằng KPI và blocks P4 dựa schema stats, có loading/error/empty và điều hướng đến màn liên quan.
 - [ ] AC-002 (FR-002) — Nhận diện định nghĩa doanh thu/hoàn tiền/tồn theo contract, không tự suy doanh thu từ số đơn hoặc paid enum.

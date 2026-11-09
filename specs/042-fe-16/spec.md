@@ -1,6 +1,6 @@
 # Spec — FE-16 · Thanh toán và trạng thái sau redirect
 
-Nguồn [FE-16](../../documents/frontend/fe-16.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-16](../../documents/p4/frontend/fe-16.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện thanh toán và trạng thái sau redirect theo contract API hiệ
 
 ## Phụ thuộc
 
-[FE-15](../../documents/frontend/fe-15.md)
+[FE-15](../../documents/p4/frontend/fe-15.md)
 
 ## Yêu cầu
 

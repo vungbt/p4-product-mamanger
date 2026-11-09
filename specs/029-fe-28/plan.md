@@ -1,6 +1,6 @@
 # Plan — FE-28
 
-[Spec](spec.md) · [FE-28](../../documents/frontend/fe-28.md)
+[Spec](spec.md) · [FE-28](../../documents/p4/frontend/fe-28.md)
 
 ## Trình tự
 
@@ -31,7 +31,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Contract để bàn giao FE
@@ -44,11 +44,11 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `POST /api/admin/collections` | `content:write` · Task sở hữu | body `key*`, `active*`, `title*`, `productIds*` | `200` `data MerchandisingEntry` | 400, 401, 403, 409, 429 |
 | `GET /api/admin/collections/{id}` | `content:read` · Task sở hữu | path `id*` | `200` `data MerchandisingEntry` | 401, 403, 404, 429 |
 | `PATCH /api/admin/collections/{id}` | `content:write` · Task sở hữu | path `id*`<br>body `key*`, `active*`, `expectedVersion*`, `title*`, `productIds*` | `200` `data MerchandisingEntry` | 400, 401, 403, 404, 409, 429 |
-| `GET /api/admin/banners` | `content:read` · Dùng từ [FE-56](../../documents/frontend/fe-56.md) | query `page`, `pageSize 1–100`, `sortBy=key/active/createdAt`, `sortOrder=asc/desc`, `q`, `active=false/true` | `200` `data MerchandisingEntry[] + meta` | 400, 401, 403, 429 |
-| `POST /api/admin/banners` | `content:write` · Dùng từ [FE-56](../../documents/frontend/fe-56.md) | body `key*`, `active*`, `title*`, `imageFileId*`, `href*`, `placement*` | `200` `data MerchandisingEntry` | 400, 401, 403, 409, 429 |
-| `GET /api/admin/banners/{id}` | `content:read` · Dùng từ [FE-56](../../documents/frontend/fe-56.md) | path `id*` | `200` `data MerchandisingEntry` | 401, 403, 404, 429 |
-| `PATCH /api/admin/banners/{id}` | `content:write` · Dùng từ [FE-56](../../documents/frontend/fe-56.md) | path `id*`<br>body `key*`, `active*`, `expectedVersion*`, `title*`, `imageFileId*`, `href*`, `placement*` | `200` `data MerchandisingEntry` | 400, 401, 403, 404, 409, 429 |
-| `GET /api/admin/navigation/{placement}` | `content:read` · Dùng từ [FE-57](../../documents/frontend/fe-57.md) | path `placement*` | `200` `data MerchandisingEntry` | 401, 403, 404, 429 |
-| `PATCH /api/admin/navigation/{placement}` | `content:write` · Dùng từ [FE-57](../../documents/frontend/fe-57.md) | path `placement*`<br>body `expectedVersion`, `items*` | `200` `data MerchandisingEntry` | 400, 401, 403, 404, 409, 429 |
-| `GET /api/admin/home-layout` | `content:read` · Dùng từ [FE-58](../../documents/frontend/fe-58.md) | — | `200` `data MerchandisingEntry` | 401, 403, 429 |
-| `PATCH /api/admin/home-layout` | `content:write` · Dùng từ [FE-58](../../documents/frontend/fe-58.md) | body `expectedVersion`, `sections*` | `200` `data MerchandisingEntry` | 400, 401, 403, 409, 429 |
+| `GET /api/admin/banners` | `content:read` · Dùng từ [FE-56](../../documents/p4/frontend/fe-56.md) | query `page`, `pageSize 1–100`, `sortBy=key/active/createdAt`, `sortOrder=asc/desc`, `q`, `active=false/true` | `200` `data MerchandisingEntry[] + meta` | 400, 401, 403, 429 |
+| `POST /api/admin/banners` | `content:write` · Dùng từ [FE-56](../../documents/p4/frontend/fe-56.md) | body `key*`, `active*`, `title*`, `imageFileId*`, `href*`, `placement*` | `200` `data MerchandisingEntry` | 400, 401, 403, 409, 429 |
+| `GET /api/admin/banners/{id}` | `content:read` · Dùng từ [FE-56](../../documents/p4/frontend/fe-56.md) | path `id*` | `200` `data MerchandisingEntry` | 401, 403, 404, 429 |
+| `PATCH /api/admin/banners/{id}` | `content:write` · Dùng từ [FE-56](../../documents/p4/frontend/fe-56.md) | path `id*`<br>body `key*`, `active*`, `expectedVersion*`, `title*`, `imageFileId*`, `href*`, `placement*` | `200` `data MerchandisingEntry` | 400, 401, 403, 404, 409, 429 |
+| `GET /api/admin/navigation/{placement}` | `content:read` · Dùng từ [FE-57](../../documents/p4/frontend/fe-57.md) | path `placement*` | `200` `data MerchandisingEntry` | 401, 403, 404, 429 |
+| `PATCH /api/admin/navigation/{placement}` | `content:write` · Dùng từ [FE-57](../../documents/p4/frontend/fe-57.md) | path `placement*`<br>body `expectedVersion`, `items*` | `200` `data MerchandisingEntry` | 400, 401, 403, 404, 409, 429 |
+| `GET /api/admin/home-layout` | `content:read` · Dùng từ [FE-58](../../documents/p4/frontend/fe-58.md) | — | `200` `data MerchandisingEntry` | 401, 403, 429 |
+| `PATCH /api/admin/home-layout` | `content:write` · Dùng từ [FE-58](../../documents/p4/frontend/fe-58.md) | body `expectedVersion`, `sections*` | `200` `data MerchandisingEntry` | 400, 401, 403, 409, 429 |

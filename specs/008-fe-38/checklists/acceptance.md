@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-38 · Upload dùng chung qua ticket
 
-[Task nguồn](../../../documents/frontend/fe-38.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-38.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Một component/hook dùng chung cho upload một file và nhiều file, nhận `purpose` theo từng màn.
 - [ ] AC-002 (FR-002) — Hiển thị tiến độ và kết quả từng file; file lỗi không ảnh hưởng các file còn lại, retry không tạo file trùng.

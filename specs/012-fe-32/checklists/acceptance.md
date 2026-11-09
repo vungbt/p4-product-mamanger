@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-32 · Nhân viên và phân quyền
 
-[Task nguồn](../../../documents/frontend/fe-32.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-32.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Danh sách nhân viên và vai trò theo capability, server filter/sort/page; gửi mời email theo API.
 - [ ] AC-002 (FR-002) — Đổi role/status theo version, xác nhận ảnh hưởng phiên; không khóa/hạ quyền owner cuối cùng.

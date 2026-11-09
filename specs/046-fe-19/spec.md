@@ -1,6 +1,6 @@
 # Spec — FE-19 · Đơn mua, tracking và yêu cầu huỷ
 
-Nguồn [FE-19](../../documents/frontend/fe-19.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-19](../../documents/p4/frontend/fe-19.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện đơn mua, tracking và yêu cầu huỷ theo contract API hiện 
 
 ## Phụ thuộc
 
-[FE-16](../../documents/frontend/fe-16.md), [FE-18](../../documents/frontend/fe-18.md), [FE-49](../../documents/frontend/fe-49.md), [FE-40](../../documents/frontend/fe-40.md)
+[FE-16](../../documents/p4/frontend/fe-16.md), [FE-18](../../documents/p4/frontend/fe-18.md), [FE-49](../../documents/p4/frontend/fe-49.md), [FE-40](../../documents/p4/frontend/fe-40.md)
 
 ## Yêu cầu
 

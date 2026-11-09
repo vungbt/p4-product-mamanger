@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-49 · Thu COD và đối soát thanh toán
 
-[Task nguồn](../../../documents/frontend/fe-49.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-49.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Form thu COD gồm amount/reference, lịch sử và trạng thái thanh toán tách khỏi trạng thái kiện hàng.
 - [ ] AC-002 (FR-002) — Không đánh dấu paid chỉ vì delivered; reconcile hiển thị kết quả từ server, không tự tính hoặc ghi đè số tiền.

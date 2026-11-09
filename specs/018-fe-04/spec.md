@@ -1,6 +1,6 @@
 # Spec — FE-04 · Form sản phẩm và gallery nhiều ảnh
 
-Nguồn [FE-04](../../documents/frontend/fe-04.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-04](../../documents/p4/frontend/fe-04.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện form sản phẩm và gallery nhiều ảnh theo contract API hi�
 
 ## Phụ thuộc
 
-[FE-03](../../documents/frontend/fe-03.md), [FE-38](../../documents/frontend/fe-38.md), [FE-41](../../documents/frontend/fe-41.md)
+[FE-03](../../documents/p4/frontend/fe-03.md), [FE-38](../../documents/p4/frontend/fe-38.md), [FE-41](../../documents/p4/frontend/fe-41.md)
 
 ## Yêu cầu
 

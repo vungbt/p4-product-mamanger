@@ -1,6 +1,6 @@
 # Tasks — FE-15
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-15](../../documents/frontend/fe-15.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-15](../../documents/p4/frontend/fe-15.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Địa chỉ, phương thức giao và coupon tạo quote server; hiển thị subtotal/discount/shipping/total.
 - [ ] T003 (FR-002) — Quote hết hạn hoặc giá đổi phải xác nhận lại; submit giữ Idempotency-Key cho một ý định đặt hàng.
 - [ ] T004 (FR-003) — Đặt đơn gửi `quoteId`, không dùng luồng `items` theo `productId` cũ; gỡ code gọi luồng cũ sau khi chuyển.

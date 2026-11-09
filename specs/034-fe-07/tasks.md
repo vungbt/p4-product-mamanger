@@ -1,6 +1,6 @@
 # Tasks — FE-07
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-07](../../documents/frontend/fe-07.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-07](../../documents/p4/frontend/fe-07.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Danh sách catalog dùng facet/filter/sort/page phía server; query key và URL đồng bộ, back/forward giữ bộ lọc.
 - [ ] T003 (FR-002) — Hiển thị product cards và trạng thái không có kết quả, loading/error/retry; link tới PDP và giữ blocks hiện có.
 - [ ] T004 (FR-003) — Debounce/hủy request cũ; nhận diện filter không còn hợp lệ khi category đổi; thử mobile/desktop.

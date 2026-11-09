@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-08 · Đăng ký, xác minh và khôi phục tài khoản
 
-[Task nguồn](../../../documents/frontend/fe-08.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-08.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Luồng gửi mail có thông báo trung tính; token hết hạn/đã dùng có trạng thái rõ ràng.
 - [ ] AC-002 (FR-002) — Không đưa token vào analytics/log; reset xong xử lý phiên bị revoke và điều hướng login.

@@ -1,6 +1,6 @@
 # Spec — FE-18 · Đóng gói và vận hành nhiều kiện
 
-Nguồn [FE-18](../../documents/frontend/fe-18.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-18](../../documents/p4/frontend/fe-18.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện đóng gói và vận hành nhiều kiện theo contract API hiệ
 
 ## Phụ thuộc
 
-[FE-17](../../documents/frontend/fe-17.md)
+[FE-17](../../documents/p4/frontend/fe-17.md)
 
 ## Ranh giới
 

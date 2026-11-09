@@ -1,6 +1,6 @@
 # Spec — FE-35 · Job monitor và vận hành
 
-Nguồn [FE-35](../../documents/frontend/fe-35.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-35](../../documents/p4/frontend/fe-35.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện job monitor và vận hành theo contract API hiện hành. Task c
 
 ## Phụ thuộc
 
-[FE-10](../../documents/frontend/fe-10.md), [FE-33](../../documents/frontend/fe-33.md)
+[FE-10](../../documents/p4/frontend/fe-10.md), [FE-33](../../documents/p4/frontend/fe-33.md)
 
 ## Yêu cầu
 

@@ -1,6 +1,6 @@
 # Spec — FE-60 · Quản trị khách hàng
 
-Nguồn [FE-60](../../documents/frontend/fe-60.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-60](../../documents/p4/frontend/fe-60.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện quản trị khách hàng theo contract API hiện hành. Task ch�
 
 ## Phụ thuộc
 
-[FE-32](../../documents/frontend/fe-32.md)
+[FE-32](../../documents/p4/frontend/fe-32.md)
 
 ## Yêu cầu
 

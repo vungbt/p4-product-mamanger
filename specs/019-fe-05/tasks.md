@@ -1,6 +1,6 @@
 # Tasks — FE-05
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-05](../../documents/frontend/fe-05.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-05](../../documents/p4/frontend/fe-05.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Mỗi size/màu có SKU, giá, ảnh và trạng thái riêng; không sửa định danh SKU đã bán.
 - [ ] T003 (FR-002) — Sửa SKU không gửi `stock`, `onHand`, `reserved`: tồn kho chỉ đổi qua FE-42.
 - [ ] T004 (FR-003) — SKU trùng hiển thị lỗi đúng field; sản phẩm phải còn SKU hợp lệ thì mới publish được theo kết quả API.

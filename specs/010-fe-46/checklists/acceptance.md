@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-46 · Bảo mật tài khoản và quản lý phiên
 
-[Task nguồn](../../../documents/frontend/fe-46.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-46.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Màn security dùng cho Admin và Storefront: thay mật khẩu, xem phiên hiện tại/thiết bị và thu hồi một/tất cả phiên khác.
 - [ ] AC-002 (FR-002) — Chọn một luồng native hoặc compatibility cho mỗi form; không gọi hai engine hoặc ghi token vào localStorage. Tôn trọng việc đổi mật khẩu có thể revoke phiên.

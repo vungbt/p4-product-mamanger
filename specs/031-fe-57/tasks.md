@@ -1,6 +1,6 @@
 # Tasks — FE-57
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-57](../../documents/frontend/fe-57.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-57](../../documents/p4/frontend/fe-57.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Editor theo placement cho header/footer và mobile; chọn target theo schema, reorder bằng kéo thả và bàn phím.
 - [ ] T003 (FR-002) — Chặn vòng lặp/độ sâu/liên kết sai theo validation API, không viết cứng menu public ở component.
 - [ ] T004 (FR-003) — Lưu version, xử lý 409, preview từng viewport và nghiệm thu navigation public sau publish theo contract.

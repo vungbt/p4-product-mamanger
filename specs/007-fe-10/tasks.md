@@ -1,6 +1,6 @@
 # Tasks — FE-10
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-10](../../documents/frontend/fe-10.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-10](../../documents/p4/frontend/fe-10.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Dùng @p4/realtime/browser + @p4/processes/browser; kết nối theo token và dọn khi logout.
 - [ ] T003 (FR-002) — Progress/version không lùi; reconnect replay + polling fallback, cancel, lỗi từng item và download hết hạn.
 - [ ] T004 (FR-003) — Dùng được từ màn import, export và upload batch mà không viết lại logic theo dõi.

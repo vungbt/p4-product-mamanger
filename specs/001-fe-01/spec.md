@@ -1,6 +1,6 @@
 # Spec — FE-01 · Nền tảng phiên đăng nhập và quyền
 
-Nguồn [FE-01](../../documents/frontend/fe-01.md) · Portal **Chung** · Trạng thái nguồn **Đã có một phần**
+Nguồn [FE-01](../../documents/p4/frontend/fe-01.md) · Portal **Chung** · Trạng thái nguồn **Đã có một phần**
 
 ## Mục tiêu
 

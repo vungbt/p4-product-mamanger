@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-51 · Danh sách yêu thích
 
-[Task nguồn](../../../documents/frontend/fe-51.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-51.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Nút yêu thích ở card/PDP và trang wishlist khu tài khoản, đồng bộ cùng query cache.
 - [ ] AC-002 (FR-002) — Khách được hướng dẫn login và quay lại; không giữ dữ liệu tài khoản trước khi logout/đổi user.

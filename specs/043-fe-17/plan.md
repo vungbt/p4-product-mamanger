@@ -1,6 +1,6 @@
 # Plan — FE-17
 
-[Spec](spec.md) · [FE-17](../../documents/frontend/fe-17.md)
+[Spec](spec.md) · [FE-17](../../documents/p4/frontend/fe-17.md)
 
 ## Trình tự
 
@@ -29,7 +29,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Contract để bàn giao FE
@@ -46,5 +46,5 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `POST /api/cancellation-requests/{id}/approve` | `order:manage` · Task sở hữu | path `id*`<br>body `expectedVersion*`, `reason` | `200` `data CancellationRequest` | 400, 401, 403, 404, 409, 429 |
 | `POST /api/cancellation-requests/{id}/reject` | `order:manage` · Task sở hữu | path `id*`<br>body `expectedVersion*`, `reason` | `200` `data CancellationRequest` | 400, 401, 403, 404, 409, 429 |
 | `POST /api/orders/{id}/cancel` | user, admin · Task sở hữu | path `id*` | `200` `data Order` | 401, 403, 404, 409, 429 |
-| `GET /api/orders/{id}` | user, admin · Dùng từ [FE-16](../../documents/frontend/fe-16.md) | path `id*` | `200` `data Order` | 401, 403, 404, 429 |
-| `GET /api/orders/{id}/payments` | Có phiên · Dùng từ [FE-16](../../documents/frontend/fe-16.md) | path `id*` | `200` `data PaymentAttempt[]` | 401, 403, 404, 429 |
+| `GET /api/orders/{id}` | user, admin · Dùng từ [FE-16](../../documents/p4/frontend/fe-16.md) | path `id*` | `200` `data Order` | 401, 403, 404, 429 |
+| `GET /api/orders/{id}/payments` | Có phiên · Dùng từ [FE-16](../../documents/p4/frontend/fe-16.md) | path `id*` | `200` `data PaymentAttempt[]` | 401, 403, 404, 429 |

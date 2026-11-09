@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-45 · Sổ địa chỉ và chọn địa chỉ giao hàng
 
-[Task nguồn](../../../documents/frontend/fe-45.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-45.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Màn danh sách/thêm/sửa/xóa địa chỉ owner; chọn mặc định và trạng thái rỗng rõ ràng.
 - [ ] AC-002 (FR-002) — Dùng chung address editor/selector cho tài khoản và checkout; đổi mặc định không tự sửa snapshot đơn cũ.

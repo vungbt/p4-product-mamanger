@@ -1,6 +1,6 @@
 # Spec — FE-57 · Trình biên tập menu điều hướng
 
-Nguồn [FE-57](../../documents/frontend/fe-57.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-57](../../documents/p4/frontend/fe-57.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện trình biên tập menu điều hướng theo contract API hiện 
 
 ## Phụ thuộc
 
-[FE-28](../../documents/frontend/fe-28.md), [FE-62](../../documents/frontend/fe-62.md), [FE-40](../../documents/frontend/fe-40.md)
+[FE-28](../../documents/p4/frontend/fe-28.md), [FE-62](../../documents/p4/frontend/fe-62.md), [FE-40](../../documents/p4/frontend/fe-40.md)
 
 ## Yêu cầu
 

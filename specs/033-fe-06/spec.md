@@ -1,6 +1,6 @@
 # Spec — FE-06 · Trang chủ, menu và collection
 
-Nguồn [FE-06](../../documents/frontend/fe-06.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-06](../../documents/p4/frontend/fe-06.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện trang chủ, menu và collection theo contract API hiện hành. T
 
 ## Phụ thuộc
 
-[FE-03](../../documents/frontend/fe-03.md), [FE-39](../../documents/frontend/fe-39.md), [FE-40](../../documents/frontend/fe-40.md), [FE-58](../../documents/frontend/fe-58.md)
+[FE-03](../../documents/p4/frontend/fe-03.md), [FE-39](../../documents/p4/frontend/fe-39.md), [FE-40](../../documents/p4/frontend/fe-40.md), [FE-58](../../documents/p4/frontend/fe-58.md)
 
 ## Yêu cầu
 

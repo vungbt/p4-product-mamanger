@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-40 · Khung Storefront: khu tài khoản, 404 và trang lỗi
 
-[Task nguồn](../../../documents/frontend/fe-40.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-40.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Layout khu tài khoản có menu tới đơn mua, địa chỉ, hồ sơ, wishlist, thông báo và hỗ trợ; menu chỉ hiện mục đã có màn hình.
 - [ ] AC-002 (FR-002) — Route guard đưa khách chưa đăng nhập về login và quay lại đúng trang sau khi đăng nhập.

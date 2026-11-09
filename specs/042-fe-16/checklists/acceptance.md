@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-16 · Thanh toán và trạng thái sau redirect
 
-[Task nguồn](../../../documents/frontend/fe-16.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-16.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — COD và payment attempt theo provider; redirect chỉ dẫn tới màn chờ đối soát, không tự đánh dấu paid.
 - [ ] AC-002 (FR-002) — Refresh/back/double-click không tạo charge mới; xử lý expired/failed/pending qua trạng thái API.

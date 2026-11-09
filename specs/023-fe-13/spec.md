@@ -1,6 +1,6 @@
 # Spec — FE-13 · Cấu hình shop và vận chuyển
 
-Nguồn [FE-13](../../documents/frontend/fe-13.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-13](../../documents/p4/frontend/fe-13.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện cấu hình shop và vận chuyển theo contract API hiện hành
 
 ## Phụ thuộc
 
-[FE-01](../../documents/frontend/fe-01.md), [FE-37](../../documents/frontend/fe-37.md)
+[FE-01](../../documents/p4/frontend/fe-01.md), [FE-37](../../documents/p4/frontend/fe-37.md)
 
 ## Yêu cầu
 

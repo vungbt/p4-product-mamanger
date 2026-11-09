@@ -2,7 +2,7 @@
 
 **Status**: Draft
 **Date**: 2026-11-07
-**Backlog**: [FE-12](../../documents/frontend/fe-12.md)
+**Backlog**: [FE-12](../../documents/p4/frontend/fe-12.md)
 
 ## User Scenarios & Testing
 

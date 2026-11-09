@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-21 · Duyệt và kiểm hàng trả
 
-[Task nguồn](../../../documents/frontend/fe-21.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-21.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — List/detail returns, approve/reject, in-transit/receive/inspect/complete theo API và capability.
 - [ ] AC-002 (FR-002) — Kiểm hàng phân biệt saleable/damaged, chỉ restock sau inspection hợp lệ và đúng số lượng.

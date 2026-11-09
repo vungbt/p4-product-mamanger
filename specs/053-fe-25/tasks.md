@@ -1,6 +1,6 @@
 # Tasks — FE-25
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-25](../../documents/frontend/fe-25.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-25](../../documents/p4/frontend/fe-25.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Filter review trạng thái/sản phẩm; publish/hide/reply và xử lý reports theo quyền.
 - [ ] T003 (FR-002) — Version conflict không mất nội dung; summary public chỉ phản ánh review đã publish.
 - [ ] T004 (FR-003) — Thay đổi kiểm duyệt phản ánh đúng ở review summary public.

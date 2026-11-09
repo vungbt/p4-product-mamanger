@@ -1,6 +1,6 @@
 # Spec — FE-49 · Thu COD và đối soát thanh toán
 
-Nguồn [FE-49](../../documents/frontend/fe-49.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-49](../../documents/p4/frontend/fe-49.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện thu cod và đối soát thanh toán theo contract API hiện hàn
 
 ## Phụ thuộc
 
-[FE-18](../../documents/frontend/fe-18.md)
+[FE-18](../../documents/p4/frontend/fe-18.md)
 
 ## Yêu cầu
 

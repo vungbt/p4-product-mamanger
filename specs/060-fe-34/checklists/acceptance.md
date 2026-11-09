@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-34 · Tra cứu audit log
 
-[Task nguồn](../../../documents/frontend/fe-34.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-34.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Filter actor/action/entity/date; detail requestId, thay đổi đã redact và phân trang server.
 - [ ] AC-002 (FR-002) — Không cho sửa log; không render secret/token; permission audit tách khỏi menu Admin thông thường.

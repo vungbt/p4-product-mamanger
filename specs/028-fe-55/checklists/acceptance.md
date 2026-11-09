@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-55 · Preview, lịch xuất bản và lịch sử nội dung
 
-[Task nguồn](../../../documents/frontend/fe-55.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-55.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Xem revisions read-only và thay đổi giữa các bản khi dữ liệu API đủ; không dựng restore action khi không có endpoint.
 - [ ] AC-002 (FR-002) — Lịch xuất bản nhập theo giờ người dùng, gửi UTC, hiển thị timezone; preview draft không public hóa dữ liệu.

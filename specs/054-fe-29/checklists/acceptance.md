@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-29 · Inbox thông báo và preferences
 
-[Task nguồn](../../../documents/frontend/fe-29.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-29.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Bell/unread badge/inbox dùng socket + HTTP; đọc một/đọc tất cả đồng bộ nhiều tab.
 - [ ] AC-002 (FR-002) — Deduplicate event theo ID, refresh snapshot khi reconnect; preferences điều khiển channel và topic.

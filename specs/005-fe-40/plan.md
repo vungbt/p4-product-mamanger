@@ -1,6 +1,6 @@
 # Plan — FE-40
 
-[Spec](spec.md) · [FE-40](../../documents/frontend/fe-40.md)
+[Spec](spec.md) · [FE-40](../../documents/p4/frontend/fe-40.md)
 
 ## Trình tự
 
@@ -21,7 +21,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Contract để bàn giao FE
@@ -31,4 +31,4 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | Operation | Quyền / sử dụng | Input | Thành công | Lỗi khai báo |
 | --- | --- | --- | --- | --- |
 | `GET /api/shop/config` | Công khai · Task sở hữu | — | `200` `data ShopSettings` | 429 |
-| `GET /api/auth/me` | Có phiên · Dùng từ [FE-01](../../documents/frontend/fe-01.md) | — | `200` `data { user }` | 401, 403, 429 |
+| `GET /api/auth/me` | Có phiên · Dùng từ [FE-01](../../documents/p4/frontend/fe-01.md) | — | `200` `data { user }` | 401, 403, 429 |

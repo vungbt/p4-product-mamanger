@@ -1,6 +1,6 @@
 # Spec — FE-03 · Danh sách và chi tiết sản phẩm
 
-Nguồn [FE-03](../../documents/frontend/fe-03.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-03](../../documents/p4/frontend/fe-03.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện danh sách và chi tiết sản phẩm theo contract API hiện h�
 
 ## Phụ thuộc
 
-[FE-02](../../documents/frontend/fe-02.md)
+[FE-02](../../documents/p4/frontend/fe-02.md)
 
 ## Yêu cầu
 

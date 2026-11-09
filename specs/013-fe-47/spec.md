@@ -1,6 +1,6 @@
 # Spec — FE-47 · Nhận lời mời nhân viên
 
-Nguồn [FE-47](../../documents/frontend/fe-47.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-47](../../documents/p4/frontend/fe-47.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện nhận lời mời nhân viên theo contract API hiện hành. Tas
 
 ## Phụ thuộc
 
-[FE-32](../../documents/frontend/fe-32.md), [FE-01](../../documents/frontend/fe-01.md)
+[FE-32](../../documents/p4/frontend/fe-32.md), [FE-01](../../documents/p4/frontend/fe-01.md)
 
 ## Yêu cầu
 

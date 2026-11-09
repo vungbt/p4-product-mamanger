@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-25 · Kiểm duyệt đánh giá
 
-[Task nguồn](../../../documents/frontend/fe-25.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-25.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Filter review trạng thái/sản phẩm; publish/hide/reply và xử lý reports theo quyền.
 - [ ] AC-002 (FR-002) — Version conflict không mất nội dung; summary public chỉ phản ánh review đã publish.

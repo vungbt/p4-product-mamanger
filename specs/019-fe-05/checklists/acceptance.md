@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-05 · SKU và biến thể sản phẩm
 
-[Task nguồn](../../../documents/frontend/fe-05.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-05.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Mỗi size/màu có SKU, giá, ảnh và trạng thái riêng; không sửa định danh SKU đã bán.
 - [ ] AC-002 (FR-002) — Sửa SKU không gửi `stock`, `onHand`, `reserved`: tồn kho chỉ đổi qua FE-42.

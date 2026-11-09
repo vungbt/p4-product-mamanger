@@ -1,6 +1,6 @@
 # Tasks — FE-08
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-08](../../documents/frontend/fe-08.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-08](../../documents/p4/frontend/fe-08.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Luồng gửi mail có thông báo trung tính; token hết hạn/đã dùng có trạng thái rõ ràng.
 - [ ] T003 (FR-002) — Không đưa token vào analytics/log; reset xong xử lý phiên bị revoke và điều hướng login.
 - [ ] T004 (FR-003) — Có màn nhận link từ email cho xác minh và đặt lại mật khẩu, kể cả khi token thiếu.

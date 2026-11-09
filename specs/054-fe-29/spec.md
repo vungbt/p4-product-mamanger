@@ -1,6 +1,6 @@
 # Spec — FE-29 · Inbox thông báo và preferences
 
-Nguồn [FE-29](../../documents/frontend/fe-29.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-29](../../documents/p4/frontend/fe-29.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện inbox thông báo và preferences theo contract API hiện hành. 
 
 ## Phụ thuộc
 
-[FE-09](../../documents/frontend/fe-09.md), [FE-10](../../documents/frontend/fe-10.md), [FE-40](../../documents/frontend/fe-40.md)
+[FE-09](../../documents/p4/frontend/fe-09.md), [FE-10](../../documents/p4/frontend/fe-10.md), [FE-40](../../documents/p4/frontend/fe-40.md)
 
 ## Yêu cầu
 

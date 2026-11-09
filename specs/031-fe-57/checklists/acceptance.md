@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-57 · Trình biên tập menu điều hướng
 
-[Task nguồn](../../../documents/frontend/fe-57.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-57.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Editor theo placement cho header/footer và mobile; chọn target theo schema, reorder bằng kéo thả và bàn phím.
 - [ ] AC-002 (FR-002) — Chặn vòng lặp/độ sâu/liên kết sai theo validation API, không viết cứng menu public ở component.

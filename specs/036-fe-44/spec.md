@@ -1,6 +1,6 @@
 # Spec — FE-44 · Chi tiết sản phẩm, gallery và chọn SKU
 
-Nguồn [FE-44](../../documents/frontend/fe-44.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-44](../../documents/p4/frontend/fe-44.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện chi tiết sản phẩm, gallery và chọn sku theo contract API 
 
 ## Phụ thuộc
 
-[FE-07](../../documents/frontend/fe-07.md), [FE-43](../../documents/frontend/fe-43.md), [FE-41](../../documents/frontend/fe-41.md)
+[FE-07](../../documents/p4/frontend/fe-07.md), [FE-43](../../documents/p4/frontend/fe-43.md), [FE-41](../../documents/p4/frontend/fe-41.md)
 
 ## Yêu cầu
 

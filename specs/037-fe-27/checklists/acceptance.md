@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-27 · Blog, trang chính sách và nội dung public
 
-[Task nguồn](../../../documents/frontend/fe-27.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-27.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — List/detail chỉ nội dung publish đúng lịch; slug redirect/404 rõ ràng.
 - [ ] AC-002 (FR-002) — Render typed blocks an toàn, điều hướng category/tag và policy hiện hành ở checkout/footer.

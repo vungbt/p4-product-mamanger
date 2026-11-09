@@ -1,6 +1,6 @@
 # Spec — FE-53 · CMS trang nội dung và chính sách
 
-Nguồn [FE-53](../../documents/frontend/fe-53.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-53](../../documents/p4/frontend/fe-53.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện cms trang nội dung và chính sách theo contract API hiện hà
 
 ## Phụ thuộc
 
-[FE-26](../../documents/frontend/fe-26.md), [FE-13](../../documents/frontend/fe-13.md)
+[FE-26](../../documents/p4/frontend/fe-26.md), [FE-13](../../documents/p4/frontend/fe-13.md)
 
 ## Yêu cầu
 

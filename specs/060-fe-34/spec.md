@@ -1,6 +1,6 @@
 # Spec — FE-34 · Tra cứu audit log
 
-Nguồn [FE-34](../../documents/frontend/fe-34.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-34](../../documents/p4/frontend/fe-34.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện tra cứu audit log theo contract API hiện hành. Task chỉ ho�
 
 ## Phụ thuộc
 
-[FE-32](../../documents/frontend/fe-32.md)
+[FE-32](../../documents/p4/frontend/fe-32.md)
 
 ## Yêu cầu
 

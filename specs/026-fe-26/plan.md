@@ -1,6 +1,6 @@
 # Plan — FE-26
 
-[Spec](spec.md) · [FE-26](../../documents/frontend/fe-26.md)
+[Spec](spec.md) · [FE-26](../../documents/p4/frontend/fe-26.md)
 
 ## Trình tự
 
@@ -39,7 +39,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Contract để bàn giao FE
@@ -53,18 +53,18 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `GET /api/admin/posts/{id}` | `content:read` · Task sở hữu | path `id*` | `200` `data ContentEntry` | 401, 403, 404, 429 |
 | `POST /api/admin/posts/{id}/publish` | `content:publish` · Task sở hữu | path `id*`<br>body `scheduledAt`, `expectedVersion*` | `200` `data ContentEntry` | 400, 401, 403, 404, 409, 429 |
 | `POST /api/admin/posts/{id}/archive` | `content:publish` · Task sở hữu | path `id*`<br>body `expectedVersion*` | `200` `data ContentEntry` | 400, 401, 403, 404, 409, 429 |
-| `PATCH /api/admin/posts/{id}` | `content:write` · Dùng từ [FE-55](../../documents/frontend/fe-55.md) | path `id*`<br>body `body*`, `slug*`, `title*`, `excerpt`, `coverFileId`, `taxonomyIds`, `seoTitle`, `seoDescription`, `expectedVersion*` | `200` `data ContentEntry` | 400, 401, 403, 404, 409, 429 |
-| `GET /api/admin/posts/{id}/revisions` | `content:read` · Dùng từ [FE-55](../../documents/frontend/fe-55.md) | path `id*`<br>query `page`, `pageSize 1–100`, `sortBy=version/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data { id, version, snapshot, createdAt }[] + meta` | 400, 401, 403, 404, 429 |
-| `GET /api/admin/pages` | `content:read` · Dùng từ [FE-53](../../documents/frontend/fe-53.md) | query `page`, `pageSize 1–100`, `sortBy=title/createdAt`, `sortOrder=asc/desc`, `q`, `taxonomyId`, `status=archived/draft/published/scheduled` | `200` `data ContentEntry[] + meta` | 400, 401, 403, 429 |
-| `POST /api/admin/pages` | `content:write` · Dùng từ [FE-53](../../documents/frontend/fe-53.md) | body `body*`, `slug*`, `title*`, `excerpt`, `coverFileId`, `taxonomyIds`, `seoTitle`, `seoDescription` | `201` `data ContentEntry` | 400, 401, 403, 409, 429 |
-| `GET /api/admin/pages/{id}` | `content:read` · Dùng từ [FE-53](../../documents/frontend/fe-53.md) | path `id*` | `200` `data ContentEntry` | 401, 403, 404, 429 |
-| `PATCH /api/admin/pages/{id}` | `content:write` · Dùng từ [FE-53](../../documents/frontend/fe-53.md) | path `id*`<br>body `body*`, `slug*`, `title*`, `excerpt`, `coverFileId`, `taxonomyIds`, `seoTitle`, `seoDescription`, `expectedVersion*` | `200` `data ContentEntry` | 400, 401, 403, 404, 409, 429 |
-| `POST /api/admin/pages/{id}/publish` | `content:publish` · Dùng từ [FE-53](../../documents/frontend/fe-53.md) | path `id*`<br>body `scheduledAt`, `expectedVersion*` | `200` `data ContentEntry` | 400, 401, 403, 404, 409, 429 |
-| `POST /api/admin/pages/{id}/archive` | `content:publish` · Dùng từ [FE-53](../../documents/frontend/fe-53.md) | path `id*`<br>body `expectedVersion*` | `200` `data ContentEntry` | 400, 401, 403, 404, 409, 429 |
-| `GET /api/admin/pages/{id}/revisions` | `content:read` · Dùng từ [FE-55](../../documents/frontend/fe-55.md) | path `id*`<br>query `page`, `pageSize 1–100`, `sortBy=version/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data { id, version, snapshot, createdAt }[] + meta` | 400, 401, 403, 404, 429 |
-| `GET /api/post-categories` | Công khai · Dùng từ [FE-54](../../documents/frontend/fe-54.md) | query `page`, `pageSize 1–100`, `sortBy=name/slug/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data { id, slug, name }[] + meta` | 400, 429 |
-| `POST /api/admin/post-categories` | `content:write` · Dùng từ [FE-54](../../documents/frontend/fe-54.md) | body `name*`, `slug*` | `201` `data { id, slug, name }` | 400, 401, 403, 409, 429 |
-| `PATCH /api/admin/post-categories/{id}` | `content:write` · Dùng từ [FE-54](../../documents/frontend/fe-54.md) | path `id*`<br>body `name*`, `slug*` | `200` `data { id, slug, name }` | 400, 401, 403, 404, 409, 429 |
-| `GET /api/post-tags` | Công khai · Dùng từ [FE-54](../../documents/frontend/fe-54.md) | query `page`, `pageSize 1–100`, `sortBy=name/slug/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data { id, slug, name }[] + meta` | 400, 429 |
-| `POST /api/admin/post-tags` | `content:write` · Dùng từ [FE-54](../../documents/frontend/fe-54.md) | body `name*`, `slug*` | `201` `data { id, slug, name }` | 400, 401, 403, 409, 429 |
-| `PATCH /api/admin/post-tags/{id}` | `content:write` · Dùng từ [FE-54](../../documents/frontend/fe-54.md) | path `id*`<br>body `name*`, `slug*` | `200` `data { id, slug, name }` | 400, 401, 403, 404, 409, 429 |
+| `PATCH /api/admin/posts/{id}` | `content:write` · Dùng từ [FE-55](../../documents/p4/frontend/fe-55.md) | path `id*`<br>body `body*`, `slug*`, `title*`, `excerpt`, `coverFileId`, `taxonomyIds`, `seoTitle`, `seoDescription`, `expectedVersion*` | `200` `data ContentEntry` | 400, 401, 403, 404, 409, 429 |
+| `GET /api/admin/posts/{id}/revisions` | `content:read` · Dùng từ [FE-55](../../documents/p4/frontend/fe-55.md) | path `id*`<br>query `page`, `pageSize 1–100`, `sortBy=version/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data { id, version, snapshot, createdAt }[] + meta` | 400, 401, 403, 404, 429 |
+| `GET /api/admin/pages` | `content:read` · Dùng từ [FE-53](../../documents/p4/frontend/fe-53.md) | query `page`, `pageSize 1–100`, `sortBy=title/createdAt`, `sortOrder=asc/desc`, `q`, `taxonomyId`, `status=archived/draft/published/scheduled` | `200` `data ContentEntry[] + meta` | 400, 401, 403, 429 |
+| `POST /api/admin/pages` | `content:write` · Dùng từ [FE-53](../../documents/p4/frontend/fe-53.md) | body `body*`, `slug*`, `title*`, `excerpt`, `coverFileId`, `taxonomyIds`, `seoTitle`, `seoDescription` | `201` `data ContentEntry` | 400, 401, 403, 409, 429 |
+| `GET /api/admin/pages/{id}` | `content:read` · Dùng từ [FE-53](../../documents/p4/frontend/fe-53.md) | path `id*` | `200` `data ContentEntry` | 401, 403, 404, 429 |
+| `PATCH /api/admin/pages/{id}` | `content:write` · Dùng từ [FE-53](../../documents/p4/frontend/fe-53.md) | path `id*`<br>body `body*`, `slug*`, `title*`, `excerpt`, `coverFileId`, `taxonomyIds`, `seoTitle`, `seoDescription`, `expectedVersion*` | `200` `data ContentEntry` | 400, 401, 403, 404, 409, 429 |
+| `POST /api/admin/pages/{id}/publish` | `content:publish` · Dùng từ [FE-53](../../documents/p4/frontend/fe-53.md) | path `id*`<br>body `scheduledAt`, `expectedVersion*` | `200` `data ContentEntry` | 400, 401, 403, 404, 409, 429 |
+| `POST /api/admin/pages/{id}/archive` | `content:publish` · Dùng từ [FE-53](../../documents/p4/frontend/fe-53.md) | path `id*`<br>body `expectedVersion*` | `200` `data ContentEntry` | 400, 401, 403, 404, 409, 429 |
+| `GET /api/admin/pages/{id}/revisions` | `content:read` · Dùng từ [FE-55](../../documents/p4/frontend/fe-55.md) | path `id*`<br>query `page`, `pageSize 1–100`, `sortBy=version/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data { id, version, snapshot, createdAt }[] + meta` | 400, 401, 403, 404, 429 |
+| `GET /api/post-categories` | Công khai · Dùng từ [FE-54](../../documents/p4/frontend/fe-54.md) | query `page`, `pageSize 1–100`, `sortBy=name/slug/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data { id, slug, name }[] + meta` | 400, 429 |
+| `POST /api/admin/post-categories` | `content:write` · Dùng từ [FE-54](../../documents/p4/frontend/fe-54.md) | body `name*`, `slug*` | `201` `data { id, slug, name }` | 400, 401, 403, 409, 429 |
+| `PATCH /api/admin/post-categories/{id}` | `content:write` · Dùng từ [FE-54](../../documents/p4/frontend/fe-54.md) | path `id*`<br>body `name*`, `slug*` | `200` `data { id, slug, name }` | 400, 401, 403, 404, 409, 429 |
+| `GET /api/post-tags` | Công khai · Dùng từ [FE-54](../../documents/p4/frontend/fe-54.md) | query `page`, `pageSize 1–100`, `sortBy=name/slug/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data { id, slug, name }[] + meta` | 400, 429 |
+| `POST /api/admin/post-tags` | `content:write` · Dùng từ [FE-54](../../documents/p4/frontend/fe-54.md) | body `name*`, `slug*` | `201` `data { id, slug, name }` | 400, 401, 403, 409, 429 |
+| `PATCH /api/admin/post-tags/{id}` | `content:write` · Dùng từ [FE-54](../../documents/p4/frontend/fe-54.md) | path `id*`<br>body `name*`, `slug*` | `200` `data { id, slug, name }` | 400, 401, 403, 404, 409, 429 |

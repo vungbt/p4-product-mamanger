@@ -1,6 +1,6 @@
 # Spec — FE-21 · Duyệt và kiểm hàng trả
 
-Nguồn [FE-21](../../documents/frontend/fe-21.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-21](../../documents/p4/frontend/fe-21.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện duyệt và kiểm hàng trả theo contract API hiện hành. Tas
 
 ## Phụ thuộc
 
-[FE-20](../../documents/frontend/fe-20.md), [FE-38](../../documents/frontend/fe-38.md)
+[FE-20](../../documents/p4/frontend/fe-20.md), [FE-38](../../documents/p4/frontend/fe-38.md)
 
 ## Ranh giới
 

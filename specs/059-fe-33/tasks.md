@@ -1,6 +1,6 @@
 # Tasks — FE-33
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-33](../../documents/frontend/fe-33.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-33](../../documents/p4/frontend/fe-33.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Báo cáo sales/orders/inventory/products, bộ lọc thời gian/timezone, charts/table và report export thống nhất.
 - [ ] T003 (FR-002) — Revenue/refund/net theo ledger; cảnh báo dữ liệu legacy, không suy doanh thu từ paid enum.
 - [ ] T004 (FR-003) — Khoảng thời gian/schema theo API, export202 qua process center và authenticated download; dashboard thuộc FE-61.

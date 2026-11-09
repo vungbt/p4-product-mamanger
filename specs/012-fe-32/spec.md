@@ -1,6 +1,6 @@
 # Spec — FE-32 · Nhân viên và phân quyền
 
-Nguồn [FE-32](../../documents/frontend/fe-32.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-32](../../documents/p4/frontend/fe-32.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện nhân viên và phân quyền theo contract API hiện hành. Task
 
 ## Phụ thuộc
 
-[FE-01](../../documents/frontend/fe-01.md), [FE-09](../../documents/frontend/fe-09.md)
+[FE-01](../../documents/p4/frontend/fe-01.md), [FE-09](../../documents/p4/frontend/fe-09.md)
 
 ## Ranh giới
 

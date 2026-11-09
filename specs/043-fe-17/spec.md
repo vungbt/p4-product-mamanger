@@ -1,6 +1,6 @@
 # Spec — FE-17 · Quản trị đơn và huỷ từng phần
 
-Nguồn [FE-17](../../documents/frontend/fe-17.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-17](../../documents/p4/frontend/fe-17.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện quản trị đơn và huỷ từng phần theo contract API hiệ
 
 ## Phụ thuộc
 
-[FE-15](../../documents/frontend/fe-15.md)
+[FE-15](../../documents/p4/frontend/fe-15.md)
 
 ## Yêu cầu
 

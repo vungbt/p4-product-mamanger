@@ -1,6 +1,6 @@
 # Plan — FE-05
 
-[Spec](spec.md) · [FE-05](../../documents/frontend/fe-05.md)
+[Spec](spec.md) · [FE-05](../../documents/p4/frontend/fe-05.md)
 
 ## Trình tự
 
@@ -24,7 +24,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Contract để bàn giao FE
@@ -37,4 +37,4 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `PATCH /api/products/{id}/variants/{variantId}` | `catalog:write` · Task sở hữu | path `id*`, `variantId*`<br>body `expectedVersion*`, `sku`, `barcode`, `size`, `color`, `price`, `status`, `isDefault` | `200` `data ProductVariant` | 400, 401, 403, 404, 409, 429 |
 | `PATCH /api/products/{id}/variants/{variantId}/images` | `catalog:write` · Task sở hữu | path `id*`, `variantId*`<br>body `imageIds*`, `expectedVersion*` | `200` `data ProductVariant` | 400, 401, 403, 404, 409, 429 |
 | `GET /api/admin/variants` | `catalog:read` · Task sở hữu | query `page`, `pageSize 1–100`, `sortBy=sku/price/onHand/reserved/createdAt`, `sortOrder=asc/desc`, `q`, `productId`, `status=active/inactive` | `200` `data InventoryBalance[] + meta` | 400, 401, 403, 429 |
-| `GET /api/admin/products/{id}/variants` | `catalog:read` · Dùng từ [FE-03](../../documents/frontend/fe-03.md) | path `id*` | `200` `data ProductVariant[]` | 401, 403, 404, 429 |
+| `GET /api/admin/products/{id}/variants` | `catalog:read` · Dùng từ [FE-03](../../documents/p4/frontend/fe-03.md) | path `id*` | `200` `data ProductVariant[]` | 401, 403, 404, 429 |

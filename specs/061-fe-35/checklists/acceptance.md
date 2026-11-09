@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-35 · Job monitor và vận hành
 
-[Task nguồn](../../../documents/frontend/fe-35.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-35.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Theo dõi pending/retry/dead letter, attempt và worker heartbeat; retry chỉ job được API cho phép.
 - [ ] AC-002 (FR-002) — Inventory reconciliation là hành động riêng có xác nhận; không đưa nội bộ metrics cho storefront.

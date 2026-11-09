@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-23 · Quản trị yêu cầu đổi hàng
 
-[Task nguồn](../../../documents/frontend/fe-23.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-23.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Approve/reject, xem return/refund/replacement liên kết; chỉ tạo đơn thay sau điều kiện kiểm hàng.
 - [ ] AC-002 (FR-002) — Double-click/retry không tạo hai replacement; làm rõ quote TTL và trường hợp phải duyệt lại.

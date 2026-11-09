@@ -1,6 +1,6 @@
 # Spec — FE-11 · Import dữ liệu theo process
 
-Nguồn [FE-11](../../documents/frontend/fe-11.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-11](../../documents/p4/frontend/fe-11.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện import dữ liệu theo process theo contract API hiện hành. Ta
 
 ## Phụ thuộc
 
-[FE-05](../../documents/frontend/fe-05.md), [FE-42](../../documents/frontend/fe-42.md), [FE-10](../../documents/frontend/fe-10.md)
+[FE-05](../../documents/p4/frontend/fe-05.md), [FE-42](../../documents/p4/frontend/fe-42.md), [FE-10](../../documents/p4/frontend/fe-10.md)
 
 ## Ranh giới
 

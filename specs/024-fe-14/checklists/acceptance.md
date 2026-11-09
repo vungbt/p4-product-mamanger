@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-14 · Promotions, coupons và quota
 
-[Task nguồn](../../../documents/frontend/fe-14.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-14.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — CRUD thời gian/điều kiện/quota và lịch sử redemption, soft disable giữ lịch sử.
 - [ ] AC-002 (FR-002) — Giải thích best promotion hoặc coupon được chọn; lỗi hết quota hiển thị đúng field/form.

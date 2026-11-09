@@ -1,6 +1,6 @@
 # Spec — FE-43 · Tìm kiếm nhanh và trang kết quả
 
-Nguồn [FE-43](../../documents/frontend/fe-43.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-43](../../documents/p4/frontend/fe-43.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện tìm kiếm nhanh và trang kết quả theo contract API hiện h
 
 ## Phụ thuộc
 
-[FE-07](../../documents/frontend/fe-07.md)
+[FE-07](../../documents/p4/frontend/fe-07.md)
 
 ## Yêu cầu
 

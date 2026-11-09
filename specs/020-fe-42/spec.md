@@ -1,6 +1,6 @@
 # Spec — FE-42 · Tồn kho và sổ kho
 
-Nguồn [FE-42](../../documents/frontend/fe-42.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-42](../../documents/p4/frontend/fe-42.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện tồn kho và sổ kho theo contract API hiện hành. Task chỉ 
 
 ## Phụ thuộc
 
-[FE-05](../../documents/frontend/fe-05.md)
+[FE-05](../../documents/p4/frontend/fe-05.md)
 
 ## Yêu cầu
 

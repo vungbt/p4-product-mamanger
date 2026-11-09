@@ -1,6 +1,6 @@
 # Tasks — FE-52
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-52](../../documents/frontend/fe-52.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-52](../../documents/p4/frontend/fe-52.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — PDP hết hàng cho đăng ký đúng SKU/kênh theo API; chưa verify email hướng dẫn xác minh.
 - [ ] T003 (FR-002) — Màn tài khoản xem và hủy subscription, hiển thị trạng thái server, không trùng khi bấm lại.
 - [ ] T004 (FR-003) — Không hứa thời gian có hàng hoặc giả thông báo đã gửi; xử lý sản phẩm ngừng bán và đổi phiên.

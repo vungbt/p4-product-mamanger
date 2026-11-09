@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-60 · Quản trị khách hàng
 
-[Task nguồn](../../../documents/frontend/fe-60.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-60.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Màn customers riêng, server search/filter/sort/page theo contract; chỉ hiển thị thông tin được API trả.
 - [ ] AC-002 (FR-002) — Khóa/mở theo capability, xác nhận, lý do/version nếu schema yêu cầu; nói rõ các phiên có thể bị revoke.

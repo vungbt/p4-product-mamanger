@@ -1,6 +1,6 @@
 # Spec — FE-45 · Sổ địa chỉ và chọn địa chỉ giao hàng
 
-Nguồn [FE-45](../../documents/frontend/fe-45.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-45](../../documents/p4/frontend/fe-45.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện sổ địa chỉ và chọn địa chỉ giao hàng theo contract
 
 ## Phụ thuộc
 
-[FE-09](../../documents/frontend/fe-09.md)
+[FE-09](../../documents/p4/frontend/fe-09.md)
 
 ## Yêu cầu
 

@@ -1,6 +1,6 @@
 # Spec — FE-52 · Đăng ký báo có hàng
 
-Nguồn [FE-52](../../documents/frontend/fe-52.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-52](../../documents/p4/frontend/fe-52.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện đăng ký báo có hàng theo contract API hiện hành. Task ch�
 
 ## Phụ thuộc
 
-[FE-44](../../documents/frontend/fe-44.md), [FE-09](../../documents/frontend/fe-09.md)
+[FE-44](../../documents/p4/frontend/fe-44.md), [FE-09](../../documents/p4/frontend/fe-09.md)
 
 ## Yêu cầu
 

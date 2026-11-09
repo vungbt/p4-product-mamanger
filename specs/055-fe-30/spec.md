@@ -1,6 +1,6 @@
 # Spec — FE-30 · Quản lý notification templates
 
-Nguồn [FE-30](../../documents/frontend/fe-30.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-30](../../documents/p4/frontend/fe-30.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện quản lý notification templates theo contract API hiện hành. 
 
 ## Phụ thuộc
 
-[FE-29](../../documents/frontend/fe-29.md)
+[FE-29](../../documents/p4/frontend/fe-29.md)
 
 ## Yêu cầu
 

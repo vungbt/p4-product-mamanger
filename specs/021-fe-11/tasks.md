@@ -1,6 +1,6 @@
 # Tasks — FE-11
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-11](../../documents/frontend/fe-11.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-11](../../documents/p4/frontend/fe-11.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — CSV/XLSX theo template từng resource, validate và preview không ghi dữ liệu; confirm version rõ ràng rồi mới apply.
 - [ ] T003 (FR-002) — Hiển thị process progress, partial success và lỗi từng field/dòng; retry giữ Idempotency-Key, giới hạn theo contract thực tế.
 - [ ] T004 (FR-003) — Dùng upload/process chung, không đóng modal rồi mất job đang chạy; liên kết result/download và phân biệt lỗi upload với lỗi dữ liệu.

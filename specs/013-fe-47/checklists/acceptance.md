@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-47 · Nhận lời mời nhân viên
 
-[Task nguồn](../../../documents/frontend/fe-47.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-47.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Route public nhận link mời; kiểm tra thiếu/hết hạn/đã dùng, hiển thị lỗi và đường quay lại login Admin.
 - [ ] AC-002 (FR-002) — Form tên/mật khẩu theo schema, không cho tự chọn role; role và email lấy từ lời mời đã được server kiểm tra.

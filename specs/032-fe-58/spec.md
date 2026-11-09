@@ -1,6 +1,6 @@
 # Spec — FE-58 · Trình biên tập bố cục trang chủ
 
-Nguồn [FE-58](../../documents/frontend/fe-58.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-58](../../documents/p4/frontend/fe-58.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện trình biên tập bố cục trang chủ theo contract API hiện
 
 ## Phụ thuộc
 
-[FE-28](../../documents/frontend/fe-28.md), [FE-56](../../documents/frontend/fe-56.md), [FE-57](../../documents/frontend/fe-57.md)
+[FE-28](../../documents/p4/frontend/fe-28.md), [FE-56](../../documents/p4/frontend/fe-56.md), [FE-57](../../documents/p4/frontend/fe-57.md)
 
 ## Yêu cầu
 

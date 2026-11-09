@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-28 · Quản lý bộ sưu tập sản phẩm
 
-[Task nguồn](../../../documents/frontend/fe-28.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-28.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — List/create/detail/edit manual collections và chọn sản phẩm đúng contract, version và validation.
 - [ ] AC-002 (FR-002) — Không đưa sản phẩm draft/archived ra public; preview danh sách theo thứ tự đã cấu hình.

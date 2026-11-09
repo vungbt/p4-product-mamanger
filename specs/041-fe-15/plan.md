@@ -1,6 +1,6 @@
 # Plan — FE-15
 
-[Spec](spec.md) · [FE-15](../../documents/frontend/fe-15.md)
+[Spec](spec.md) · [FE-15](../../documents/p4/frontend/fe-15.md)
 
 ## Trình tự
 
@@ -27,7 +27,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Thứ tự dữ liệu checkout
@@ -45,6 +45,6 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `POST /api/shipping/quotes` | Công khai · Task sở hữu | body `items`, `city*`, `shippingMethodId` | `200` `data ShippingQuote[]` | 400, 409, 429 |
 | `POST /api/coupons/preview` | Có phiên · Task sở hữu | body `code*`, `items*` | `200` `data { discountAmount, allocations, couponId, code }` | 400, 401, 403, 409, 429 |
 | `POST /api/orders` | user · Task sở hữu | header `Idempotency-Key*`<br>body `quoteId`, `items`, `shippingAddress · ShippingAddressInput`, `addressId`, `couponCode` | `201` `data Order` | 400, 401, 403, 409, 429 |
-| `GET /api/addresses` | Có phiên · Dùng từ [FE-45](../../documents/frontend/fe-45.md) | query `page`, `pageSize 1–100`, `sortBy=fullName/city/isDefault/createdAt`, `sortOrder=asc/desc`, `q`, `city`, `isDefault=false/true` | `200` `data Address[] + meta` | 400, 401, 403, 429 |
-| `GET /api/shop/config` | Công khai · Dùng từ [FE-40](../../documents/frontend/fe-40.md) | — | `200` `data ShopSettings` | 429 |
-| `GET /api/policies/current` | Công khai · Dùng từ [FE-53](../../documents/frontend/fe-53.md) | — | `200` `data (PublishedContent / null)[]` | 429 |
+| `GET /api/addresses` | Có phiên · Dùng từ [FE-45](../../documents/p4/frontend/fe-45.md) | query `page`, `pageSize 1–100`, `sortBy=fullName/city/isDefault/createdAt`, `sortOrder=asc/desc`, `q`, `city`, `isDefault=false/true` | `200` `data Address[] + meta` | 400, 401, 403, 429 |
+| `GET /api/shop/config` | Công khai · Dùng từ [FE-40](../../documents/p4/frontend/fe-40.md) | — | `200` `data ShopSettings` | 429 |
+| `GET /api/policies/current` | Công khai · Dùng từ [FE-53](../../documents/p4/frontend/fe-53.md) | — | `200` `data (PublishedContent / null)[]` | 429 |

@@ -1,6 +1,6 @@
 # Spec — FE-10 · Process center và kết nối realtime
 
-Nguồn [FE-10](../../documents/frontend/fe-10.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-10](../../documents/p4/frontend/fe-10.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện process center và kết nối realtime theo contract API hiện h
 
 ## Phụ thuộc
 
-[FE-01](../../documents/frontend/fe-01.md), [FE-37](../../documents/frontend/fe-37.md)
+[FE-01](../../documents/p4/frontend/fe-01.md), [FE-37](../../documents/p4/frontend/fe-37.md)
 
 ## Yêu cầu
 

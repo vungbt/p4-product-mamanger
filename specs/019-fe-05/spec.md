@@ -1,6 +1,6 @@
 # Spec — FE-05 · SKU và biến thể sản phẩm
 
-Nguồn [FE-05](../../documents/frontend/fe-05.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-05](../../documents/p4/frontend/fe-05.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện sku và biến thể sản phẩm theo contract API hiện hành. 
 
 ## Phụ thuộc
 
-[FE-04](../../documents/frontend/fe-04.md), [FE-39](../../documents/frontend/fe-39.md)
+[FE-04](../../documents/p4/frontend/fe-04.md), [FE-39](../../documents/p4/frontend/fe-39.md)
 
 ## Yêu cầu
 

@@ -1,6 +1,6 @@
 # Tasks — FE-09
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-09](../../documents/frontend/fe-09.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-09](../../documents/p4/frontend/fe-09.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Xem/sửa display name, phone, avatar qua profile versioned API; preferences locale/timezone đồng bộ app.
 - [ ] T003 (FR-002) — Đổi email theo luồng account request/confirm hiện có; route callback xử lý token thiếu/hết hạn/đã dùng. Không trộn token native và compatibility.
 - [ ] T004 (FR-003) — Avatar qua upload FE-38; xử lý field error/409 và không làm mất dữ liệu nhập khi tải lại.

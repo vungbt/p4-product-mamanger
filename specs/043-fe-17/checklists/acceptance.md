@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-17 · Quản trị đơn và huỷ từng phần
 
-[Task nguồn](../../../documents/frontend/fe-17.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-17.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Danh sách/detail có snapshot tiền, SKU, address, timeline; action theo state/capability.
 - [ ] AC-002 (FR-002) — Confirm/start processing/approve-reject cancellation gửi expectedVersion và idempotency; không sửa tổng tiền ở FE.

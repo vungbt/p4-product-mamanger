@@ -1,6 +1,6 @@
 # Spec — FE-37 · Lớp gọi API và xử lý lỗi dùng chung
 
-Nguồn [FE-37](../../documents/frontend/fe-37.md) · Portal **Chung** · Trạng thái nguồn **Đã có một phần**
+Nguồn [FE-37](../../documents/p4/frontend/fe-37.md) · Portal **Chung** · Trạng thái nguồn **Đã có một phần**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện lớp gọi api và xử lý lỗi dùng chung theo contract API h
 
 ## Phụ thuộc
 
-[FE-01](../../documents/frontend/fe-01.md)
+[FE-01](../../documents/p4/frontend/fe-01.md)
 
 ## Yêu cầu
 

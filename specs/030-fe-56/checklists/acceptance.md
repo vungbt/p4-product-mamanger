@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-56 · Quản lý banner và lịch hiển thị
 
-[Task nguồn](../../../documents/frontend/fe-56.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-56.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — List/editor banner có ảnh/đích đến/lịch/status theo contract; ảnh qua upload chung.
 - [ ] AC-002 (FR-002) — Preview responsive, alt text và liên kết HTTPS/nội bộ hợp lệ; thời gian theo timezone rồi UTC.

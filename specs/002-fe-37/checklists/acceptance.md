@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-37 · Lớp gọi API và xử lý lỗi dùng chung
 
-[Task nguồn](../../../documents/frontend/fe-37.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-37.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — `@p4/api-sdk` đã build và category hooks đã ghép. Bổ sung resource API/hooks tại SDK theo từng task; dùng chung QueryClient từ ApiQueryProvider và xóa wrapper không có logic. App không phải tự `unwrap`/invalidate cho từng mutation.
 - [ ] AC-002 (FR-002) — Helper `Idempotency-Key`: giữ nguyên key khi retry cùng một thao tác, tạo key mới cho ý định mới.

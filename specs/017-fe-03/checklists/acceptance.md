@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-03 · Danh sách và chi tiết sản phẩm
 
-[Task nguồn](../../../documents/frontend/fe-03.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-03.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Hiển thị draft/active/inactive/archived; bộ lọc và sort phía API.
 - [ ] AC-002 (FR-002) — Chi tiết phân biệt thông tin sản phẩm và SKU; archive giữ dữ liệu đơn cũ, xác nhận trước thao tác.

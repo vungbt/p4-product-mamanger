@@ -1,6 +1,6 @@
 # Plan — FE-11
 
-[Spec](spec.md) · [FE-11](../../documents/frontend/fe-11.md)
+[Spec](spec.md) · [FE-11](../../documents/p4/frontend/fe-11.md)
 
 ## Trình tự
 
@@ -25,7 +25,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Contract để bàn giao FE
@@ -37,6 +37,6 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `POST /api/admin/imports/{resource}` | Có phiên · Task sở hữu | path `resource*`<br>header `Idempotency-Key*`<br>body `file*` | `202` `data { id, kind, state, phase, version, progress, processed, total, succeeded, failed, errorCode, result, createdAt, updatedAt, expiresAt }` | 400, 401, 403, 404, 409, 429 |
 | `GET /api/admin/import-templates/{resource}` | Có phiên · Task sở hữu | path `resource*` | `200` `data { resource, columns, format, notes }` | 401, 403, 404, 429 |
 | `POST /api/processes/{id}/confirm` | Có phiên · Task sở hữu | path `id*`<br>body `expectedVersion*` | `202` `data { id, kind, state, phase, version, progress, processed, total, succeeded, failed, errorCode, result, createdAt, updatedAt, expiresAt }` | 400, 401, 403, 404, 409, 429 |
-| `POST /api/admin/exports` | Có phiên · Dùng từ [FE-48](../../documents/frontend/fe-48.md) | header `Idempotency-Key*`<br>body `query`, `resource`, `format` | `202` `data { id, kind, state, phase, version, progress, processed, total, succeeded, failed, errorCode, result, createdAt, updatedAt, expiresAt }` | 400, 401, 403, 409, 429 |
-| `GET /api/processes/{id}/items` | Có phiên · Dùng từ [FE-10](../../documents/frontend/fe-10.md) | path `id*`<br>query `page`, `pageSize 1–100`, `sortBy=index/state/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data { data, result, state, issues, index }[] + meta` | 400, 401, 403, 404, 429 |
-| `GET /api/processes/{id}/download` | Có phiên · Dùng từ [FE-48](../../documents/frontend/fe-48.md) | path `id*` | `200` `application/octet-stream` | 401, 403, 404, 429 |
+| `POST /api/admin/exports` | Có phiên · Dùng từ [FE-48](../../documents/p4/frontend/fe-48.md) | header `Idempotency-Key*`<br>body `query`, `resource`, `format` | `202` `data { id, kind, state, phase, version, progress, processed, total, succeeded, failed, errorCode, result, createdAt, updatedAt, expiresAt }` | 400, 401, 403, 409, 429 |
+| `GET /api/processes/{id}/items` | Có phiên · Dùng từ [FE-10](../../documents/p4/frontend/fe-10.md) | path `id*`<br>query `page`, `pageSize 1–100`, `sortBy=index/state/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data { data, result, state, issues, index }[] + meta` | 400, 401, 403, 404, 429 |
+| `GET /api/processes/{id}/download` | Có phiên · Dùng từ [FE-48](../../documents/p4/frontend/fe-48.md) | path `id*` | `200` `application/octet-stream` | 401, 403, 404, 429 |

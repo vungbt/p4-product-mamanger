@@ -1,6 +1,6 @@
 # Plan — FE-38
 
-[Spec](spec.md) · [FE-38](../../documents/frontend/fe-38.md)
+[Spec](spec.md) · [FE-38](../../documents/p4/frontend/fe-38.md)
 
 ## Trình tự
 
@@ -28,7 +28,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Thứ tự upload
@@ -47,6 +47,6 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `POST /api/files/uploads/batch` | Có phiên · Task sở hữu | body `purpose*`, `names*`, `resourceId` | `201` `data { batchId, tickets }` | 400, 401, 403, 409, 429 |
 | `POST /api/files/uploads/batch/complete` | Có phiên · Task sở hữu | header `Idempotency-Key*`<br>body `ticketIds*` | `202` `data { id, kind, state, phase, version, progress, processed, total, succeeded, failed, errorCode, result, createdAt, updatedAt, expiresAt }` | 400, 401, 403, 409, 429 |
 | `DELETE /api/files/{id}` | Có phiên · Task sở hữu | path `id*` | `200` `data { ok, id }` | 401, 403, 404, 409, 429 |
-| `GET /api/files/{id}/download` | Có phiên · Dùng từ [FE-21](../../documents/frontend/fe-21.md) | path `id*` | `200` `application/octet-stream` | 401, 403, 404, 429 |
+| `GET /api/files/{id}/download` | Có phiên · Dùng từ [FE-21](../../documents/p4/frontend/fe-21.md) | path `id*` | `200` `application/octet-stream` | 401, 403, 404, 429 |
 | `GET /api/files/sign-upload-url` | `catalog:write` · Tham chiếu | query `name` | `200` `data { allowedMimeTypes, uploadUrl, publicId, id, purpose, resourceId, status, private, expiresAt, fileId, maxBytes }` | 400, 401, 403, 429 |
 | `GET /api/files/sign-upload-urls` | `catalog:write` · Tham chiếu | query `names` | `200` `data { allowedMimeTypes, uploadUrl, publicId, id, purpose, resourceId, status, private, expiresAt, fileId, maxBytes }[]` | 400, 401, 403, 429 |

@@ -1,6 +1,6 @@
 # Tasks — FE-55
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-55](../../documents/frontend/fe-55.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-55](../../documents/p4/frontend/fe-55.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Xem revisions read-only và thay đổi giữa các bản khi dữ liệu API đủ; không dựng restore action khi không có endpoint.
 - [ ] T003 (FR-002) — Lịch xuất bản nhập theo giờ người dùng, gửi UTC, hiển thị timezone; preview draft không public hóa dữ liệu.
 - [ ] T004 (FR-003) — SEO title/description theo schema, link an toàn và cảnh báo rời form chưa lưu; publish phản ánh đúng snapshot public.

@@ -1,6 +1,6 @@
 # Spec — FE-39 · Dữ liệu seed cho phát triển FE
 
-Nguồn [FE-39](../../documents/frontend/fe-39.md) · Portal **API** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-39](../../documents/p4/frontend/fe-39.md) · Portal **API** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
