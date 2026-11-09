@@ -1,18 +1,12 @@
-import { stayAbilityKit } from '@stay/shared';
 import { matchPath, useLocation } from 'react-router-dom';
-import { useAbility } from '@/libraries/ability';
+import { canOpen, useAbility } from '@/libraries/ability';
 import { appRoutes, type StayRoute } from './route-configs';
 
-/**
- * Routes the user may open, for menus. Same check as `useCanAccess` (unconditional access),
- * applied to the whole list in one hook call.
- */
+/** Menu routes the user may open (same `canOpen` check as the page guard). */
 export function useMenuRoutes(): StayRoute[] {
   const ability = useAbility();
 
-  return appRoutes.filter(({ ability: check }) =>
-    stayAbilityKit.canAccess(ability, check.action, check.subject),
-  );
+  return appRoutes.filter((route) => !route.hideInMenu && canOpen(ability, route.ability));
 }
 
 /** The app route matching the current URL (title, back button, placeholders). */

@@ -14,6 +14,8 @@ export type StayRoute = {
   bottomNav?: boolean;
   /** Match only this exact path for the active menu state. */
   exact?: boolean;
+  /** Reachable by URL but not listed in the menus. */
+  hideInMenu?: boolean;
 };
 
 const OverviewPage = lazy(() => import('@/modules/overview/page'));
@@ -48,7 +50,8 @@ export const appRoutes: StayRoute[] = [
     name: 'readings',
     icon: 'bolt',
     component: PlaceholderPage,
-    ability: { action: 'manage', subject: 'MeterReading' },
+    // screens.md says `manage`; managers hold create/read/update/delete, not `manage`.
+    ability: { action: 'update', subject: 'MeterReading' },
     bottomNav: true,
   },
   {
@@ -85,7 +88,7 @@ export const appRoutes: StayRoute[] = [
     name: 'requests',
     icon: 'messages',
     component: PlaceholderPage,
-    ability: { action: 'manage', subject: 'Maintenance' },
+    ability: { action: 'update', subject: 'Maintenance' },
   },
   {
     path: '/expenses',
@@ -102,10 +105,18 @@ export const appRoutes: StayRoute[] = [
     ability: { action: 'read', subject: 'Report' },
   },
   {
-    path: '/settings/services',
+    path: '/settings',
     name: 'settings',
     icon: 'settings',
     component: PlaceholderPage,
     ability: { action: 'manage', subject: 'Settings' },
+  },
+  {
+    path: '/settings/members',
+    name: 'members',
+    icon: 'users',
+    component: PlaceholderPage,
+    ability: { action: 'manage', subject: 'Member' },
+    hideInMenu: true,
   },
 ];

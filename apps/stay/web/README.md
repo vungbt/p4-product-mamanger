@@ -20,7 +20,7 @@ pnpm --filter @stay/web build && pnpm --filter @stay/web preview   # bản build
 | `src/styles/stay-theme.css` | Palette Stay (teal + xám lạnh, chỉ light) trên `:root`, import sau CSS kit |
 | `src/libraries/session` | Phiên Better Auth (`@stay/sdk/auth`), React Query, `StaySdkProvider` |
 | `src/libraries/ability.tsx` | `createAbilityReact(stayAbilityKit)` + rule từ `GET /api/me/capabilities` |
-| `src/libraries/buildings` | `BuildingProvider`, `BuildingSelector`, `loadBuildings` |
+| `src/libraries/buildings` | `BuildingProvider` (`useBuildings`), `BuildingSelector` |
 | `src/routing` | `appRoutes` (route có `ability`, menu sinh từ đây), guard, `AppRoutes` |
 | `src/modules` | Màn: login (C-01), layout (C-02), errors (C-03), overview (O-01 giữ chỗ), placeholder "Sắp có" |
 
@@ -30,11 +30,11 @@ Giống `@p4/api-client`: Better Auth giữ phiên trong cookie HttpOnly `stay.s
 
 ## Phân quyền và menu
 
-Mỗi route trong `src/routing/route-configs.ts` có `ability: { action, subject }` theo `documents/stay/screens.md`. `RequireAbility` dùng `useCanAccess` (quyền không điều kiện); thiếu quyền → trang 403. Sidebar và bottom nav lọc cùng danh sách. Chưa đăng nhập → `/login`, đăng nhập xong quay lại đúng URL.
+Mỗi route trong `src/routing/route-configs.ts` có `ability: { action, subject }` theo `documents/stay/screens.md` (Chốt số và Yêu cầu dùng `update` vì người quản lý có create/read/update/delete chứ không có `manage`). `canOpen` (`src/libraries/ability.tsx`): Settings và Member cần quyền không điều kiện (`canAccess`); các subject theo toà mở khi có quyền trên ít nhất một bản ghi (`canAccessSome`, ví dụ quản lý toà A) — API đã lọc dữ liệu theo toà. `RequireAbility`, sidebar và bottom nav dùng cùng kiểm tra; thiếu quyền → trang 403. Chưa đăng nhập → `/login`, đăng nhập xong quay lại đúng URL.
 
-## Toà nhà (chờ ST-07)
+## Toà nhà
 
-`BuildingProvider` lấy danh sách từ **một** hàm loader truyền qua prop (`app.tsx`: `<BuildingProvider loader={loadBuildings}>`). Hiện chưa có API danh sách toà nên `loadBuildings` (`src/libraries/buildings/load-buildings.ts`) trả về mảng rỗng và bộ chọn toà bị ẩn — không có dữ liệu giả. ST-07 chỉ cần thay thân hàm này bằng `GET /api/buildings`. Bộ chọn ẩn khi có dưới 2 toà; toà chọn gần nhất lưu ở `localStorage` (`stay_building_id`). Màn theo toà dùng `useBuilding().buildingId` trong query key để đổi toà thì tải lại.
+`BuildingProvider` (mount trong `AppLayout`, chỉ khi đã đăng nhập) đọc `useBuildings({ pageSize: 100 })` của `@stay/sdk/react` — `GET /api/buildings` đã lọc theo toà người dùng được xem và ẩn toà lưu trữ. Toà chọn gần nhất lưu ở `localStorage` (`stay_building_id`, có try/catch); nếu toà đó không còn trong danh sách thì dùng toà đầu tiên và ghi lại lựa chọn. Màn nhận 404 từ `GET /api/buildings/:id` gọi `reportMissingBuilding(id)` để bỏ toà đó và tải lại danh sách. Bộ chọn ẩn khi có dưới 2 toà (chỉ hiện tên toà đang dùng từ `sm`). Màn theo toà dùng `useActiveBuilding().buildingId` trong query key để đổi toà thì tải lại.
 
 ## Kiểm thử
 
@@ -45,4 +45,4 @@ pnpm lint
 bash scripts/test-stay-web-e2e.sh   # cần STAY_DATABASE_* trỏ tới DB dùng thử + `pnpm --filter @stay/web exec playwright install chromium`
 ```
 
-E2E (Playwright, Chromium, `e2e/`) build + migrate + seed + chạy `@stay/api`, build web, chạy `vite preview` rồi test: đăng nhập, reload giữ phiên (cookie HttpOnly, không token trong storage), URL bảo vệ → login → quay lại, lỗi field + lỗi chung khi sai mật khẩu, đăng xuất, mất phiên khi focus, ghi nhớ email, bottom nav ở 375px, bàn phím + focus, 404, banner mất mạng. Test bị skip thì script fail. CI: job `stay-web-e2e` (GitHub `web.yml`, GitLab `.gitlab-ci.yml`); ảnh `test-results/screenshots/*.png` luôn được upload.
+E2E (Playwright, Chromium, `e2e/`) build + migrate + seed + chạy `@stay/api`, build web, chạy `vite preview` rồi test: đăng nhập, reload giữ phiên (cookie HttpOnly, không token trong storage), URL bảo vệ → login → quay lại, lỗi field + lỗi chung khi sai mật khẩu, đăng xuất, mất phiên khi focus, ghi nhớ email, toà A là toà đang dùng (và fallback khi toà nhớ không còn), quản lý toà A (`e2e/seed-manager.mjs`, chỉ local/CI) thấy menu theo toà nhưng không thấy Cài đặt và nhận 403 ở `/settings`, bottom nav ở 375px, bàn phím + focus, 404, banner mất mạng. Test bị skip thì script fail. CI: job `stay-web-e2e` (GitHub `web.yml`, GitLab `.gitlab-ci.yml`); ảnh `test-results/screenshots/*.png` luôn được upload.

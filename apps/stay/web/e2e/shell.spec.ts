@@ -98,4 +98,19 @@ test.describe('C-02/C-03 shell on desktop', () => {
     await context.setOffline(false);
     await expect(page.getByTestId('offline-banner')).toBeHidden();
   });
+
+  test('falls back to building A when the remembered building is gone', async ({ page }) => {
+    await page.goto('/login');
+    await page.evaluate(() =>
+      localStorage.setItem('stay_building_id', '00000000-0000-4000-8000-000000000000'),
+    );
+    await fillLogin(page);
+    await expect(page).toHaveURL('/');
+
+    await expect(page.getByTestId('active-building')).toHaveAttribute('data-building-code', 'A');
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem('stay_building_id')))
+      .not.toBe('00000000-0000-4000-8000-000000000000');
+    expect(await page.evaluate(() => localStorage.getItem('stay_building_id'))).toBeTruthy();
+  });
 });

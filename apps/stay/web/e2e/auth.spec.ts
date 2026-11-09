@@ -15,6 +15,9 @@ test.describe('C-01 login and session', () => {
     await expect(page.getByTestId('signed-in-user')).toContainText('Chủ trọ');
     await expect(page.getByRole('heading', { name: 'Bắt đầu với toà nhà của bạn' })).toBeVisible();
     await expect(page.getByTestId('app-sidebar')).toBeVisible();
+    // The seed has one building: no selector, building A is the active one.
+    await expect(page.getByTestId('active-building')).toHaveAttribute('data-building-code', 'A');
+    await expect(page.getByTestId('building-selector')).toHaveCount(0);
     await saveScreenshot(page, 'shell-desktop');
   });
 

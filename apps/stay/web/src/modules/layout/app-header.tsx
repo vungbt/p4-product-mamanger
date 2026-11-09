@@ -3,7 +3,7 @@ import { toast } from '@itclabs/react-ui/toast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { BRAND, BrandMark } from '@/brand';
-import { useCanAccess } from '@/libraries/ability';
+import { useCanOpen } from '@/libraries/ability';
 import { BuildingSelector } from '@/libraries/buildings/building-selector';
 import { ROUTES } from '@/routing/route-configs';
 import { useCurrentRoute } from '@/routing/use-routes';
@@ -20,7 +20,7 @@ export default function AppHeader() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const route = useCurrentRoute();
-  const canSeeRequests = useCanAccess('manage', 'Maintenance');
+  const canSeeRequests = useCanOpen({ action: 'update', subject: 'Maintenance' });
 
   const title = route ? t(`nav.${route.name}`) : '';
   const isHome = route?.path === ROUTES.overview;

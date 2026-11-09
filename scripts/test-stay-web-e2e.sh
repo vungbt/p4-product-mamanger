@@ -20,6 +20,8 @@ cd "$api_dir"
 pnpm build
 pnpm db:migrate
 pnpm db:seed
+# E2E-only: a manager assigned to building A (manager menu and 403 tests).
+node "$web_dir/e2e/seed-manager.mjs"
 
 node dist/index.js > "$web_dir/api.log" 2>&1 &
 api_pid=$!

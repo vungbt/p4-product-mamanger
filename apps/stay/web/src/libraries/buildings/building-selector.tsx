@@ -1,13 +1,33 @@
-import { cn, Select } from '@itclabs/react-ui';
+import { cn, Icon, Select } from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
-import { useBuilding } from './building-provider';
+import { useActiveBuilding } from './building-provider';
 
-/** Header building switcher; hidden while the user has fewer than two buildings. */
+/**
+ * Header building switcher. With fewer than two buildings there is nothing to choose: the
+ * selector is hidden and only the active building's name is shown (from `sm` up).
+ */
 export function BuildingSelector({ className }: { className?: string }) {
   const { t } = useTranslation();
-  const { buildings, buildingId, selectBuilding } = useBuilding();
+  const { buildings, building, buildingId, selectBuilding } = useActiveBuilding();
 
-  if (buildings.length < 2) return null;
+  if (!building) return null;
+
+  if (buildings.length < 2) {
+    return (
+      <span
+        className={cn(
+          'hidden items-center gap-1.5 text-ui-sm font-medium text-muted sm:inline-flex',
+          className,
+        )}
+        data-testid="active-building"
+        data-building-code={building.code}
+      >
+        <Icon name="building" className="size-4" aria-hidden />
+        <span className="sr-only">{t('building.label')}:</span>
+        {building.name}
+      </span>
+    );
+  }
 
   const options = buildings.map(({ id, name }) => ({ value: id, label: name }));
 

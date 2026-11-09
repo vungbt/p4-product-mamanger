@@ -7,6 +7,12 @@ export const OWNER = {
   password: process.env.STAY_E2E_PASSWORD ?? 'stay-owner-123',
 };
 
+/** Manager of building A, created by `e2e/seed-manager.mjs` (local/CI only). */
+export const MANAGER = {
+  email: 'manager-a@stay.local',
+  password: 'stay-manager-123',
+};
+
 /** Screens kept as CI artifacts for review (login, desktop shell, mobile shell). */
 export const SCREENSHOT_DIR = path.resolve(import.meta.dirname, '../test-results/screenshots');
 

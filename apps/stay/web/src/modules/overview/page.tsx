@@ -10,7 +10,7 @@ type OnboardingStep = {
 };
 
 const STEPS: OnboardingStep[] = [
-  { key: 'prices', icon: 'settings', href: '/settings/services' },
+  { key: 'prices', icon: 'settings', href: '/settings' },
   { key: 'rooms', icon: 'building', href: '/rooms' },
   { key: 'contracts', icon: 'clipboardText', href: '/contracts' },
 ];

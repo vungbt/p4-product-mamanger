@@ -4,7 +4,7 @@ import { getErrorMessage } from '@stay/sdk/shared';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { type AbilityCheck, useCanAccess } from '@/libraries/ability';
+import { type AbilityCheck, useCanOpen } from '@/libraries/ability';
 import { useAuth } from '@/libraries/session/auth-provider';
 import ForbiddenPage from '@/modules/errors/forbidden-page';
 import { ROUTES } from './route-configs';
@@ -79,7 +79,7 @@ export function RequireAbility({
   const { t } = useTranslation();
   const { user } = useAuth();
   const capabilities = useCapabilities(user?.id);
-  const allowed = useCanAccess(ability.action, ability.subject);
+  const allowed = useCanOpen(ability);
 
   if (capabilities.isPending) return <PageSpinner />;
 

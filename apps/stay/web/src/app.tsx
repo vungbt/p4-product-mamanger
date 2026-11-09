@@ -2,8 +2,6 @@ import { ToastProvider, UIProvider, type UiImageProps, type UiLinkProps } from '
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Link } from 'react-router-dom';
 import { CapabilityAbilityProvider } from '@/libraries/ability';
-import { BuildingProvider } from '@/libraries/buildings/building-provider';
-import { loadBuildings } from '@/libraries/buildings/load-buildings';
 import { OfflineBanner } from '@/libraries/offline-banner';
 import { AuthProvider } from '@/libraries/session/auth-provider';
 import { QueryProvider } from '@/libraries/session/query-provider';
@@ -34,10 +32,8 @@ export default function App() {
           <QueryProvider>
             <AuthProvider>
               <CapabilityAbilityProvider>
-                <BuildingProvider loader={loadBuildings}>
-                  <OfflineBanner />
-                  <AppRoutes />
-                </BuildingProvider>
+                <OfflineBanner />
+                <AppRoutes />
               </CapabilityAbilityProvider>
             </AuthProvider>
           </QueryProvider>
