@@ -27,6 +27,3 @@ export const ROUTES = {
     orders: '/admin/orders',
   },
 } as const;
-
-/** Re-exported from `@p4/auth` so trainees can keep importing from constants as before */
-export { AUTH_STORAGE_KEY, FAKE_AUTH } from '@p4/auth';

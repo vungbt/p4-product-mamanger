@@ -58,7 +58,9 @@ Commit theo [COMMIT_CONVENTION.md](./COMMIT_CONVENTION.md).
 | Storefront | `/login` | user@demo.com | user123 |
 | Admin | `/admin/login` | admin@demo.com | admin123 |
 
-Login hiện gọi API thật, lưu access/refresh token và tự refresh session trước khi access token hết hạn.
+Các tài khoản này **chỉ dùng cho môi trường local**. Production phải dùng mật khẩu riêng; repo public nên ai cũng đọc được bảng trên.
+
+Login gọi API thật qua Better Auth: session nằm trong cookie HttpOnly và được khôi phục khi mở lại trang.
 
 ## 5. API docs
 

@@ -1,5 +1,7 @@
 import type { User } from '@p4/shared';
-import { AUTH_STORAGE_KEY } from './fake-auth';
+
+/** Key of the default in-memory session. Sessions are never persisted to storage. */
+export const AUTH_SESSION_KEY = 'p4_auth';
 
 export type AuthSession = {
   token: string;
@@ -12,22 +14,23 @@ const listeners = new Set<SessionListener>();
 
 const sessions = new Map<string, AuthSession>();
 
-export function readAuthSession(storageKey = AUTH_STORAGE_KEY): AuthSession | null {
-  return sessions.get(storageKey) ?? null;
+export function readAuthSession(sessionKey = AUTH_SESSION_KEY): AuthSession | null {
+  return sessions.get(sessionKey) ?? null;
 }
 
 function notify(session: AuthSession | null) {
   for (const listener of listeners) listener(session);
 }
 
-export function writeAuthSession(session: AuthSession, storageKey = AUTH_STORAGE_KEY) {
-  sessions.set(storageKey, session);
+export function writeAuthSession(session: AuthSession, sessionKey = AUTH_SESSION_KEY) {
+  sessions.set(sessionKey, session);
   notify(session);
 }
 
-export function clearAuthSession(storageKey = AUTH_STORAGE_KEY) {
-  sessions.delete(storageKey);
-  if (typeof localStorage !== 'undefined') localStorage.removeItem(storageKey);
+export function clearAuthSession(sessionKey = AUTH_SESSION_KEY) {
+  sessions.delete(sessionKey);
+  // Remove tokens that releases before Better Auth stored under this key.
+  if (typeof localStorage !== 'undefined') localStorage.removeItem(sessionKey);
   notify(null);
 }
 
@@ -38,7 +41,7 @@ export function broadcastAuthChange() {
   channel.close();
 }
 
-export function subscribeAuthSession(listener: SessionListener, _storageKey = AUTH_STORAGE_KEY) {
+export function subscribeAuthSession(listener: SessionListener) {
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
