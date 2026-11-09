@@ -11,7 +11,7 @@
   "peerDependencies": {
     "react": "catalog:react-peer",
     "react-dom": "catalog:react-peer",
-    "@itclabs/react-ui": "0.10.0",
+    "@itclabs/react-ui": "0.13.0",
     "react-i18next": "catalog:",
     "i18next": "catalog:"
   },
@@ -19,7 +19,7 @@
     "date-fns": "catalog:"
   },
   "devDependencies": {
-    "@itclabs/react-ui": "0.10.0",
+    "@itclabs/react-ui": "0.13.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "@types/react": "catalog:",

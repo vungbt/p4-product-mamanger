@@ -8,11 +8,12 @@
     "build": "tsc -b && vite build",
     "lint": "pnpm -w exec biome check apps/web/src",
     "preview": "vite preview",
-    "prebuild": "pnpm --filter @p4/api-sdk build",
-    "predev": "pnpm --filter @p4/api-sdk build"
+    "prebuild": "pnpm --filter @p4/ability build && pnpm --filter @p4/api-sdk build",
+    "predev": "pnpm --filter @p4/ability build && pnpm --filter @p4/api-sdk build"
   },
   "dependencies": {
-    "@itclabs/react-ui": "0.10.0",
+    "@itclabs/react-ui": "0.13.0",
+    "@p4/ability": "workspace:*",
     "@p4/api-client": "workspace:*",
     "@p4/auth": "workspace:*",
     "@p4/i18n": "workspace:*",
