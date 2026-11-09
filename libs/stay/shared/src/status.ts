@@ -4,13 +4,14 @@ import { compareIsoDates, type IsoDate } from './date.js';
 type TransitionMap<S extends string> = Readonly<Record<S, readonly S[]>>;
 
 /**
- * `draft` → `active` → `ending` → `ended`; `draft` → `cancelled`.
+ * `draft` → `active` → `ending` → `ended`; `draft` → `cancelled`; `active` → `ended`
+ * (settled without prior notice); `ending` → `active` (move-out notice cancelled).
  * Renewal keeps `active` (no transition).
  */
 export const CONTRACT_TRANSITIONS: TransitionMap<ContractStatus> = {
   draft: ['active', 'cancelled'],
-  active: ['ending'],
-  ending: ['ended'],
+  active: ['ending', 'ended'],
+  ending: ['ended', 'active'],
   ended: [],
   cancelled: [],
 };

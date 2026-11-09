@@ -29,10 +29,34 @@ const FINAL_UTILITIES = [
 
 const CLEANING = { type: 'surcharge', amount: 150000, reason: 'Dọn dẹp phòng' };
 
+/** Every period from `from` to `to`, inclusive. */
+function periods(from, to) {
+  const result = [];
+
+  for (let [year, month] = from.split('-').map(Number); ; month += 1) {
+    if (month > 12) {
+      year += 1;
+      month = 1;
+    }
+
+    const period = `${year}-${String(month).padStart(2, '0')}`;
+
+    result.push(period);
+
+    if (period === to) {
+      return result;
+    }
+  }
+}
+
+const CHARGES = { rent: 3000000, occupantCount: 2, vehicleCount: 1, services: SERVICES };
+
 function settle(overrides = {}) {
   return computeSettlement({
     contract: { startDate: '2026-01-01' },
     moveOutDate: '2026-11-20',
+    invoicedPeriods: periods('2026-01', '2026-11'),
+    charges: CHARGES,
     utilities: FINAL_UTILITIES,
     refundUnusedRent: false,
     prepaidLines: NOVEMBER_PREPAID,
@@ -41,6 +65,10 @@ function settle(overrides = {}) {
     depositHeld: 3000000,
     ...overrides,
   });
+}
+
+function serviceLineOf(invoice, code) {
+  return line(invoice, (item) => item.type === 'service' && item.meta.serviceCode === code);
 }
 
 describe('toPrepaidLines', () => {
@@ -307,6 +335,7 @@ describe('computeSettlement — dates and refunds', () => {
     const february = computeMonthlyInvoice(fullMonthInput({ period: '2028-02', utilities: [] }));
     const settlement = settle({
       moveOutDate: '2028-02-10',
+      invoicedPeriods: periods('2026-01', '2028-01'),
       refundUnusedRent: true,
       prepaidLines: toPrepaidLines(february.lines),
       utilities: [],
@@ -373,6 +402,168 @@ describe('computeSettlement — dates and refunds', () => {
     assert.equal(settlement.total, 4000);
     assert.equal(settlement.rounding, 500);
     assertBalanced(settlement);
+  });
+});
+
+describe('computeSettlement — days not covered by an issued invoice', () => {
+  const rentAndServices = (settlement) =>
+    settlement.lines
+      .filter((item) => item.type === 'rent' || item.type === 'service')
+      .map((item) => [item.type, item.period, item.ratioNum, item.ratioDen, item.amount]);
+
+  test('invoiced month, refund off: no rent or services charged again', () => {
+    const settlement = settle({ prepaidLines: undefined });
+
+    assert.deepEqual(rentAndServices(settlement), []);
+    assert.equal(settlement.total, 350000);
+  });
+
+  test('invoiced month, refund on: only refunds, no rent or services charged again', () => {
+    const settlement = settle({ refundUnusedRent: true });
+
+    assert.deepEqual(rentAndServices(settlement), []);
+    assert.equal(settlement.lines.filter((item) => item.type === 'refund').length, 5);
+  });
+
+  test('prepaid lines alone mark their period as invoiced', () => {
+    const settlement = settle({ invoicedPeriods: periods('2026-01', '2026-10') });
+
+    assert.deepEqual(rentAndServices(settlement), []);
+  });
+
+  test('unbilled partial month: move-out 03/12 before the December invoice → 3/31', () => {
+    const settlement = settle({ moveOutDate: '2026-12-03' });
+
+    assert.deepEqual(rentAndServices(settlement), [
+      ['rent', '2026-12', 3, 31, 290323],
+      ['service', '2026-12', 3, 31, 9677],
+      ['service', '2026-12', 3, 31, 2903],
+      ['service', '2026-12', 3, 31, 9677],
+      ['service', '2026-12', 3, 31, 9677],
+    ]);
+    assert.deepEqual(line(settlement, (item) => item.type === 'rent').meta, {
+      coveredFrom: '2026-12-01',
+      coveredTo: '2026-12-03',
+    });
+    assert.equal(serviceLineOf(settlement, 'common').quantity, 2);
+    assert.equal(settlement.period, '2026-12');
+    // 322.257 + 200.000 utilities + 150.000 cleaning = 672.257 → 672.000
+    assert.equal(settlement.subtotal, 672257);
+    assert.equal(settlement.rounding, -257);
+    assert.equal(settlement.total, 672000);
+    assertBalanced(settlement);
+  });
+
+  test('unbilled month with refund on still charges the stayed days (nothing prepaid to refund)', () => {
+    const settlement = settle({ moveOutDate: '2026-12-03', refundUnusedRent: true });
+
+    assert.equal(line(settlement, (item) => item.type === 'rent').amount, 290323);
+    assert.equal(
+      settlement.lines.some((item) => item.type === 'refund'),
+      false,
+    );
+  });
+
+  test('move-out on the 1st of an unbilled month charges one day (1/31)', () => {
+    const settlement = settle({ moveOutDate: '2026-12-01', utilities: [], surcharges: [] });
+
+    assert.deepEqual(rentAndServices(settlement), [
+      ['rent', '2026-12', 1, 31, 96774],
+      ['service', '2026-12', 1, 31, 3226],
+      ['service', '2026-12', 1, 31, 968],
+      ['service', '2026-12', 1, 31, 3226],
+      ['service', '2026-12', 1, 31, 3226],
+    ]);
+    assert.equal(settlement.total, 107000);
+    assert.equal(settlement.rounding, -420);
+    assertBalanced(settlement);
+  });
+
+  test('move-out on the 1st of an invoiced month charges nothing extra', () => {
+    const december = computeMonthlyInvoice(fullMonthInput({ period: '2026-12', utilities: [] }));
+    const settlement = settle({
+      moveOutDate: '2026-12-01',
+      prepaidLines: toPrepaidLines(december.lines, 'inv-2026-12'),
+      utilities: [],
+      surcharges: [],
+    });
+
+    assert.deepEqual(rentAndServices(settlement), []);
+    assert.equal(settlement.total, 0);
+  });
+
+  test('move-out on the 1st of an invoiced month with refund on refunds 30/31', () => {
+    const december = computeMonthlyInvoice(fullMonthInput({ period: '2026-12', utilities: [] }));
+    const settlement = settle({
+      moveOutDate: '2026-12-01',
+      refundUnusedRent: true,
+      prepaidLines: toPrepaidLines(december.lines, 'inv-2026-12'),
+      utilities: [],
+      surcharges: [],
+    });
+    const rentRefund = line(settlement, (item) => item.type === 'refund');
+
+    assert.deepEqual(
+      [rentRefund.ratioNum, rentRefund.ratioDen, rentRefund.amount],
+      [30, 31, -2903226],
+    );
+    assertBalanced(settlement);
+  });
+
+  test('two unbilled periods: full November and 3 days of December', () => {
+    const settlement = settle({
+      moveOutDate: '2026-12-03',
+      invoicedPeriods: periods('2026-01', '2026-10'),
+      prepaidLines: undefined,
+      utilities: [],
+      surcharges: [],
+    });
+
+    assert.deepEqual(
+      settlement.lines
+        .filter((item) => item.type === 'rent')
+        .map((item) => [item.period, item.amount]),
+      [
+        ['2026-11', 3000000],
+        ['2026-12', 290323],
+      ],
+    );
+    assert.equal(settlement.subtotal, 3330000 + 322257);
+    assertBalanced(settlement);
+  });
+
+  test('contract started and ended in an unbilled month (10/12 → 12/12 = 3/31)', () => {
+    const settlement = settle({
+      contract: { startDate: '2026-12-10' },
+      moveOutDate: '2026-12-12',
+      invoicedPeriods: [],
+      prepaidLines: undefined,
+      utilities: [],
+      surcharges: [],
+      charges: { ...CHARGES, occupantCount: 3, vehicleCount: 0 },
+    });
+    const rent = line(settlement, (item) => item.type === 'rent');
+
+    assert.deepEqual(rent.meta, { coveredFrom: '2026-12-10', coveredTo: '2026-12-12' });
+    assert.equal(rent.amount, 290323);
+    assert.equal(serviceLineOf(settlement, 'common').quantity, 3);
+    assert.equal(serviceLineOf(settlement, 'common').amount, 14516);
+    assert.equal(serviceLineOf(settlement, 'parking').amount, 0);
+    assertBalanced(settlement);
+  });
+
+  test('unbilled days without charges, or without invoicedPeriods, are errors', () => {
+    assertBillingError(
+      () => settle({ moveOutDate: '2026-12-03', charges: undefined }),
+      'MISSING_CHARGES',
+      { period: '2026-12' },
+    );
+    assertBillingError(() => settle({ invoicedPeriods: undefined }), 'MISSING_INVOICED_PERIODS');
+    assertBillingError(() => settle({ invoicedPeriods: ['2026-13'] }), 'INVALID_PERIOD');
+  });
+
+  test('an invoiced move-out month does not need charges', () => {
+    assert.equal(settle({ charges: undefined }).total, 350000);
   });
 });
 

@@ -6,11 +6,14 @@ import {
   firstDayOfPeriod,
   lastDayOfPeriod,
   multiplyDivideRoundHalfUp,
+  nextPeriod,
+  type Period,
   periodOfIsoDate,
   sumVnd,
 } from '@stay/shared';
 import { BillingError, withBillingErrors } from './errors.js';
-import { finalizeInvoice, manualLines, utilityLines } from './lines.js';
+import { finalizeInvoice, manualLines, rentLine, serviceLines, utilityLines } from './lines.js';
+import { dayRatio } from './ratio.js';
 import {
   type InvoiceLine,
   LINE_DESCRIPTION_KEYS,
@@ -167,7 +170,64 @@ export function toPrepaidLines(
 }
 
 /**
- * Settlement on move-out day D: utilities up to the move-out reading, optional refund of
+ * Rent and services for days actually stayed (contract start → D) in periods that no issued
+ * invoice covers. A period counts as invoiced when it is in `invoicedPeriods` or has a prepaid
+ * rent/service line, so an invoiced month is never charged twice.
+ */
+function unbilledLines(
+  input: SettlementInput,
+  startDate: string,
+  moveOutDate: string,
+): InvoiceLine[] {
+  if (!Array.isArray(input.invoicedPeriods)) {
+    throw new BillingError(
+      'MISSING_INVOICED_PERIODS',
+      'invoicedPeriods is required (periods with an issued monthly or move-in invoice)',
+    );
+  }
+
+  const invoiced = new Set<Period>(
+    input.invoicedPeriods.map((period, index) =>
+      requirePeriod(period, `invoicedPeriods[${index}]`),
+    ),
+  );
+
+  for (const [index, line] of (input.prepaidLines ?? []).entries()) {
+    invoiced.add(requirePeriod(line.period, `prepaidLines[${index}].period`));
+  }
+
+  const lastPeriod = periodOfIsoDate(moveOutDate);
+  const lines: InvoiceLine[] = [];
+
+  for (let period = periodOfIsoDate(startDate); ; period = nextPeriod(period)) {
+    if (!invoiced.has(period)) {
+      const charges = input.charges;
+
+      if (!charges) {
+        throw new BillingError(
+          'MISSING_CHARGES',
+          `Days in ${period} are not invoiced; charges (rent, services, counts) are required`,
+          { period },
+        );
+      }
+
+      const ratio = dayRatio({ startDate, endDate: moveOutDate }, period);
+
+      lines.push(
+        rentLine(charges.rent, period, ratio),
+        ...serviceLines(charges.services ?? [], charges, period, ratio),
+      );
+    }
+
+    if (period === lastPeriod) {
+      return lines;
+    }
+  }
+}
+
+/**
+ * Settlement on move-out day D: rent + services for stayed days of periods not yet invoiced,
+ * utilities up to the move-out reading, optional refund of
  * prepaid days after D (`refundUnusedRent`), surcharges, then the deposit offset against the
  * settlement total plus outstanding invoices → owner refunds X or tenant pays Y.
  * Outstanding invoices are listed only; their payments stay on the original invoices.
@@ -200,12 +260,14 @@ export function computeSettlement(input: SettlementInput): SettlementResult {
     }
 
     const period = periodOfIsoDate(moveOutDate);
+    const unbilled = unbilledLines(input, startDate, moveOutDate);
     const refunds = input.refundUnusedRent
       ? (input.prepaidLines ?? [])
           .map((line, index) => refundLine(line, index, moveOutDate))
           .filter((line): line is InvoiceLine => line !== null)
       : [];
     const lines = [
+      ...unbilled,
       ...utilityLines(input.utilities ?? [], period),
       ...refunds,
       ...manualLines(input.surcharges ?? [], 'surcharges'),

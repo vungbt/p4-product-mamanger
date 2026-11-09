@@ -8,7 +8,7 @@ Pure billing formulas of [rules.md](../../../documents/stay/rules.md): no DB, no
 | --- | --- |
 | `computeMonthlyInvoice(input)` | Period M: rent of M + `per_room`/`per_person`/`per_vehicle` services of M (day-ratio prorated) + electricity/water consumed in M−1 + manual lines |
 | `computeMoveInInvoice(input)` | Rent + services from the start date to month end (or contract end), prorated; no utilities, no deposit |
-| `computeSettlement(input)` | Utilities to the move-out reading, optional refund of prepaid days after D (`refundUnusedRent`), surcharges; plus outstanding invoices, deposit offset and `ownerRefunds` / `tenantPays` |
+| `computeSettlement(input)` | Rent + services for stayed days in periods not in `invoicedPeriods` (nor in `prepaidLines`), prorated like a monthly invoice from `charges`; utilities to the move-out reading, optional refund of prepaid days after D (`refundUnusedRent`), surcharges; plus outstanding invoices, deposit offset and `ownerRefunds` / `tenantPays` |
 | `toPrepaidLines(lines, invoiceId?)` | Rent/service lines of an issued invoice as `prepaidLines` for a settlement |
 | `meterConsumption(segments)` | Total consumption over one or two meter segments (meter replacement) |
 | `dayRatio(term, period)` | `days stayed in M / days in M`, counting both start and end day |
@@ -19,7 +19,7 @@ Every invoice result has `lines`, `subtotal`, `rounding`, `total` and `roundingU
 
 ## Errors
 
-Invalid input throws `BillingError` with a `code` and `details`. Nothing is clamped or guessed: `NEGATIVE_CONSUMPTION`, `MISSING_READING`, `INVALID_READING`, `NO_METER_SEGMENTS`, `END_BEFORE_START`, `NO_OCCUPANCY_IN_PERIOD`, `MOVE_OUT_BEFORE_START`, `MISSING_REASON`, `MISSING_REFERENCE`, `MISSING_PREPAID_LINES`, `INVALID_PREPAID_LINE`, `INVALID_OUTSTANDING_INVOICE`, `DUPLICATE_EFFECTIVE_FROM`, `INVALID_*`…
+Invalid input throws `BillingError` with a `code` and `details`. Nothing is clamped or guessed: `NEGATIVE_CONSUMPTION`, `MISSING_READING`, `INVALID_READING`, `NO_METER_SEGMENTS`, `END_BEFORE_START`, `NO_OCCUPANCY_IN_PERIOD`, `MOVE_OUT_BEFORE_START`, `MISSING_REASON`, `MISSING_REFERENCE`, `MISSING_PREPAID_LINES`, `MISSING_INVOICED_PERIODS`, `MISSING_CHARGES`, `INVALID_PREPAID_LINE`, `INVALID_OUTSTANDING_INVOICE`, `DUPLICATE_EFFECTIVE_FROM`, `INVALID_*`…
 
 ## Interpretations
 

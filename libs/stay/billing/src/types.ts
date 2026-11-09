@@ -176,10 +176,27 @@ export interface OutstandingInvoice extends OutstandingInvoiceInput {
   remaining: Vnd;
 }
 
+export interface SettlementCharges {
+  rent: Vnd;
+  /** Registered occupants on the settlement date. */
+  occupantCount: number;
+  /** Registered vehicles on the settlement date. */
+  vehicleCount: number;
+  services?: FixedServiceInput[];
+}
+
 export interface SettlementInput extends BillingOptions {
   contract: { startDate: IsoDate };
   /** Move-out day D, the last day of stay (inclusive). */
   moveOutDate: IsoDate;
+  /**
+   * Periods that already have an issued monthly or move-in invoice. Every other period from the
+   * contract start to D is charged rent + services for the days stayed. Periods of
+   * `prepaidLines` count as invoiced too.
+   */
+  invoicedPeriods: Period[];
+  /** Required when a period is not invoiced: rent and services as for a monthly invoice. */
+  charges?: SettlementCharges;
   /** Utilities from the latest closing reading to the move-out reading. */
   utilities?: UtilityInput[];
   /** Building setting; default policy is `false` (no refund). */

@@ -184,14 +184,19 @@ describe('invoice code', () => {
 });
 
 describe('state machines', () => {
-  test('contract: draft → active → ending → ended; draft → cancelled', () => {
+  test('contract: draft → active/cancelled, active → ending/ended, ending → ended/active', () => {
     assert.ok(canTransition(CONTRACT_TRANSITIONS, 'draft', 'active'));
     assert.ok(canTransition(CONTRACT_TRANSITIONS, 'draft', 'cancelled'));
     assert.ok(canTransition(CONTRACT_TRANSITIONS, 'active', 'ending'));
     assert.ok(canTransition(CONTRACT_TRANSITIONS, 'ending', 'ended'));
+    // Settle without prior notice; cancel a move-out notice.
+    assert.ok(canTransition(CONTRACT_TRANSITIONS, 'active', 'ended'));
+    assert.ok(canTransition(CONTRACT_TRANSITIONS, 'ending', 'active'));
     assert.equal(canTransition(CONTRACT_TRANSITIONS, 'active', 'cancelled'), false);
-    assert.equal(canTransition(CONTRACT_TRANSITIONS, 'active', 'ended'), false);
+    assert.equal(canTransition(CONTRACT_TRANSITIONS, 'ending', 'cancelled'), false);
+    assert.equal(canTransition(CONTRACT_TRANSITIONS, 'draft', 'ended'), false);
     assert.equal(canTransition(CONTRACT_TRANSITIONS, 'ended', 'active'), false);
+    assert.equal(canTransition(CONTRACT_TRANSITIONS, 'cancelled', 'draft'), false);
   });
 
   test('invoice: void only from issued; recalculated payment states', () => {
