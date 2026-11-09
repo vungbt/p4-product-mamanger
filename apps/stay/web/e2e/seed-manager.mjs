@@ -39,9 +39,9 @@ try {
 
   await client.query(
     `INSERT INTO auth_accounts (id, account_id, provider_id, user_id, password)
-     VALUES ($1, $2, 'credential', $2, $3)
+     VALUES ($1, $2, 'credential', $3, $4)
      ON CONFLICT (provider_id, account_id) DO UPDATE SET password = EXCLUDED.password`,
-    [randomUUID(), userId, hash],
+    [randomUUID(), String(userId), userId, hash],
   );
 
   const { rowCount } = await client.query(
