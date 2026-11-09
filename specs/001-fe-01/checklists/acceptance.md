@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-01 · Nền tảng phiên đăng nhập và quyền
 
-[Task nguồn](../../../documents/frontend/fe-01.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-01.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Dùng `@p4/api-sdk/auth`/AuthProvider hiện có: cookie HttpOnly, restore getSession, Google/email cùng luồng; không tạo JWT/refresh rotation hoặc lưu token vào localStorage. Logout/revoke dọn cache và socket.
 - [ ] AC-002 (FR-002) — Route/menu/action dựa capability trả từ API; xử lý 401/403 và quyền đổi giữa phiên.

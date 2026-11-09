@@ -1,6 +1,6 @@
 # Spec — FE-20 · Yêu cầu trả hàng và ảnh bằng chứng
 
-Nguồn [FE-20](../../documents/frontend/fe-20.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-20](../../documents/p4/frontend/fe-20.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện yêu cầu trả hàng và ảnh bằng chứng theo contract API 
 
 ## Phụ thuộc
 
-[FE-19](../../documents/frontend/fe-19.md), [FE-10](../../documents/frontend/fe-10.md), [FE-38](../../documents/frontend/fe-38.md)
+[FE-19](../../documents/p4/frontend/fe-19.md), [FE-10](../../documents/p4/frontend/fe-10.md), [FE-38](../../documents/p4/frontend/fe-38.md)
 
 ## Yêu cầu
 

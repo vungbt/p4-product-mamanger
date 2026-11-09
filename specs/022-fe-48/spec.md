@@ -1,6 +1,6 @@
 # Spec — FE-48 · Export dữ liệu và tải kết quả
 
-Nguồn [FE-48](../../documents/frontend/fe-48.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-48](../../documents/p4/frontend/fe-48.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện export dữ liệu và tải kết quả theo contract API hiện 
 
 ## Phụ thuộc
 
-[FE-10](../../documents/frontend/fe-10.md), [FE-11](../../documents/frontend/fe-11.md)
+[FE-10](../../documents/p4/frontend/fe-10.md), [FE-11](../../documents/p4/frontend/fe-11.md)
 
 ## Yêu cầu
 

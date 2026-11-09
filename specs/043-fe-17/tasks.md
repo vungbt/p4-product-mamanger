@@ -1,6 +1,6 @@
 # Tasks — FE-17
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-17](../../documents/frontend/fe-17.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-17](../../documents/p4/frontend/fe-17.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Danh sách/detail có snapshot tiền, SKU, address, timeline; action theo state/capability.
 - [ ] T003 (FR-002) — Confirm/start processing/approve-reject cancellation gửi expectedVersion và idempotency; không sửa tổng tiền ở FE.
 - [ ] T004 (FR-003) — Thay màn `admin/orders` hiện có thay vì tạo màn song song.

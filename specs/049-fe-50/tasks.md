@@ -1,6 +1,6 @@
 # Tasks — FE-50
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-50](../../documents/frontend/fe-50.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-50](../../documents/p4/frontend/fe-50.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Màn list/detail refund có filter/page/sort, liên kết order/return và số tiền do server quyết định.
 - [ ] T003 (FR-002) — Phân biệt pending/processing/failed/succeeded; chưa rõ kết quả phải reconcile, chỉ retry khi API cho phép.
 - [ ] T004 (FR-003) — Manual COD confirmation bắt buộc reference; retry/confirm có idempotency/version theo endpoint, không báo thành công trước API.

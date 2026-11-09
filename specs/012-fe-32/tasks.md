@@ -1,6 +1,6 @@
 # Tasks — FE-32
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-32](../../documents/frontend/fe-32.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-32](../../documents/p4/frontend/fe-32.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Danh sách nhân viên và vai trò theo capability, server filter/sort/page; gửi mời email theo API.
 - [ ] T003 (FR-002) — Đổi role/status theo version, xác nhận ảnh hưởng phiên; không khóa/hạ quyền owner cuối cùng.
 - [ ] T004 (FR-003) — Capability/menu/action cập nhật sau thay đổi quyền; không tự cấp role từ FE, kiểm thử 403 và nhân viên bị revoke phiên.

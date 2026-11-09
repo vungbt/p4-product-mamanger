@@ -1,6 +1,6 @@
 # Spec — FE-54 · Chuyên mục và thẻ bài viết
 
-Nguồn [FE-54](../../documents/frontend/fe-54.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-54](../../documents/p4/frontend/fe-54.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện chuyên mục và thẻ bài viết theo contract API hiện hành
 
 ## Phụ thuộc
 
-[FE-37](../../documents/frontend/fe-37.md)
+[FE-37](../../documents/p4/frontend/fe-37.md)
 
 ## Yêu cầu
 

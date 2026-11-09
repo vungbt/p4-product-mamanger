@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-11 · Import dữ liệu theo process
 
-[Task nguồn](../../../documents/frontend/fe-11.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-11.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — CSV/XLSX theo template từng resource, validate và preview không ghi dữ liệu; confirm version rõ ràng rồi mới apply.
 - [ ] AC-002 (FR-002) — Hiển thị process progress, partial success và lỗi từng field/dòng; retry giữ Idempotency-Key, giới hạn theo contract thực tế.

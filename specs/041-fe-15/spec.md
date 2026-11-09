@@ -1,6 +1,6 @@
 # Spec — FE-15 · Checkout bằng server quote
 
-Nguồn [FE-15](../../documents/frontend/fe-15.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-15](../../documents/p4/frontend/fe-15.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện checkout bằng server quote theo contract API hiện hành. Task 
 
 ## Phụ thuộc
 
-[FE-12](../../documents/frontend/fe-12.md), [FE-13](../../documents/frontend/fe-13.md), [FE-14](../../documents/frontend/fe-14.md)
+[FE-12](../../documents/p4/frontend/fe-12.md), [FE-13](../../documents/p4/frontend/fe-13.md), [FE-14](../../documents/p4/frontend/fe-14.md)
 
 ## Yêu cầu
 

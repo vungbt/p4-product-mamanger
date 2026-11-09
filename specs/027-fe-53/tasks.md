@@ -1,6 +1,6 @@
 # Tasks — FE-53
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-53](../../documents/frontend/fe-53.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-53](../../documents/p4/frontend/fe-53.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — List/editor pages riêng với bài viết, draft/publish/archive theo capability và version; typed blocks và preview an toàn.
 - [ ] T003 (FR-002) — Slug, SEO và nội dung chính sách tách với cấu hình policy nghiệp vụ FE-13; checkout dùng policy current do server trả.
 - [ ] T004 (FR-003) — Draft không làm đổi public snapshot; không có endpoint delete/restore thì không dựng nút giả.

@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-36 · Nghiệm thu xuyên Admin và Storefront
 
-[Task nguồn](../../../documents/frontend/fe-36.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-36.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Chạy luồng product → SKU/stock → checkout → payment → nhiều kiện → return/refund/exchange từ hai tài khoản.
 - [ ] AC-002 (FR-002) — Kiểm tra 400/401/403/409, quyền/owner, socket disconnect, partial import, upload lỗi, double-submit và refresh giữa luồng.
@@ -11,7 +11,7 @@
 - [ ] Web triển khai tại `https://p4.couponlinkh.com`, `/api` proxy cùng origin; deep link SPA, refresh và cookie session hoạt động.
 - [ ] Không gọi tạo đơn/thanh toán hoặc seed dữ liệu thử trên production. Dùng môi trường test có provider sandbox để chứng minh các luồng mua hàng.
 - [ ] Logout/revoke/đổi quyền phải dọn dữ liệu riêng tư ở hai portal; kiểm tra web release rollback và báo lỗi kèm request ID.
-- [ ] Rà [coverage](../../../documents/frontend/api-coverage.md): tất cả operation có task hoặc lý do không có UI; các feature chưa bật không được dựng nút giả.
+- [ ] Rà [coverage](../../../documents/p4/frontend/api-coverage.md): tất cả operation có task hoặc lý do không có UI; các feature chưa bật không được dựng nút giả.
 
 ## Ca kiểm thử theo contract
 

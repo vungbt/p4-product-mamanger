@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-22 · Đổi size/màu và đơn thay thế
 
-[Task nguồn](../../../documents/frontend/fe-22.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-22.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Chọn SKU thay thế, xem chênh lệch và luồng trả hàng; nêu rõ hoàn đơn cũ và trả tiền đơn mới độc lập.
 - [ ] AC-002 (FR-002) — Không thể hiện credit giả; quote hết hạn/hết hàng phải báo và yêu cầu xác nhận lại.

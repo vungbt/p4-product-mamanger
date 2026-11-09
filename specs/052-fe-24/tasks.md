@@ -1,6 +1,6 @@
 # Tasks — FE-24
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-24](../../documents/frontend/fe-24.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-24](../../documents/p4/frontend/fe-24.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Chỉ viết review cho order item được API cho phép; pending moderation chưa xuất hiện public; ảnh dùng upload chung.
 - [ ] T003 (FR-002) — Sửa/xóa/report theo endpoint hiện có và owner/capability; legacy product review không dùng để tạo mới.
 - [ ] T004 (FR-003) — Summary/reviews public refresh theo trạng thái server; không expose email khách, kiểm thử pending/rejected/published.

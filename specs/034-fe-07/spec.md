@@ -1,6 +1,6 @@
 # Spec — FE-07 · Danh sách catalog và bộ lọc
 
-Nguồn [FE-07](../../documents/frontend/fe-07.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-07](../../documents/p4/frontend/fe-07.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện danh sách catalog và bộ lọc theo contract API hiện hành. 
 
 ## Phụ thuộc
 
-[FE-05](../../documents/frontend/fe-05.md), [FE-06](../../documents/frontend/fe-06.md)
+[FE-05](../../documents/p4/frontend/fe-05.md), [FE-06](../../documents/p4/frontend/fe-06.md)
 
 ## Ranh giới
 

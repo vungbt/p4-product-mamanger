@@ -1,6 +1,6 @@
 # Tasks — FE-02
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-02](../../documents/frontend/fe-02.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-02](../../documents/p4/frontend/fe-02.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Search debounce 300ms, filter/sort/paging gọi API; reset trang khi query đổi.
 - [ ] T003 (FR-002) — CRUD hiển thị lỗi field (kể cả trùng slug), sinh slug theo tên nhưng cho phép sửa; giữ bố cục category hiện có.
 - [ ] T004 (FR-003) — Xoá danh mục đang có sản phẩm hiển thị đúng lỗi từ API; xác nhận trước khi xoá.

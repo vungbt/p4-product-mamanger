@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-02 · Hoàn thiện danh mục ở server mode
 
-[Task nguồn](../../../documents/frontend/fe-02.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-02.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Search debounce 300ms, filter/sort/paging gọi API; reset trang khi query đổi.
 - [ ] AC-002 (FR-002) — CRUD hiển thị lỗi field (kể cả trùng slug), sinh slug theo tên nhưng cho phép sửa; giữ bố cục category hiện có.

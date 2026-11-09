@@ -1,6 +1,6 @@
 # Tasks — FE-51
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-51](../../documents/frontend/fe-51.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-51](../../documents/p4/frontend/fe-51.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Nút yêu thích ở card/PDP và trang wishlist khu tài khoản, đồng bộ cùng query cache.
 - [ ] T003 (FR-002) — Khách được hướng dẫn login và quay lại; không giữ dữ liệu tài khoản trước khi logout/đổi user.
 - [ ] T004 (FR-003) — Sản phẩm ngừng bán/ẩn có trạng thái phù hợp; thêm/xóa pending, lỗi rollback trạng thái nếu optimistic.

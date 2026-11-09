@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-26 · CMS bài viết
 
-[Task nguồn](../../../documents/frontend/fe-26.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-26.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Post list/editor: tên/slug, typed content, category/tag, cover và SEO theo schema; ảnh dùng upload chung.
 - [ ] AC-002 (FR-002) — Draft/publish/archive và version conflict không làm mất form; draft sửa không làm thay public snapshot.

@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-53 · CMS trang nội dung và chính sách
 
-[Task nguồn](../../../documents/frontend/fe-53.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-53.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — List/editor pages riêng với bài viết, draft/publish/archive theo capability và version; typed blocks và preview an toàn.
 - [ ] AC-002 (FR-002) — Slug, SEO và nội dung chính sách tách với cấu hình policy nghiệp vụ FE-13; checkout dùng policy current do server trả.

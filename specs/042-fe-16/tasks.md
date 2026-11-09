@@ -1,6 +1,6 @@
 # Tasks — FE-16
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-16](../../documents/frontend/fe-16.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-16](../../documents/p4/frontend/fe-16.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — COD và payment attempt theo provider; redirect chỉ dẫn tới màn chờ đối soát, không tự đánh dấu paid.
 - [ ] T003 (FR-002) — Refresh/back/double-click không tạo charge mới; xử lý expired/failed/pending qua trạng thái API.
 - [ ] T004 (FR-003) — `mock-pay` chỉ hiện khi provider là mock; không xuất hiện ở production.

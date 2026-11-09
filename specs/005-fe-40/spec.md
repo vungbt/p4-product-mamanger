@@ -1,6 +1,6 @@
 # Spec — FE-40 · Khung Storefront: khu tài khoản, 404 và trang lỗi
 
-Nguồn [FE-40](../../documents/frontend/fe-40.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-40](../../documents/p4/frontend/fe-40.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện khung storefront: khu tài khoản, 404 và trang lỗi theo contr
 
 ## Phụ thuộc
 
-[FE-01](../../documents/frontend/fe-01.md), [FE-37](../../documents/frontend/fe-37.md)
+[FE-01](../../documents/p4/frontend/fe-01.md), [FE-37](../../documents/p4/frontend/fe-37.md)
 
 ## Yêu cầu
 

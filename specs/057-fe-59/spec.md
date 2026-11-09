@@ -1,6 +1,6 @@
 # Spec — FE-59 · Inbox hỗ trợ dành cho nhân viên
 
-Nguồn [FE-59](../../documents/frontend/fe-59.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-59](../../documents/p4/frontend/fe-59.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện inbox hỗ trợ dành cho nhân viên theo contract API hiện h�
 
 ## Phụ thuộc
 
-[FE-31](../../documents/frontend/fe-31.md), [FE-32](../../documents/frontend/fe-32.md), [FE-10](../../documents/frontend/fe-10.md)
+[FE-31](../../documents/p4/frontend/fe-31.md), [FE-32](../../documents/p4/frontend/fe-32.md), [FE-10](../../documents/p4/frontend/fe-10.md)
 
 ## Yêu cầu
 

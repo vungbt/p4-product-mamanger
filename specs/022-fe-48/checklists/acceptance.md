@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-48 · Export dữ liệu và tải kết quả
 
-[Task nguồn](../../../documents/frontend/fe-48.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-48.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Dialog chọn resource/định dạng/cột theo contract, mang theo filter/sort của danh sách; xác nhận phạm vi trước khi gửi.
 - [ ] AC-002 (FR-002) — 202 mở process center, không coi đã tải xong; theo dõi progress, cancel, partial/failed và link hết hạn qua FE-10.

@@ -1,6 +1,6 @@
 # Tasks — FE-22
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-22](../../documents/frontend/fe-22.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-22](../../documents/p4/frontend/fe-22.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Chọn SKU thay thế, xem chênh lệch và luồng trả hàng; nêu rõ hoàn đơn cũ và trả tiền đơn mới độc lập.
 - [ ] T003 (FR-002) — Không thể hiện credit giả; quote hết hạn/hết hàng phải báo và yêu cầu xác nhận lại.
 - [ ] T004 (FR-003) — Chỉ chọn SKU còn hàng từ `GET /api/products/{id}/variants`.

@@ -1,6 +1,6 @@
 # Tasks — FE-38
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-38](../../documents/frontend/fe-38.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-38](../../documents/p4/frontend/fe-38.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Một component/hook dùng chung cho upload một file và nhiều file, nhận `purpose` theo từng màn.
 - [ ] T003 (FR-002) — Hiển thị tiến độ và kết quả từng file; file lỗi không ảnh hưởng các file còn lại, retry không tạo file trùng.
 - [ ] T004 (FR-003) — Chỉ dùng file sau khi `complete` xác nhận; không gắn file chưa verify vào dữ liệu nghiệp vụ.

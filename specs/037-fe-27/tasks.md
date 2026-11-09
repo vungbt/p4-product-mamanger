@@ -1,6 +1,6 @@
 # Tasks — FE-27
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-27](../../documents/frontend/fe-27.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-27](../../documents/p4/frontend/fe-27.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — List/detail chỉ nội dung publish đúng lịch; slug redirect/404 rõ ràng.
 - [ ] T003 (FR-002) — Render typed blocks an toàn, điều hướng category/tag và policy hiện hành ở checkout/footer.
 - [ ] T004 (FR-003) — Blog và trang có title/description cho SEO từ `seoTitle`, `seoDescription`.

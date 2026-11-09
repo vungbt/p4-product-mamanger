@@ -4,9 +4,9 @@
 
 Nền tảng Better Auth, SDK và category CRUD đã có một phần từ PR #36. Các task còn lại chưa nghiệm thu; không đánh dấu hoàn thành chỉ vì có API. FE-39 là việc chuẩn bị dữ liệu local do mentor/API maintainer làm, không giao học viên sửa API. Không seed/test dữ liệu trên production.
 
-Task Admin cũ ở [documents/admin](../admin/README.md) chỉ là tham chiếu, đã được thay bằng kế hoạch này; không triển khai song song.
+Task Admin cũ ở [documents/p4/admin](../admin/README.md) chỉ là tham chiếu, đã được thay bằng kế hoạch này; không triển khai song song.
 
-[Spec, plan, tasks và checklist nghiệm thu](../../specs/README.md).
+[Spec, plan, tasks và checklist nghiệm thu](../../../specs/README.md).
 
 ## Thứ tự triển khai
 

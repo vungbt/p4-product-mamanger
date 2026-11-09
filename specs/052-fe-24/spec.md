@@ -1,6 +1,6 @@
 # Spec — FE-24 · Viết và quản lý đánh giá đã mua
 
-Nguồn [FE-24](../../documents/frontend/fe-24.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-24](../../documents/p4/frontend/fe-24.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện viết và quản lý đánh giá đã mua theo contract API hiệ
 
 ## Phụ thuộc
 
-[FE-44](../../documents/frontend/fe-44.md), [FE-19](../../documents/frontend/fe-19.md), [FE-38](../../documents/frontend/fe-38.md), [FE-40](../../documents/frontend/fe-40.md)
+[FE-44](../../documents/p4/frontend/fe-44.md), [FE-19](../../documents/p4/frontend/fe-19.md), [FE-38](../../documents/p4/frontend/fe-38.md), [FE-40](../../documents/p4/frontend/fe-40.md)
 
 ## Ranh giới
 

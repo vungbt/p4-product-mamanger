@@ -1,6 +1,6 @@
 # Tasks — FE-13
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-13](../../documents/frontend/fe-13.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-13](../../documents/p4/frontend/fe-13.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Form versioned shop/policy/shipping; zone, phí, miễn phí theo ngưỡng và COD rõ ràng.
 - [ ] T003 (FR-002) — Không expose secret; 409 cho tải lại cấu hình thay vì ghi đè người khác.
 - [ ] T004 (FR-003) — Thay đổi cấu hình phản ánh đúng ở `GET /api/shop/config` phía Storefront.

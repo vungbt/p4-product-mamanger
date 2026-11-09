@@ -1,6 +1,6 @@
 # Spec — FE-33 · Báo cáo doanh thu, đơn, sản phẩm và kho
 
-Nguồn [FE-33](../../documents/frontend/fe-33.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-33](../../documents/p4/frontend/fe-33.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện báo cáo doanh thu, đơn, sản phẩm và kho theo contract API
 
 ## Phụ thuộc
 
-[FE-61](../../documents/frontend/fe-61.md), [FE-50](../../documents/frontend/fe-50.md), [FE-10](../../documents/frontend/fe-10.md), [FE-48](../../documents/frontend/fe-48.md)
+[FE-61](../../documents/p4/frontend/fe-61.md), [FE-50](../../documents/p4/frontend/fe-50.md), [FE-10](../../documents/p4/frontend/fe-10.md), [FE-48](../../documents/p4/frontend/fe-48.md)
 
 ## Ranh giới
 

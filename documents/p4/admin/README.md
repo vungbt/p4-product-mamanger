@@ -61,5 +61,5 @@ Cập nhật trạng thái trong cả file task và mục lục sau mỗi lần 
 
 Tiến độ này dành cho P4 của mentor; không thay `Training/trainee-progress.yaml`.
 
-Nguồn: [README dự án](../../README.md), [frontend](../../apps/web/README.md),
-[API](../../apps/api/README.md), [shared types](../../libs/shared/src/index.ts).
+Nguồn: [README dự án](../../../README.md), [frontend](../../../apps/web/README.md),
+[API](../../../apps/api/README.md), [shared types](../../../libs/shared/src/index.ts).

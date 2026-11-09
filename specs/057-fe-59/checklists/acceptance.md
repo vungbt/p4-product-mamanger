@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-59 · Inbox hỗ trợ dành cho nhân viên
 
-[Task nguồn](../../../documents/frontend/fe-59.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-59.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — List filter/status/assignee theo query API; staff đọc, assign, trả lời hoặc thêm internal note đúng quyền.
 - [ ] AC-002 (FR-002) — Attachment private và tin nhắn realtime không trùng; xử lý lỗi gửi và version conflict không mất bản nháp.

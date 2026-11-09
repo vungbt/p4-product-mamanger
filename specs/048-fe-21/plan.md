@@ -1,6 +1,6 @@
 # Plan — FE-21
 
-[Spec](spec.md) · [FE-21](../../documents/frontend/fe-21.md)
+[Spec](spec.md) · [FE-21](../../documents/p4/frontend/fe-21.md)
 
 ## Trình tự
 
@@ -34,7 +34,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Contract để bàn giao FE
@@ -51,10 +51,10 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `POST /api/returns/{id}/inspect` | `return:manage` · Task sở hữu | path `id*`<br>body `inspection*`, `expectedVersion*`, `reason` | `200` `data ReturnRequest` | 400, 401, 403, 404, 409, 429 |
 | `POST /api/returns/{id}/complete` | `return:manage` · Task sở hữu | path `id*`<br>body `expectedVersion*`, `reason` | `200` `data ReturnRequest` | 400, 401, 403, 404, 409, 429 |
 | `GET /api/files/{id}/download` | Có phiên · Task sở hữu | path `id*` | `200` `application/octet-stream` | 401, 403, 404, 429 |
-| `GET /api/returns/{id}` | Có phiên · Dùng từ [FE-20](../../documents/frontend/fe-20.md) | path `id*` | `200` `data ReturnRequest` | 401, 403, 404, 429 |
-| `POST /api/orders/{id}/refunds` | `refund:manage` · Dùng từ [FE-50](../../documents/frontend/fe-50.md) | path `id*`<br>header `Idempotency-Key*`<br>body `amount`, `returnId`, `reason*` | `201` `data { replayed, createdAt, version, id, status, reason, orderId, returnId, processingStatus, amount }` | 400, 401, 403, 404, 409, 429 |
-| `GET /api/refunds` | `refund:read` · Dùng từ [FE-50](../../documents/frontend/fe-50.md) | query `page`, `pageSize 1–100`, `sortBy=amount/status/createdAt`, `sortOrder=asc/desc`, `q`, `orderId`, `status=completed/failed/pending`, `minAmount 0–2147483647`, `maxAmount 0–2147483647`, `createdFrom`, `createdTo` | `200` `data Refund[] + meta` | 400, 401, 403, 429 |
-| `GET /api/refunds/{id}` | Có phiên · Dùng từ [FE-50](../../documents/frontend/fe-50.md) | path `id*` | `200` `data { createdAt, version, id, status, reason, orderId, returnId, processingStatus, amount }` | 401, 403, 404, 429 |
-| `POST /api/admin/refunds/{id}/reconcile` | `refund:manage` · Dùng từ [FE-50](../../documents/frontend/fe-50.md) | path `id*` | `200` `data { createdAt, version, id, status, reason, orderId, returnId, processingStatus, amount }` | 401, 403, 404, 409, 429 |
-| `POST /api/admin/refunds/{id}/retry` | `refund:manage` · Dùng từ [FE-50](../../documents/frontend/fe-50.md) | path `id*`<br>body `expectedVersion*` | `200` `data { createdAt, version, id, status, reason, orderId, returnId, processingStatus, amount }` | 400, 401, 403, 404, 409, 429 |
-| `POST /api/admin/refunds/{id}/manual-confirmation` | `refund:manage` · Dùng từ [FE-50](../../documents/frontend/fe-50.md) | path `id*`<br>body `expectedVersion*`, `reference*`, `amount*` | `200` `data { createdAt, version, id, status, reason, orderId, returnId, processingStatus, amount }` | 400, 401, 403, 404, 409, 429 |
+| `GET /api/returns/{id}` | Có phiên · Dùng từ [FE-20](../../documents/p4/frontend/fe-20.md) | path `id*` | `200` `data ReturnRequest` | 401, 403, 404, 429 |
+| `POST /api/orders/{id}/refunds` | `refund:manage` · Dùng từ [FE-50](../../documents/p4/frontend/fe-50.md) | path `id*`<br>header `Idempotency-Key*`<br>body `amount`, `returnId`, `reason*` | `201` `data { replayed, createdAt, version, id, status, reason, orderId, returnId, processingStatus, amount }` | 400, 401, 403, 404, 409, 429 |
+| `GET /api/refunds` | `refund:read` · Dùng từ [FE-50](../../documents/p4/frontend/fe-50.md) | query `page`, `pageSize 1–100`, `sortBy=amount/status/createdAt`, `sortOrder=asc/desc`, `q`, `orderId`, `status=completed/failed/pending`, `minAmount 0–2147483647`, `maxAmount 0–2147483647`, `createdFrom`, `createdTo` | `200` `data Refund[] + meta` | 400, 401, 403, 429 |
+| `GET /api/refunds/{id}` | Có phiên · Dùng từ [FE-50](../../documents/p4/frontend/fe-50.md) | path `id*` | `200` `data { createdAt, version, id, status, reason, orderId, returnId, processingStatus, amount }` | 401, 403, 404, 429 |
+| `POST /api/admin/refunds/{id}/reconcile` | `refund:manage` · Dùng từ [FE-50](../../documents/p4/frontend/fe-50.md) | path `id*` | `200` `data { createdAt, version, id, status, reason, orderId, returnId, processingStatus, amount }` | 401, 403, 404, 409, 429 |
+| `POST /api/admin/refunds/{id}/retry` | `refund:manage` · Dùng từ [FE-50](../../documents/p4/frontend/fe-50.md) | path `id*`<br>body `expectedVersion*` | `200` `data { createdAt, version, id, status, reason, orderId, returnId, processingStatus, amount }` | 400, 401, 403, 404, 409, 429 |
+| `POST /api/admin/refunds/{id}/manual-confirmation` | `refund:manage` · Dùng từ [FE-50](../../documents/p4/frontend/fe-50.md) | path `id*`<br>body `expectedVersion*`, `reference*`, `amount*` | `200` `data { createdAt, version, id, status, reason, orderId, returnId, processingStatus, amount }` | 400, 401, 403, 404, 409, 429 |

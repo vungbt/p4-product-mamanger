@@ -1,6 +1,6 @@
 # Tasks — FE-04
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-04](../../documents/frontend/fe-04.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-04](../../documents/p4/frontend/fe-04.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Tạo/sửa tên, slug, mô tả, category, SEO, size guide; publish chỉ sau khi API cho phép.
 - [ ] T003 (FR-002) — Upload nhiều ảnh qua ticket/batch process; hiển thị từng ảnh thành công/lỗi; không gắn file chưa verify.
 - [ ] T004 (FR-003) — Dùng upload chung ở FE-38, không tự viết luồng upload riêng.

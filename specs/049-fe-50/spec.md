@@ -1,6 +1,6 @@
 # Spec — FE-50 · Quản trị hoàn tiền và xử lý lỗi provider
 
-Nguồn [FE-50](../../documents/frontend/fe-50.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-50](../../documents/p4/frontend/fe-50.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện quản trị hoàn tiền và xử lý lỗi provider theo contrac
 
 ## Phụ thuộc
 
-[FE-21](../../documents/frontend/fe-21.md), [FE-49](../../documents/frontend/fe-49.md)
+[FE-21](../../documents/p4/frontend/fe-21.md), [FE-49](../../documents/p4/frontend/fe-49.md)
 
 ## Yêu cầu
 

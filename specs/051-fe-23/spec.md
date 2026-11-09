@@ -1,6 +1,6 @@
 # Spec — FE-23 · Quản trị yêu cầu đổi hàng
 
-Nguồn [FE-23](../../documents/frontend/fe-23.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-23](../../documents/p4/frontend/fe-23.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện quản trị yêu cầu đổi hàng theo contract API hiện hàn
 
 ## Phụ thuộc
 
-[FE-21](../../documents/frontend/fe-21.md), [FE-22](../../documents/frontend/fe-22.md)
+[FE-21](../../documents/p4/frontend/fe-21.md), [FE-22](../../documents/p4/frontend/fe-22.md)
 
 ## Yêu cầu
 

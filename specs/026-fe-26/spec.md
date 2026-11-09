@@ -1,6 +1,6 @@
 # Spec — FE-26 · CMS bài viết
 
-Nguồn [FE-26](../../documents/frontend/fe-26.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-26](../../documents/p4/frontend/fe-26.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện cms bài viết theo contract API hiện hành. Task chỉ hoàn t
 
 ## Phụ thuộc
 
-[FE-04](../../documents/frontend/fe-04.md), [FE-38](../../documents/frontend/fe-38.md), [FE-54](../../documents/frontend/fe-54.md)
+[FE-04](../../documents/p4/frontend/fe-04.md), [FE-38](../../documents/p4/frontend/fe-38.md), [FE-54](../../documents/p4/frontend/fe-54.md)
 
 ## Ranh giới
 

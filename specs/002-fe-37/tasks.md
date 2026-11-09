@@ -1,6 +1,6 @@
 # Tasks — FE-37
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-37](../../documents/frontend/fe-37.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-37](../../documents/p4/frontend/fe-37.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — `@p4/api-sdk` đã build và category hooks đã ghép. Bổ sung resource API/hooks tại SDK theo từng task; dùng chung QueryClient từ ApiQueryProvider và xóa wrapper không có logic. App không phải tự `unwrap`/invalidate cho từng mutation.
 - [ ] T003 (FR-002) — Helper `Idempotency-Key`: giữ nguyên key khi retry cùng một thao tác, tạo key mới cho ý định mới.
 - [ ] T004 (FR-003) — Xử lý thống nhất: lỗi 400 map `extensions` vào từng field của form; 401, 403, 404, 409 và 429 (theo `Retry-After`) có hiển thị rõ ràng.

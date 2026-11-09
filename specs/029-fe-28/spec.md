@@ -1,6 +1,6 @@
 # Spec — FE-28 · Quản lý bộ sưu tập sản phẩm
 
-Nguồn [FE-28](../../documents/frontend/fe-28.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-28](../../documents/p4/frontend/fe-28.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện quản lý bộ sưu tập sản phẩm theo contract API hiện h
 
 ## Phụ thuộc
 
-[FE-03](../../documents/frontend/fe-03.md), [FE-38](../../documents/frontend/fe-38.md)
+[FE-03](../../documents/p4/frontend/fe-03.md), [FE-38](../../documents/p4/frontend/fe-38.md)
 
 ## Ranh giới
 

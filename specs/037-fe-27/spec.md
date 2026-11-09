@@ -1,6 +1,6 @@
 # Spec — FE-27 · Blog, trang chính sách và nội dung public
 
-Nguồn [FE-27](../../documents/frontend/fe-27.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-27](../../documents/p4/frontend/fe-27.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện blog, trang chính sách và nội dung public theo contract API h
 
 ## Phụ thuộc
 
-[FE-26](../../documents/frontend/fe-26.md), [FE-53](../../documents/frontend/fe-53.md), [FE-39](../../documents/frontend/fe-39.md), [FE-40](../../documents/frontend/fe-40.md)
+[FE-26](../../documents/p4/frontend/fe-26.md), [FE-53](../../documents/p4/frontend/fe-53.md), [FE-39](../../documents/p4/frontend/fe-39.md), [FE-40](../../documents/p4/frontend/fe-40.md)
 
 ## Yêu cầu
 

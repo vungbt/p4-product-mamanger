@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-52 · Đăng ký báo có hàng
 
-[Task nguồn](../../../documents/frontend/fe-52.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-52.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — PDP hết hàng cho đăng ký đúng SKU/kênh theo API; chưa verify email hướng dẫn xác minh.
 - [ ] AC-002 (FR-002) — Màn tài khoản xem và hủy subscription, hiển thị trạng thái server, không trùng khi bấm lại.

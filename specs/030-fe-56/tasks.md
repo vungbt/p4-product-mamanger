@@ -1,6 +1,6 @@
 # Tasks — FE-56
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-56](../../documents/frontend/fe-56.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-56](../../documents/p4/frontend/fe-56.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — List/editor banner có ảnh/đích đến/lịch/status theo contract; ảnh qua upload chung.
 - [ ] T003 (FR-002) — Preview responsive, alt text và liên kết HTTPS/nội bộ hợp lệ; thời gian theo timezone rồi UTC.
 - [ ] T004 (FR-003) — Version conflict giữ nội dung, public không thấy banner draft/hết lịch; không tạo action API chưa hỗ trợ.

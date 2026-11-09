@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-44 · Chi tiết sản phẩm, gallery và chọn SKU
 
-[Task nguồn](../../../documents/frontend/fe-44.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-44.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Route theo slug; gallery, giá, mô tả, size guide và review summary lấy dữ liệu thật, có 404 và chuyển slug cũ đúng contract.
 - [ ] AC-002 (FR-002) — Chọn size/màu xác định đúng SKU, đổi ảnh/giá/available; tổ hợp không hợp lệ hoặc hết hàng không thêm giỏ.

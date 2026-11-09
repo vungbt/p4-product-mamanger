@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-13 · Cấu hình shop và vận chuyển
 
-[Task nguồn](../../../documents/frontend/fe-13.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-13.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Form versioned shop/policy/shipping; zone, phí, miễn phí theo ngưỡng và COD rõ ràng.
 - [ ] AC-002 (FR-002) — Không expose secret; 409 cho tải lại cấu hình thay vì ghi đè người khác.

@@ -1,6 +1,6 @@
 # Spec — FE-62 · Khung Admin, menu và điều hướng theo quyền
 
-Nguồn [FE-62](../../documents/frontend/fe-62.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-62](../../documents/p4/frontend/fe-62.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện khung admin, menu và điều hướng theo quyền theo contract 
 
 ## Phụ thuộc
 
-[FE-01](../../documents/frontend/fe-01.md), [FE-37](../../documents/frontend/fe-37.md)
+[FE-01](../../documents/p4/frontend/fe-01.md), [FE-37](../../documents/p4/frontend/fe-37.md)
 
 ## Yêu cầu
 

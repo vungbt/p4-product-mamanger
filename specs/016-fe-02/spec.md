@@ -1,6 +1,6 @@
 # Spec — FE-02 · Hoàn thiện danh mục ở server mode
 
-Nguồn [FE-02](../../documents/frontend/fe-02.md) · Portal **Admin** · Trạng thái nguồn **Đã có một phần**
+Nguồn [FE-02](../../documents/p4/frontend/fe-02.md) · Portal **Admin** · Trạng thái nguồn **Đã có một phần**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện hoàn thiện danh mục ở server mode theo contract API hiện 
 
 ## Phụ thuộc
 
-[FE-01](../../documents/frontend/fe-01.md), [FE-37](../../documents/frontend/fe-37.md)
+[FE-01](../../documents/p4/frontend/fe-01.md), [FE-37](../../documents/p4/frontend/fe-37.md)
 
 ## Yêu cầu
 

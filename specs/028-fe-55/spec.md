@@ -1,6 +1,6 @@
 # Spec — FE-55 · Preview, lịch xuất bản và lịch sử nội dung
 
-Nguồn [FE-55](../../documents/frontend/fe-55.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-55](../../documents/p4/frontend/fe-55.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện preview, lịch xuất bản và lịch sử nội dung theo contr
 
 ## Phụ thuộc
 
-[FE-26](../../documents/frontend/fe-26.md), [FE-53](../../documents/frontend/fe-53.md)
+[FE-26](../../documents/p4/frontend/fe-26.md), [FE-53](../../documents/p4/frontend/fe-53.md)
 
 ## Yêu cầu
 

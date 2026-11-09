@@ -1,6 +1,6 @@
 # Tasks — FE-19
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-19](../../documents/frontend/fe-19.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-19](../../documents/p4/frontend/fe-19.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Chỉ xem đơn owner; timeline theo từng kiện và các trạng thái tiền/đơn tách biệt.
 - [ ] T003 (FR-002) — Chọn dòng/số lượng huỷ, gửi lý do, hiển thị chờ duyệt và hoàn tiền còn pending.
 - [ ] T004 (FR-003) — Xem trạng thái hoàn tiền của đơn qua `GET /api/refunds/{id}`, không suy ra từ trạng thái đơn.

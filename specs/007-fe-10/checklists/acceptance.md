@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-10 · Process center và kết nối realtime
 
-[Task nguồn](../../../documents/frontend/fe-10.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-10.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Dùng @p4/realtime/browser + @p4/processes/browser; kết nối theo token và dọn khi logout.
 - [ ] AC-002 (FR-002) — Progress/version không lùi; reconnect replay + polling fallback, cancel, lỗi từng item và download hết hạn.

@@ -1,6 +1,6 @@
 # Spec — FE-61 · Dashboard quản trị và trạng thái rỗng
 
-Nguồn [FE-61](../../documents/frontend/fe-61.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-61](../../documents/p4/frontend/fe-61.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện dashboard quản trị và trạng thái rỗng theo contract API 
 
 ## Phụ thuộc
 
-[FE-17](../../documents/frontend/fe-17.md), [FE-18](../../documents/frontend/fe-18.md), [FE-49](../../documents/frontend/fe-49.md)
+[FE-17](../../documents/p4/frontend/fe-17.md), [FE-18](../../documents/p4/frontend/fe-18.md), [FE-49](../../documents/p4/frontend/fe-49.md)
 
 ## Yêu cầu
 

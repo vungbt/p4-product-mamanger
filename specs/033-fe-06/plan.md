@@ -1,6 +1,6 @@
 # Plan — FE-06
 
-[Spec](spec.md) · [FE-06](../../documents/frontend/fe-06.md)
+[Spec](spec.md) · [FE-06](../../documents/p4/frontend/fe-06.md)
 
 ## Trình tự
 
@@ -24,7 +24,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Contract để bàn giao FE
@@ -37,4 +37,4 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `GET /api/navigation/{placement}` | Công khai · Task sở hữu | path `placement*` | `200` `data { placement, items }` | 404, 429 |
 | `GET /api/collections` | Công khai · Task sở hữu | query `page`, `pageSize 1–100`, `sortBy=key/createdAt`, `sortOrder=asc/desc`, `q` | `200` `data ({ id, slug, title, products, imageUrl, href, placement, items, sections } / { id, title, imageUrl, href, placement, slug, products, items, sections } / { placement, items, id, slug, title, products, imageUrl, href, sections } / { sections, id, slug, title, products, imageUrl, href, placement, items })[] + meta` | 400, 429 |
 | `GET /api/collections/{slug}` | Công khai · Task sở hữu | path `slug*` | `200` `data { id, slug, title, products, imageUrl, href, placement, items, sections } / { id, title, imageUrl, href, placement, slug, products, items, sections } / { placement, items, id, slug, title, products, imageUrl, href, sections } / { sections, id, slug, title, products, imageUrl, href, placement, items }` | 404, 429 |
-| `GET /api/shop/config` | Công khai · Dùng từ [FE-40](../../documents/frontend/fe-40.md) | — | `200` `data ShopSettings` | 429 |
+| `GET /api/shop/config` | Công khai · Dùng từ [FE-40](../../documents/p4/frontend/fe-40.md) | — | `200` `data ShopSettings` | 429 |

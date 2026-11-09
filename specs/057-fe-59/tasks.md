@@ -1,6 +1,6 @@
 # Tasks — FE-59
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-59](../../documents/frontend/fe-59.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-59](../../documents/p4/frontend/fe-59.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — List filter/status/assignee theo query API; staff đọc, assign, trả lời hoặc thêm internal note đúng quyền.
 - [ ] T003 (FR-002) — Attachment private và tin nhắn realtime không trùng; xử lý lỗi gửi và version conflict không mất bản nháp.
 - [ ] T004 (FR-003) — Internal note không lọt sang Storefront; test cùng ticket từ cả hai tài khoản và lịch sử đã đóng.

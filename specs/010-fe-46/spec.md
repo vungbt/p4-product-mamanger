@@ -1,6 +1,6 @@
 # Spec — FE-46 · Bảo mật tài khoản và quản lý phiên
 
-Nguồn [FE-46](../../documents/frontend/fe-46.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-46](../../documents/p4/frontend/fe-46.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện bảo mật tài khoản và quản lý phiên theo contract API h
 
 ## Phụ thuộc
 
-[FE-01](../../documents/frontend/fe-01.md), [FE-09](../../documents/frontend/fe-09.md)
+[FE-01](../../documents/p4/frontend/fe-01.md), [FE-09](../../documents/p4/frontend/fe-09.md)
 
 ## Yêu cầu
 

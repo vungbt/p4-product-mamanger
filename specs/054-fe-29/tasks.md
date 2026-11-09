@@ -1,6 +1,6 @@
 # Tasks — FE-29
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-29](../../documents/frontend/fe-29.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-29](../../documents/p4/frontend/fe-29.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Bell/unread badge/inbox dùng socket + HTTP; đọc một/đọc tất cả đồng bộ nhiều tab.
 - [ ] T003 (FR-002) — Deduplicate event theo ID, refresh snapshot khi reconnect; preferences điều khiển channel và topic.
 - [ ] T004 (FR-003) — Đọc một tab cập nhật badge ở tab khác và không đếm trùng khi socket gửi lại.

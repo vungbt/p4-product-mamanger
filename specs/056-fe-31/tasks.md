@@ -1,6 +1,6 @@
 # Tasks — FE-31
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-31](../../documents/frontend/fe-31.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-31](../../documents/p4/frontend/fe-31.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Khách mở ticket gắn đơn/attachment private; list mine, detail, đọc/gửi tin và đóng theo quyền owner.
 - [ ] T003 (FR-002) — Hiển thị pending/error/retry không trùng tin khi reconnect; gửi thất bại giữ draft.
 - [ ] T004 (FR-003) — Không hiển thị internal notes/assignee nội bộ; API ID của khách khác phải bị từ chối và UI có trang lỗi đúng.

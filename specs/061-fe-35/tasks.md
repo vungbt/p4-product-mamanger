@@ -1,6 +1,6 @@
 # Tasks — FE-35
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-35](../../documents/frontend/fe-35.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-35](../../documents/p4/frontend/fe-35.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Theo dõi pending/retry/dead letter, attempt và worker heartbeat; retry chỉ job được API cho phép.
 - [ ] T003 (FR-002) — Inventory reconciliation là hành động riêng có xác nhận; không đưa nội bộ metrics cho storefront.
 - [ ] T004 (FR-003) — Xem được từng lần chạy job kèm mã lỗi, lưu ý field `error_code`, `created_at` của attempts đang là snake_case.

@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-18 · Đóng gói và vận hành nhiều kiện
 
-[Task nguồn](../../../documents/frontend/fe-18.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-18.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Phân bổ số lượng vào nhiều kiện; pack/ready/handover/deliver/fail/return/lose/cancel theo state/capability.
 - [ ] AC-002 (FR-002) — Không chia vượt số lượng đã đặt; validation gắn đúng dòng/SKU, action không hợp lệ có lý do.

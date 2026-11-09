@@ -1,6 +1,6 @@
 # Tasks — FE-28
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-28](../../documents/frontend/fe-28.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-28](../../documents/p4/frontend/fe-28.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — List/create/detail/edit manual collections và chọn sản phẩm đúng contract, version và validation.
 - [ ] T003 (FR-002) — Không đưa sản phẩm draft/archived ra public; preview danh sách theo thứ tự đã cấu hình.
 - [ ] T004 (FR-003) — Không làm banner/menu/home editor trong task này; kiểm thử missing config/404 và empty collection.

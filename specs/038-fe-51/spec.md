@@ -1,6 +1,6 @@
 # Spec — FE-51 · Danh sách yêu thích
 
-Nguồn [FE-51](../../documents/frontend/fe-51.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-51](../../documents/p4/frontend/fe-51.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện danh sách yêu thích theo contract API hiện hành. Task chỉ 
 
 ## Phụ thuộc
 
-[FE-44](../../documents/frontend/fe-44.md), [FE-09](../../documents/frontend/fe-09.md)
+[FE-44](../../documents/p4/frontend/fe-44.md), [FE-09](../../documents/p4/frontend/fe-09.md)
 
 ## Yêu cầu
 

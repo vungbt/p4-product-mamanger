@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-33 · Báo cáo doanh thu, đơn, sản phẩm và kho
 
-[Task nguồn](../../../documents/frontend/fe-33.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-33.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Báo cáo sales/orders/inventory/products, bộ lọc thời gian/timezone, charts/table và report export thống nhất.
 - [ ] AC-002 (FR-002) — Revenue/refund/net theo ledger; cảnh báo dữ liệu legacy, không suy doanh thu từ paid enum.

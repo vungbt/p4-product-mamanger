@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-12 · Giỏ hàng và merge sau login
 
-[Task nguồn](../../../documents/frontend/fe-12.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-12.md) · [Spec](../spec.md)
 
 - [ ] AC-001 — Giỏ theo SKU, số lượng và giá server; local guest cart merge đúng một lần.
 - [ ] AC-002 — Hiển thị cảnh báo giá/tồn kho đổi và xử lý version conflict; giỏ không đồng nghĩa giữ hàng.

@@ -1,6 +1,6 @@
 # Plan — FE-09
 
-[Spec](spec.md) · [FE-09](../../documents/frontend/fe-09.md)
+[Spec](spec.md) · [FE-09](../../documents/p4/frontend/fe-09.md)
 
 ## Trình tự
 
@@ -35,7 +35,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Contract để bàn giao FE
@@ -50,13 +50,13 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `PATCH /api/me/preferences` | Có phiên · Task sở hữu | body `locale*`, `timezone*`, `expectedVersion*` | `200` `data { locale, timezone, version }` | 400, 401, 403, 409, 429 |
 | `POST /api/me/email-change-requests` | Có phiên · Task sở hữu | body `email*`, `currentPassword*` | `202` `data { accepted }` | 400, 401, 403, 409, 429 |
 | `POST /api/me/email-changes/confirm` | Công khai · Task sở hữu | body `token*` | `200` `data { changed }` | 400, 409, 429 |
-| `GET /api/me/sessions` | Có phiên · Dùng từ [FE-46](../../documents/frontend/fe-46.md) | — | `200` `data { id, createdAt, expiresAt, revokedAt }[]` | 401, 403, 429 |
-| `DELETE /api/me/sessions/{id}` | Có phiên · Dùng từ [FE-46](../../documents/frontend/fe-46.md) | path `id*` | `200` `data { revoked }` | 401, 403, 404, 409, 429 |
-| `POST /api/me/sessions/revoke-others` | Có phiên · Dùng từ [FE-46](../../documents/frontend/fe-46.md) | — | `200` `data { revoked }` | 401, 403, 409, 429 |
-| `GET /api/addresses` | Có phiên · Dùng từ [FE-45](../../documents/frontend/fe-45.md) | query `page`, `pageSize 1–100`, `sortBy=fullName/city/isDefault/createdAt`, `sortOrder=asc/desc`, `q`, `city`, `isDefault=false/true` | `200` `data Address[] + meta` | 400, 401, 403, 429 |
-| `POST /api/addresses` | Có phiên · Dùng từ [FE-45](../../documents/frontend/fe-45.md) | body `fullName*`, `phone*`, `line1*`, `city*`, `isDefault` | `201` `data Address` | 400, 401, 403, 409, 429 |
-| `PUT /api/addresses/{id}` | Có phiên · Dùng từ [FE-45](../../documents/frontend/fe-45.md) | path `id*`<br>body `fullName`, `phone`, `line1`, `city`, `isDefault` | `200` `data Address` | 400, 401, 403, 404, 409, 429 |
-| `DELETE /api/addresses/{id}` | Có phiên · Dùng từ [FE-45](../../documents/frontend/fe-45.md) | path `id*` | `200` `data Address` | 401, 403, 404, 409, 429 |
-| `PATCH /api/addresses/{id}/default` | Có phiên · Dùng từ [FE-45](../../documents/frontend/fe-45.md) | path `id*` | `200` `data Address` | 401, 403, 404, 409, 429 |
+| `GET /api/me/sessions` | Có phiên · Dùng từ [FE-46](../../documents/p4/frontend/fe-46.md) | — | `200` `data { id, createdAt, expiresAt, revokedAt }[]` | 401, 403, 429 |
+| `DELETE /api/me/sessions/{id}` | Có phiên · Dùng từ [FE-46](../../documents/p4/frontend/fe-46.md) | path `id*` | `200` `data { revoked }` | 401, 403, 404, 409, 429 |
+| `POST /api/me/sessions/revoke-others` | Có phiên · Dùng từ [FE-46](../../documents/p4/frontend/fe-46.md) | — | `200` `data { revoked }` | 401, 403, 409, 429 |
+| `GET /api/addresses` | Có phiên · Dùng từ [FE-45](../../documents/p4/frontend/fe-45.md) | query `page`, `pageSize 1–100`, `sortBy=fullName/city/isDefault/createdAt`, `sortOrder=asc/desc`, `q`, `city`, `isDefault=false/true` | `200` `data Address[] + meta` | 400, 401, 403, 429 |
+| `POST /api/addresses` | Có phiên · Dùng từ [FE-45](../../documents/p4/frontend/fe-45.md) | body `fullName*`, `phone*`, `line1*`, `city*`, `isDefault` | `201` `data Address` | 400, 401, 403, 409, 429 |
+| `PUT /api/addresses/{id}` | Có phiên · Dùng từ [FE-45](../../documents/p4/frontend/fe-45.md) | path `id*`<br>body `fullName`, `phone`, `line1`, `city`, `isDefault` | `200` `data Address` | 400, 401, 403, 404, 409, 429 |
+| `DELETE /api/addresses/{id}` | Có phiên · Dùng từ [FE-45](../../documents/p4/frontend/fe-45.md) | path `id*` | `200` `data Address` | 401, 403, 404, 409, 429 |
+| `PATCH /api/addresses/{id}/default` | Có phiên · Dùng từ [FE-45](../../documents/p4/frontend/fe-45.md) | path `id*` | `200` `data Address` | 401, 403, 404, 409, 429 |
 | `PATCH /api/auth/me` | Có phiên · Tham chiếu | body `displayName`, `phone`, `imageStorageId` | `200` `data { user }` | 400, 401, 403, 409, 429 |
 | `PATCH /api/auth/password` | Có phiên · Tham chiếu | body `currentPassword`, `newPassword*` | `200` `data { changed }` | 400, 401, 403, 409, 429 |

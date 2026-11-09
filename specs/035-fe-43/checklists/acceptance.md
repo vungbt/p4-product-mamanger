@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-43 · Tìm kiếm nhanh và trang kết quả
 
-[Task nguồn](../../../documents/frontend/fe-43.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-43.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Ô tìm kiếm dùng chung header/mobile, debounce từ 2 ký tự, hủy request cũ; Enter mở trang kết quả có URL chia sẻ được.
 - [ ] AC-002 (FR-002) — Gợi ý và trang kết quả có loading/empty/error; clear, bàn phím, Escape và focus đúng; không render kết quả của từ khóa cũ.

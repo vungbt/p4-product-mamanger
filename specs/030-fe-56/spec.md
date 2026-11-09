@@ -1,6 +1,6 @@
 # Spec — FE-56 · Quản lý banner và lịch hiển thị
 
-Nguồn [FE-56](../../documents/frontend/fe-56.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-56](../../documents/p4/frontend/fe-56.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện quản lý banner và lịch hiển thị theo contract API hiện
 
 ## Phụ thuộc
 
-[FE-28](../../documents/frontend/fe-28.md), [FE-38](../../documents/frontend/fe-38.md)
+[FE-28](../../documents/p4/frontend/fe-28.md), [FE-38](../../documents/p4/frontend/fe-38.md)
 
 ## Yêu cầu
 

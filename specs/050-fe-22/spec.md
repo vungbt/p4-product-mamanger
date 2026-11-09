@@ -1,6 +1,6 @@
 # Spec — FE-22 · Đổi size/màu và đơn thay thế
 
-Nguồn [FE-22](../../documents/frontend/fe-22.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-22](../../documents/p4/frontend/fe-22.md) · Portal **Storefront** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện đổi size/màu và đơn thay thế theo contract API hiện hà
 
 ## Phụ thuộc
 
-[FE-20](../../documents/frontend/fe-20.md), [FE-50](../../documents/frontend/fe-50.md)
+[FE-20](../../documents/p4/frontend/fe-20.md), [FE-50](../../documents/p4/frontend/fe-50.md)
 
 ## Yêu cầu
 

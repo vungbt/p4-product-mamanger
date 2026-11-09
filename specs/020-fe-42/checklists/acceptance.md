@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-42 · Tồn kho và sổ kho
 
-[Task nguồn](../../../documents/frontend/fe-42.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-42.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Phân biệt onHand, reserved và available; lọc theo SKU phía server.
 - [ ] AC-002 (FR-002) — Nhập và điều chỉnh kho qua ledger, bắt buộc lý do và `Idempotency-Key`; retry không cộng kho hai lần.

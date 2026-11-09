@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-06 · Trang chủ, menu và collection
 
-[Task nguồn](../../../documents/frontend/fe-06.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-06.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Render cấu hình publish/schedule từ API; ẩn section rỗng và sản phẩm không public.
 - [ ] AC-002 (FR-002) — Giữ business blocks hiện có, responsive desktop/mobile và skeleton không nhảy bố cục.

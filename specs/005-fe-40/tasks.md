@@ -1,6 +1,6 @@
 # Tasks — FE-40
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-40](../../documents/frontend/fe-40.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-40](../../documents/p4/frontend/fe-40.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Layout khu tài khoản có menu tới đơn mua, địa chỉ, hồ sơ, wishlist, thông báo và hỗ trợ; menu chỉ hiện mục đã có màn hình.
 - [ ] T003 (FR-002) — Route guard đưa khách chưa đăng nhập về login và quay lại đúng trang sau khi đăng nhập.
 - [ ] T004 (FR-003) — Có trang 404, trang lỗi không tải được dữ liệu và error boundary cho lỗi render, đủ VI/EN.

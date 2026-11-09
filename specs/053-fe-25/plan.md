@@ -1,6 +1,6 @@
 # Plan — FE-25
 
-[Spec](spec.md) · [FE-25](../../documents/frontend/fe-25.md)
+[Spec](spec.md) · [FE-25](../../documents/p4/frontend/fe-25.md)
 
 ## Trình tự
 
@@ -23,7 +23,7 @@ Types request/response lấy từ contract sinh trong `@p4/api-sdk/shared`; enum
 
 - API client, query keys và resource query/mutation hooks nằm trong `libs/api-sdk`; component gọi hook trực tiếp. Hook feature chỉ xử lý state/handler màn hình, không tạo service hoặc hook chuyển tiếp. Props dùng ở đâu định nghĩa ở đó.
 - Dùng component/icon/token của `@itclabs/react-ui`, tái sử dụng `libs/blocks`; không dựng lại UI primitives hoặc thêm wrapper/view chỉ để chuyển props.
-- Áp dụng [quy ước UI và API](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
+- Áp dụng [quy ước UI và API](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung), có loading/empty/error/retry; lỗi field vào field, lỗi chung hiển thị tại form.
 - Chạy typecheck/lint/build phù hợp và thao tác luồng thật qua API local. Ghi endpoint, tình huống, kết quả trong phần dưới; không coi mock data là nghiệm thu API.
 
 ## Contract để bàn giao FE
@@ -35,4 +35,4 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 | `GET /api/admin/reviews` | `review:read` · Task sở hữu | query `page`, `pageSize 1–100`, `sortBy=rating/createdAt`, `sortOrder=asc/desc`, `q`, `rating 1–5`, `status=hidden/pending/published`, `productId` | `200` `data Review[] + meta` | 400, 401, 403, 429 |
 | `POST /api/reviews/{id}/moderation` | `review:moderate` · Task sở hữu | path `id*`<br>body `expectedVersion*`, `status*`, `reason*` | `200` `data Review` | 400, 401, 403, 404, 409, 429 |
 | `PUT /api/reviews/{id}/reply` | `review:reply` · Task sở hữu | path `id*`<br>body `expectedVersion*`, `reply*` | `200` `data Review` | 400, 401, 403, 404, 409, 429 |
-| `DELETE /api/products/{id}/reviews/{reviewId}` | user, admin · Dùng từ [FE-24](../../documents/frontend/fe-24.md) | path `id*`, `reviewId*` | `200` `data { ok }` | 401, 403, 404, 409, 429 |
+| `DELETE /api/products/{id}/reviews/{reviewId}` | user, admin · Dùng từ [FE-24](../../documents/p4/frontend/fe-24.md) | path `id*`, `reviewId*` | `200` `data { ok }` | 401, 403, 404, 409, 429 |

@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-54 · Chuyên mục và thẻ bài viết
 
-[Task nguồn](../../../documents/frontend/fe-54.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-54.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Hai màn taxonomy list/create/edit đúng contract, slug từ tên có thể sửa, map lỗi trùng theo field.
 - [ ] AC-002 (FR-002) — Bộ chọn category/tag dùng lại trong editor bài viết; invalidate đúng taxonomy sau mutation.

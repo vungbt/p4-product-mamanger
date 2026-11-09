@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-24 · Viết và quản lý đánh giá đã mua
 
-[Task nguồn](../../../documents/frontend/fe-24.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-24.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Chỉ viết review cho order item được API cho phép; pending moderation chưa xuất hiện public; ảnh dùng upload chung.
 - [ ] AC-002 (FR-002) — Sửa/xóa/report theo endpoint hiện có và owner/capability; legacy product review không dùng để tạo mới.

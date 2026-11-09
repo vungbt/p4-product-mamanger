@@ -1,6 +1,6 @@
 # Tasks — FE-18
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-18](../../documents/frontend/fe-18.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-18](../../documents/p4/frontend/fe-18.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Phân bổ số lượng vào nhiều kiện; pack/ready/handover/deliver/fail/return/lose/cancel theo state/capability.
 - [ ] T003 (FR-002) — Không chia vượt số lượng đã đặt; validation gắn đúng dòng/SKU, action không hợp lệ có lý do.
 - [ ] T004 (FR-003) — Timeline từng kiện và đơn cập nhật bằng HTTP/realtime; retry không chuyển trạng thái hai lần; delivered không tự đồng nghĩa paid.

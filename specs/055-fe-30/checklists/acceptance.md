@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-30 · Quản lý notification templates
 
-[Task nguồn](../../../documents/frontend/fe-30.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-30.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Chỉnh template theo allowlist biến API; preview có nội dung thiếu biến/lỗi validation.
 - [ ] AC-002 (FR-002) — Version conflict và quyền truy cập rõ ràng; không hiển thị credential hay token tài khoản.

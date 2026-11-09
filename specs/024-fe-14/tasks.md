@@ -1,6 +1,6 @@
 # Tasks — FE-14
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-14](../../documents/frontend/fe-14.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-14](../../documents/p4/frontend/fe-14.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — CRUD thời gian/điều kiện/quota và lịch sử redemption, soft disable giữ lịch sử.
 - [ ] T003 (FR-002) — Giải thích best promotion hoặc coupon được chọn; lỗi hết quota hiển thị đúng field/form.
 - [ ] T004 (FR-003) — Áp dụng quy tắc một ưu đãi mỗi đơn: coupon nhập vào thay khuyến mãi tự động.

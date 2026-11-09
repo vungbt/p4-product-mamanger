@@ -1,6 +1,6 @@
 # Tasks — FE-03
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-03](../../documents/frontend/fe-03.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-03](../../documents/p4/frontend/fe-03.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Hiển thị draft/active/inactive/archived; bộ lọc và sort phía API.
 - [ ] T003 (FR-002) — Chi tiết phân biệt thông tin sản phẩm và SKU; archive giữ dữ liệu đơn cũ, xác nhận trước thao tác.
 - [ ] T004 (FR-003) — Filter/sort/page nằm trong URL và query key; quay lại danh sách giữ nguyên bộ lọc.

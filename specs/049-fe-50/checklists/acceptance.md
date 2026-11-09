@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-50 · Quản trị hoàn tiền và xử lý lỗi provider
 
-[Task nguồn](../../../documents/frontend/fe-50.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-50.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Màn list/detail refund có filter/page/sort, liên kết order/return và số tiền do server quyết định.
 - [ ] AC-002 (FR-002) — Phân biệt pending/processing/failed/succeeded; chưa rõ kết quả phải reconcile, chỉ retry khi API cho phép.

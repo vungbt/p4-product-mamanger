@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-09 · Hồ sơ và tùy chọn tài khoản
 
-[Task nguồn](../../../documents/frontend/fe-09.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-09.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Xem/sửa display name, phone, avatar qua profile versioned API; preferences locale/timezone đồng bộ app.
 - [ ] AC-002 (FR-002) — Đổi email theo luồng account request/confirm hiện có; route callback xử lý token thiếu/hết hạn/đã dùng. Không trộn token native và compatibility.

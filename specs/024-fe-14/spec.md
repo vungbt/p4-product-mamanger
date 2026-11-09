@@ -1,6 +1,6 @@
 # Spec — FE-14 · Promotions, coupons và quota
 
-Nguồn [FE-14](../../documents/frontend/fe-14.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-14](../../documents/p4/frontend/fe-14.md) · Portal **Admin** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện promotions, coupons và quota theo contract API hiện hành. Task
 
 ## Phụ thuộc
 
-[FE-03](../../documents/frontend/fe-03.md), [FE-13](../../documents/frontend/fe-13.md)
+[FE-03](../../documents/p4/frontend/fe-03.md), [FE-13](../../documents/p4/frontend/fe-13.md)
 
 ## Yêu cầu
 

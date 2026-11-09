@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-04 · Form sản phẩm và gallery nhiều ảnh
 
-[Task nguồn](../../../documents/frontend/fe-04.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-04.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Tạo/sửa tên, slug, mô tả, category, SEO, size guide; publish chỉ sau khi API cho phép.
 - [ ] AC-002 (FR-002) — Upload nhiều ảnh qua ticket/batch process; hiển thị từng ảnh thành công/lỗi; không gắn file chưa verify.

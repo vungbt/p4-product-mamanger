@@ -1,6 +1,6 @@
 # Tasks — FE-42
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-42](../../documents/frontend/fe-42.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-42](../../documents/p4/frontend/fe-42.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Phân biệt onHand, reserved và available; lọc theo SKU phía server.
 - [ ] T003 (FR-002) — Nhập và điều chỉnh kho qua ledger, bắt buộc lý do và `Idempotency-Key`; retry không cộng kho hai lần.
 - [ ] T004 (FR-003) — Xem lịch sử biến động theo SKU và có người thao tác, thời điểm, lý do.

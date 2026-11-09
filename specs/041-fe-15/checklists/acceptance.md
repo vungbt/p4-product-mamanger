@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-15 · Checkout bằng server quote
 
-[Task nguồn](../../../documents/frontend/fe-15.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-15.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Địa chỉ, phương thức giao và coupon tạo quote server; hiển thị subtotal/discount/shipping/total.
 - [ ] AC-002 (FR-002) — Quote hết hạn hoặc giá đổi phải xác nhận lại; submit giữ Idempotency-Key cho một ý định đặt hàng.

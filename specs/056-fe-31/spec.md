@@ -1,6 +1,6 @@
 # Spec — FE-31 · Hỗ trợ khách hàng Storefront
 
-Nguồn [FE-31](../../documents/frontend/fe-31.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-31](../../documents/p4/frontend/fe-31.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện hỗ trợ khách hàng storefront theo contract API hiện hành.
 
 ## Phụ thuộc
 
-[FE-19](../../documents/frontend/fe-19.md), [FE-10](../../documents/frontend/fe-10.md), [FE-38](../../documents/frontend/fe-38.md)
+[FE-19](../../documents/p4/frontend/fe-19.md), [FE-10](../../documents/p4/frontend/fe-10.md), [FE-38](../../documents/p4/frontend/fe-38.md)
 
 ## Ranh giới
 

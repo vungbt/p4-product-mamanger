@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-07 · Danh sách catalog và bộ lọc
 
-[Task nguồn](../../../documents/frontend/fe-07.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-07.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Danh sách catalog dùng facet/filter/sort/page phía server; query key và URL đồng bộ, back/forward giữ bộ lọc.
 - [ ] AC-002 (FR-002) — Hiển thị product cards và trạng thái không có kết quả, loading/error/retry; link tới PDP và giữ blocks hiện có.

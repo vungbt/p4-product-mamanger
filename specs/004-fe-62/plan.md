@@ -1,6 +1,6 @@
 # Plan — FE-62
 
-[Spec](spec.md) · [FE-62](../../documents/frontend/fe-62.md)
+[Spec](spec.md) · [FE-62](../../documents/p4/frontend/fe-62.md)
 
 ## Trình tự
 
@@ -18,7 +18,7 @@
 ## Tổ chức và kiểm chứng
 
 - Request, query keys và query/mutation hooks thuộc `@p4/api-sdk`; mở rộng resource hooks tại SDK nếu thiếu. Component gọi trực tiếp; hook cạnh page chỉ giữ state/handler của màn, không tạo hook chuyển tiếp.
-- Dùng `@itclabs/react-ui`, icon/theme P4 và business blocks sẵn có; áp dụng [quy ước chung](../../documents/frontend/README.md#quy-ước-nghiệm-thu-chung).
+- Dùng `@itclabs/react-ui`, icon/theme P4 và business blocks sẵn có; áp dụng [quy ước chung](../../documents/p4/frontend/README.md#quy-ước-nghiệm-thu-chung).
 - Kiểm chứng API thật local: happy path, lỗi field, 401/403/404/409, pending/empty, retry và dữ liệu stale; desktop/mobile, keyboard và VI/EN. Không dùng production để tạo dữ liệu test.
 - Chạy SDK typecheck/test khi đổi hooks, web build và root lint; ghi kết quả trước khi cập nhật trạng thái.
 
@@ -28,5 +28,5 @@ Dấu `*` chỉ input bắt buộc trong schema. Lỗi là các mã được kha
 
 | Operation | Quyền / sử dụng | Input | Thành công | Lỗi khai báo |
 | --- | --- | --- | --- | --- |
-| `GET /api/me/capabilities` | Có phiên · Dùng từ [FE-01](../../documents/frontend/fe-01.md) | — | `200` `data { contractVersion, permissions }` | 401, 403, 429 |
-| `GET /api/auth/me` | Có phiên · Dùng từ [FE-01](../../documents/frontend/fe-01.md) | — | `200` `data { user }` | 401, 403, 429 |
+| `GET /api/me/capabilities` | Có phiên · Dùng từ [FE-01](../../documents/p4/frontend/fe-01.md) | — | `200` `data { contractVersion, permissions }` | 401, 403, 429 |
+| `GET /api/auth/me` | Có phiên · Dùng từ [FE-01](../../documents/p4/frontend/fe-01.md) | — | `200` `data { user }` | 401, 403, 429 |

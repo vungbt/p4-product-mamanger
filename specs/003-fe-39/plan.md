@@ -1,6 +1,6 @@
 # Plan — FE-39
 
-[Spec](spec.md) · [FE-39](../../documents/frontend/fe-39.md)
+[Spec](spec.md) · [FE-39](../../documents/p4/frontend/fe-39.md)
 
 ## Trình tự
 

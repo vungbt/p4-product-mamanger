@@ -1,6 +1,6 @@
 # Tasks — FE-20
 
-- [ ] T001 Xác nhận phụ thuộc của [FE-20](../../documents/frontend/fe-20.md) và rà [plan](plan.md).
+- [ ] T001 Xác nhận phụ thuộc của [FE-20](../../documents/p4/frontend/fe-20.md) và rà [plan](plan.md).
 - [ ] T002 (FR-001) — Chỉ chọn số lượng đã giao còn trong thời hạn và chưa nằm trong yêu cầu khác.
 - [ ] T003 (FR-002) — Bằng chứng private theo ticket owner; hiện tiến độ upload và timeline return, không dùng public URL tĩnh.
 - [ ] T004 (FR-003) — Dùng upload chung ở FE-38 với purpose bằng chứng.

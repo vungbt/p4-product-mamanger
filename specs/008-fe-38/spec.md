@@ -1,6 +1,6 @@
 # Spec — FE-38 · Upload dùng chung qua ticket
 
-Nguồn [FE-38](../../documents/frontend/fe-38.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
+Nguồn [FE-38](../../documents/p4/frontend/fe-38.md) · Portal **Chung** · Trạng thái nguồn **Chưa bắt đầu**
 
 ## Mục tiêu
 
@@ -8,7 +8,7 @@ Hoàn thiện upload dùng chung qua ticket theo contract API hiện hành. Task
 
 ## Phụ thuộc
 
-[FE-37](../../documents/frontend/fe-37.md), [FE-10](../../documents/frontend/fe-10.md)
+[FE-37](../../documents/p4/frontend/fe-37.md), [FE-10](../../documents/p4/frontend/fe-10.md)
 
 ## Yêu cầu
 

@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-31 · Hỗ trợ khách hàng Storefront
 
-[Task nguồn](../../../documents/frontend/fe-31.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-31.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Khách mở ticket gắn đơn/attachment private; list mine, detail, đọc/gửi tin và đóng theo quyền owner.
 - [ ] AC-002 (FR-002) — Hiển thị pending/error/retry không trùng tin khi reconnect; gửi thất bại giữ draft.

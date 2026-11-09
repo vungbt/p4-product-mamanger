@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-19 · Đơn mua, tracking và yêu cầu huỷ
 
-[Task nguồn](../../../documents/frontend/fe-19.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-19.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Chỉ xem đơn owner; timeline theo từng kiện và các trạng thái tiền/đơn tách biệt.
 - [ ] AC-002 (FR-002) — Chọn dòng/số lượng huỷ, gửi lý do, hiển thị chờ duyệt và hoàn tiền còn pending.

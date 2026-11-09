@@ -1,6 +1,6 @@
 # Nghiệm thu — FE-58 · Trình biên tập bố cục trang chủ
 
-[Task nguồn](../../../documents/frontend/fe-58.md) · [Spec](../spec.md)
+[Task nguồn](../../../documents/p4/frontend/fe-58.md) · [Spec](../spec.md)
 
 - [ ] AC-001 (FR-001) — Sắp xếp section theo typed blocks được API hỗ trợ, chọn collection/banner đã có và bật/tắt theo contract.
 - [ ] AC-002 (FR-002) — Preview desktop/mobile dùng renderer public, section trống/thiếu resource có fallback; không render HTML tùy ý.
