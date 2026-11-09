@@ -21,7 +21,7 @@ while [[ $# -gt 0 ]]; do
       echo "Usage: ./scripts/deploy.prod.sh [--server user@host|ssh-alias]"
       echo ""
       echo "Default SSH host: couponlinkh (same VPS as coupon-linkh)"
-      echo "Requires: .env.prod (copy from .env.prod.example)"
+      echo "Uses local .env.prod when present, otherwise the server copy."
       exit 0
       ;;
     *) echo "Unknown option: $1"; exit 1 ;;
@@ -35,8 +35,13 @@ echo "  Remote:  $REMOTE_DIR"
 echo "========================================"
 echo ""
 
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo "Missing $ENV_FILE — copy from .env.prod.example and fill production values."
+UPLOAD_FILES=(p4-api.tar.gz docker-compose.yml)
+if [[ -f "$ENV_FILE" ]]; then
+  UPLOAD_FILES+=("$ENV_FILE")
+elif ssh "$SERVER" "test -f $REMOTE_DIR/$ENV_FILE"; then
+  echo "==> No local $ENV_FILE — reusing the server copy."
+else
+  echo "Missing $ENV_FILE locally and on $SERVER — copy from .env.prod.example and fill production values."
   exit 1
 fi
 
@@ -47,12 +52,13 @@ docker build --platform linux/amd64 -f apps/api/Dockerfile -t p4-api:latest .
 docker save p4-api:latest | gzip > p4-api.tar.gz
 
 echo "==> Uploading to $SERVER..."
-scp p4-api.tar.gz docker-compose.yml "$ENV_FILE" "$SERVER:$REMOTE_DIR/"
+scp "${UPLOAD_FILES[@]}" "$SERVER:$REMOTE_DIR/"
 
 echo "==> Loading image and restarting..."
 ssh "$SERVER" bash -s <<EOF
   set -e
   cd $REMOTE_DIR
+  chmod 600 $ENV_FILE
   echo "  Loading p4-api.tar.gz..."
   docker load < p4-api.tar.gz
   rm -f p4-api.tar.gz
@@ -67,5 +73,5 @@ rm -f p4-api.tar.gz
 echo ""
 echo "==> PRODUCTION deploy complete!"
 echo "    API: https://p4-api.couponlinkh.com  (health: /health)"
-echo "    Direct: http://140.82.33.237:3001  | Postgres host: 127.0.0.1:5433"
+echo "    API :3001 and Postgres :5433 listen on the server loopback only."
 echo "    Web: https://p4.couponlinkh.com (pnpm deploy:web)"

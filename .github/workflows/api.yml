@@ -16,4 +16,5 @@ jobs:
           node-version: 22
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm --filter @p4/api lint
+      - run: pnpm --filter @p4/ability test
       - run: pnpm --filter @p4/api test:lists
