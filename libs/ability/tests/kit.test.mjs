@@ -101,3 +101,35 @@ test('rulesFrom collects a partial definition', () => {
   assert.deepEqual(rules, [{ action: 'read', subject: 'Settings' }]);
   assert.ok(kit.canAccess(kit.createAppAbility(rules), 'read', 'Settings'));
 });
+
+test('canAccessSome counts conditional rules: a manager opens assigned areas', () => {
+  const ability = kit.defineAbilityFor(manager);
+
+  assert.ok(kit.canAccessSome(ability, 'read', 'Room'));
+  assert.ok(kit.canAccessSome(ability, 'write', 'Invoice'));
+  assert.ok(kit.canAccessSome(ability, 'read', 'Building'));
+  assert.equal(kit.canAccess(ability, 'read', 'Room'), false);
+  assert.equal(kit.canAccessSome(ability, 'manage', 'Invoice'), false);
+  assert.equal(kit.canAccessSome(ability, 'read', 'Settings'), false);
+});
+
+test('canAccessSome: owner yes, no rules no, unconditional cannot no', () => {
+  assert.ok(kit.canAccessSome(kit.defineAbilityFor(owner), 'manage', 'Settings'));
+  assert.equal(kit.canAccessSome(kit.createAppAbility(), 'read', 'Room'), false);
+
+  const denied = kit.createAppAbility([
+    { action: 'read', subject: 'Room', conditions: { buildingId: { $in: ['b-1'] } } },
+    { action: 'read', subject: 'Room', inverted: true },
+  ]);
+
+  assert.equal(kit.canAccessSome(denied, 'read', 'Room'), false);
+
+  // A conditional `cannot` excludes some records only.
+  const partly = kit.createAppAbility([
+    { action: 'read', subject: 'Room' },
+    { action: 'read', subject: 'Room', conditions: { buildingId: 'b-9' }, inverted: true },
+  ]);
+
+  assert.ok(kit.canAccessSome(partly, 'read', 'Room'));
+  assert.equal(kit.canAccess(partly, 'read', 'Room'), false);
+});

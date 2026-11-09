@@ -25,6 +25,8 @@ export interface AbilityReact<Action extends string, Subject extends string, Att
   useAbility: () => KitAbility<Action, Subject, Attrs>;
   /** Unconditional access, for routes, menus and toolbar actions. See `canAccess`. */
   useCanAccess: (action: Action, subjectType: Subject) => boolean;
+  /** Access to at least one record, counting conditional rules. See `canAccessSome`. */
+  useCanAccessSome: (action: Action, subjectType: Subject) => boolean;
   /** Access to one record, honouring conditional rules. See `canOn`. */
   useCanOn: (action: Action, subjectType: Subject, record: Attrs) => boolean;
   /**
@@ -61,13 +63,17 @@ export function createAbilityReact<
     return kit.canAccess(useAbility(), action, subjectType);
   }
 
+  function useCanAccessSome(action: Action, subjectType: Subject): boolean {
+    return kit.canAccessSome(useAbility(), action, subjectType);
+  }
+
   function useCanOn(action: Action, subjectType: Subject, record: Attrs): boolean {
     return kit.canOn(useAbility(), action, subjectType, record);
   }
 
   const Can: (props: CanProps<Ability>) => ReactNode = CaslCan;
 
-  return { AbilityProvider, useAbility, useCanAccess, useCanOn, Can };
+  return { AbilityProvider, useAbility, useCanAccess, useCanAccessSome, useCanOn, Can };
 }
 
 /** P4 bindings, typed with `@p4/shared` actions and subjects. */

@@ -4,7 +4,7 @@ CASL authorization shared by the APIs and webs: a generic engine plus one defini
 
 - `@p4/ability/core` (no React): `createAbilityKit(definition)`, `ANY_ACTION`, `ANY_SUBJECT` and the generic types (`KitAbility`, `KitRule`, `KitBuilder`, `AbilityKit`, `ClientAbilityKit`).
 - `@p4/ability/shared` (no React): the P4 kit (`p4AbilityKit`) and its exports: actions, subjects, `AppAbility`, `defineAbilityFor(user)`, `createAppAbility(rules)`, `rulesForStaffRole(role)`, `canAccess` and `canOn`.
-- `@p4/ability/browser`: `createAbilityReact(kit)` for any kit, and the P4 bindings `AbilityProvider`, `useAbility`, `useCanAccess`, `useCanOn` and a typed `<Can>`.
+- `@p4/ability/browser`: `createAbilityReact(kit)` for any kit (`useCanAccess`, `useCanAccessSome`, `useCanOn`…), and the P4 bindings `AbilityProvider`, `useAbility`, `useCanAccess`, `useCanOn` and a typed `<Can>`.
 
 ## Defining a kit for a new app
 
@@ -52,6 +52,7 @@ The kit returns:
 | `abilityRules(ability)` | Serializable rules for clients |
 | `rulesFrom(define)` | Rules of a partial definition (e.g. one role, for role listings) |
 | `canAccess(ability, action, subject)` | Unconditional access (routes, menus) |
+| `canAccessSome(ability, action, subject)` | Access to at least one record, counting conditional rules (areas whose data the API filters per record, e.g. a manager's buildings); `useCanAccessSome` on the web |
 | `canOn(ability, action, subject, record)` | Access to one record, honouring conditions |
 
 Conditions are CASL Mongo queries on the record attributes (`{ userId }`, `{ buildingId: { $in: [...] } }`). Do not put secrets in conditions: the rules are sent to the client. CASL's React context is shared, so a page mounts the provider of one kit only. Translating rules into SQL `where` clauses is not part of this package yet.
