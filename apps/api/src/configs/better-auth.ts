@@ -12,6 +12,7 @@ import { seal } from '@/shared/commerce/encryption.js';
 import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { requestStore } from '@/shared/request-store.js';
 import { env } from './env.js';
+import { isBlockedPassword } from './production.js';
 
 export const authPool = new pg.Pool({
   host: env.database.host,
@@ -88,8 +89,15 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
     password: {
-      hash: (password) => bcrypt.hash(password, 12),
-      verify: ({ hash, password }) => bcrypt.compare(password, hash),
+      hash: (password) => {
+        if (isBlockedPassword(password))
+          throw new APIError('BAD_REQUEST', {
+            message: 'This password is public; choose another.',
+          });
+        return bcrypt.hash(password, 12);
+      },
+      verify: async ({ hash, password }) =>
+        !isBlockedPassword(password) && bcrypt.compare(password, hash),
     },
     revokeSessionsOnPasswordReset: true,
     sendResetPassword: ({ user, url }) =>

@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'production';
 process.env.CORS_ORIGIN = 'https://p4.couponlinkh.com';
 process.env.BETTER_AUTH_URL = 'https://p4-api.couponlinkh.com';
 
-const { assertProductionConfig } = await import('../dist/configs/production.js');
+const { assertProductionConfig, isBlockedPassword } = await import('../dist/configs/production.js');
 const strong = 'k'.repeat(48);
 
 function withEnv(values, fn) {
@@ -40,4 +40,10 @@ test('rejects secrets copied from the public examples', () => {
     withEnv({ ...valid, [name]: value }, () =>
       assert.throws(assertProductionConfig, new RegExp(name)),
     );
+});
+
+test('published demo passwords are blocked in production', () => {
+  for (const password of ['admin123', 'user123', 'password123'])
+    assert.equal(isBlockedPassword(password), true, password);
+  assert.equal(isBlockedPassword('a-private-password'), false);
 });

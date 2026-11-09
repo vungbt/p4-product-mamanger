@@ -35,7 +35,7 @@ echo "  Remote:  $REMOTE_DIR"
 echo "========================================"
 echo ""
 
-UPLOAD_FILES=(p4-api.tar.gz docker-compose.yml)
+UPLOAD_FILES=(p4-api.tar.gz docker-compose.yml deploy/backup/p4-db-backup.sh)
 if [[ -f "$ENV_FILE" ]]; then
   UPLOAD_FILES+=("$ENV_FILE")
 elif ssh "$SERVER" "test -f $REMOTE_DIR/$ENV_FILE"; then
@@ -72,6 +72,9 @@ ssh "$SERVER" bash -s <<EOF
     | grep -vxE 'p4-api:(latest|previous)' \
     | xargs -r docker rmi || true
   docker image prune -f
+  chmod 700 p4-db-backup.sh
+  echo "30 3 * * * root $REMOTE_DIR/p4-db-backup.sh >> /var/log/p4-db-backup.log 2>&1" > /etc/cron.d/p4-db-backup
+  echo "  Daily database backup: 03:30 UTC → $REMOTE_DIR/backups/daily (7 days)"
   echo ""
   docker compose -p $PROJECT_NAME ps
 EOF
