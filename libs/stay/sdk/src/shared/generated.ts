@@ -598,6 +598,112 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/buildings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh sách toà
+     * @description Chỉ các toà người dùng được xem (người quản lý: toà được gán). Mặc định ẩn toà đã lưu trữ (`status=active`).
+     *
+     *     **Quyền:** `read:Building`.
+     */
+    get: operations['get_api_buildings'];
+    put?: never;
+    /**
+     * Tạo toà
+     * @description Mã A–Z, 0–9, tối đa 6 ký tự, duy nhất. Kỳ thu, làm tròn, hoàn tiền phòng để `null` = theo hệ thống. Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. Tài khoản ngân hàng nhập đủ cả ba trường (BIN VietQR 6 số, số tài khoản, tên chủ tài khoản in hoa không dấu) hoặc bỏ trống.
+     *
+     *     **Quyền:** `manage:Building`.
+     */
+    post: operations['post_api_buildings'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/buildings/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chi tiết toà
+     * @description Kèm thống kê nhanh, kỳ thu đang áp dụng (`billing`) và `codeLocked`. Toà ngoài phạm vi của người dùng trả 404.
+     *
+     *     **Quyền:** `read:Building`.
+     */
+    get: operations['get_api_buildings_id'];
+    /**
+     * Sửa toà
+     * @description Gửi đủ các trường như khi tạo (trường bỏ trống = `null`). Không đổi được mã khi toà đã có hoá đơn (`codeLocked`). Toà đã lưu trữ trả 409. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Building`.
+     */
+    put: operations['put_api_buildings_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/buildings/{id}/archive': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Lưu trữ toà
+     * @description Trả 409 `building_has_active_contracts` kèm `extensions.rooms` khi còn phòng có hợp đồng hiệu lực.
+     *
+     *     **Quyền:** `manage:Building`.
+     */
+    post: operations['post_api_buildings_id_archive'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/buildings/{id}/prices': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Đơn giá của toà
+     * @description Giá từng dịch vụ tại ngày `date` (`YYYY-MM-DD`, mặc định hôm nay theo Asia/Ho_Chi_Minh): bản ghi ghi đè có `effectiveFrom` lớn nhất ≤ ngày đó, không có thì giá mặc định. Kèm lịch sử ghi đè.
+     *
+     *     **Quyền:** `read:Building`.
+     */
+    get: operations['get_api_buildings_id_prices'];
+    /**
+     * Đặt giá riêng từ một ngày
+     * @description `price: null` = quay về giá mặc định từ `effectiveFrom`. Đã có bản ghi cùng ngày thì thay thế, trừ khi hoá đơn đã phát hành dùng giá đó (409 `price_history_locked`).
+     *
+     *     **Quyền:** `manage:Building`.
+     */
+    put: operations['put_api_buildings_id_prices'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/me': {
     parameters: {
       query?: never;
@@ -635,6 +741,84 @@ export interface paths {
      */
     get: operations['get_api_me_capabilities'];
     put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/services': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh mục dịch vụ
+     * @description Mọi dịch vụ (cả đã tắt, xem `active`), theo `sortOrder`.
+     *
+     *     **Quyền:** `read:Settings`.
+     */
+    get: operations['get_api_services'];
+    put?: never;
+    /**
+     * Thêm dịch vụ
+     * @description Tên không trùng (không phân biệt hoa thường); đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và một `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.
+     *
+     *     **Quyền:** `manage:Settings`.
+     */
+    post: operations['post_api_services'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/services/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Sửa dịch vụ
+     * @description Sửa tên, đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn đã phát hành. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Settings`.
+     */
+    put: operations['put_api_services_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/settings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Kỳ thu mặc định
+     * @description Ngày chốt số, ngày phát hành, hạn thanh toán, đơn vị làm tròn, hoàn tiền phòng và mẫu nội dung chuyển khoản. Toà để trống trường nào thì theo giá trị ở đây.
+     *
+     *     **Quyền:** `read:Settings`.
+     */
+    get: operations['get_api_settings'];
+    /**
+     * Cập nhật kỳ thu mặc định
+     * @description Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. Làm tròn 1, 100 hoặc 1.000đ. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Settings`.
+     */
+    put: operations['put_api_settings'];
     post?: never;
     delete?: never;
     options?: never;
@@ -754,6 +938,94 @@ export interface components {
       updatedAt: string;
       value: string;
     };
+    BillingSettings: {
+      dueDay: number;
+      issueDay: number;
+      readingDay: number;
+      refundUnusedRent: boolean;
+      roundingUnit: 1 | 1000 | 100;
+    };
+    BuildingPriceList: {
+      buildingId: string;
+      date: string;
+      items: components['schemas']['BuildingServicePrice'][];
+    };
+    BuildingPriceOverride: {
+      createdAt: string;
+      effectiveFrom: string;
+      id: string;
+      price: number | null;
+      serviceId: string;
+    };
+    BuildingServicePrice: {
+      active: boolean;
+      code: string;
+      defaultPrice: number;
+      effectiveFrom: string | null;
+      history: components['schemas']['BuildingPriceOverride'][];
+      /** @enum {string} */
+      kind: 'electricity' | 'per_person' | 'per_room' | 'per_vehicle' | 'water';
+      name: string;
+      price: number;
+      serviceId: string;
+      /** @enum {string} */
+      source: 'default' | 'override';
+      unit: string;
+    };
+    BuildingStats: {
+      occupiedRoomCount: number;
+      roomCount: number;
+    };
+    PaginationMeta: {
+      page: number;
+      pageSize: number;
+      total: number;
+      totalPages: number;
+    };
+    StayBuilding: {
+      address: string | null;
+      archivedAt: string | null;
+      bankAccount: string | null;
+      bankAccountName: string | null;
+      bankBin: string | null;
+      code: string;
+      contactPhone: string | null;
+      createdAt: string;
+      dueDay: number | null;
+      id: string;
+      issueDay: number | null;
+      name: string;
+      readingDay: number | null;
+      refundUnusedRent: boolean | null;
+      roundingUnit: (1 | 1000 | 100) | null;
+      rulesText: string | null;
+      stats: components['schemas']['BuildingStats'];
+      updatedAt: string;
+      version: number;
+    };
+    StayBuildingDetail: {
+      address: string | null;
+      archivedAt: string | null;
+      bankAccount: string | null;
+      bankAccountName: string | null;
+      bankBin: string | null;
+      billing: components['schemas']['BillingSettings'];
+      code: string;
+      codeLocked: boolean;
+      contactPhone: string | null;
+      createdAt: string;
+      dueDay: number | null;
+      id: string;
+      issueDay: number | null;
+      name: string;
+      readingDay: number | null;
+      refundUnusedRent: boolean | null;
+      roundingUnit: (1 | 1000 | 100) | null;
+      rulesText: string | null;
+      stats: components['schemas']['BuildingStats'];
+      updatedAt: string;
+      version: number;
+    };
     StayCapabilities: {
       contractVersion: string;
       rules: components['schemas']['StayRule'][];
@@ -820,6 +1092,27 @@ export interface components {
             | 'Tenant'
             | 'all'
           )[];
+    };
+    StayService: {
+      active: boolean;
+      code: string;
+      defaultPrice: number;
+      id: string;
+      /** @enum {string} */
+      kind: 'electricity' | 'per_person' | 'per_room' | 'per_vehicle' | 'water';
+      name: string;
+      sortOrder: number;
+      unit: string;
+      version: number;
+    };
+    StaySettings: {
+      dueDay: number;
+      issueDay: number;
+      readingDay: number;
+      refundUnusedRent: boolean;
+      roundingUnit: 1 | 1000 | 100;
+      transferContentTemplate: string;
+      version: number;
     };
     StayUser: {
       avatarUrl: string | null;
@@ -4206,6 +4499,271 @@ export interface operations {
       };
     };
   };
+  get_api_buildings: {
+    parameters: {
+      query?: {
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'code' | 'name' | 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+        status?: 'active' | 'all' | 'archived';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayBuilding'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_buildings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          address?: string | null;
+          bankAccount?: string | null;
+          bankAccountName?: string | null;
+          bankBin?: string | null;
+          code: string;
+          contactPhone?: string | null;
+          dueDay?: number | null;
+          issueDay?: number | null;
+          name: string;
+          readingDay?: number | null;
+          refundUnusedRent?: boolean | null;
+          /** @enum {integer|null} */
+          roundingUnit?: 1 | 100 | 1000 | null;
+          rulesText?: string | null;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayBuildingDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_buildings_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayBuildingDetail'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_buildings_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          address?: string | null;
+          bankAccount?: string | null;
+          bankAccountName?: string | null;
+          bankBin?: string | null;
+          code: string;
+          contactPhone?: string | null;
+          dueDay?: number | null;
+          issueDay?: number | null;
+          name: string;
+          readingDay?: number | null;
+          refundUnusedRent?: boolean | null;
+          /** @enum {integer|null} */
+          roundingUnit?: 1 | 100 | 1000 | null;
+          rulesText?: string | null;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayBuildingDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_buildings_id_archive: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayBuildingDetail'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_buildings_id_prices: {
+    parameters: {
+      query?: {
+        date?: string;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['BuildingPriceList'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_buildings_id_prices: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: date */
+          effectiveFrom: string;
+          price: number | null;
+          /** Format: uuid */
+          serviceId: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['BuildingPriceOverride'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_me: {
     parameters: {
       query?: never;
@@ -4255,6 +4813,181 @@ export interface operations {
       };
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_services: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayService'][];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_services: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          active?: boolean;
+          defaultPrice: number;
+          /** @enum {string} */
+          kind: 'electricity' | 'per_person' | 'per_room' | 'per_vehicle' | 'water';
+          name: string;
+          sortOrder?: number;
+          unit: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayService'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_services_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          active: boolean;
+          defaultPrice: number;
+          name: string;
+          sortOrder: number;
+          unit: string;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayService'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_settings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StaySettings'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_settings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          dueDay: number;
+          issueDay: number;
+          readingDay: number;
+          refundUnusedRent: boolean;
+          /** @enum {integer} */
+          roundingUnit: 1 | 100 | 1000;
+          transferContentTemplate: string;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StaySettings'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };

@@ -38,6 +38,20 @@ curl -i -c /tmp/stay.jar -H 'content-type: application/json' -H 'origin: http://
 curl -b /tmp/stay.jar http://127.0.0.1:3011/api/me/capabilities
 ```
 
+## Cấu hình và toà nhà (ST-06, ST-07)
+
+| Method | Path | Quyền | Ghi chú |
+| --- | --- | --- | --- |
+| GET/PUT | `/api/settings` | read/manage `Settings` | Kỳ thu mặc định; ngày `1`–`28` hoặc `31` = cuối tháng; PUT có `version` |
+| GET/POST | `/api/services` | read/manage `Settings` | Dịch vụ mặc định tạo trong migration; một `electricity` và một `water` đang bật |
+| PUT | `/api/services/:id` | manage `Settings` | Không có DELETE, chỉ tắt; `kind`, `code` không đổi |
+| GET/POST | `/api/buildings` | read (theo toà)/manage `Building` | List chuẩn, `status=active\|archived\|all` |
+| GET/PUT | `/api/buildings/:id` | read (theo toà)/manage `Building` | Ngoài phạm vi → 404; PUT gửi đủ trường + `version` |
+| POST | `/api/buildings/:id/archive` | manage `Building` | 409 kèm danh sách phòng khi còn hợp đồng hiệu lực |
+| GET/PUT | `/api/buildings/:id/prices` | read (theo toà)/manage `Building` | `?date=`; PUT `{ serviceId, effectiveFrom, price \| null }` |
+
+Phòng, hợp đồng, hoá đơn chưa có: `src/modules/buildings/buildings.usage.ts` gom các truy vấn ST-08/ST-10/ST-14 sẽ bổ sung (thống kê, chặn lưu trữ, khoá mã toà, khoá lịch sử giá). Giá theo ngày dùng `resolveBuildingPrice` (bọc `resolvePrice` của `@stay/billing`).
+
 ## Xác thực và phân quyền
 
 - Better Auth với `cookiePrefix: 'stay'`: cookie là `stay.session_token` (production: `__Secure-stay.*`), không đè cookie `better-auth.*` của P4 dù cùng `localhost`. Client không dùng cookie gửi `Authorization: Bearer <token>`.
