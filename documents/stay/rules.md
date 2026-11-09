@@ -34,11 +34,14 @@ Ngoài ra có thể có:
 
 ### Tỷ lệ ngày ở
 
-`tỷ lệ = số ngày ở trong tháng / số ngày của tháng`, đếm cả ngày bắt đầu và ngày kết thúc. Ví dụ nhận phòng 20/11 (tháng 30 ngày) thì tỷ lệ = 11/30.
+`tỷ lệ = số ngày ở trong tháng / số ngày của tháng`, đếm cả ngày bắt đầu và ngày kết thúc. Ví dụ nhận phòng 20/11 (tháng 30 ngày) thì tỷ lệ = 11/30. **Ngày trả phòng được tính là ngày đã ở.**
+
+Hợp đồng có **hoá đơn nhận phòng** cho kỳ M thì **không** lập thêm hoá đơn kỳ M; hoá đơn kỳ đầu tiên tiếp theo là kỳ M+1.
 
 ### Làm tròn
 
-- Mỗi dòng tính ra số nguyên đồng (làm tròn half-up).
+- Mỗi dòng tính ra số nguyên đồng (làm tròn half-up; số âm làm tròn ra xa số 0, ví dụ −759.999 → −760.000 khi làm tròn tới 1.000đ).
+- Dịch vụ theo người/xe tính **một lần** trên `đơn giá × số lượng × tỷ lệ` rồi mới làm tròn.
 - Tổng hoá đơn làm tròn theo `roundingUnit` của toà (mặc định **1.000đ**, half-up). Phần chênh hiện thành dòng "Làm tròn" để tổng các dòng luôn khớp tổng tiền.
 
 ### Ví dụ
@@ -65,14 +68,15 @@ Toà mặc định: điện 3.500đ/kWh, nước 20.000đ/m³, internet 100.000�
 Khi trả phòng ngày `D` trong tháng M, lập **hoá đơn thanh lý** gồm:
 
 1. Điện nước từ lần chốt gần nhất tới **chỉ số lúc trả phòng**.
-2. Hoàn tiền phòng/dịch vụ của những ngày chưa ở trong tháng M (đã trả trước). Có làm hay không tuỳ cấu hình toà `refundUnusedRent` (mặc định **không hoàn**; khi bật thì hoàn theo tỷ lệ ngày).
-3. Phụ thu thanh lý (hư hỏng, dọn dẹp) do chủ trọ nhập kèm lý do.
-4. Các hoá đơn trước còn nợ: liệt kê để thu cùng lúc, nhưng vẫn ghi nhận thanh toán vào đúng hoá đơn gốc.
-5. **Cấn trừ cọc:** số cọc đang giữ trừ đi tổng phải thu. Kết quả là **chủ trọ hoàn lại** hoặc **người thuê trả thêm**.
+2. **Tiền phòng và dịch vụ của những ngày đã ở nhưng chưa có hoá đơn** (ví dụ trả phòng 03/12 khi hoá đơn kỳ 12 chưa phát hành: tính 01–03/12 theo tỷ lệ ngày). Kỳ đã có hoá đơn thì không tính lại.
+3. Hoàn tiền phòng/dịch vụ của những ngày chưa ở trong tháng M (đã trả trước). Có làm hay không tuỳ cấu hình toà `refundUnusedRent` (mặc định **không hoàn**; khi bật thì hoàn theo tỷ lệ ngày).
+4. Phụ thu thanh lý (hư hỏng, dọn dẹp) do chủ trọ nhập kèm lý do.
+5. Các hoá đơn trước còn nợ: **liệt kê, không cộng vào hoá đơn thanh lý**; tính vào số phải trả khi cấn trừ cọc, nhưng thanh toán vẫn ghi vào đúng hoá đơn gốc.
+6. **Cấn trừ cọc:** số cọc đang giữ trừ đi tổng phải thu. Kết quả là **chủ trọ hoàn lại** hoặc **người thuê trả thêm**.
 
 ## Mã hoá đơn
 
-`{mã toà}-{YYYYMM}-{số thứ tự 3 chữ số}`, ví dụ `A-202611-001`. Số thứ tự tăng theo toà và kỳ, cấp lúc **phát hành** (bản nháp chưa có mã). Hoá đơn nhận phòng và thanh lý dùng chung dãy số với kỳ của ngày phát hành, kèm loại hoá đơn.
+`{mã toà}-{YYYYMM}-{số thứ tự 3 chữ số}`, ví dụ `A-202611-001`. Số thứ tự tăng theo toà và kỳ, cấp lúc **phát hành** (bản nháp chưa có mã), tối đa 999 hoá đơn mỗi toà mỗi kỳ. Hoá đơn nhận phòng và thanh lý dùng chung dãy số với kỳ của ngày phát hành, kèm loại hoá đơn.
 
 ## Ràng buộc
 
@@ -94,10 +98,10 @@ Khi trả phòng ngày `D` trong tháng M, lập **hoá đơn thanh lý** gồm:
 `vacant` (trống) → `reserved` (đã cọc giữ chỗ) → `occupied` (đang thuê) → `vacant`. `maintenance` (bảo trì) chỉ bật/tắt được khi phòng không có hợp đồng hiệu lực. Trạng thái `reserved`/`occupied` **suy ra từ hợp đồng**, không cho sửa tay.
 
 ### Hợp đồng
-`draft` → `active` → `ending` (đã báo trả phòng, có ngày dự kiến) → `ended`. `draft` có thể chuyển `cancelled`. Gia hạn giữ trạng thái `active` và lưu lịch sử ngày kết thúc.
+`draft` → `active` → `ending` (đã báo trả phòng, có ngày dự kiến) → `ended`. Ngoài ra: `draft` → `cancelled`; `active` → `ended` (thanh lý ngay, không cần báo trước); `ending` → `active` (huỷ báo trả phòng). Gia hạn giữ trạng thái `active` và lưu lịch sử ngày kết thúc.
 
 ### Hoá đơn
-`draft` → `issued` → `partially_paid` → `paid`. `issued` có thể chuyển `void` khi chưa có thanh toán. **Quá hạn** là trạng thái suy ra: `issued`/`partially_paid` và đã qua hạn thanh toán; không lưu thành cột.
+`draft` → `issued` → `partially_paid` → `paid`; `issued` có thể thẳng sang `paid`, và lùi lại khi huỷ bút toán thu (trạng thái luôn tính lại từ tổng đã thu). `issued` có thể chuyển `void` khi chưa có thanh toán. **Quá hạn** là trạng thái suy ra: `issued`/`partially_paid` và đã qua hạn thanh toán; không lưu thành cột.
 
 ### Thanh toán
 Không sửa, không xoá. Ghi sai thì tạo **bút toán huỷ** (`reversed`, có lý do); trạng thái hoá đơn tự tính lại.
@@ -106,7 +110,7 @@ Không sửa, không xoá. Ghi sai thì tạo **bút toán huỷ** (`reversed`, 
 `held` (đang giữ) → một phần hoặc toàn bộ `applied` (cấn trừ khi thanh lý), `refunded` (đã hoàn) hoặc `forfeited` (mất cọc, có lý do). Tổng các bút toán không vượt quá số đã thu.
 
 ### Chỉ số điện nước
-`draft` → `locked` khi hoá đơn dùng chỉ số đó được phát hành; void hoá đơn thì mở khoá lại.
+`draft` → `locked` khi hoá đơn dùng chỉ số đó được phát hành; void hoá đơn thì mở khoá lại. Chỉ số là **số nguyên không âm** (kWh, m³).
 
 ## Giá trị mặc định cần xác nhận khi làm ST-06
 

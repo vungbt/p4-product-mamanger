@@ -24,7 +24,7 @@ Tên cột dưới đây là đề xuất; chốt lại trong migration của ta
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
-| `buildings` | `code` (unique, dùng trong mã hoá đơn), `name`, `address`, `reading_day`, `issue_day`, `due_day`, `rounding_unit`, `refund_unused_rent`, `bank_bin`, `bank_account`, `bank_account_name`, `archived_at` | Ngày để `null` thì lấy theo `system_settings` (ST-07) |
+| `buildings` | `code` (unique, dùng trong mã hoá đơn), `name`, `address`, `reading_day`, `issue_day`, `due_day`, `rounding_unit`, `refund_unused_rent`, `bank_bin`, `bank_account`, `bank_account_name`, `rules_text`, `contact_phone`, `archived_at` | Ngày để `null` thì lấy theo `system_settings` (ST-07) |
 | `rooms` | `building_id`, `code` (unique trong toà), `floor`, `area_m2`, `list_price`, `max_occupants`, `maintenance` (bool), `note`, `archived_at` | Trạng thái trống/đã cọc/đang thuê suy ra từ hợp đồng (ST-08) |
 | `room_default_services` | `room_id`, `service_id` | Dịch vụ mặc định gợi ý khi tạo hợp đồng (ST-08) |
 
@@ -54,7 +54,7 @@ Tên cột dưới đây là đề xuất; chốt lại trong migration của ta
 | `meters` | `room_id`, `kind` (`electricity`, `water`), `serial`, `installed_on`, `initial_reading`, `removed_on`, `final_reading` | Thay đồng hồ = đóng meter cũ, mở meter mới (ST-13) |
 | `meter_readings` | `meter_id`, `period`, `reading`, `read_on`, `photo_file_id`, `status` (`draft`, `locked`), `version` | Unique `meter_id, period` (ST-13) |
 | `invoices` | `building_id`, `contract_id`, `room_id`, `kind` (`move_in`, `monthly`, `settlement`), `period`, `code`, `status`, `issued_on`, `due_on`, `subtotal`, `rounding`, `total`, `paid_total`, `share_token_hash`, `void_reason`, `version` | Unique một phần `contract_id, period, kind` với `status <> 'void'` cho `monthly` (ST-14) |
-| `invoice_lines` | `invoice_id`, `type` (`rent`, `service`, `electricity`, `water`, `surcharge`, `discount`, `adjustment`, `refund`, `deposit`, `rounding`), `service_id`, `description`, `period`, `quantity`, `unit`, `unit_price`, `ratio_num`, `ratio_den`, `amount`, `meta` (JSONB: chỉ số đầu/cuối, hoá đơn gốc…) | **Snapshot đầy đủ** để hiển thị lại hoá đơn mà không cần tra bảng giá (ST-14) |
+| `invoice_lines` | `invoice_id`, `type` (`rent`, `service`, `electricity`, `water`, `surcharge`, `discount`, `adjustment`, `refund`, `rounding`), `service_id`, `description`, `period`, `quantity`, `unit`, `unit_price`, `ratio_num`, `ratio_den`, `amount`, `meta` (JSONB: chỉ số đầu/cuối, hoá đơn gốc…) | **Snapshot đầy đủ** để hiển thị lại hoá đơn mà không cần tra bảng giá (ST-14) |
 | `invoice_sequences` | `building_id`, `period`, `last_number` | Cấp mã khi phát hành, khoá dòng trong transaction (ST-14) |
 | `payments` | `invoice_id`, `amount`, `method` (`cash`, `bank_transfer`, `other`), `paid_on`, `reference`, `note`, `reversed_at`, `reverse_reason`, `actor_id` | Không xoá; huỷ bằng `reversed_at` (ST-15) |
 
@@ -64,8 +64,18 @@ Tên cột dưới đây là đề xuất; chốt lại trong migration của ta
 | --- | --- | --- |
 | `expense_categories` | `name`, `active` | (ST-20) |
 | `expenses` | `building_id`, `room_id` (tuỳ chọn), `category_id`, `amount`, `spent_on`, `period`, `note`, `receipt_file_id` | Chi phí vận hành (ST-20) |
-| `maintenance_requests` | `building_id`, `room_id`, `title`, `description`, `status` (`open`, `in_progress`, `done`, `cancelled`), `reported_by`, `cost_expense_id`, `photos` | Bảo trì (ST-22, người thuê báo ở ST-25) |
+| `maintenance_requests` | `building_id`, `room_id`, `contract_id`, `source` (`owner`, `tenant`), `category`, `severity`, `title`, `description`, `status` (`new`, `open`, `in_progress`, `done`, `rejected`, `cancelled`), `reply`, `cost_expense_id`, `photos` | Tạo ở ST-25 (người thuê báo hỏng); ST-22 thêm luồng nội bộ và chi phí |
 | `files`, `upload_tickets` | Như P4 | Ảnh CCCD, chỉ số, hoá đơn chi phí |
+
+## Cổng người thuê
+
+| Bảng | Cột chính | Ghi chú |
+| --- | --- | --- |
+| `tenant_portal_links` | `contract_id`, `tenant_id`, `token_hash`, `created_by`, `revoked_at`, `failed_attempts`, `locked_until`, `last_opened_at` | Một link cho mỗi người ở (ST-25) |
+| `tenant_portal_sessions` | `link_id`, `session_hash`, `expires_at`, `user_agent` | Phiên cổng sau khi xác minh 4 số cuối SĐT, 90 ngày (ST-25) |
+| `tenant_requests` | `contract_id`, `tenant_id`, `type` (`move_out`, `add_occupant`, `remove_occupant`, `add_vehicle`, `remove_vehicle`, `other`), `payload` (JSONB), `status` (`new`, `accepted`, `rejected`), `reply`, `handled_by`, `handled_at` | Người thuê đề nghị, chủ trọ duyệt (ST-25) |
+| `payment_claims` | `invoice_id`, `tenant_id`, `amount`, `paid_on`, `receipt_file_id`, `status` (`pending`, `confirmed`, `rejected`), `payment_id`, `reject_reason` | "Tôi đã chuyển khoản"; xác nhận → tạo `payments` (ST-25) |
+| `announcements` | `building_id`, `title`, `body`, `room_ids` (null = cả toà), `pinned`, `expires_at`, `created_by` | Thông báo cho người thuê (ST-25, mốc Quản lý) |
 
 ## Ràng buộc chính
 
