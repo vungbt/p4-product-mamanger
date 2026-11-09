@@ -25,7 +25,21 @@ Build with `pnpm --filter @p4/server-core build` (the API's `prebuild`/`predev` 
 | Production config (`config/production.ts`) | `assertSecret`, `assertHttpsAuthUrl`, `assertExplicitCors`, `assertHttpsMailTransport`, `createBlockedPasswordCheck` | Fail fast on placeholder secrets, plain HTTP and wildcard CORS. |
 | Logging (`logger.ts`) | `logger` | Prefixed console logger; `debug` is silent in production. |
 
-Authorization (`requireAbility`, `canAccessRecord`) is not here: it lives in the app next to its CASL ability (`@p4/ability`).
+| Authorization (`middleware/ability.ts`) | `createAbilityGuards` | `requireAbility`, `hasAccess`, `assertAccess`, `canAccessRecord`, `assertCanAccessRecord` for one app's `@p4/ability` kit. |
+
+The rules themselves live with the app's kit (`@p4/ability/core`). Bind the guards once in the app:
+
+```ts
+export const { abilityOf, requireAbility, hasAccess, canAccessRecord, assertCanAccessRecord } =
+  createAbilityGuards(stayAbilityKit, { getUser: (req) => req.user });
+
+router.get('/rooms', authRequired, requireAbility('read', 'Room'), listHandler(listRooms));
+assertCanAccessRecord(user, 'update', 'Room', { buildingId: room.buildingId });
+```
+
+`requireAbility` carries `requiredAbility` (`action:Subject`), which the OpenAPI generator documents. P4 keeps its own `apps/api/src/middlewares/ability.middleware.ts`.
+
+`createBetterAuth` also accepts `disableSignUp`, `defaultRole` (for social sign-in) and `google.disableImplicitSignUp`; P4 uses the defaults.
 
 ## Database tables
 

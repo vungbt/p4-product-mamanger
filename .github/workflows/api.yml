@@ -53,3 +53,51 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @p4/api-client typecheck && pnpm --filter @p4/auth typecheck
       - run: bash scripts/test-api-integration.sh
+  stay-api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: p4_stay
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      STAY_DATABASE_HOST: 127.0.0.1
+      STAY_DATABASE_PORT: 5432
+      STAY_DATABASE_NAME: p4_stay
+      STAY_DATABASE_USERNAME: postgres
+      STAY_DATABASE_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @stay/api lint
+      - run: pnpm --filter @stay/api typecheck
+      - run: pnpm --filter @stay/sdk test
+      - run: bash scripts/test-stay-api-integration.sh
+      - name: Regenerate OpenAPI and SDK contract for review
+        if: failure()
+        run: |
+          cd apps/stay/api
+          node ../../api/scripts/openapi/generate.mjs --config scripts/openapi/config.mjs --report || true
+          cd ../../..
+          pnpm --filter @stay/sdk generate || true
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: stay-generated-contract
+          path: |
+            apps/stay/api/openapi.yaml
+            libs/stay/sdk/src/shared/generated.ts
+            apps/stay/api/api.log

@@ -21,9 +21,10 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
-    "test": "pnpm build && node --test tests/*.test.mjs"
+    "test": "pnpm --filter @p4/ability build && pnpm build && node --test tests/*.test.mjs"
   },
   "dependencies": {
+    "@p4/ability": "workspace:*",
     "@p4/shared": "workspace:*",
     "bcryptjs": "catalog:",
     "better-auth": "catalog:",

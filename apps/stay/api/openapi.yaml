@@ -1,0 +1,380 @@
+openapi: 3.1.0
+info:
+  title: Stay API
+  version: 1.0.0
+  description: |-
+    API quản lý nhà trọ Stay.
+
+    ## Xác thực
+    Đăng nhập qua `POST /api/auth/sign-in/email` (Better Auth). Trình duyệt dùng cookie HttpOnly
+    `stay.session_token`; client khác gửi `Authorization: Bearer <token>`. Không có đăng ký công khai:
+    tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại lấy từ `GET /api/me/capabilities` (rule CASL).
+
+    ## Quy ước chung
+    - Response thành công có dạng `{ data, message? }`, danh sách có thêm `meta` phân trang.
+    - Tiền là số nguyên VND. Kỳ dạng `YYYY-MM`, ngày nghiệp vụ `YYYY-MM-DD` theo Asia/Ho_Chi_Minh.
+    - `X-Request-Id` có trong mọi response, dùng khi báo lỗi.
+    - Mọi dữ liệu nghiệp vụ gắn `buildingId`; quyền kiểm tra theo toà.
+servers:
+  - url: /
+    description: Current API server
+tags:
+  - name: me
+    description: Người dùng hiện tại và quyền CASL.
+  - name: operations
+    description: Kiểm tra trạng thái dịch vụ.
+  - name: auth-native
+    description: Better Auth native endpoints. Browser clients use @stay/sdk/auth and HttpOnly `stay.*` session cookies.
+paths:
+  /api/me:
+    get:
+      tags:
+        - me
+      operationId: get_api_me
+      summary: Người dùng hiện tại
+      description: |-
+        Gồm vai trò và các toà được gán (người quản lý).
+
+        **Yêu cầu đăng nhập.**
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMe"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/me/capabilities:
+    get:
+      tags:
+        - me
+      operationId: get_api_me_capabilities
+      summary: Quyền của người dùng hiện tại
+      description: |-
+        Rule CASL dùng với `stayAbilityKit` của `@stay/shared`; `contractVersion` đổi khi hợp đồng API thay đổi.
+
+        **Yêu cầu đăng nhập.**
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayCapabilities"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /health/live:
+    get:
+      tags:
+        - operations
+      operationId: get_health_live
+      summary: Liveness
+      description: "**Công khai.**"
+      security: []
+      responses:
+        "200":
+          description: Service sẵn sàng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+  /health:
+    get:
+      tags:
+        - operations
+      operationId: get_health
+      summary: Health check
+      description: |-
+        Kiểm tra kết nối database; trả 503 khi database không sẵn sàng.
+
+        **Công khai.**
+      security: []
+      responses:
+        "200":
+          description: Service sẵn sàng
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  service:
+                    type: string
+                  database:
+                    type: string
+                    enum:
+                      - up
+                      - down
+        "503":
+          description: Database không sẵn sàng
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Better Auth session token
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: stay.session_token
+  responses:
+    ValidationError:
+      description: Dữ liệu không hợp lệ; `extensions` map từng field với thông báo lỗi.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    Unauthorized:
+      description: Access token hoặc phiên không hợp lệ/đã hết hạn.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    Forbidden:
+      description: Không đủ quyền hoặc không sở hữu tài nguyên.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    NotFound:
+      description: Không tìm thấy tài nguyên hoặc actor không được xem.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    Conflict:
+      description: Xung đột version, trạng thái, tồn kho, quota, quote hoặc idempotency.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    RateLimited:
+      description: Vượt giới hạn tần suất; làm theo header Retry-After.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+  schemas:
+    ApiError:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        extensions:
+          type: object
+          additionalProperties: {}
+      required:
+        - message
+    StayCapabilities:
+      type: object
+      properties:
+        contractVersion:
+          type: string
+        rules:
+          type: array
+          items:
+            $ref: "#/components/schemas/StayRule"
+      required:
+        - contractVersion
+        - rules
+    StayMe:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/StayUser"
+      required:
+        - user
+    StayRule:
+      type: object
+      properties:
+        action:
+          anyOf:
+            - type: string
+              enum:
+                - read
+            - type: string
+              enum:
+                - create
+            - type: string
+              enum:
+                - update
+            - type: string
+              enum:
+                - delete
+            - type: string
+              enum:
+                - manage
+            - type: string
+              enum:
+                - issue
+            - type: string
+              enum:
+                - void
+            - type: string
+              enum:
+                - settle
+            - type: string
+              enum:
+                - "*"
+            - type: array
+              items:
+                type: string
+                enum:
+                  - "*"
+                  - create
+                  - delete
+                  - issue
+                  - manage
+                  - read
+                  - settle
+                  - update
+                  - void
+        subject:
+          anyOf:
+            - type: string
+              enum:
+                - Building
+            - type: string
+              enum:
+                - Room
+            - type: string
+              enum:
+                - Tenant
+            - type: string
+              enum:
+                - Contract
+            - type: string
+              enum:
+                - Deposit
+            - type: string
+              enum:
+                - MeterReading
+            - type: string
+              enum:
+                - Invoice
+            - type: string
+              enum:
+                - Payment
+            - type: string
+              enum:
+                - Expense
+            - type: string
+              enum:
+                - Maintenance
+            - type: string
+              enum:
+                - Settings
+            - type: string
+              enum:
+                - Report
+            - type: string
+              enum:
+                - AuditLog
+            - type: string
+              enum:
+                - Member
+            - type: string
+              enum:
+                - all
+            - type: array
+              items:
+                type: string
+                enum:
+                  - AuditLog
+                  - Building
+                  - Contract
+                  - Deposit
+                  - Expense
+                  - Invoice
+                  - Maintenance
+                  - Member
+                  - MeterReading
+                  - Payment
+                  - Report
+                  - Room
+                  - Settings
+                  - Tenant
+                  - all
+        conditions:
+          type: object
+          additionalProperties: {}
+        inverted:
+          type: boolean
+      required:
+        - action
+        - subject
+    StayUser:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+        avatarUrl:
+          type:
+            - string
+            - "null"
+        emailVerified:
+          type: boolean
+        role:
+          type: string
+          enum:
+            - manager
+            - owner
+            - tenant
+        buildingIds:
+          type: array
+          items:
+            type: string
+        contractIds:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - email
+        - displayName
+        - avatarUrl
+        - emailVerified
+        - role
+        - buildingIds
+        - contractIds

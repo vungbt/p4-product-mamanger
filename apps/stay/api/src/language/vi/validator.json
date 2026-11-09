@@ -1,0 +1,27 @@
+{
+  "attribute": {
+    "email": "Email",
+    "password": "Mật khẩu",
+    "name": "Tên",
+    "code": "Mã",
+    "page": "Trang",
+    "pageSize": "Số dòng mỗi trang",
+    "q": "Từ khoá tìm kiếm",
+    "sortBy": "Cột sắp xếp",
+    "sortOrder": "Thứ tự sắp xếp",
+    "buildingId": "Toà nhà",
+    "status": "Trạng thái"
+  },
+  "message": {
+    "required": "Trường :attribute là bắt buộc.",
+    "email": ":attribute không đúng định dạng.",
+    "numeric": ":attribute phải là số.",
+    "integer": ":attribute phải là số nguyên.",
+    "min.numeric": ":attribute tối thiểu là :min.",
+    "min.array": ":attribute cần ít nhất :min phần tử.",
+    "array": ":attribute phải là mảng.",
+    "url": ":attribute phải là URL hợp lệ.",
+    "string": ":attribute phải là chuỗi.",
+    "query_string": "Tham số truy vấn phải là một chuỗi đơn."
+  }
+}

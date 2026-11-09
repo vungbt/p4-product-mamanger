@@ -13,11 +13,13 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "pnpm --filter @p4/ability build && tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
     "test": "pnpm build && node --test tests/*.test.mjs"
   },
   "dependencies": {
+    "@casl/ability": "catalog:",
+    "@p4/ability": "workspace:*",
     "valibot": "catalog:"
   },
   "devDependencies": {
