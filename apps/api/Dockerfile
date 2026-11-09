@@ -2,47 +2,51 @@ FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 WORKDIR /app
 
-FROM base AS deps
+FROM base AS build
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY libs/ability/package.json ./libs/ability/
 COPY libs/shared/package.json ./libs/shared/
 COPY libs/processes/package.json ./libs/processes/
 COPY libs/realtime/package.json ./libs/realtime/
-RUN pnpm install --frozen-lockfile --filter @p4/api... --filter @p4/shared...
+RUN pnpm install --frozen-lockfile --filter @p4/api...
 
-FROM base AS build
-COPY --from=deps /app ./
+COPY tsconfig.base.json ./
 COPY apps/api ./apps/api
 COPY libs/ability ./libs/ability
 COPY libs/shared ./libs/shared
 COPY libs/processes ./libs/processes
 COPY libs/realtime ./libs/realtime
-COPY tsconfig.base.json ./
 RUN pnpm --filter @p4/api build
 
-FROM base AS production
-ENV NODE_ENV=production
-WORKDIR /app
+# Production dependencies in the workspace layout. @p4/shared ships TypeScript source,
+# which Node only strips outside node_modules, so `pnpm deploy` is not an option.
+FROM base AS prod-deps
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY libs/ability/package.json ./libs/ability/
+COPY libs/shared/package.json ./libs/shared/
+COPY libs/processes/package.json ./libs/processes/
+COPY libs/realtime/package.json ./libs/realtime/
+RUN pnpm install --frozen-lockfile --filter @p4/api... --prod --ignore-scripts
 
-COPY --from=build /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml ./
-COPY --from=build /app/apps/api/package.json ./apps/api/
-COPY --from=build /app/libs/shared/package.json ./libs/shared/
+# Runtime: Node only — no pnpm, corepack, store or build cache.
+FROM node:22-alpine AS production
+ENV NODE_ENV=production
+RUN apk add --no-cache wget
+WORKDIR /app
+COPY --from=prod-deps /app ./
 COPY --from=build /app/apps/api/dist ./apps/api/dist
-COPY --from=build /app/apps/api/openapi.yaml ./apps/api/openapi.yaml
-COPY --from=build /app/apps/api/.sequelizerc ./apps/api/
+COPY --from=build /app/apps/api/openapi.yaml /app/apps/api/.sequelizerc ./apps/api/
 COPY --from=build /app/apps/api/src/sequelize ./apps/api/src/sequelize
 COPY --from=build /app/apps/api/src/language ./apps/api/src/language
 COPY --from=build /app/apps/api/docker-entrypoint.sh ./apps/api/docker-entrypoint.sh
-COPY --from=build /app/libs/ability ./libs/ability
-COPY --from=build /app/libs/shared ./libs/shared
-COPY --from=build /app/libs/processes ./libs/processes
-COPY --from=build /app/libs/realtime ./libs/realtime
-
-RUN pnpm install --frozen-lockfile --filter @p4/api... --prod --ignore-scripts \
-  && chmod +x /app/apps/api/docker-entrypoint.sh \
-  && apk add --no-cache wget
+COPY --from=build /app/libs/ability/dist ./libs/ability/dist
+COPY --from=build /app/libs/processes/dist ./libs/processes/dist
+COPY --from=build /app/libs/realtime/dist ./libs/realtime/dist
+COPY --from=build /app/libs/shared/src ./libs/shared/src
 
 WORKDIR /app/apps/api
+RUN chmod +x docker-entrypoint.sh
 EXPOSE 3001
 ENTRYPOINT ["./docker-entrypoint.sh"]

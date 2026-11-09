@@ -3,7 +3,7 @@ import { readAuthSession, subscribeAuthSession } from '@p4/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { type ReactNode, useEffect, useState } from 'react';
-import { getApiSdk } from './axios-client';
+import { getApiSdk } from './session';
 
 export type ApiQueryProviderProps = {
   children: ReactNode;

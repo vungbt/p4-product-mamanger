@@ -18,7 +18,7 @@ p4-product-manager/
 │   ├── blocks/       ← 18 block nghiệp vụ P4 (@p4/blocks), dùng kit npm
 │   ├── api-sdk/      ← SDK TypeScript sinh từ OpenAPI (@p4/api-sdk)
 │   ├── auth/         ← AuthProvider / useAuth (@p4/auth)
-│   └── api-client/   ← Axios + TanStack Query (@p4/api-client)
+│   └── api-client/   ← Typed SDK session + TanStack Query (@p4/api-client)
 ├── tsconfig.base.json
 ├── pnpm-workspace.yaml
 └── turbo.json
@@ -179,7 +179,7 @@ Thứ tự triển khai Admin và Storefront: [62 task riêng](documents/fronten
 ## SDK, auth và audit
 
 - SDK build sẵn: [@p4/api-sdk](libs/api-sdk/README.md), contract sinh từ OpenAPI;
-  màn danh mục đã sử dụng client này. `@p4/api-client` giữ TanStack Query và các service cũ.
+  mọi request của web đi qua client này (`getApiSdk()`); `@p4/api-client` chỉ giữ session và TanStack Query.
 - Auth dùng Better Auth; migration giữ user ID và mật khẩu bcrypt, thu hồi phiên cũ
   để đăng nhập lại. Token chỉ ở memory, phiên browser dùng cookie HttpOnly.
 - Audit nghiệp vụ dùng command/transaction chung; mỗi route khai báo action cụ thể.

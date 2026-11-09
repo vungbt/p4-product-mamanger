@@ -1,13 +1,12 @@
-// Re-export @p4/api-client — trainees can import from here or from `@p4/api-client`
+// Re-export @p4/api-client — import from here or from `@p4/api-client`.
+// Call the API through the typed SDK: `getApiSdk().GET('/api/products', …)` with `unwrap`.
 export {
-  axiosClient,
   categoryKeys,
   configureApiClient,
   getAccessToken,
-  getHeader,
+  getApiSdk,
   orderKeys,
   productKeys,
   queryKeysFactory,
-  useApiMutation,
-  useApiQuery,
+  useQueryClient,
 } from '@p4/api-client';

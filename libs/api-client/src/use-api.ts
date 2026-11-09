@@ -1,15 +1,4 @@
-import {
-  type QueryClient,
-  type QueryKey,
-  type UseMutationOptions,
-  type UseMutationResult,
-  type UseQueryOptions,
-  type UseQueryResult,
-  useMutation,
-  useQuery,
-  useQueryClient as useQueryClientTanstack,
-} from '@tanstack/react-query';
-import { axiosClient, type HeaderConf } from './axios-client';
+import { type QueryClient, useQueryClient as useQueryClientTanstack } from '@tanstack/react-query';
 
 export type TQueryKey<TKey, TListQuery = unknown, TDetailQuery = string> = {
   all: readonly [TKey];
@@ -28,49 +17,7 @@ export type TQueryKey<TKey, TListQuery = unknown, TDetailQuery = string> = {
     | readonly [...ReturnType<TQueryKey<TKey>['details']>, TDetailQuery, { query: TListQuery }];
 };
 
-type QueryArgs<TParams, TQueryKey extends QueryKey = QueryKey> = {
-  endpoint: string;
-  params?: TParams;
-  queryKey?: TQueryKey;
-  headerConf?: HeaderConf;
-};
-
-type MutationArgs<TBody> = {
-  endpoint: string;
-  body?: TBody;
-  headerConf?: HeaderConf;
-};
-
-export const useApiQuery = <TData = unknown, TParams = unknown>(
-  { endpoint, params, queryKey, headerConf }: QueryArgs<TParams>,
-  options?: Omit<UseQueryOptions<TData, Error, TData>, 'queryKey' | 'queryFn'>,
-): UseQueryResult<TData, Error> => {
-  const finalQueryKey = queryKey ?? ([endpoint, params ?? {}] as QueryKey);
-
-  return useQuery<TData, Error, TData>({
-    ...options,
-    queryKey: finalQueryKey,
-    queryFn: async () => axiosClient.get<TParams, TData>(endpoint, params, headerConf),
-  });
-};
-
 export const useQueryClient = (): QueryClient => useQueryClientTanstack();
-
-export const useApiMutation = <TRes = unknown, TBody = unknown>(
-  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-  options?: Omit<UseMutationOptions<TRes, Error, MutationArgs<TBody>>, 'mutationFn'>,
-): UseMutationResult<TRes, Error, MutationArgs<TBody>> => {
-  return useMutation({
-    mutationFn: async ({ endpoint, body, headerConf }) => {
-      if (method === 'POST') return axiosClient.post<TBody, TRes>(endpoint, body, headerConf);
-      if (method === 'PUT') return axiosClient.put<TBody, TRes>(endpoint, body, headerConf);
-      if (method === 'PATCH') return axiosClient.patch<TBody, TRes>(endpoint, body, headerConf);
-      if (method === 'DELETE') return axiosClient.delete<TBody, TRes>(endpoint, body, headerConf);
-      throw new Error(`Unsupported method: ${method}`);
-    },
-    ...options,
-  });
-};
 
 export const queryKeysFactory = <T, TListQueryType = unknown, TDetailQueryType = string>(
   globalKey: T,

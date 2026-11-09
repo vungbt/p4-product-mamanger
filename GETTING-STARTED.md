@@ -24,7 +24,7 @@ p4-product-manager/
 ├── libs/
 │   ├── shared/      ← Types (@p4/shared)
 │   ├── auth/        ← Auth (@p4/auth)
-│   └── api-client/  ← Axios + TanStack Query (@p4/api-client)
+│   └── api-client/  ← Typed SDK session + TanStack Query (@p4/api-client)
 ├── docker-compose.yml / docker-compose.dev.yml
 ├── tsconfig.base.json
 └── pnpm-workspace.yaml
@@ -78,7 +78,7 @@ const res = await fetch(`${API_BASE_URL}/products?page=1&pageSize=10`);
 const { data, meta } = await res.json();
 ```
 
-Trong source ứng dụng, ưu tiên `@p4/api-client` thay vì gọi `fetch` trực tiếp. Tổ chức page theo feature:
+Trong source ứng dụng, gọi API qua SDK có kiểu (`getApiSdk()` từ `@p4/api-client`) thay vì gọi `fetch` trực tiếp. Tổ chức page theo feature:
 
 ```text
 apps/web/src/modules/{portal}/{feature}/
