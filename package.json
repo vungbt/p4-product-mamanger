@@ -7,6 +7,7 @@
     "dev:api": "pnpm --filter @p4/api dev",
     "dev:web": "pnpm --filter @p4/web dev",
     "dev:stay": "pnpm --filter @stay/api dev",
+    "dev:stay-web": "pnpm --filter @stay/web dev",
     "storybook": "pnpm --filter @p4/blocks storybook",
     "build": "turbo build",
     "lint": "biome check apps libs",

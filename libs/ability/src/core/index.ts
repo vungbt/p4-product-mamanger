@@ -99,6 +99,16 @@ export interface AbilityKit<
     action: Action,
     subjectType: Subject,
   ): boolean;
+  /**
+   * Whether `ability` grants `action` on at least one `subjectType` record, counting
+   * conditional rules (`{ buildingId: { $in } }`). For areas whose data the API already
+   * filters per record; use `canAccess` when the check must cover every record.
+   */
+  canAccessSome(
+    ability: KitAbility<Action, Subject, Attrs>,
+    action: Action,
+    subjectType: Subject,
+  ): boolean;
   /** Whether `ability` grants `action` on one record, honouring conditional rules. */
   canOn(
     ability: KitAbility<Action, Subject, Attrs>,
@@ -113,7 +123,10 @@ export type ClientAbilityKit<
   Action extends string,
   Subject extends string,
   Attrs extends object = RecordAttributes,
-> = Pick<AbilityKit<Action, Subject, never, Attrs>, 'createAppAbility' | 'canAccess' | 'canOn'>;
+> = Pick<
+  AbilityKit<Action, Subject, never, Attrs>,
+  'createAppAbility' | 'canAccess' | 'canAccessSome' | 'canOn'
+>;
 
 const abilityOptions = { anyAction: ANY_ACTION, anySubjectType: ANY_SUBJECT } as const;
 
@@ -163,6 +176,16 @@ export function createAbilityKit<
       for (const rule of ability.rulesFor(action, subjectType)) {
         if (rule.inverted) return false;
         if (!rule.conditions) return true;
+      }
+
+      return false;
+    },
+    canAccessSome(ability: AnyMongoAbility, action, subjectType) {
+      // Rules come in priority order: an unconditional `cannot` closes the area, any `can`
+      // (conditional or not) opens some records; a conditional `cannot` excludes only some.
+      for (const rule of ability.rulesFor(action, subjectType)) {
+        if (!rule.inverted) return true;
+        if (!rule.conditions) return false;
       }
 
       return false;

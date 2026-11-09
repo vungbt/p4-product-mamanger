@@ -19,3 +19,50 @@ jobs:
       - run: pnpm --filter @p4/blocks typecheck
       - run: pnpm --filter @p4/web build
       - run: pnpm build:storybook
+      - run: pnpm --filter @stay/web typecheck
+      - run: pnpm --filter @stay/web build
+  stay-web-e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: p4_stay
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      STAY_DATABASE_HOST: 127.0.0.1
+      STAY_DATABASE_PORT: 5432
+      STAY_DATABASE_NAME: p4_stay
+      STAY_DATABASE_USERNAME: postgres
+      STAY_DATABASE_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @stay/web exec playwright install --with-deps chromium
+      - run: bash scripts/test-stay-web-e2e.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stay-web-e2e-screenshots
+          path: apps/stay/web/test-results/screenshots
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: stay-web-e2e-report
+          path: |
+            apps/stay/web/playwright-report
+            apps/stay/web/test-results
+            apps/stay/web/api.log

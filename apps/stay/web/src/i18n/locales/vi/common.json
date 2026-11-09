@@ -1,0 +1,105 @@
+{
+  "app": {
+    "tagline": "Quản lý nhà trọ",
+    "loading": "Đang tải…",
+    "skipToContent": "Bỏ qua đến nội dung chính"
+  },
+  "nav": {
+    "main": "Điều hướng chính",
+    "mobile": "Điều hướng nhanh",
+    "overview": "Tổng quan",
+    "rooms": "Phòng",
+    "readings": "Chốt số",
+    "invoices": "Hoá đơn",
+    "receivables": "Công nợ",
+    "contracts": "Hợp đồng",
+    "tenants": "Người thuê",
+    "requests": "Yêu cầu",
+    "expenses": "Chi phí",
+    "reports": "Báo cáo",
+    "settings": "Cài đặt",
+    "members": "Thành viên",
+    "more": "Thêm",
+    "moreTitle": "Tất cả chức năng",
+    "openMenu": "Mở menu"
+  },
+  "header": {
+    "back": "Quay lại",
+    "requests": "Yêu cầu mới",
+    "requestsSoon": "Yêu cầu từ người thuê sẽ có ở bản sau."
+  },
+  "building": {
+    "label": "Toà nhà",
+    "placeholder": "Chọn toà"
+  },
+  "account": {
+    "menu": "Tài khoản",
+    "changePassword": "Đổi mật khẩu",
+    "changePasswordSoon": "Đổi mật khẩu sẽ có ở bản sau.",
+    "signOut": "Đăng xuất",
+    "signedOut": "Bạn đã đăng xuất."
+  },
+  "roles": {
+    "owner": "Chủ trọ",
+    "manager": "Người quản lý",
+    "tenant": "Người thuê"
+  },
+  "auth": {
+    "title": "Đăng nhập",
+    "subtitle": "Đăng nhập để quản lý nhà trọ của bạn",
+    "email": "Email",
+    "emailPlaceholder": "ban@vidu.com",
+    "emailInvalid": "Email không hợp lệ",
+    "password": "Mật khẩu",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "passwordMin": "Mật khẩu tối thiểu 8 ký tự",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "rememberEmail": "Ghi nhớ email trên máy này",
+    "submit": "Đăng nhập",
+    "submitting": "Đang đăng nhập…",
+    "forgotPassword": "Quên mật khẩu?",
+    "forgotPasswordSoon": "Đặt lại mật khẩu qua email sẽ có ở bản sau. Vui lòng liên hệ chủ trọ.",
+    "invalidCredentials": "Email hoặc mật khẩu không đúng",
+    "tooManyAttempts": "Bạn đã thử quá nhiều lần. Vui lòng thử lại sau {{count}} phút.",
+    "failed": "Không đăng nhập được. Vui lòng kiểm tra kết nối và thử lại.",
+    "sessionExpired": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+  },
+  "errors": {
+    "forbiddenTitle": "Bạn không có quyền xem trang này",
+    "forbiddenDescription": "Liên hệ chủ trọ nếu bạn cần quyền truy cập.",
+    "notFoundTitle": "Không tìm thấy trang",
+    "notFoundDescription": "Trang không tồn tại hoặc thuộc toà nhà khác.",
+    "backHome": "Về Tổng quan",
+    "offline": "Mất kết nối mạng. Dữ liệu sẽ tải lại khi có mạng.",
+    "loadFailed": "Không tải được dữ liệu.",
+    "retry": "Thử lại"
+  },
+  "placeholder": {
+    "title": "Sắp có",
+    "description": "Màn {{name}} đang được xây dựng và sẽ có ở các bản tiếp theo."
+  },
+  "overview": {
+    "title": "Tổng quan",
+    "greeting": "Xin chào, {{name}}",
+    "signedInAs": "Đăng nhập với {{email}} · {{role}}",
+    "onboardingTitle": "Bắt đầu với toà nhà của bạn",
+    "onboardingDescription": "Toà chưa có phòng. Làm theo 3 bước để lập hoá đơn kỳ đầu tiên.",
+    "stepLabel": "Bước {{step}}",
+    "steps": {
+      "prices": {
+        "title": "Cấu hình đơn giá",
+        "description": "Điện, nước và các dịch vụ thu hằng tháng."
+      },
+      "rooms": {
+        "title": "Tạo phòng",
+        "description": "Thêm phòng, giá thuê và chỉ số đồng hồ ban đầu."
+      },
+      "contracts": {
+        "title": "Tạo hợp đồng",
+        "description": "Gắn người thuê vào phòng và ghi nhận tiền cọc."
+      }
+    },
+    "soon": "Sắp có"
+  }
+}
