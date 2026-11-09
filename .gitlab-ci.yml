@@ -25,6 +25,8 @@ api:
   script:
     - pnpm --filter @p4/api lint
     - pnpm --filter @p4/ability test
+    - pnpm --filter @stay/shared test
+    - pnpm --filter @stay/billing test
     - pnpm --filter @p4/api test:lists
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
