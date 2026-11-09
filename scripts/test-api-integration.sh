@@ -14,8 +14,13 @@ export P4_TEST_API_URL="http://127.0.0.1:$PORT/api"
 export P4_TEST_DATABASE=local
 
 pnpm build
+if [[ "${SEED:-0}" == "1" ]]; then
+  # Seeders target the August schema; later migrations backfill seeded rows (slugs, variants,
+  # Better Auth accounts…), the same order existing databases went through.
+  pnpm exec sequelize-cli db:migrate --to "${SEED_SCHEMA:-20260804150000-user-profile-fields.cjs}"
+  pnpm db:seed
+fi
 pnpm db:migrate
-if [[ "${SEED:-0}" == "1" ]]; then pnpm db:seed; fi
 
 node dist/index.js > api.log 2>&1 &
 api_pid=$!
