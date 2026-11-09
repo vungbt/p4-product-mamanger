@@ -8,10 +8,18 @@ services:
       POSTGRES_DB: ${DATABASE_NAME:-p4_product_manager}
       POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      # Stay (apps/stay/api) uses its own database in this server.
+      STAY_DATABASE_NAME: ${STAY_DATABASE_NAME:-p4_stay}
     volumes:
       - pgdata_dev:/var/lib/postgresql/data
+      - ./deploy/postgres/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-postgres}"]
+      # Also creates the Stay database when missing (volumes created before Stay existed).
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DATABASE_USERNAME:-postgres} && sh /docker-entrypoint-initdb.d/20-create-stay-database.sh",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5

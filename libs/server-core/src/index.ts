@@ -49,6 +49,11 @@ export {
 } from './list/list-query.js';
 export { listSearch } from './list/list-search.js';
 export { logger } from './logger.js';
+export {
+  type AbilityGuardKit,
+  type AbilityGuardOptions,
+  createAbilityGuards,
+} from './middleware/ability.js';
 export { type AuthRequiredOptions, createAuthRequired, requireRole } from './middleware/auth.js';
 export { createCookieOriginGuard } from './middleware/cookie-origin.js';
 export { createRateLimit } from './middleware/rate-limit.js';

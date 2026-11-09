@@ -1,0 +1,23 @@
+{
+  "unauthorized": "Chưa xác thực",
+  "forbidden": "Không có quyền truy cập",
+  "not_found": "Không tìm thấy",
+  "invalid_token": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn",
+  "invalid_origin": "Nguồn yêu cầu không được phép",
+  "input_valid_error": "Dữ liệu không hợp lệ",
+  "invalid_field": "Giá trị của {{attribute}} không hợp lệ.",
+  "invalid_json_value": "Dữ liệu yêu cầu không hợp lệ.",
+  "invalid_pagination": "Tham số phân trang không hợp lệ",
+  "unsupported_query_parameter": "Tham số truy vấn này không được hỗ trợ.",
+  "duplicate_value": "Dữ liệu đã tồn tại",
+  "unique_value": "{{attribute}} đã được sử dụng. Vui lòng chọn giá trị khác.",
+  "invalid_date_range": "Ngày kết thúc phải bằng hoặc sau ngày bắt đầu.",
+  "invalid_state_transition": "Không thể chuyển trạng thái theo yêu cầu.",
+  "version_conflict": "Dữ liệu đã thay đổi. Vui lòng tải lại trước khi thử lại.",
+  "idempotency_conflict": "Mã yêu cầu đã được dùng với nội dung khác.",
+  "idempotency_key_expired": "Mã yêu cầu đã hết hạn.",
+  "rate_limit_exceeded": "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
+  "rate_limiter_unavailable": "Tạm thời không kiểm tra được tần suất yêu cầu.",
+  "mail_unavailable": "Chưa cấu hình gửi email.",
+  "server_error": "Lỗi máy chủ"
+}

@@ -1,6 +1,12 @@
 /** Business time zone: periods and business dates are evaluated here. */
 export const STAY_TIME_ZONE = 'Asia/Ho_Chi_Minh';
 
+/**
+ * Version of the contract exposed by `GET /api/me/capabilities`; clients reload rules and
+ * cached enums when it changes. Bump it with breaking changes to roles, actions or statuses.
+ */
+export const STAY_CONTRACT_VERSION = '2026-11-10.1';
+
 /** Default `roundingUnit` of a building (VND). */
 export const DEFAULT_ROUNDING_UNIT = 1000;
 

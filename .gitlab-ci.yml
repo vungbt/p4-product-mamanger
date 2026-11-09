@@ -59,3 +59,31 @@ api-integration:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
+
+stay-api:
+  stage: check
+  image: node:22-alpine
+  services:
+    - name: postgres:17-alpine
+      alias: postgres
+  variables:
+    POSTGRES_DB: p4_stay
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    STAY_DATABASE_HOST: postgres
+    STAY_DATABASE_PORT: "5432"
+    STAY_DATABASE_NAME: p4_stay
+    STAY_DATABASE_USERNAME: postgres
+    STAY_DATABASE_PASSWORD: postgres
+  before_script:
+    - apk add --no-cache bash
+    - corepack enable
+    - pnpm install --frozen-lockfile
+  script:
+    - pnpm --filter @stay/api lint
+    - pnpm --filter @stay/api typecheck
+    - pnpm --filter @stay/sdk test
+    - bash scripts/test-stay-api-integration.sh
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"

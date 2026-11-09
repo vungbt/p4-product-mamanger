@@ -1,0 +1,23 @@
+{
+  "unauthorized": "Unauthorized",
+  "forbidden": "Forbidden",
+  "not_found": "Not found",
+  "invalid_token": "The session is invalid or has expired",
+  "invalid_origin": "Request origin is not allowed",
+  "input_valid_error": "Validation failed",
+  "invalid_field": "{{attribute}} is invalid.",
+  "invalid_json_value": "The request data is invalid.",
+  "invalid_pagination": "Invalid pagination query",
+  "unsupported_query_parameter": "This query parameter is not supported.",
+  "duplicate_value": "The value already exists",
+  "unique_value": "{{attribute}} is already in use. Please choose another value.",
+  "invalid_date_range": "The end date must be on or after the start date.",
+  "invalid_state_transition": "The requested status change is not allowed.",
+  "version_conflict": "The data has changed. Reload before trying again.",
+  "idempotency_conflict": "The request key was already used with different content.",
+  "idempotency_key_expired": "The request key has expired.",
+  "rate_limit_exceeded": "Too many requests. Please try again later.",
+  "rate_limiter_unavailable": "Request rate checks are temporarily unavailable.",
+  "mail_unavailable": "Email delivery is not configured.",
+  "server_error": "Internal server error"
+}

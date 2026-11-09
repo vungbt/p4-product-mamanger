@@ -69,7 +69,16 @@ export interface BetterAuthFactoryOptions {
   };
   /** Roles that must not sign in with a social provider. */
   socialSignInBlockedRoles?: readonly string[];
-  google?: { clientId: string; clientSecret: string };
+  /** `users.role` of accounts created by sign-up or a first social sign-in (default `user`). */
+  defaultRole?: string;
+  /** Reject `/sign-up/email`; accounts are created by the app (seed, invitations). */
+  disableSignUp?: boolean;
+  google?: {
+    clientId: string;
+    clientSecret: string;
+    /** Only existing users may sign in with Google; no account is created implicitly. */
+    disableImplicitSignUp?: boolean;
+  };
 }
 
 /**
@@ -109,6 +118,7 @@ export function createBetterAuth(options: BetterAuthFactoryOptions) {
     },
     emailAndPassword: {
       enabled: true,
+      ...(options.disableSignUp ? { disableSignUp: true } : {}),
       minPasswordLength: 8,
       maxPasswordLength: 128,
       password: {
@@ -146,7 +156,7 @@ export function createBetterAuth(options: BetterAuthFactoryOptions) {
         updatedAt: 'updated_at',
       },
       additionalFields: {
-        role: { type: 'string', defaultValue: 'user', input: false },
+        role: { type: 'string', defaultValue: options.defaultRole ?? 'user', input: false },
         accountStatus: {
           type: 'string',
           fieldName: 'account_status',

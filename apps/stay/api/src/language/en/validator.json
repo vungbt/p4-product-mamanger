@@ -1,0 +1,18 @@
+{
+  "attribute": {
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "code": "Code",
+    "page": "Page",
+    "pageSize": "Page size",
+    "q": "Search",
+    "sortBy": "Sort field",
+    "sortOrder": "Sort order",
+    "buildingId": "Building",
+    "status": "Status"
+  },
+  "message": {
+    "query_string": "Query parameters must contain a single string value."
+  }
+}

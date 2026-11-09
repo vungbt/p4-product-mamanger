@@ -1,9 +1,12 @@
 /**
- * Sinh apps/api/openapi.yaml từ chính source API.
+ * Sinh openapi.yaml của một Express API trong monorepo từ chính source của app đó.
  *
  * - Route, auth, permission, query: đọc từ Express router đã build (dist) và middleware thật.
  * - Request/response schema: suy ra bằng TypeScript checker từ handler, validator và service.
- * - Summary, mô tả và phần không suy ra được: khai báo trong ./metadata.mjs.
+ * - Summary, mô tả và phần không suy ra được: khai báo trong metadata của app.
+ *
+ * Mặc định chạy cho @p4/api (./p4.config.mjs). App khác truyền `--config <file>` (đường dẫn tính
+ * từ thư mục hiện tại), file export default cùng dạng p4.config.mjs.
  *
  * Dùng: pnpm --filter @p4/api openapi:generate
  *       pnpm --filter @p4/api openapi:check    (fail nếu spec lệch source)
@@ -14,21 +17,31 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
 import YAML from 'yaml';
-import { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS } from './metadata.mjs';
 
-const API_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const REPO_ROOT = path.resolve(API_ROOT, '../..');
+const args = process.argv.slice(2);
+const configIndex = args.indexOf('--config');
+const configUrl =
+  configIndex >= 0 && args[configIndex + 1]
+    ? pathToFileURL(path.resolve(args[configIndex + 1]))
+    : new URL('./p4.config.mjs', import.meta.url);
+const { default: config } = await import(configUrl);
+const { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS } = config.metadata;
+
+const API_ROOT = config.appRoot;
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const SPEC_PATH = path.join(API_ROOT, 'openapi.yaml');
-const CONTRACT_FILES = [
-  'libs/shared/src/index.ts',
-  'libs/processes/src/shared/index.ts',
-  'libs/realtime/src/shared/index.ts',
-].map((file) => path.join(REPO_ROOT, file));
+/** Một file, hoặc { file, names } để chỉ lấy một số type (tránh trùng tên giữa các app). */
+const CONTRACTS = config.contractFiles.map((entry) =>
+  typeof entry === 'string'
+    ? { file: path.join(REPO_ROOT, entry) }
+    : { file: path.join(REPO_ROOT, entry.file), names: new Set(entry.names) },
+);
+const CONTRACT_FILES = CONTRACTS.map((entry) => entry.file);
 const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete']);
 const WRITE_METHODS = new Set(['post', 'put', 'patch', 'delete']);
 const RAW_RESPONSE_METHODS = new Set(['download', 'sendFile', 'send', 'end', 'redirect']);
 
-const flags = new Set(process.argv.slice(2));
+const flags = new Set(args);
 
 process.chdir(API_ROOT);
 
@@ -46,14 +59,16 @@ const checker = program.getTypeChecker();
 
 const namedTypes = new Map();
 
-for (const file of CONTRACT_FILES) {
+for (const { file, names } of CONTRACTS) {
   const source = program.getSourceFile(file);
 
   for (const node of source?.statements ?? []) {
     const exported = node.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.ExportKeyword);
     const named = ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node);
+    const wanted = !names || (named && names.has(node.name.text));
 
-    if (exported && named && !node.typeParameters?.length) namedTypes.set(node.name.text, node);
+    if (exported && named && wanted && !node.typeParameters?.length)
+      namedTypes.set(node.name.text, node);
   }
 }
 
@@ -1092,48 +1107,7 @@ for (const route of routes) {
 }
 
 /* Route gắn trực tiếp trong app.ts */
-for (const [method, openPath, tag, spec] of [
-  [
-    'post',
-    '/api/payments/webhook/stripe',
-    'payments',
-    {
-      description: '**Xác thực bằng chữ ký Stripe**, không dùng bearer token.',
-      security: [],
-      parameters: [
-        { name: 'Stripe-Signature', in: 'header', required: true, schema: { type: 'string' } },
-      ],
-      requestBody: {
-        required: true,
-        content: { 'application/json': { schema: { type: 'object' } } },
-      },
-      responses: {
-        200: { description: 'Đã nhận event (event trùng được bỏ qua).' },
-        400: { $ref: '#/components/responses/ValidationError' },
-      },
-    },
-  ],
-  ...['/health', '/health/live', '/health/ready'].map((openPath) => [
-    'get',
-    openPath,
-    'operations',
-    {
-      description: '**Công khai.**',
-      security: [],
-      responses: {
-        200: {
-          description: 'Service sẵn sàng',
-          content: {
-            'application/json': {
-              schema: { type: 'object', properties: { status: { type: 'string' } } },
-            },
-          },
-        },
-        ...(openPath === '/health/ready' ? { 503: { description: 'Chưa sẵn sàng' } } : {}),
-      },
-    },
-  ]),
-]) {
+for (const [method, openPath, tag, spec] of config.appRoutes ?? []) {
   applyOperation({
     key: `${method.toUpperCase()} ${openPath}`,
     tag,
@@ -1210,7 +1184,7 @@ const sortObject = (value) =>
 
 const spec = {
   openapi: '3.1.0',
-  info: { title: 'P4 Commerce API', version: '1.0.0', description: API_DESCRIPTION },
+  info: { title: config.title, version: '1.0.0', description: API_DESCRIPTION },
   servers: [{ url: '/', description: 'Current API server' }],
   tags: [...tagNames].sort().map((name) => ({
     name,
@@ -1220,7 +1194,7 @@ const spec = {
   components: {
     securitySchemes: {
       bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'Better Auth session token' },
-      sessionCookie: { type: 'apiKey', in: 'cookie', name: 'better-auth.session_token' },
+      sessionCookie: { type: 'apiKey', in: 'cookie', name: config.sessionCookie },
     },
     responses: {
       ValidationError: {
@@ -1292,8 +1266,7 @@ for (const [nativePath, item] of Object.entries(nativeAuth.paths)) {
 }
 spec.tags.push({
   name: 'auth-native',
-  description:
-    'Better Auth native endpoints. Browser clients use @p4/api-sdk/auth and HttpOnly session cookies.',
+  description: config.authTagDescription,
 });
 await authPool.end();
 
@@ -1319,9 +1292,7 @@ if (flags.has('--check')) {
   const current = await readFile(SPEC_PATH, 'utf8');
 
   if (current !== output || report.length) {
-    console.error(
-      'openapi.yaml lệch source hoặc còn issue; chạy pnpm --filter @p4/api openapi:generate.',
-    );
+    console.error(`openapi.yaml lệch source hoặc còn issue; chạy ${config.generateCommand}.`);
     process.exitCode = 1;
   }
 } else if (!flags.has('--dry-run')) {
