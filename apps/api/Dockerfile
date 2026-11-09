@@ -3,13 +3,13 @@ RUN corepack enable && corepack prepare pnpm@10.9.0 --activate
 WORKDIR /app
 
 FROM base AS deps
-COPY package.json pnpm-workspace.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY libs/ability/package.json ./libs/ability/
 COPY libs/shared/package.json ./libs/shared/
 COPY libs/processes/package.json ./libs/processes/
 COPY libs/realtime/package.json ./libs/realtime/
-RUN pnpm install --filter @p4/api... --filter @p4/shared...
+RUN pnpm install --frozen-lockfile --filter @p4/api... --filter @p4/shared...
 
 FROM base AS build
 COPY --from=deps /app ./
@@ -25,7 +25,7 @@ FROM base AS production
 ENV NODE_ENV=production
 WORKDIR /app
 
-COPY --from=build /app/package.json /app/pnpm-workspace.yaml ./
+COPY --from=build /app/package.json /app/pnpm-workspace.yaml /app/pnpm-lock.yaml ./
 COPY --from=build /app/apps/api/package.json ./apps/api/
 COPY --from=build /app/libs/shared/package.json ./libs/shared/
 COPY --from=build /app/apps/api/dist ./apps/api/dist
@@ -39,7 +39,7 @@ COPY --from=build /app/libs/shared ./libs/shared
 COPY --from=build /app/libs/processes ./libs/processes
 COPY --from=build /app/libs/realtime ./libs/realtime
 
-RUN pnpm install --filter @p4/api... --prod --ignore-scripts \
+RUN pnpm install --frozen-lockfile --filter @p4/api... --prod --ignore-scripts \
   && chmod +x /app/apps/api/docker-entrypoint.sh \
   && apk add --no-cache wget
 

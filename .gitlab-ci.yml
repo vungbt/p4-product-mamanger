@@ -6,7 +6,7 @@ web:
   image: node:22-alpine
   before_script:
     - corepack enable
-    - pnpm install --no-frozen-lockfile
+    - pnpm install --frozen-lockfile
   script:
     - pnpm lint
     - pnpm --filter @p4/blocks typecheck
@@ -21,7 +21,7 @@ api:
   image: node:22-alpine
   before_script:
     - corepack enable
-    - pnpm install --no-frozen-lockfile
+    - pnpm install --frozen-lockfile
   script:
     - pnpm --filter @p4/api lint
     - pnpm --filter @p4/ability test

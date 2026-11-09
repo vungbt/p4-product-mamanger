@@ -1,8 +1,7 @@
 # dependencies
 node_modules/
 
-# lock files — không commit (trainee/CI tự install)
-pnpm-lock.yaml
+# lock files — chỉ commit pnpm-lock.yaml (CI và Docker cài bằng --frozen-lockfile)
 package-lock.json
 yarn.lock
 
