@@ -208,7 +208,8 @@ for (const width of [1280, 375]) {
     await expect(lines.filter({ hasText: 'Phụ thu: Phí vệ sinh' })).toBeVisible();
     // ST-15: an issued invoice with something left takes payments (see payments.spec.ts).
     await expect(page.getByRole('button', { name: 'Thu tiền', exact: true })).toBeEnabled();
-    await expect(page.getByRole('button', { name: 'Chia sẻ', exact: true })).toBeDisabled();
+    // ST-16: issued invoices can be shared (see invoice-share.spec.ts).
+    await expect(page.getByRole('button', { name: 'Chia sẻ', exact: true })).toBeEnabled();
     await expect(page.getByRole('button', { name: 'Thêm phụ thu / giảm trừ' })).toHaveCount(0);
     expect(await noHorizontalScroll(page)).toBe(true);
     await saveScreenshot(page, `invoices-detail-${width}`);
