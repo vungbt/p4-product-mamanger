@@ -4936,6 +4936,8 @@ export interface operations {
           code: string;
           electricSerial?: string;
           floor: number;
+          initialElectric?: number;
+          initialWater?: number;
           listPrice: number;
           maxOccupants: number;
           note?: string;
@@ -4983,6 +4985,8 @@ export interface operations {
           areaM2?: number | null;
           floorFrom: number;
           floorTo: number;
+          initialElectric?: number;
+          initialWater?: number;
           listPrice: number;
           maxOccupants: number;
           prices?: {
@@ -5436,7 +5440,8 @@ export interface operations {
       content: {
         'application/json': {
           maintenance: boolean;
-          reason: string;
+          reason?: string;
+          /** Format: date */
           until?: string;
           version: number;
         };

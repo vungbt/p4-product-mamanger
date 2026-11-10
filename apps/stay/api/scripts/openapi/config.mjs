@@ -161,6 +161,9 @@ const areaM2 = { schema: { type: ['number', 'null'], exclusiveMinimum: 0, maximu
 const serviceIds = {
   schema: { type: 'array', maxItems: 50, items: { type: 'string', format: 'uuid' } },
 };
+// Whole meter readings (kWh, m³); omitted = 0.
+const reading = { schema: { type: 'integer', minimum: 0, maximum: 999_999_999 } };
+const initialReadings = { initialElectric: reading, initialWater: reading };
 const roomFields = { areaM2, serviceIds };
 
 const OVERRIDES = {
@@ -169,12 +172,20 @@ const OVERRIDES = {
   },
   'POST /api/buildings': { fields: buildingFields },
   'PUT /api/buildings/{id}': { fields: buildingFields },
-  'POST /api/buildings/{buildingId}/rooms': { fields: roomFields },
+  'POST /api/buildings/{buildingId}/rooms': { fields: { ...roomFields, ...initialReadings } },
+  'POST /api/rooms/{id}/maintenance': {
+    fields: {
+      // Required to switch maintenance on only.
+      reason: { schema: { type: 'string', maxLength: 255 } },
+      until: { schema: { type: 'string', format: 'date' } },
+    },
+  },
   'PUT /api/rooms/{id}': { fields: roomFields },
   'POST /api/buildings/{buildingId}/rooms/bulk': {
     fields: {
       areaM2,
       serviceIds,
+      ...initialReadings,
       prices: {
         schema: {
           type: 'array',

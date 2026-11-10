@@ -1125,6 +1125,14 @@ paths:
                 waterSerial:
                   type: string
                   maxLength: 40
+                initialElectric:
+                  type: integer
+                  minimum: 0
+                  maximum: 999999999
+                initialWater:
+                  type: integer
+                  minimum: 0
+                  maximum: 999999999
               required:
                 - code
                 - floor
@@ -1364,6 +1372,14 @@ paths:
                         type: integer
                         minimum: 0
                         maximum: 1000000000
+                initialElectric:
+                  type: integer
+                  minimum: 0
+                  maximum: 999999999
+                initialWater:
+                  type: integer
+                  minimum: 0
+                  maximum: 999999999
               required:
                 - floorFrom
                 - floorTo
@@ -1573,15 +1589,13 @@ paths:
                   minimum: 1
                 reason:
                   type: string
-                  minLength: 1
                   maxLength: 255
                 until:
                   type: string
-                  maxLength: 10
+                  format: date
               required:
                 - maintenance
                 - version
-                - reason
       responses:
         "200":
           description: Thành công

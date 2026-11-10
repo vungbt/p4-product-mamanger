@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { BRAND, BrandMark } from '@/brand';
 import { useCanOpen } from '@/libraries/ability';
 import { BuildingSelector } from '@/libraries/buildings/building-selector';
-import { ROUTES } from '@/routing/route-configs';
+import { appRoutes, ROUTES } from '@/routing/route-configs';
 import { useCurrentRoute } from '@/routing/use-routes';
 import AccountMenu from './account-menu';
 
@@ -22,12 +22,14 @@ export default function AppHeader() {
   const route = useCurrentRoute();
   const canSeeRequests = useCanOpen({ action: 'update', subject: 'Maintenance' });
 
+  const parent = route?.parent ? appRoutes.find(({ name }) => name === route.parent) : undefined;
+
   const title = route ? t(`nav.${route.name}`) : '';
   const isHome = route?.path === ROUTES.overview;
 
   const goBack = () => {
     if (hasHistory()) navigate(-1);
-    else navigate(ROUTES.overview);
+    else navigate(parent?.path ?? ROUTES.overview);
   };
 
   return (
@@ -60,6 +62,9 @@ export default function AppHeader() {
               route && !isHome
                 ? [
                     { key: 'overview', title: t('nav.overview'), href: ROUTES.overview },
+                    ...(parent
+                      ? [{ key: parent.name, title: t(`nav.${parent.name}`), href: parent.path }]
+                      : []),
                     { key: route.name, title },
                   ]
                 : [{ key: 'overview', title: t('nav.overview') }]
