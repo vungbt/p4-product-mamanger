@@ -1012,6 +1012,160 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/contracts/{id}/occupants': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thay đổi hợp đồng: occupants
+     * @description tenantId OR inline fullName + phone (10 digits starting 0). Enforces room maxOccupants. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_occupants'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/occupants/{occupantId}/leave': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thay đổi hợp đồng: occupants/{occupantId}/leave
+     * @description occupantId is the tenantId from the contract occupant DTO. newPrimaryTenantId required when the primary leaves. Last occupant cannot leave. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_occupants_occupantId_leave'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/renew': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thay đổi hợp đồng: renew
+     * @description endDate (new end date), optional rent from effectiveDate. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_renew'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/rent-change': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thay đổi hợp đồng: rent-change
+     * @description rent (integer VND). Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_rent_change'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/room-change': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thay đổi hợp đồng: room-change
+     * @description roomId (same building), rent, closingElectric, closingWater, initialElectric, initialWater (nonnegative integers). Occupied/maintenance target: 409. Lower readings: 422. Room moves are recorded in increasing effective-date order. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_room_change'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/services': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thay đổi hợp đồng: services
+     * @description serviceId, enabled=true (on) / false (off). Active definitions only. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_services'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/vehicles': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thay đổi hợp đồng: vehicles
+     * @description vehicleId, enabled=true (add) / false (remove). Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_vehicles'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/deposits': {
     parameters: {
       query?: never;
@@ -1868,8 +2022,41 @@ export interface components {
       occupiedRoomCount: number;
       roomCount: number;
     };
+    ContractChangeInput: {
+      closingElectric?: number;
+      closingWater?: number;
+      effectiveDate: string;
+      enabled?: boolean;
+      endDate?: string;
+      fullName?: string;
+      initialElectric?: number;
+      initialWater?: number;
+      newPrimaryTenantId?: string;
+      phone?: string;
+      preview?: boolean;
+      rent?: number;
+      roomId?: string;
+      serviceId?: string;
+      tenantId?: string;
+      vehicleId?: string;
+      version: number;
+    };
+    ContractChangePreview: {
+      changedFields: string[];
+      description: string;
+      effectiveDate: string;
+      firstIssuePeriod: string;
+      period: string;
+      utilityPeriod: string | null;
+      warnings: string[];
+    };
+    ContractChangeResult: {
+      contract: components['schemas']['StayContract'] | null;
+      impact: components['schemas']['ContractChangePreview'];
+    };
     ContractEvent: {
       actorId: string;
+      actorName: string;
       createdAt: string;
       id: string;
       payload: {
@@ -6865,6 +7052,329 @@ export interface operations {
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_occupants: {
+    parameters: {
+      query?: never;
+      header?: {
+        'Idempotency-Key'?: string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractChangeInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractChangeResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      /** @description Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_occupants_occupantId_leave: {
+    parameters: {
+      query?: never;
+      header?: {
+        'Idempotency-Key'?: string;
+      };
+      path: {
+        id: string;
+        occupantId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractChangeInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractChangeResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      /** @description Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_renew: {
+    parameters: {
+      query?: never;
+      header?: {
+        'Idempotency-Key'?: string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractChangeInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractChangeResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      /** @description Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_rent_change: {
+    parameters: {
+      query?: never;
+      header?: {
+        'Idempotency-Key'?: string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractChangeInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractChangeResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      /** @description Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_room_change: {
+    parameters: {
+      query?: never;
+      header?: {
+        'Idempotency-Key'?: string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractChangeInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractChangeResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      /** @description Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_services: {
+    parameters: {
+      query?: never;
+      header?: {
+        'Idempotency-Key'?: string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractChangeInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractChangeResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      /** @description Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_vehicles: {
+    parameters: {
+      query?: never;
+      header?: {
+        'Idempotency-Key'?: string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractChangeInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractChangeResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      /** @description Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
       429: components['responses']['RateLimited'];
     };
   };

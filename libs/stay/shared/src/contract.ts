@@ -48,6 +48,7 @@ export interface ContractEvent {
   id: string;
   type: string;
   actorId: string;
+  actorName: string;
   payload: Record<string, string | number | boolean | null>;
   createdAt: string;
 }
@@ -91,4 +92,49 @@ export interface MoveInPreview {
   occupantCount: number;
   vehicleCount: number;
   warnings: string[];
+}
+
+/** toDate is exclusive for changes: a departure is no longer active on that date. */
+export type ContractChangeKind =
+  | 'renew'
+  | 'rent-change'
+  | 'occupants'
+  | 'leave'
+  | 'vehicles'
+  | 'services'
+  | 'room-change';
+
+export interface ContractChangeInput {
+  version: number;
+  effectiveDate: string;
+  preview?: boolean;
+  endDate?: string;
+  rent?: number;
+  tenantId?: string;
+  fullName?: string;
+  phone?: string;
+  newPrimaryTenantId?: string;
+  vehicleId?: string;
+  serviceId?: string;
+  enabled?: boolean;
+  roomId?: string;
+  closingElectric?: number;
+  closingWater?: number;
+  initialElectric?: number;
+  initialWater?: number;
+}
+
+export interface ContractChangePreview {
+  effectiveDate: string;
+  period: string;
+  utilityPeriod: string | null;
+  firstIssuePeriod: string;
+  changedFields: string[];
+  description: string;
+  warnings: string[];
+}
+
+export interface ContractChangeResult {
+  impact: ContractChangePreview;
+  contract: StayContract | null;
 }

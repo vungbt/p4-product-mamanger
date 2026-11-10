@@ -1,6 +1,13 @@
 import type { RouteAuditPolicies } from '@p4/server-core';
 
 export const auditPolicies = {
+  'POST /contracts/:id/renew': { action: 'update', resourceType: 'contract' },
+  'POST /contracts/:id/rent-change': { action: 'update', resourceType: 'contract' },
+  'POST /contracts/:id/occupants': { action: 'update', resourceType: 'contract' },
+  'POST /contracts/:id/vehicles': { action: 'update', resourceType: 'contract' },
+  'POST /contracts/:id/services': { action: 'update', resourceType: 'contract' },
+  'POST /contracts/:id/room-change': { action: 'update', resourceType: 'contract' },
+  'POST /contracts/:id/occupants/:occupantId/leave': { action: 'update', resourceType: 'contract' },
   'GET /contracts': { action: 'read', resourceType: 'contract' },
   'POST /contracts': { action: 'create', resourceType: 'contract' },
   'GET /contracts/:id': { action: 'read', resourceType: 'contract' },

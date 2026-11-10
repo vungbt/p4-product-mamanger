@@ -1502,6 +1502,499 @@ paths:
           $ref: "#/components/responses/NotFound"
         "429":
           $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/renew:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_renew
+      summary: "Thay đổi hợp đồng: renew"
+      description: >-
+        endDate (new end date), optional rent from effectiveDate. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa
+        thì trả 409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra
+        cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để
+        điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractChangeInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractChangeResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          description: "Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/rent-change:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_rent_change
+      summary: "Thay đổi hợp đồng: rent-change"
+      description: >-
+        rent (integer VND). Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`. Chỉ
+        active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ
+        liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ
+        chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractChangeInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractChangeResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          description: "Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/occupants:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_occupants
+      summary: "Thay đổi hợp đồng: occupants"
+      description: >-
+        tenantId OR inline fullName + phone (10 digits starting 0). Enforces room maxOccupants. Gửi lại `version` đã
+        đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời
+        hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát
+        hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là
+        ngày rời đi (exclusive).
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractChangeInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractChangeResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          description: "Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/vehicles:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_vehicles
+      summary: "Thay đổi hợp đồng: vehicles"
+      description: >-
+        vehicleId, enabled=true (add) / false (remove). Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả
+        409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy
+        tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh
+        kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractChangeInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractChangeResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          description: "Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/services:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_services
+      summary: "Thay đổi hợp đồng: services"
+      description: >-
+        serviceId, enabled=true (on) / false (off). Active definitions only. Gửi lại `version` đã đọc; dữ liệu đã bị
+        người khác sửa thì trả 409 `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng.
+        preview=true kiểm tra cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo
+        kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi
+        (exclusive).
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractChangeInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractChangeResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          description: "Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/room-change:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_room_change
+      summary: "Thay đổi hợp đồng: room-change"
+      description: >-
+        roomId (same building), rent, closingElectric, closingWater, initialElectric, initialWater (nonnegative
+        integers). Occupied/maintenance target: 409. Lower readings: 422. Room moves are recorded in increasing
+        effective-date order. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`. Chỉ
+        active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ
+        liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ
+        chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractChangeInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractChangeResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          description: "Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/occupants/{occupantId}/leave:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_occupants_occupantId_leave
+      summary: "Thay đổi hợp đồng: occupants/{occupantId}/leave"
+      description: >-
+        occupantId is the tenantId from the contract occupant DTO. newPrimaryTenantId required when the primary leaves.
+        Last occupant cannot leave. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409
+        `version_conflict`. Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc
+        nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ
+        sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: occupantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractChangeInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractChangeResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          description: "Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
   /api/me:
     get:
       tags:
@@ -7831,6 +8324,89 @@ components:
       required:
         - roomCount
         - occupiedRoomCount
+    ContractChangeInput:
+      type: object
+      properties:
+        version:
+          type: number
+        effectiveDate:
+          type: string
+        preview:
+          type: boolean
+        endDate:
+          type: string
+        rent:
+          type: number
+        tenantId:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+        newPrimaryTenantId:
+          type: string
+        vehicleId:
+          type: string
+        serviceId:
+          type: string
+        enabled:
+          type: boolean
+        roomId:
+          type: string
+        closingElectric:
+          type: number
+        closingWater:
+          type: number
+        initialElectric:
+          type: number
+        initialWater:
+          type: number
+      required:
+        - version
+        - effectiveDate
+    ContractChangePreview:
+      type: object
+      properties:
+        effectiveDate:
+          type: string
+        period:
+          type: string
+        utilityPeriod:
+          type:
+            - string
+            - "null"
+        firstIssuePeriod:
+          type: string
+        changedFields:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+        - effectiveDate
+        - period
+        - utilityPeriod
+        - firstIssuePeriod
+        - changedFields
+        - description
+        - warnings
+    ContractChangeResult:
+      type: object
+      properties:
+        impact:
+          $ref: "#/components/schemas/ContractChangePreview"
+        contract:
+          anyOf:
+            - $ref: "#/components/schemas/StayContract"
+            - type: "null"
+      required:
+        - impact
+        - contract
     ContractEvent:
       type: object
       properties:
@@ -7839,6 +8415,8 @@ components:
         type:
           type: string
         actorId:
+          type: string
+        actorName:
           type: string
         payload:
           type: object
@@ -7856,6 +8434,7 @@ components:
         - id
         - type
         - actorId
+        - actorName
         - payload
         - createdAt
     ContractInput:

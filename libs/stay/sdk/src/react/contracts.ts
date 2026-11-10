@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-query';
 import type { StaySdk } from '../shared/client.js';
 import {
+  type ContractChangeCommand,
   type ContractInput,
   type ContractListQuery,
   createContractApi,
@@ -17,6 +18,8 @@ import { useStaySdk } from './provider.js';
 
 export const contractKeys = {
   all: ['stay', 'contracts'] as const,
+  changePreview: (command: ContractChangeCommand) =>
+    ['stay', 'contracts', 'change-preview', command] as const,
   list: (query?: ContractListQuery) => ['stay', 'contracts', 'list', query ?? {}] as const,
   detail: (id: string) => ['stay', 'contracts', 'detail', id] as const,
   preview: (id: string) => ['stay', 'contracts', 'preview', id] as const,
@@ -26,6 +29,14 @@ export function contractQueryOptions(sdk: StaySdk) {
   const api = createContractApi(sdk);
 
   return {
+    changePreview: (command: ContractChangeCommand, enabled = true) =>
+      queryOptions({
+        queryKey: contractKeys.changePreview(command),
+        queryFn: () => api.change({ ...command, body: { ...command.body, preview: true } }),
+        enabled,
+        retry: false,
+        staleTime: 0,
+      }),
     list: (query?: ContractListQuery) =>
       queryOptions({
         queryKey: contractKeys.list(query),
@@ -57,6 +68,7 @@ export function contractMutationOptions(sdk: StaySdk, client: QueryClient) {
     );
 
   return {
+    change: () => mutationOptions({ mutationFn: api.change, retry: false, onSuccess: refresh }),
     create: () =>
       mutationOptions({
         mutationFn: ({ idempotencyKey, ...body }: ContractInput & { idempotencyKey?: string }) =>
@@ -100,4 +112,12 @@ export function useActivateContract() {
 
 export function useCancelContract() {
   return useMutation(useContractMutations().cancel());
+}
+
+export function useContractChangePreview(command: ContractChangeCommand, enabled = true) {
+  return useQuery(contractQueryOptions(useStaySdk()).changePreview(command, enabled));
+}
+
+export function useChangeContract() {
+  return useMutation(useContractMutations().change());
 }

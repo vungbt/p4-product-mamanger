@@ -541,6 +541,49 @@ const OVERRIDES = {
   },
 };
 
+for (const action of [
+  'renew',
+  'rent-change',
+  'occupants',
+  'vehicles',
+  'services',
+  'room-change',
+  'occupants/{occupantId}/leave',
+]) {
+  const key = `POST /api/contracts/{id}/${action}`;
+  const fields = {
+    renew: 'endDate (new end date), optional rent from effectiveDate.',
+    'rent-change': 'rent (integer VND).',
+    occupants:
+      'tenantId OR inline fullName + phone (10 digits starting 0). Enforces room maxOccupants.',
+    'occupants/{occupantId}/leave':
+      'occupantId is the tenantId from the contract occupant DTO. newPrimaryTenantId required when the primary leaves. Last occupant cannot leave.',
+    vehicles: 'vehicleId, enabled=true (add) / false (remove).',
+    services: 'serviceId, enabled=true (on) / false (off). Active definitions only.',
+    'room-change':
+      'roomId (same building), rent, closingElectric, closingWater, initialElectric, initialWater (nonnegative integers). Occupied/maintenance target: 409. Lower readings: 422. Room moves are recorded in increasing effective-date order.',
+  }[action];
+  OPERATIONS[key] = [
+    `Thay đổi hợp đồng: ${action}`,
+    `${fields} ${VERSION_NOTE} Chỉ active/ending. effectiveDate trong thời hạn hợp đồng. preview=true kiểm tra cùng quy tắc nhưng không ghi dữ liệu. Trả ảnh hưởng hoá đơn theo ngày phát hành; cảnh báo kỳ đã phát hành để điều chỉnh kỳ sau. Room change giữ chỉ số cuối phòng cũ cho ST-14. toDate là ngày rời đi (exclusive).`,
+  ];
+  OVERRIDES[key] = {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'ContractChangeInput' } } },
+    },
+    response: { ref: 'ContractChangeResult' },
+    parameters: [
+      {
+        name: 'Idempotency-Key',
+        in: 'header',
+        required: false,
+        schema: { type: 'string', minLength: 8, maxLength: 128 },
+      },
+    ],
+  };
+}
+
 const healthResponse = (properties) => ({
   description: 'Service sẵn sàng',
   content: { 'application/json': { schema: { type: 'object', properties } } },

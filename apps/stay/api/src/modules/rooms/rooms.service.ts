@@ -273,7 +273,7 @@ export async function listRooms(
           [Op.or]: [
             listSearch(RoomModel, query.q, ['code']),
             literal(
-              `EXISTS (SELECT 1 FROM contracts c JOIN contract_occupants co ON co.contract_id=c.id JOIN tenants t ON t.id=co.tenant_id WHERE c.room_id="RoomModel".id AND c.status IN ('active','ending') AND co.is_primary AND co.to_date IS NULL AND t.full_name ILIKE ${sequelize.escape(searchPattern(query.q))})`,
+              `EXISTS (SELECT 1 FROM contracts c JOIN contract_occupants co ON co.contract_id=c.id JOIN tenants t ON t.id=co.tenant_id WHERE stay_contract_room_at(c.id, '${isoDateInTimeZone(new Date())}')="RoomModel".id AND c.status IN ('active','ending') AND co.is_primary AND co.from_date <= GREATEST(c.start_date, '${isoDateInTimeZone(new Date())}'::date) AND (co.to_date IS NULL OR co.to_date > GREATEST(c.start_date, '${isoDateInTimeZone(new Date())}'::date)) AND t.full_name ILIKE ${sequelize.escape(searchPattern(query.q))})`,
             ),
           ],
         }

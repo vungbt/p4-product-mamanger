@@ -36,6 +36,7 @@ import {
   ServiceDefinitionModel,
   sequelize,
   TenantModel,
+  UserModel,
   VehicleModel,
 } from '@/sequelize/models/index.js';
 import { auditedTransaction, recordAudit } from '@/shared/audit.js';
@@ -46,6 +47,8 @@ import { resolveBuildingPrice } from '../buildings/building-prices.service.js';
 import { latestMeterReadings } from '../rooms/rooms.usage.js';
 import { billingDefaults } from '../settings/settings.service.js';
 import { attachableFile, signedFileUrl } from '../uploads/uploads.service.js';
+
+import { contractFactsAt } from './contracts.resolvers.js';
 
 export type ContractSortField = 'code' | 'startDate' | 'endDate' | 'createdAt';
 export interface ContractListQuery extends ListQuery<ContractSortField> {
@@ -78,8 +81,10 @@ export async function contractDto(
   row: ContractModel,
   transaction?: Transaction,
 ): Promise<StayContract> {
+  const today = isoDateInTimeZone(new Date());
+  const current = await contractFactsAt(row.id, today, transaction);
   const [room, occupants, links, cars, events, deposits] = await Promise.all([
-    RoomModel.findByPk(row.roomId, { transaction }),
+    RoomModel.findByPk(current.roomId, { transaction }),
     ContractOccupantModel.findAll({ where: { contractId: row.id }, transaction }),
     ContractServiceModel.findAll({ where: { contractId: row.id }, transaction }),
     ContractVehicleModel.findAll({ where: { contractId: row.id }, transaction }),
@@ -93,6 +98,13 @@ export async function contractDto(
     }),
     DepositEntryModel.findAll({ where: { contractId: row.id }, transaction }),
   ]);
+  const actors = await UserModel.findAll({
+    where: { id: { [Op.in]: events.map((e) => e.actorId) } },
+    transaction,
+  });
+  const membershipDate = today < row.startDate ? row.startDate : today;
+  const isCurrent = (o: { fromDate: string; toDate: string | null }) =>
+    o.fromDate <= membershipDate && (!o.toDate || o.toDate > membershipDate);
   const [tenants, services, vehicles] = await Promise.all([
     TenantModel.findAll({
       where: { id: { [Op.in]: occupants.map((o) => o.tenantId) } },
@@ -111,7 +123,7 @@ export async function contractDto(
   };
   const initialElectricPhotoUrl = await photoUrl(row.initialElectricPhotoFileId);
   const initialWaterPhotoUrl = await photoUrl(row.initialWaterPhotoFileId);
-  const primary = occupants.find((o) => o.isPrimary && o.toDate === null);
+  const primary = occupants.find((o) => o.isPrimary && isCurrent(o));
 
   return {
     ...selectFields(row, [
@@ -135,14 +147,18 @@ export async function contractDto(
       'note',
       'version',
     ]),
+    roomId: current.roomId,
+    rent: current.rent,
+    initialElectric: current.initialElectric,
+    initialWater: current.initialWater,
     roomCode: room?.code ?? '',
     initialElectricPhotoUrl,
     initialWaterPhotoUrl,
-    occupantIds: occupants.filter((o) => o.toDate === null).map((o) => o.tenantId),
+    occupantIds: occupants.filter((o) => isCurrent(o)).map((o) => o.tenantId),
     primaryTenantId: primary?.tenantId ?? null,
     primaryTenantName: tenants.find((t) => t.id === primary?.tenantId)?.fullName ?? null,
-    serviceIds: links.filter((o) => o.toDate === null).map((o) => o.serviceId),
-    vehicleIds: cars.filter((o) => o.toDate === null).map((o) => o.vehicleId),
+    serviceIds: links.filter((o) => isCurrent(o)).map((o) => o.serviceId),
+    vehicleIds: cars.filter((o) => isCurrent(o)).map((o) => o.vehicleId),
     depositHeld: deposits.reduce(
       (sum, entry) => sum + (entry.type === 'received' ? entry.amount : -entry.amount),
       0,
@@ -165,6 +181,7 @@ export async function contractDto(
     })),
     events: events.map((e) => ({
       ...selectFields(e, ['id', 'type', 'actorId', 'payload']),
+      actorName: actors.find((a) => a.id === e.actorId)?.displayName ?? e.actorId,
       createdAt: e.createdAt.toISOString(),
     })),
     createdAt: row.createdAt.toISOString(),
@@ -190,7 +207,7 @@ export async function listContracts(
               `EXISTS (SELECT 1 FROM rooms r WHERE r.id="ContractModel".room_id AND r.code ILIKE ${sequelize.escape(searchPattern(query.q))})`,
             ),
             literal(
-              `EXISTS (SELECT 1 FROM contract_occupants co JOIN tenants t ON t.id=co.tenant_id WHERE co.contract_id="ContractModel".id AND co.is_primary AND co.to_date IS NULL AND t.full_name ILIKE ${sequelize.escape(searchPattern(query.q))})`,
+              `EXISTS (SELECT 1 FROM contract_occupants co JOIN tenants t ON t.id=co.tenant_id WHERE co.contract_id="ContractModel".id AND co.is_primary AND co.from_date <= GREATEST("ContractModel".start_date, '${isoDateInTimeZone(new Date())}'::date) AND (co.to_date IS NULL OR co.to_date > GREATEST("ContractModel".start_date, '${isoDateInTimeZone(new Date())}'::date)) AND t.full_name ILIKE ${sequelize.escape(searchPattern(query.q))})`,
             ),
           ],
         }
@@ -203,7 +220,12 @@ export async function listContracts(
       throw new NotFound('building_not_found');
     conditions.push({ buildingId: query.buildingId });
   }
-  if (query.roomId) conditions.push({ roomId: query.roomId });
+  if (query.roomId)
+    conditions.push(
+      literal(
+        `stay_contract_room_at("ContractModel".id, ${sequelize.escape(isoDateInTimeZone(new Date()))}) = ${sequelize.escape(query.roomId)}::uuid`,
+      ),
+    );
   if (query.status) conditions.push({ status: query.status });
   if (query.expiring) {
     const today = isoDateInTimeZone(new Date());
@@ -354,6 +376,8 @@ async function event(row: ContractModel, user: StayUser, type: string, transacti
     rent: row.rent,
     depositAmount: row.depositAmount,
     depositCollected: row.depositCollected,
+    initialElectric: row.initialElectric,
+    initialWater: row.initialWater,
   };
   await ContractEventModel.create(
     { contractId: row.id, type, actorId: user.id, payload: facts },
@@ -437,7 +461,7 @@ export async function moveInPreview(user: StayUser, id: string): Promise<MoveInP
   const row = await findContract(user, id, 'read');
   const contract = await contractDto(row);
   const activeOnStart = (link: { fromDate: string; toDate: string | null }) =>
-    link.fromDate <= row.startDate && (!link.toDate || link.toDate >= row.startDate);
+    link.fromDate <= row.startDate && (!link.toDate || link.toDate > row.startDate);
   const building = await BuildingModel.findByPk(row.buildingId);
   const room = await RoomModel.findByPk(row.roomId);
   const prices = await BuildingServicePriceModel.findAll({ where: { buildingId: row.buildingId } });
@@ -510,7 +534,12 @@ export async function activateContract(user: StayUser, id: string): Promise<Stay
     if (room.maintenance) throw new BaseError('room_maintenance', 409, 'room_maintenance');
     if (
       await ContractModel.count({
-        where: { roomId: room.id, status: { [Op.in]: ['active', 'ending'] } },
+        where: {
+          [Op.and]: literal(
+            `(room_id = ${sequelize.escape(room.id)} OR stay_contract_room_at(id, ${sequelize.escape(isoDateInTimeZone(new Date()))}) = ${sequelize.escape(room.id)}::uuid OR EXISTS (SELECT 1 FROM contract_events e WHERE e.contract_id="ContractModel".id AND e.type='room-change' AND e.payload->>'roomId'=${sequelize.escape(room.id)} AND e.payload->>'effectiveDate'>=${sequelize.escape(isoDateInTimeZone(new Date()))}))`,
+          ),
+          status: { [Op.in]: ['active', 'ending'] },
+        },
         transaction,
       })
     )

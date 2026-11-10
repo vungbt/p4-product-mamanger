@@ -1,6 +1,6 @@
 /** Room occupants and cross-module usage; invoices remain ST-14/ST-18 extension points. */
 import { isoDateInTimeZone, type RoomInvoiceSummary, type RoomOccupant } from '@stay/shared';
-import { Op, QueryTypes, type Transaction } from 'sequelize';
+import { literal, Op, QueryTypes, type Transaction } from 'sequelize';
 import {
   ContractModel,
   ContractOccupantModel,
@@ -21,16 +21,21 @@ export async function roomDebts(_roomIds: readonly string[]): Promise<Map<string
 
 /** People living in the room under its holding contract, primary tenant first (ST-10). */
 export async function roomOccupants(roomId: string): Promise<RoomOccupant[]> {
+  const today = isoDateInTimeZone(new Date());
   const contract = await ContractModel.findOne({
-    where: { roomId, status: { [Op.in]: ['active', 'ending'] } },
+    where: {
+      [Op.and]: literal(
+        `stay_contract_room_at("ContractModel".id, '${today}') = '${roomId}'::uuid`,
+      ),
+      status: { [Op.in]: ['active', 'ending'] },
+    },
   });
   if (!contract) return [];
-  const today = isoDateInTimeZone(new Date());
   const links = await ContractOccupantModel.findAll({
     where: {
       contractId: contract.id,
       fromDate: { [Op.lte]: today },
-      [Op.or]: [{ toDate: null }, { toDate: { [Op.gte]: today } }],
+      [Op.or]: [{ toDate: null }, { toDate: { [Op.gt]: today } }],
     },
     order: [
       ['isPrimary', 'DESC'],
