@@ -68,8 +68,12 @@ for (const width of [1280, 375]) {
     // Server search re-renders the menu when results arrive; click only once it has settled.
     const pickRoom = async (code: string) => {
       const dialog = page.getByRole('dialog');
+      const searched = page.waitForResponse(
+        (r) => r.url().includes('/rooms') && r.url().includes(`q=${code}`) && r.ok(),
+      );
       await dialog.getByRole('combobox', { name: /Phòng mới/ }).fill(code);
-      await expect(page.getByRole('option')).toHaveCount(1);
+      await searched;
+      await page.keyboard.press('ArrowDown');
       await page.getByRole('option', { name: code, exact: true }).click();
       await expect(dialog.getByText(code, { exact: true })).toBeVisible();
     };
