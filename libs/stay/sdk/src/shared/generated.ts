@@ -670,6 +670,34 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/buildings/{buildingId}/readings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chỉ số điện nước toàn toà
+     * @description Kỳ là tháng tiêu thụ (YYYY-MM). Bao gồm phòng có hợp đồng active/ending, chỉ số trước, tiêu thụ cả hai đoạn khi thay đồng hồ, trung bình tối đa 3 kỳ trước, cảnh báo và trạng thái draft/locked. Ngoài phạm vi quản lý trả 404.
+     *
+     *     **Quyền:** `read:MeterReading`.
+     */
+    get: operations['get_api_buildings_buildingId_readings'];
+    /**
+     * Lưu chỉ số theo dòng
+     * @description Mỗi dòng gửi meterId, period, reading, readOn và version (0 khi tạo). Trả results theo thứ tự đầu vào; dòng lỗi không huỷ dòng hợp lệ. Chỉ số nguyên không âm; số mới nhỏ hơn số cũ bị chặn. Tiêu thụ hơn 2 lần trung bình cần confirmHighConsumption. Version cũ trả lỗi dòng 409; locked không sửa được. Ảnh dùng private upload purpose contract_meter.
+     *
+     *     **Quyền:** `update:MeterReading`.
+     */
+    put: operations['put_api_buildings_buildingId_readings'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/buildings/{buildingId}/rooms': {
     parameters: {
       query?: never;
@@ -1167,6 +1195,50 @@ export interface paths {
      */
     get: operations['get_api_me_capabilities'];
     put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/meters/{id}/replace': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thay đồng hồ
+     * @description Đóng đồng hồ cũ bằng finalReading và replacedOn, mở đồng hồ cùng loại với initialReading và serial mới. Giữ lịch sử để tính hai đoạn trong kỳ thay. Idempotency-Key tuỳ chọn; retry cùng nội dung trả cùng id đồng hồ mới.
+     *
+     *     **Quyền:** `update:MeterReading`.
+     */
+    post: operations['post_api_meters_id_replace'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/readings/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Sửa chỉ số draft
+     * @description Gửi đủ dữ liệu chỉ số và version; meterId/period không được đổi. 409 khi stale hoặc locked.
+     *
+     *     **Quyền:** `update:MeterReading`.
+     */
+    put: operations['put_api_readings_id'];
     post?: never;
     delete?: never;
     options?: never;
@@ -1903,6 +1975,22 @@ export interface components {
       field: 'idNumber' | 'phone';
       tenantId: string | null;
     };
+    MeterReadingInput: {
+      confirmHighConsumption?: boolean;
+      meterId: string;
+      period: string;
+      photoFileId?: string | null;
+      reading: number;
+      readOn: string;
+      version: number;
+    };
+    MeterReplacementInput: {
+      confirmHighConsumption?: boolean;
+      finalReading: number;
+      initialReading: number;
+      replacedOn: string;
+      serial?: string | null;
+    };
     MoveInPreview: {
       lines: components['schemas']['MoveInPreviewLine'][];
       occupantCount: number;
@@ -1928,6 +2016,41 @@ export interface components {
       pageSize: number;
       total: number;
       totalPages: number;
+    };
+    ReadingBulkResult: {
+      results: components['schemas']['ReadingSaveResult'][];
+    };
+    ReadingGrid: {
+      buildingId: string;
+      period: string;
+      rooms: components['schemas']['ReadingRoom'][];
+    };
+    ReadingMeter: {
+      average: number | null;
+      carriedConsumption: number;
+      consumption: number | null;
+      current: components['schemas']['StayMeterReading'] | null;
+      /** @enum {string} */
+      kind: 'electricity' | 'water';
+      meterId: string;
+      previous: number;
+      warnings: string[];
+    };
+    ReadingRoom: {
+      code: string;
+      contractId: string;
+      floor: number;
+      meters: components['schemas']['ReadingMeter'][];
+      roomId: string;
+    };
+    ReadingSaveResult: {
+      data: components['schemas']['StayMeterReading'] | null;
+      error: {
+        code: string;
+        message: string;
+        status: number;
+      } | null;
+      meterId: string;
     };
     RoomBulkPreview: {
       createCount: number;
@@ -2143,6 +2266,21 @@ export interface components {
     };
     StayMe: {
       user: components['schemas']['StayUser'];
+    };
+    StayMeterReading: {
+      id: string;
+      meterId: string;
+      period: string;
+      photo: {
+        expiresAt: string;
+        url: string;
+      } | null;
+      photoFileId: string | null;
+      reading: number;
+      readOn: string;
+      /** @enum {string} */
+      status: 'draft' | 'locked';
+      version: number;
     };
     StayRoom: {
       archivedAt: string | null;
@@ -5967,6 +6105,75 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_buildings_buildingId_readings: {
+    parameters: {
+      query: {
+        period: string;
+      };
+      header?: never;
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ReadingGrid'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_buildings_buildingId_readings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          rows: components['schemas']['MeterReadingInput'][];
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ReadingBulkResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_buildings_buildingId_rooms: {
     parameters: {
       query?: {
@@ -7051,6 +7258,80 @@ export interface operations {
       };
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_meters_id_replace: {
+    parameters: {
+      query?: never;
+      header?: {
+        'Idempotency-Key'?: string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MeterReplacementInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              id: string;
+            };
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_readings_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MeterReadingInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMeterReading'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };

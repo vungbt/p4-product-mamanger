@@ -21,6 +21,7 @@ export type StayRoute = {
 };
 
 const DepositsPage = lazy(() => import('@/modules/deposits/page'));
+const ReadingsPage = lazy(() => import('@/modules/readings/page'));
 const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
 const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
 const ContractListPage = lazy(() => import('@/modules/contracts/list-page'));
@@ -123,7 +124,7 @@ export const appRoutes: StayRoute[] = [
     path: '/readings',
     name: 'readings',
     icon: 'bolt',
-    component: PlaceholderPage,
+    component: ReadingsPage,
     // screens.md says `manage`; managers hold create/read/update/delete, not `manage`.
     ability: { action: 'update', subject: 'MeterReading' },
     bottomNav: true,

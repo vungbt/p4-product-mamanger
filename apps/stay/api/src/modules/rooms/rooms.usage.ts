@@ -64,17 +64,10 @@ export async function latestMeterReadings(
   transaction?: Transaction,
 ): Promise<Map<string, LatestReading>> {
   if (!meterIds.length) return new Map();
-  // ST-13 owns this table. Until its migration exists, installed readings are the baseline.
-  const [table] = await sequelize.query<{ present: boolean }>(
-    "SELECT to_regclass('public.meter_readings') IS NOT NULL AS present",
-    { type: QueryTypes.SELECT, transaction },
-  );
-
-  if (!table?.present) return new Map();
   const rows = await sequelize.query<{ meterId: string; reading: string; period: string }>(
     `SELECT DISTINCT ON (meter_id) meter_id AS "meterId", reading, period
      FROM meter_readings WHERE meter_id IN (:meterIds)
-     ORDER BY meter_id, read_on DESC, period DESC, id DESC`,
+     ORDER BY meter_id, period DESC, id DESC`,
     { replacements: { meterIds: [...meterIds] }, type: QueryTypes.SELECT, transaction },
   );
 

@@ -10,9 +10,7 @@ const MAX_INT = 2_147_483_647;
  *
  * Method names match `requestBody` from `@p4/server-core`, which the OpenAPI generator reads.
  */
-export function formBody(req: Request) {
-  const raw: unknown = req.body;
-
+export function formBody(req: Request, raw: unknown = req.body) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw))
     throw new InputValidError('input_valid_error');
 

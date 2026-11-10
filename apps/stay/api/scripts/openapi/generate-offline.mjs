@@ -62,6 +62,18 @@ try {
   if (result.status !== 0) throw new Error('OpenAPI generation failed');
   const spec = YAML.parse(await readFile(specPath, 'utf8'));
 
+  // The shared generator appends parameter overrides. Keep the last definition per name/location.
+  for (const item of Object.values(spec.paths)) {
+    for (const operation of Object.values(item)) {
+      if (!operation?.parameters) continue;
+      operation.parameters = [
+        ...new Map(
+          operation.parameters.map((parameter) => [`${parameter.in}:${parameter.name}`, parameter]),
+        ).values(),
+      ];
+    }
+  }
+
   // The shared generator has a fixed PaginationMeta envelope. Stay adds filtered category totals.
   spec.paths['/api/expenses'].get.responses['200'].content[
     'application/json'
