@@ -260,20 +260,13 @@ function PaymentTable({ rows, onReverse }: RowsProps) {
       <table className="w-full text-left" aria-label="Sổ thu">
         <thead>
           <tr>
-            {[
-              'Ngày',
-              'Hoá đơn',
-              'Phòng',
-              'Số tiền',
-              'Phương thức',
-              'Mã giao dịch',
-              'Người ghi',
-              'Trạng thái',
-            ].map((label) => (
-              <th key={label} scope="col" className="whitespace-nowrap p-3">
-                {label}
-              </th>
-            ))}
+            {['Ngày', 'Hoá đơn', 'Số tiền', 'Phương thức', 'Chi tiết', 'Trạng thái'].map(
+              (label) => (
+                <th key={label} scope="col" className="whitespace-nowrap p-3">
+                  {label}
+                </th>
+              ),
+            )}
             {onReverse ? (
               <th scope="col" className="p-3">
                 <span className="sr-only">Thao tác</span>
@@ -292,16 +285,20 @@ function PaymentTable({ rows, onReverse }: RowsProps) {
               <td className="whitespace-nowrap p-3">{displayDate(payment.paidOn)}</td>
               <td className="whitespace-nowrap p-3">
                 <InvoiceLink payment={payment} />
+                <span className="block text-ui-sm text-muted">Phòng {payment.roomCode}</span>
               </td>
-              <td className="p-3">{payment.roomCode}</td>
               <td className="p-3">
                 <Amount payment={payment} />
               </td>
               <td className="whitespace-nowrap p-3">{PAYMENT_METHOD_LABELS[payment.method]}</td>
-              <td className="max-w-40 truncate p-3" title={payment.reference ?? undefined}>
-                {payment.reference ?? '—'}
+              <td className="max-w-48 p-3">
+                <span className="block truncate" title={payment.reference ?? undefined}>
+                  {payment.reference ? `Mã GD ${payment.reference}` : '—'}
+                </span>
+                <span className="block truncate text-ui-sm text-muted">
+                  Người ghi {payment.actorName ?? '—'}
+                </span>
               </td>
-              <td className="p-3">{payment.actorName ?? '—'}</td>
               <td className="p-3">
                 <PaymentStatusTag payment={payment} />
               </td>
