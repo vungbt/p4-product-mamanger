@@ -65,16 +65,20 @@ for (const width of [1280, 375]) {
     await activate(occupied.id, (await otherTenantResponse.json()).data);
     await page.evaluate((id) => localStorage.setItem('stay_building_id', id), building.id);
     await page.goto(`/contracts/${contract.id}`);
-    // Building A has many rooms: open the menu, search on the server, and click only once the
-    // filtered result is the single remaining option (earlier renders get detached).
+    // Building A has many rooms and the menu re-renders when server search results arrive,
+    // which can detach the option mid-click; reopen and retry until the room is chosen.
     const pickRoom = async (code: string) => {
       const dialog = page.getByRole('dialog');
       const input = dialog.getByRole('combobox', { name: /Phòng mới/ });
-      await input.focus();
-      await page.keyboard.press('ArrowDown');
-      await input.pressSequentially(code);
-      await expect(page.getByRole('option')).toHaveCount(1);
-      await page.getByRole('option', { name: code, exact: true }).click();
+      const option = page.getByRole('option', { name: code, exact: true });
+      await input.fill(code);
+      await expect(async () => {
+        if (!(await option.isVisible())) {
+          await input.focus();
+          await page.keyboard.press('ArrowDown');
+        }
+        await option.click({ timeout: 2000 });
+      }).toPass({ timeout: 20000 });
       await expect(dialog.getByText(code, { exact: true })).toBeVisible();
     };
     const openChange = async (label: string) => {
