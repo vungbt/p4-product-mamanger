@@ -18,10 +18,11 @@ for (const width of [1280, 375]) {
     await page.getByRole('button', { name: 'Thêm chi phí', exact: true }).click();
     const form = page.getByRole('form', { name: 'Thêm chi phí' });
 
-    await form.getByRole('textbox', { name: /Số tiền/ }).fill('123456');
+    await form.getByRole('spinbutton', { name: /Số tiền/ }).fill('123456');
     await chooseOption(page, form, 'Danh mục', 'Sửa chữa');
-    await form.getByLabel('Ngày chi', { exact: false }).fill('2041-08-12');
-    await form.getByLabel('Ghi chú').fill(note);
+    await form.getByLabel(/Ngày chi/).fill('2041-08-12');
+    await chooseOption(page, form, 'Phòng', 'Cả toà');
+    await form.getByRole('textbox', { name: 'Ghi chú', exact: true }).fill(note);
     await form
       .getByLabel('Ảnh hoá đơn', { exact: true })
       .setInputFiles({ name: 'receipt.png', mimeType: 'image/png', buffer: PNG });
@@ -58,7 +59,7 @@ for (const width of [1280, 375]) {
     await row.getByRole('button', { name: 'Sửa chi phí', exact: true }).click();
     const edit = page.getByRole('form', { name: 'Sửa chi phí' });
 
-    await edit.getByRole('textbox', { name: /Số tiền/ }).fill('234567');
+    await edit.getByRole('spinbutton', { name: /Số tiền/ }).fill('234567');
     await edit.getByRole('button', { name: 'Lưu chi phí' }).click();
     await expect(row).toContainText('234.567');
     await expect(totals).toContainText('234.567');
@@ -83,10 +84,10 @@ test('category settings create, rename and deactivate', async ({ page }) => {
   await page.getByRole('button', { name: 'Thêm danh mục' }).click();
   const form = page.getByRole('form', { name: 'Danh mục chi phí' });
 
-  await form.getByLabel('Tên danh mục').fill(name);
+  await form.getByRole('textbox', { name: /Tên danh mục/ }).fill(name);
   await form.getByRole('button', { name: 'Lưu danh mục' }).click();
   await page.getByRole('button', { name: `Sửa ${name}`, exact: true }).click();
-  await form.getByLabel('Tên danh mục').fill(`${name} sửa`);
+  await form.getByRole('textbox', { name: /Tên danh mục/ }).fill(`${name} sửa`);
   await form.getByRole('switch', { name: 'Đang hoạt động' }).click();
   await form.getByRole('button', { name: 'Lưu danh mục' }).click();
   await expect(page.getByRole('listitem').filter({ hasText: `${name} sửa` })).toContainText(
