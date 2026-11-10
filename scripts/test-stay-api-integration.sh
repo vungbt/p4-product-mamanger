@@ -36,6 +36,8 @@ if grep -q '# SKIP' test-output.log; then
   status=1
 fi
 if [[ $status -ne 0 ]]; then
+  echo "--- api.log errors"
+  grep -iE 'error|"status":5' api.log | tail -n 80 || true
   echo "--- api.log"; tail -n 80 api.log
 fi
 exit "$status"

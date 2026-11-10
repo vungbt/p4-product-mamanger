@@ -731,7 +731,6 @@ export async function listInvoices(
     offset: (query.page - 1) * query.pageSize,
   });
 
-  setAuditChanges({ buildingId: query.buildingId ?? null, period: query.period ?? null });
   return {
     data: await summaries(rows),
     meta: buildPaginationMeta(query.page, query.pageSize, count),
@@ -741,7 +740,6 @@ export async function listInvoices(
 export async function getInvoice(user: StayUser, id: string): Promise<StayInvoice> {
   const row = await findInvoice(user, id, 'read');
 
-  setAuditChanges({ buildingId: row.buildingId, invoiceId: row.id });
   return invoiceDto(row);
 }
 

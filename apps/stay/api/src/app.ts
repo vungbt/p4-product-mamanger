@@ -8,6 +8,7 @@ import { auth } from '@/configs/better-auth.js';
 import { env } from '@/configs/env.js';
 import { i18nMiddleware } from '@/configs/i18n.js';
 import { mountOpenApiDocs } from '@/configs/openapi-docs.js';
+import { logUnexpectedErrors } from '@/middlewares/error-log.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import apiRouter from '@/modules/index.js';
 import { sequelize } from '@/sequelize/models/index.js';
@@ -44,6 +45,7 @@ export function createApp() {
 
   app.use('/api', baseMiddleware, apiRouter);
   app.use(notFoundHandler);
+  if (!env.isProd) app.use(logUnexpectedErrors);
   app.use(handleErrorApi);
 
   return app;

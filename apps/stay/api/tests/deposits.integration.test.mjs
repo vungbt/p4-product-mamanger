@@ -4,7 +4,12 @@ import { randomUUID } from 'node:crypto';
 import { after, before, describe, test } from 'node:test';
 import bcrypt from 'bcryptjs';
 import { applyDepositForSettlement } from '../dist/modules/deposits/deposits.service.js';
-import { AuditLogModel, DepositEntryModel, sequelize } from '../dist/sequelize/models/index.js';
+import {
+  AuditLogModel,
+  DepositEntryModel,
+  InvoiceModel,
+  sequelize,
+} from '../dist/sequelize/models/index.js';
 import { auditedTransaction } from '../dist/shared/audit.js';
 
 const base = process.env.STAY_TEST_API_URL;
@@ -278,6 +283,11 @@ describe('Stay deposit ledger', { skip: !base }, () => {
 
   test('ST-17 service joins settlement transaction, audits and rolls back atomically', async () => {
     const before = await ledger();
+    // deposit_entries.invoice_id references invoices: use the move-in draft from activation.
+    const invoice = await InvoiceModel.findOne({
+      where: { contractId: contract.id, kind: 'move_in' },
+      rejectOnEmpty: true,
+    });
     const apply = (amount, transaction) =>
       applyDepositForSettlement(
         user,
@@ -287,7 +297,7 @@ describe('Stay deposit ledger', { skip: !base }, () => {
           method: 'other',
           occurredOn: '2026-11-20',
           reason: null,
-          invoiceId: randomUUID(),
+          invoiceId: invoice.id,
         },
         transaction,
       );

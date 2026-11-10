@@ -304,7 +304,11 @@ describe('ST-14 period invoices', { skip: !base }, () => {
       ['POST', `/invoices/${randomUUID()}/void`],
       ['POST', `/contracts/${contracts.A1.id}/move-in-invoice`],
     ])
-      assert.equal((await call(undefined, method, path, {})).status, 401, `${method} ${path}`);
+      assert.equal(
+        (await call(undefined, method, path, method === 'GET' ? undefined : {})).status,
+        401,
+        `${method} ${path}`,
+      );
     failed(await drafts(PERIOD, randomUUID(), tenantCookie), 403);
     failed(await call(tenantCookie, 'POST', '/invoices/issue', { ids: [randomUUID()] }), 403);
     assert.deepEqual(ok(await call(tenantCookie, 'GET', '/invoices')), []);
