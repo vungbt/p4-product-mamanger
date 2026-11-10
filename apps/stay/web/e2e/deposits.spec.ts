@@ -8,16 +8,15 @@ for (const width of [1280, 375]) {
     await signIn(page);
     const headers = { origin: new URL(page.url()).origin };
     const suffix = randomUUID().replaceAll('-', '').slice(0, 5).toUpperCase();
-    const buildingResponse = await page.request.post('/api/buildings', {
-      headers,
-      data: { code: `D${suffix}`, name: `Deposit E2E ${suffix}` },
-    });
-    expect(buildingResponse.ok(), await buildingResponse.text()).toBe(true);
-    const building = (await buildingResponse.json()).data;
+    // Building A keeps other suites on a single active building; totals are compared to a baseline.
+    const buildings = await page.request.get('/api/buildings');
+    expect(buildings.ok(), await buildings.text()).toBe(true);
+    const building = (await buildings.json()).data.find((b: { code: string }) => b.code === 'A');
+    expect(building).toBeTruthy();
     const roomResponse = await page.request.post(`/api/buildings/${building.id}/rooms`, {
       headers,
       data: {
-        code: 'D101',
+        code: `D${suffix}`,
         floor: 1,
         listPrice: 3000000,
         maxOccupants: 2,
@@ -62,7 +61,10 @@ for (const width of [1280, 375]) {
     await page.goto('/deposits');
     const row = page.getByTestId('deposit-row').filter({ hasText: contract.code });
     const total = page.getByTestId('deposit-total');
-    await expect(total).toContainText('1.000.000');
+    await expect(row.getByTestId('deposit-held')).toContainText('1.000.000');
+    const baseline = Number((await total.innerText()).replace(/\D/g, '')) - 1_000_000;
+    const totalWith = (held: number) => new Intl.NumberFormat('vi-VN').format(baseline + held);
+    await expect(total).toContainText(totalWith(1_000_000));
     await expect(row.getByTestId('deposit-held')).toContainText('1.000.000');
 
     await row.getByRole('button', { name: 'Thu thêm cọc', exact: true }).click();
@@ -71,7 +73,7 @@ for (const width of [1280, 375]) {
     await chooseOption(page, dialog, 'Phương thức', 'Tiền mặt');
     await dialog.getByRole('button', { name: 'Ghi bút toán', exact: true }).click();
     await expect(dialog).not.toBeVisible();
-    await expect(total).toContainText('1.500.000');
+    await expect(total).toContainText(totalWith(1_500_000));
     await expect(row.getByTestId('deposit-held')).toContainText('1.500.000');
 
     await row.getByRole('link', { name: contract.code }).click();
@@ -112,13 +114,13 @@ for (const width of [1280, 375]) {
     await expect(dialog).toContainText('Số dư cọc không đủ');
     await dialog.getByRole('button', { name: 'Huỷ', exact: true }).click();
     await page.goto('/deposits');
-    await expect(total).toContainText('1.200.000');
+    await expect(total).toContainText(totalWith(1_200_000));
     await expect(row.getByTestId('deposit-held')).toContainText('1.200.000');
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);
     await saveScreenshot(page, `st-11-deposits-${width}`);
     await page.reload();
-    await expect(total).toContainText('1.200.000');
+    await expect(total).toContainText(totalWith(1_200_000));
   });
 }

@@ -28,6 +28,7 @@ test.describe('C-02 shell on mobile (375px)', () => {
     await expect(sheet.getByRole('link')).toHaveText([
       'Công nợ',
       'Hợp đồng',
+      'Sổ cọc',
       'Người thuê',
       'Yêu cầu',
       'Chi phí',
@@ -85,6 +86,7 @@ test.describe('C-02/C-03 shell on desktop', () => {
       'Hoá đơn',
       'Công nợ',
       'Hợp đồng',
+      'Sổ cọc',
       'Người thuê',
       'Yêu cầu',
       'Chi phí',
