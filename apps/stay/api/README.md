@@ -115,6 +115,7 @@ Script build, migrate, seed hai lần (kiểm tra idempotent), chạy API rồi 
 | `STAY_BETTER_AUTH_URL` | `http://127.0.0.1:3011` | Origin public của API; production phải HTTPS |
 | `STAY_BETTER_AUTH_SECRET` | secret dev | Production: ≥ 32 ký tự, không phải placeholder |
 | `STAY_CORS_ORIGIN` | `http://localhost:5174` | Danh sách origin web, cách nhau bởi dấu phẩy; production không được `*` |
+| `STAY_WEB_URL` | trống | Origin web dùng trong link chia sẻ hoá đơn (`/i/:token`); trống: origin web của request nếu được tin cậy, ngược lại origin đầu tiên của `STAY_CORS_ORIGIN` |
 | `STAY_GOOGLE_CLIENT_ID`, `STAY_GOOGLE_CLIENT_SECRET` | trống | Tuỳ chọn |
 | `STAY_PUBLIC_API_URL` | trống | Server hiển thị trong `/api/docs` |
 | `STAY_CLOUDINARY_CLOUD_NAME`, `STAY_CLOUDINARY_API_KEY`, `STAY_CLOUDINARY_API_SECRET` | trống | Ảnh private (CCCD). Thiếu một giá trị: ngoài production dùng kho stub, production từ chối upload |
@@ -305,7 +306,7 @@ Extension points:
   `invoicePaymentStatus` (`@stay/billing`). Void refuses `paidTotal > 0`; paid invoices are
   corrected with an `adjustment` line on the next period (`manualLines` supports it with
   `referenceInvoiceId`).
-- ST-16 share link: `invoices.share_token_hash` exists (nullable, not exposed); store only a hash.
+- ST-16 share link (done, see "Invoice sharing and VietQR (ST-16)").
 - ST-17 settlement: compute with `computeSettlement`, persist with
   `saveInvoiceDraft(contract, { invoice, roomId, readings, schedule }, null, tx)` (kind
   `settlement`, unique per contract is up to ST-17) and issue through `issueInvoices` (codes use
@@ -358,3 +359,51 @@ Extension points:
   (`apps/stay/web/src/modules/payments/payment-dialog.tsx`).
 
 Integration coverage: `tests/payments.integration.test.mjs` (CI Postgres/API only).
+
+### Invoice sharing and VietQR (ST-16)
+
+Run migration `20261124000100-invoice-shares.cjs`: `invoices.share_expires_at` (paired with the
+ST-14 `share_token_hash` by a check constraint) and a unique partial index on the hash. Only the
+SHA-256 hash of a token is stored, so a link is shown **once**: refreshing creates a new token and
+the previous link stops working. Sharing does not bump the invoice `version`.
+
+| Method/path (prefix `/api`) | Quyền | Ghi chú |
+| --- | --- | --- |
+| POST `/invoices/:id/share` | update `Invoice` | Issued/partially paid/paid only (draft/void → 409 `invoice_not_shareable`). New random token (32 bytes, base64url), 60 days (`INVOICE_SHARE_TTL_DAYS`); returns `{ invoiceId, token, path: '/i/{token}', url, expiresAt }` |
+| DELETE `/invoices/:id/share` | update `Invoice` | Revokes (idempotent): `{ invoiceId, revoked }` |
+| POST `/buildings/:buildingId/billing/:period/shares` | update `Invoice` | Required `Idempotency-Key`. Creates/refreshes the links of every issued/partially paid/paid invoice of the period; `{ links: [{ invoiceId, roomCode, code, status, total, remaining, path, url, expiresAt }], count, replayed }` sorted by room |
+| GET `/public/invoices/:token` | **public** | No session, cookie or origin check; `rateLimit('stay-public-invoice', 60/min per IP)`. Unknown, malformed, expired, revoked/refreshed or void → 404 |
+
+`manage Invoice` in the spec maps to `update Invoice`: the kit gives managers
+read/create/update/delete in assigned buildings and keeps `manage` (wildcard) with the owner.
+Inaccessible invoices/buildings are 404. Summaries (`GET /invoices`, `GET /invoices/:id`) expose
+only `shareExpiresAt` (expiry of the active link, `null` when none/expired), never the token.
+
+Public DTO (`PublicInvoice` in `@stay/shared`): building name/address, room code, kind, period,
+code, status, issue/due dates, overdue, lines (i18n description, quantity/unit/price/ratio,
+amount, readings and covered dates only), subtotal, rounding, total, paid total, remaining, the
+representative's abbreviated name (`abbreviatePersonName`: "N. V. An"), the payee
+(`bankBin`, bank short/full name from the shared `VIETQR_BANKS` directory, account number and
+holder) and `vietQrPayload` built server-side with `buildVietQrPayload` for the **remaining**
+amount (`null` when nothing is left or the building has no complete bank account). The transfer
+content is the system `transferContentTemplate` with `{invoiceCode}` replaced (the code is
+appended when the template has no placeholder), as ASCII via `toTransferText`, ≤ 50 characters.
+No phones, ID numbers, notes, full names or internal ids. The public route records no audit
+changes (`setAuditChanges` is never called on reads) and the token is not a resource-id param.
+
+Links use `STAY_WEB_URL`, else the caller's `Origin` when it is a trusted web origin, else the
+first configured web origin. Bulk links are `HMAC-SHA256(STAY_BETTER_AUTH_SECRET, nonce)` of a
+random 32-byte nonce: the idempotency record stores only the nonce, so a replay returns the same
+links without storing tokens; a replay skips links refreshed or revoked since. Audit rows
+`invoice.share_created` / `invoice.share_revoked` contain ids, code, period, status, expiry and
+whether an active link was replaced — never the token or its hash.
+
+Web: "Chia sẻ" on O-22 (`modules/invoices/share/share-dialog.tsx`: create/refresh, copy with a
+clipboard fallback, Web Share, PNG image rendered client-side from `InvoiceCard` with
+`html-to-image`, print page, revoke with confirmation, expiry), `/invoices/share?period=` for
+bulk sharing (linked from O-20 after issuing and from O-21 when a period is filtered), and the
+public page `/i/:token` outside the signed-in shell (`share/public-page.tsx`: VietQR via
+`qrcode.react`, copy buttons, print CSS, generic title/`og:*`, `noindex`, `no-referrer`).
+
+Integration coverage: `tests/invoice-share.integration.test.mjs` (CI Postgres/API only);
+browser coverage: `apps/stay/web/e2e/invoice-share.spec.ts`.

@@ -65,6 +65,11 @@ export const env = {
   },
   /** Directory of the stub storage (non-production only). */
   uploadStubDir: process.env.STAY_UPLOAD_STUB_DIR || '',
+  /**
+   * Public origin of @stay/web for invoice share links (`/i/:token`). Without it, links use the
+   * caller's allowed web origin, else the first configured CORS origin.
+   */
+  webUrl: process.env.STAY_WEB_URL?.replace(/\/$/, '') || undefined,
   /** Server URL shown in the API reference; defaults to the current origin. */
   publicApiUrl: process.env.STAY_PUBLIC_API_URL,
 };

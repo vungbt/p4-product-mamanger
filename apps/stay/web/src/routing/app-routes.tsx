@@ -6,6 +6,7 @@ import { GuestOnly, PageSpinner, RequireAbility, RequireAuth } from './route-gua
 const LoginPage = lazy(() => import('@/modules/login/page'));
 const AppLayout = lazy(() => import('@/modules/layout/app-layout'));
 const NotFoundPage = lazy(() => import('@/modules/errors/not-found-page'));
+const PublicInvoicePage = lazy(() => import('@/modules/invoices/share/public-page'));
 
 function LazyPage({ component: Page }: { component: LazyExoticComponent<ComponentType> }) {
   return (
@@ -18,6 +19,9 @@ function LazyPage({ component: Page }: { component: LazyExoticComponent<Componen
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* T-01 shared invoice: public, outside the signed-in shell (works signed in or out). */}
+      <Route path={ROUTES.publicInvoice} element={<LazyPage component={PublicInvoicePage} />} />
+
       <Route element={<GuestOnly />}>
         <Route path={ROUTES.login} element={<LazyPage component={LoginPage} />} />
       </Route>

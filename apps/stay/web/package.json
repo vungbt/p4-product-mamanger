@@ -21,6 +21,7 @@
     "@stay/sdk": "workspace:*",
     "@stay/shared": "workspace:*",
     "@tanstack/react-query": "catalog:",
+    "html-to-image": "1.11.13",
     "i18next": "catalog:",
     "qrcode.react": "4.2.0",
     "react": "catalog:",

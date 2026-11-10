@@ -1,7 +1,7 @@
 import { AlertDialog, Button, cn, EmptyState, IconButton } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useDeleteInvoiceLine, useInvoice, useIssueInvoices } from '@stay/sdk/react';
-import type { StayInvoice, StayInvoiceLine, StayPayment } from '@stay/shared';
+import type { InvoiceShareLink, StayInvoice, StayInvoiceLine, StayPayment } from '@stay/shared';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
@@ -14,7 +14,7 @@ import { ReversePaymentDialog } from '../payments/reverse-dialog';
 import { InvoiceLineDialog, VoidInvoiceDialog } from './invoice-dialogs';
 import {
   billingRunPath,
-  ComingSoonButton,
+  displayExpiry,
   displayPeriod,
   INVOICE_KIND_LABELS,
   InvoiceStatusTag,
@@ -23,6 +23,7 @@ import {
   lineReadings,
   useLineDescription,
 } from './invoice-ui';
+import { ShareInvoiceDialog } from './share/share-dialog';
 
 /** O-22 Chi tiết hoá đơn. */
 export default function InvoiceDetailPage() {
@@ -55,12 +56,21 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
   const issue = useIssueInvoices();
   const remove = useDeleteInvoiceLine();
   const describe = useLineDescription();
-  const [dialog, setDialog] = useState<'line' | 'void' | 'issue' | 'payment' | null>(null);
+  const [dialog, setDialog] = useState<'line' | 'void' | 'issue' | 'payment' | 'share' | null>(
+    null,
+  );
+  // A created link is shown once (only its hash is stored): keep it while the page is open.
+  const [shareLink, setShareLink] = useState<InvoiceShareLink | null>(null);
   const [deleting, setDeleting] = useState<StayInvoiceLine | null>(null);
   const [reversing, setReversing] = useState<StayPayment | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const draft = invoice.status === 'draft';
+  const shareable =
+    canUpdate &&
+    (invoice.status === 'issued' ||
+      invoice.status === 'partially_paid' ||
+      invoice.status === 'paid');
   const voidable = canVoid && (draft || invoice.status === 'issued') && invoice.paidTotal === 0;
   const lines = invoice.lines.filter((line) => line.type !== 'rounding');
   const title = invoice.code ?? 'Hoá đơn nháp';
@@ -111,6 +121,12 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
             <Link className="text-accent underline" to={`/contracts/${invoice.contractId}`}>
               {invoice.contractCode}
             </Link>
+            {invoice.shareExpiresAt ? (
+              <span data-testid="invoice-share-status">
+                {' '}
+                · Link chia sẻ đến {displayExpiry(invoice.shareExpiresAt)}
+              </span>
+            ) : null}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -123,8 +139,10 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
           {canPay && isCollectable(invoice) ? (
             <Button onClick={() => setDialog('payment')}>Thu tiền</Button>
           ) : null}
-          {!draft && invoice.status !== 'void' ? (
-            <ComingSoonButton>Chia sẻ</ComingSoonButton>
+          {shareable ? (
+            <Button variant="secondary" onClick={() => setDialog('share')}>
+              Chia sẻ
+            </Button>
           ) : null}
           {voidable ? (
             <Button variant="danger" onClick={() => setDialog('void')}>
@@ -250,6 +268,14 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
       ) : null}
       {dialog === 'payment' ? (
         <PaymentDialog invoice={invoice} onClose={() => setDialog(null)} />
+      ) : null}
+      {dialog === 'share' ? (
+        <ShareInvoiceDialog
+          invoice={invoice}
+          link={shareLink}
+          onLinkChange={setShareLink}
+          onClose={() => setDialog(null)}
+        />
       ) : null}
       {reversing ? (
         <ReversePaymentDialog payment={reversing} onClose={() => setReversing(null)} />

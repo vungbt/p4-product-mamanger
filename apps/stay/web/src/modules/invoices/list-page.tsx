@@ -14,11 +14,13 @@ import { PaymentDialog } from '../payments/payment-dialog';
 import { isCollectable } from '../payments/payment-ui';
 import {
   billingRunPath,
+  displayExpiry,
   displayPeriod,
   INVOICE_KIND_LABELS,
   INVOICE_STATUS_LABELS,
   InvoiceStatusTag,
   invoicePath,
+  periodSharePath,
 } from './invoice-ui';
 
 const PAGE_SIZE = 20;
@@ -33,6 +35,7 @@ export default function InvoiceListPage() {
   const navigate = useNavigate();
   const canCreate = useCanOn('create', 'Invoice', { buildingId: buildingId ?? undefined });
   const canPay = useCanOn('create', 'Payment', { buildingId: buildingId ?? undefined });
+  const canShare = useCanOn('update', 'Invoice', { buildingId: buildingId ?? undefined });
   const [collecting, setCollecting] = useState<StayInvoiceSummary | null>(null);
 
   const q = params.get('q') ?? '';
@@ -170,6 +173,11 @@ export default function InvoiceListPage() {
               onCheckedChange={(value) => filter('overdue', value === true ? 'true' : null)}
             />
           </div>
+          {canShare && period ? (
+            <Link className="font-semibold text-accent underline" to={periodSharePath(period)}>
+              Chia sẻ hoá đơn kỳ {displayPeriod(period)}
+            </Link>
+          ) : null}
 
           {query.isPending ? (
             <LoadingRows />
@@ -246,6 +254,15 @@ function CollectButton({
   );
 }
 
+/** O-21 "đã gửi link chưa": the expiry of the active share link. */
+function ShareStatus({ invoice }: { invoice: StayInvoiceSummary }) {
+  return invoice.shareExpiresAt ? (
+    <span>Đến {displayExpiry(invoice.shareExpiresAt)}</span>
+  ) : (
+    <span className="text-muted">Chưa gửi</span>
+  );
+}
+
 function CodeLink({ invoice }: { invoice: StayInvoiceSummary }) {
   return (
     <Link className="font-semibold text-accent underline" to={invoicePath(invoice.id)}>
@@ -260,13 +277,22 @@ function InvoiceTable({ rows, onCollect }: RowsProps) {
       <table className="w-full text-left" aria-label="Danh sách hoá đơn">
         <thead>
           <tr>
-            {['Mã', 'Phòng', 'Kỳ', 'Loại', 'Tổng', 'Đã thu', 'Còn lại', 'Hạn', 'Trạng thái'].map(
-              (label) => (
-                <th key={label} scope="col" className="whitespace-nowrap p-3">
-                  {label}
-                </th>
-              ),
-            )}
+            {[
+              'Mã',
+              'Phòng',
+              'Kỳ',
+              'Loại',
+              'Tổng',
+              'Đã thu',
+              'Còn lại',
+              'Hạn',
+              'Trạng thái',
+              'Link',
+            ].map((label) => (
+              <th key={label} scope="col" className="whitespace-nowrap p-3">
+                {label}
+              </th>
+            ))}
             {onCollect ? (
               <th scope="col" className="p-3">
                 <span className="sr-only">Thao tác</span>
@@ -303,6 +329,9 @@ function InvoiceTable({ rows, onCollect }: RowsProps) {
               </td>
               <td className="p-3">
                 <InvoiceStatusTag invoice={invoice} />
+              </td>
+              <td className="whitespace-nowrap p-3 text-ui-sm">
+                <ShareStatus invoice={invoice} />
               </td>
               {onCollect ? (
                 <td className="p-1">
@@ -353,6 +382,10 @@ function InvoiceCards({ rows, onCollect }: RowsProps) {
             <dt className="text-muted">Hạn</dt>
             <dd className={cn('text-right', invoice.overdue && 'text-danger-700')}>
               {displayDate(invoice.dueOn)}
+            </dd>
+            <dt className="text-muted">Link</dt>
+            <dd className="text-right">
+              <ShareStatus invoice={invoice} />
             </dd>
           </dl>
         </li>

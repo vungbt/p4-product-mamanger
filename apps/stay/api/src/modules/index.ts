@@ -4,6 +4,7 @@ import buildingsRouter from './buildings/buildings.router.js';
 import contractsRouter from './contracts/contracts.router.js';
 import depositsRouter from './deposits/deposits.router.js';
 import expensesRouter from './expenses/expenses.router.js';
+import invoicesPublicRouter from './invoices/invoices.public.router.js';
 import invoicesRouter from './invoices/invoices.router.js';
 import meRouter from './me/me.router.js';
 import paymentsRouter from './payments/payments.router.js';
@@ -17,6 +18,7 @@ import uploadsRouter from './uploads/uploads.router.js';
 // Mount with `apiRouter.use(...)` so the OpenAPI generator finds the module.
 const apiRouter = Router();
 
+apiRouter.use(invoicesPublicRouter);
 apiRouter.use(auditRouter);
 apiRouter.use(invoicesRouter);
 apiRouter.use(paymentsRouter);

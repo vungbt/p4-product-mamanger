@@ -25,6 +25,7 @@ const ReadingsPage = lazy(() => import('@/modules/readings/page'));
 const InvoiceListPage = lazy(() => import('@/modules/invoices/list-page'));
 const BillingRunPage = lazy(() => import('@/modules/invoices/run-page'));
 const InvoiceDetailPage = lazy(() => import('@/modules/invoices/detail-page'));
+const PeriodSharePage = lazy(() => import('@/modules/invoices/share/period-share-page'));
 const PaymentsPage = lazy(() => import('@/modules/payments/page'));
 const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
 const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
@@ -51,6 +52,8 @@ const BuildingPricesPage = lazy(() => import('@/modules/buildings/prices/page'))
 
 export const ROUTES = {
   login: '/login',
+  /** Public shared invoice (ST-16), outside the signed-in shell. */
+  publicInvoice: '/i/:token',
   overview: '/',
   rooms: '/rooms',
   roomNew: '/rooms/new',
@@ -148,6 +151,16 @@ export const appRoutes: StayRoute[] = [
     icon: 'receipt',
     component: BillingRunPage,
     ability: { action: 'create', subject: 'Invoice' },
+    hideInMenu: true,
+    parent: 'invoices',
+  },
+  {
+    path: '/invoices/share',
+    name: 'invoiceShare',
+    icon: 'receipt',
+    component: PeriodSharePage,
+    // Sharing writes links: managers hold `update Invoice` in assigned buildings.
+    ability: { action: 'update', subject: 'Invoice' },
     hideInMenu: true,
     parent: 'invoices',
   },

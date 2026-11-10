@@ -21,6 +21,7 @@ import {
   INVOICE_STATUS_LABELS,
   invoiceErrorMessage,
   invoicePath,
+  periodSharePath,
 } from './invoice-ui';
 
 const DRAFT_PAGE_SIZE = 100;
@@ -64,9 +65,15 @@ function BillingRun({ buildingId, period }: { buildingId: string; period: string
   const preview = useBillingPreview(buildingId, period);
   const createDrafts = useCreateInvoiceDrafts();
   const canCreate = useCanOn('create', 'Invoice', { buildingId });
+  const canShare = useCanOn('update', 'Invoice', { buildingId });
   const [error, setError] = useState<string | null>(null);
 
   const data = preview.data;
+  const issued =
+    data?.rows.filter(
+      (row) =>
+        row.invoiceStatus !== null && row.invoiceStatus !== 'draft' && row.invoiceStatus !== 'void',
+    ).length ?? 0;
 
   const generate = async () => {
     setError(null);
@@ -148,6 +155,25 @@ function BillingRun({ buildingId, period }: { buildingId: string; period: string
         <FormError message={error} />
         <Drafts buildingId={buildingId} period={period} />
       </section>
+
+      {canShare && issued ? (
+        <section
+          aria-labelledby="billing-share-title"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-panel border border-line bg-surface p-4"
+        >
+          <div className="grid gap-1">
+            <h2 id="billing-share-title" className="text-section font-semibold">
+              Bước 4 – Gửi hoá đơn
+            </h2>
+            <p className="text-ui-sm text-muted">
+              {issued} hoá đơn đã phát hành: tạo link và ảnh hoá đơn của từng phòng để gửi lần lượt.
+            </p>
+          </div>
+          <Link className="font-semibold text-accent underline" to={periodSharePath(period)}>
+            Chia sẻ hàng loạt
+          </Link>
+        </section>
+      ) : null}
     </>
   );
 }

@@ -18,6 +18,7 @@ export interface InvoiceAttributes {
   paidTotal: number;
   roundingUnit: number;
   shareTokenHash: string | null;
+  shareExpiresAt: Date | null;
   voidReason: string | null;
   voidedAt: Date | null;
   version: number;
@@ -35,6 +36,7 @@ export class InvoiceModel extends Model<
     | 'issuedOn'
     | 'paidTotal'
     | 'shareTokenHash'
+    | 'shareExpiresAt'
     | 'voidReason'
     | 'voidedAt'
     | 'version'
@@ -58,6 +60,7 @@ export class InvoiceModel extends Model<
   declare paidTotal: number;
   declare roundingUnit: number;
   declare shareTokenHash: string | null;
+  declare shareExpiresAt: Date | null;
   declare voidReason: string | null;
   declare voidedAt: Date | null;
   declare version: number;
@@ -93,6 +96,7 @@ export function initInvoiceModel(sequelize: Sequelize) {
       paidTotal: { ...money('paidTotal'), defaultValue: 0 },
       roundingUnit: money('roundingUnit'),
       shareTokenHash: { type: DataTypes.STRING(128), allowNull: true },
+      shareExpiresAt: { type: DataTypes.DATE, allowNull: true },
       voidReason: { type: DataTypes.TEXT, allowNull: true },
       voidedAt: { type: DataTypes.DATE, allowNull: true },
       version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
