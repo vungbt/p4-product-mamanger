@@ -152,7 +152,7 @@ for (const width of [1280, 375]) {
     await expect(third.getByRole('status')).toHaveText('Đã lưu');
     await expect(third.getByText(/Tiêu thụ: 15 kWh/)).toBeVisible();
     await expect(progress).toContainText(`đã nhập ${completedBefore + 3}/${totalRooms} phòng`);
-    await expect(page.getByRole('button', { name: /Lập hoá đơn kỳ/ })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Lập hoá đơn kỳ 05/2044' })).toBeEnabled();
 
     await page.context().setOffline(true);
     await first.getByRole('spinbutton', { name: /Nước số mới/ }).fill('45');

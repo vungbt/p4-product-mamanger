@@ -50,7 +50,7 @@ curl -b /tmp/stay.jar http://127.0.0.1:3011/api/me/capabilities
 | POST | `/api/buildings/:id/archive` | manage `Building` | 409 kèm danh sách phòng khi còn hợp đồng hiệu lực |
 | GET/PUT | `/api/buildings/:id/prices` | read (theo toà)/manage `Building` | `?date=`; PUT `{ serviceId, effectiveFrom, price \| null }` |
 
-Phòng, hợp đồng, hoá đơn chưa có: `src/modules/buildings/buildings.usage.ts` gom các truy vấn ST-08/ST-10/ST-14 sẽ bổ sung (thống kê, chặn lưu trữ, khoá mã toà, khoá lịch sử giá). Giá theo ngày dùng `resolveBuildingPrice` (bọc `resolvePrice` của `@stay/billing`).
+`src/modules/buildings/buildings.usage.ts` gom các truy vấn dùng chung (thống kê, chặn lưu trữ, khoá mã toà khi đã có hoá đơn phát hành, khoá lịch sử giá đã được hoá đơn phát hành dùng). Giá theo ngày dùng `resolveBuildingPrice` (bọc `resolvePrice` của `@stay/billing`).
 
 ## Người thuê, ảnh CCCD và import (ST-09)
 
@@ -134,8 +134,10 @@ Draft updates require `version`; creation accepts an optional `Idempotency-Key`.
 Activation serializes on the room row and is backed by `contracts_one_holding_room`.
 
 Move-in amounts come from `computeMoveInInvoice`, resolving building prices on the start date.
-Activation **does not create an invoice**. It records a single positive `received` deposit entry
-when collected, with its method, date and optional note. Initial readings and optional private
+Since ST-14, activation also creates a **draft move-in invoice** with the same computation
+(`computeMoveInDraft` in `modules/invoices/invoices.billing.ts`, also used by the preview). It
+records a single positive `received` deposit entry when collected, with its method, date and
+optional note. Initial readings and optional private
 meter photos remain on the contract (`contract_meter` upload purpose).
 
 The local/CI seed adds nine active contracts in building A and is idempotent. The contract
@@ -157,8 +159,8 @@ Extension points:
   Only drafts can be edited by ST-10.
 - ST-13 is implemented: `meter_readings`, closing/replacement commands and `latestMeterReadings`
   now use recorded readings. Move-in readings/photos remain the contract baseline.
-- ST-14: persist/issue move-in invoices, implement invoice-dependent usage guards, and add the
-  deposit invoice foreign key. Reuse the same preview computation and start-date prices.
+- ST-14 is implemented: move-in drafts on activation, invoice usage guards and the
+  `deposit_entries.invoice_id` foreign key (see "Period invoices (ST-14)").
 - ST-17: ending/ended transitions and settlement; room/tenant derivation already understands
   holding and ended contracts.
 
@@ -192,11 +194,10 @@ The local/CI seed adds the last three completed months for the nine fixture cont
 first historical seed only, untouched fixture contracts/meters move back to the history start;
 existing readings are preserved. Production seeding is prohibited.
 
-ST-14 extension points: use `periodMeter` in `modules/readings/readings.service.ts` for the same
-segment computation; set `MeterReadingModel.status` to `locked` in the invoice issue transaction,
-locking the room row first (the same serialization point used for saves/replacements). Void must
-unlock the readings in its transaction. Earlier edits are blocked when a later reading is locked.
-Invoice creation remains disabled on O-19 until ST-14. CI integration coverage is in
+ST-14 (implemented) uses `periodMeterUsage` in `modules/readings/readings.service.ts` (the same
+segment computation as `periodMeter`, plus the readings used); the issue transaction locks the
+room rows first and sets the readings to `locked`; void unlocks them. Earlier edits are blocked
+when a later reading is locked. CI integration coverage is in
 `tests/readings.integration.test.mjs`; real-API browser coverage is in `e2e/readings.spec.ts`.
 
 ### ST-12 contract changes / ST-14 and ST-17 integration
@@ -229,9 +230,11 @@ no longer counted on D. Contract start/end dates themselves remain inclusive.
   new initial readings and effective date. Bill each old-room segment separately;
   use ST-13's most recent billed/read baseline when computing consumption to avoid
   rebilling prior months. Snapshot rates and source event IDs in invoice lines.
-- `periodIsInvoiced(contractId, period)`: deliberately returns `false` until ST-14.
-  Replace it with a check for issued/non-void invoices. The preview then warns about
-  void/reissue for unpaid invoices or a correction line next period when paid.
+- `periodIsInvoiced(contractId, period)`: true when the period has an issued, non-void
+  monthly or move-in invoice (ST-14). The preview then warns about void/reissue for unpaid
+  invoices or a correction line next period when paid.
+- `contractRoomEntryDate(contractId, date)`: the start date or the last room move ≤ `date`;
+  readings of the room before it belong to someone else.
 
 Events retain actor ID, effective date and structured payload; history DTOs resolve
 actor display names. Audit rows contain only building/contract IDs, version and date,
@@ -241,3 +244,73 @@ and close registrations when settling; deposit application continues through ST-
 Integration coverage is in `tests/contract-changes.integration.test.mjs` and runs
 only through the existing CI Postgres/API runner. Web E2E fixtures create uniquely
 coded rooms only in building A and require the real migrated API.
+
+### Period invoices (ST-14)
+
+Run migration `20261122000100-invoices.cjs`: `invoices`, `invoice_lines` (full snapshot: type,
+service, description i18n key + params, period, quantity, unit, unit price, day ratio, amount,
+`manual`, `meta` with start/end readings and meter segments), `invoice_sequences`
+(`building_id, period, last_number`) and `invoice_meter_readings` (readings a draft used, with
+the value used). Monthly invoices are unique per `(contract_id, period, kind)` while not void;
+move-in invoices are unique per contract while not void. Money is BIGINT VND and
+`total = subtotal + rounding = sum(lines)`.
+
+| Method/path (prefix `/api`) | Quyền | Ghi chú |
+| --- | --- | --- |
+| GET `/buildings/:buildingId/billing/:period/preview` | read `Invoice` | `period` = M. Eligible contracts with expected totals; excluded ones with `reason` (`missing_reading`, `missing_meter`, `negative_consumption`, `already_issued`, `move_in_invoice`, `no_occupancy`, `invalid_data`) and `reasonDetail` |
+| POST `/buildings/:buildingId/billing/:period/drafts` | create `Invoice` | Required `Idempotency-Key`. Creates/refreshes drafts; refresh keeps manual lines; issued invoices are never recomputed. Returns the preview + `created`, `refreshed`, `replayed` |
+| GET `/invoices` | read `Invoice` | Standard list (`page/pageSize/q/sortBy/sortOrder` → `{ data, meta }`); `buildingId`, `period`, `kind`, `status`, `overdue=true\|false`, `roomId`, `contractId`; `q` = invoice or room code |
+| GET `/invoices/:id` | read `Invoice` | With snapshot lines |
+| POST `/invoices/:id/lines` | update `Invoice` | Draft only: `{ type: surcharge\|discount, amount > 0, reason, version? }` |
+| DELETE `/invoices/:id/lines/:lineId` | update `Invoice` | Draft and `manual` lines only |
+| POST `/invoices/issue` | issue `Invoice` | `{ ids }` (≤ 400 drafts), one transaction |
+| POST `/invoices/:id/void` | void `Invoice` (owner) | Draft or issued with `paidTotal = 0`; `{ reason, version? }` |
+| POST `/contracts/:id/move-in-invoice` | create `Invoice` | Active/ending contract without a non-void move-in invoice or a monthly invoice of its start month |
+
+Rules (`documents/stay/rules.md`):
+
+- Every amount comes from `@stay/billing` (`computeMonthlyInvoice`, `computeMoveInInvoice`,
+  `invoiceTotals`, `invoiceSchedule`, `invoiceCodePeriod`); `modules/invoices/invoices.billing.ts`
+  only loads dated inputs. Rent, occupants, vehicles, fixed services and **prices** are taken at
+  the issue date of M (building/system `issueDay`); electricity/water are the consumption of
+  M−1 from `periodMeterUsage` (readings service), registered at the end of M−1.
+- A room move effective in M−1 bills the old room as separate metered lines in M
+  (`meta.roomId`, `meta.sourceEventId`), from the last reading since the contract entered the
+  old room to the closing readings of the move; the new room starts at its move-in readings.
+- A contract with a non-void move-in invoice for M gets no monthly invoice for M.
+- Issue locks room rows (ids sorted; the same serialization point as reading saves and meter
+  replacement), then the invoice rows, then `invoice_sequences` rows (`INSERT … ON CONFLICT DO
+  NOTHING` + `SELECT … FOR UPDATE`), so concurrent issues never duplicate codes
+  `{building}-{YYYYMM}-{nnn}` (≤ 999 per building and period). Monthly codes use M; move-in and
+  settlement codes use the issue-date period. `issuedOn`/`dueOn`: monthly = issue/due day of M;
+  move-in = today (Asia/Ho_Chi_Minh), due on the later of today and the start date. Issue locks
+  the readings used and refuses a draft whose readings changed since it was computed
+  (409 `invoice_readings_changed`: refresh first).
+- Void sets `status = void`, `voidReason`, `voidedAt`; readings no other issued invoice uses go
+  back to `draft`, and the period can be drafted again.
+- Overdue is derived: `issued`/`partially_paid`, `dueOn` < today (Asia/Ho_Chi_Minh) and
+  `total − paidTotal > 0`. Tenants see only issued invoices of their contracts. Managers are
+  scoped to assigned buildings (inaccessible → 404); `void` stays with the owner.
+- Audit rows (`invoice.draft_created`, `draft_refreshed`, `line_added`, `line_deleted`,
+  `issued`, `voided`) contain ids, kind, period, status, code, total and version only — never
+  reasons or names.
+- Room usage: `roomDebts` and `roomRecentInvoices` (`rooms.usage.ts`) read invoices; the
+  building code is locked once an invoice was issued; a price override dated on/before an
+  issued invoice that used it returns 409 `price_history_locked`.
+
+Extension points:
+
+- ST-15 payments: lock the invoice row, sum non-reversed payments and call
+  `applyInvoicePaidTotal(row, paidTotal, tx)` (`invoices.service.ts`); the status is recomputed
+  by `invoicePaymentStatus` (`@stay/billing`). Void already refuses `paidTotal > 0`; paid
+  invoices are corrected with an `adjustment` line on the next period (`manualLines` supports it
+  with `referenceInvoiceId`).
+- ST-16 share link: `invoices.share_token_hash` exists (nullable, not exposed); store only a hash.
+- ST-17 settlement: compute with `computeSettlement`, persist with
+  `saveInvoiceDraft(contract, { invoice, roomId, readings, schedule }, null, tx)` (kind
+  `settlement`, unique per contract is up to ST-17) and issue through `issueInvoices` (codes use
+  the issue-date period). Apply the deposit with `applyDepositForSettlement` (its
+  `invoice_id` now references `invoices`).
+- ST-18 debt/reports: `GET /invoices?overdue=true`, `roomDebts`, and the `(status, due_on)` index.
+
+Integration coverage: `tests/invoices.integration.test.mjs` (CI Postgres/API runner only).

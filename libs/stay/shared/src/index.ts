@@ -8,6 +8,7 @@ export * from './date.js';
 export * from './deposit.js';
 export * from './errors.js';
 export * from './expense.js';
+export * from './invoice.js';
 export * from './invoice-code.js';
 export * from './money.js';
 export * from './period.js';

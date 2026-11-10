@@ -29,7 +29,9 @@ const TAG_DESCRIPTIONS = {
     'Chốt chỉ số điện nước, lưu theo dòng và thay đồng hồ; tiêu thụ tính theo các đoạn đồng hồ.',
   expenses: 'Chi phí vận hành, danh mục chi phí và tổng theo kỳ. Ảnh hoá đơn lưu private.',
   contracts:
-    'Hợp đồng thuê, kích hoạt, huỷ bản nháp và xem trước tiền nhận phòng. Không tạo hoá đơn (ST-14).',
+    'Hợp đồng thuê, kích hoạt (tạo hoá đơn nhận phòng nháp), huỷ bản nháp và xem trước tiền nhận phòng.',
+  invoices:
+    'Hoá đơn: xem trước và tạo bản nháp kỳ M (tiền phòng + dịch vụ M, điện nước M−1), phụ thu/giảm trừ, phát hành (cấp mã, khoá chỉ số), void. Mọi số tiền tính bằng `@stay/billing` tại server; dòng hoá đơn là snapshot.',
   audit: 'Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.',
   buildings: 'Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.',
   me: 'Người dùng hiện tại và quyền CASL.',
@@ -99,12 +101,48 @@ const OPERATIONS = {
   'PUT /api/contracts/{id}': ['Sửa bản nháp', VERSION_NOTE],
   'POST /api/contracts/{id}/activate': [
     'Kích hoạt hợp đồng',
-    'Khoá phòng, kiểm tra người ở và chỉ số, ghi nhận cọc đã thu. Không tạo hoá đơn.',
+    'Khoá phòng, kiểm tra người ở và chỉ số, ghi nhận cọc đã thu và tạo hoá đơn nhận phòng nháp (cùng cách tính với move-in-preview).',
   ],
   'POST /api/contracts/{id}/cancel': ['Huỷ bản nháp'],
   'GET /api/contracts/{id}/move-in-preview': [
     'Xem trước tiền nhận phòng',
     'Tính tại server theo ngày bắt đầu, giá toà, số người và xe đăng ký. Không gồm điện nước hay cọc.',
+  ],
+  'GET /api/buildings/{buildingId}/billing/{period}/preview': [
+    'Xem trước lập hoá đơn kỳ',
+    '`period` là kỳ hoá đơn M (YYYY-MM): tiền phòng và dịch vụ của M, điện nước tiêu thụ trong M−1. Liệt kê hợp đồng active/ending có ngày ở trong M: đủ điều kiện (tổng dự kiến, gồm cả dòng thêm tay của bản nháp) hoặc bị loại kèm `reason` (`missing_reading`, `missing_meter`, `negative_consumption`, `already_issued`, `move_in_invoice`, `no_occupancy`, `invalid_data`). Không ghi dữ liệu. Ngoài phạm vi trả 404.',
+  ],
+  'POST /api/buildings/{buildingId}/billing/{period}/drafts': [
+    'Tạo/làm mới bản nháp hoá đơn kỳ',
+    'Bắt buộc `Idempotency-Key`: gọi lại cùng key trả kết quả cũ (`replayed: true`), không tạo trùng. Làm mới tính lại bản nháp (giữ dòng phụ thu/giảm trừ thêm tay), không bao giờ tính lại hoá đơn đã phát hành. Hợp đồng bị loại không có hoá đơn. Trả bản xem trước sau khi ghi kèm số bản nháp tạo mới/làm mới.',
+  ],
+  'GET /api/invoices': [
+    'Danh sách hoá đơn',
+    'Lọc buildingId, period, kind, status, roomId, contractId, overdue=true|false (quá hạn suy ra: issued/partially_paid, quá dueOn theo Asia/Ho_Chi_Minh, còn nợ). `q` tìm theo mã hoá đơn hoặc mã phòng. Người thuê chỉ thấy hoá đơn đã phát hành của hợp đồng mình.',
+  ],
+  'GET /api/invoices/{id}': [
+    'Chi tiết hoá đơn',
+    'Kèm các dòng snapshot (đơn giá, tỷ lệ ngày, chỉ số đầu/cuối, dòng làm tròn); tổng các dòng luôn bằng `total`. Ngoài phạm vi trả 404.',
+  ],
+  'POST /api/invoices/{id}/lines': [
+    'Thêm phụ thu/giảm trừ',
+    'Chỉ bản nháp (409 `invoice_not_draft`). `amount` > 0; giảm trừ lưu âm. `reason` bắt buộc. Dòng làm tròn và tổng được tính lại. `version` tuỳ chọn: lệch trả 409 `version_conflict`.',
+  ],
+  'DELETE /api/invoices/{id}/lines/{lineId}': [
+    'Xoá dòng thêm tay',
+    'Chỉ bản nháp và dòng `manual` (409 `invoice_line_not_manual`). Dòng làm tròn và tổng được tính lại.',
+  ],
+  'POST /api/invoices/issue': [
+    'Phát hành hoá đơn',
+    'Gửi `ids` (1–400 bản nháp). Trong một transaction: khoá phòng, cấp mã `{mã toà}-{YYYYMM}-{nnn}` từ `invoice_sequences` (khoá dòng, không trùng khi phát hành song song; nhận phòng/thanh lý dùng kỳ của ngày phát hành), đặt `issuedOn`/`dueOn` theo kỳ thu của toà/hệ thống, khoá chỉ số đã dùng. 409 `invoice_not_draft`, `invoice_readings_changed` (chỉ số đổi sau khi tạo nháp: làm mới trước), `invoice_sequence_exhausted`.',
+  ],
+  'POST /api/invoices/{id}/void': [
+    'Void hoá đơn',
+    'Chỉ chủ trọ. Bản nháp hoặc hoá đơn đã phát hành chưa có thanh toán (`paidTotal = 0`, ngược lại 409 `invoice_has_payments`); `reason` bắt buộc. Mở khoá chỉ số không còn hoá đơn phát hành nào dùng; kỳ được lập lại bản nháp mới.',
+  ],
+  'POST /api/contracts/{id}/move-in-invoice': [
+    'Tạo hoá đơn nhận phòng',
+    'Cho hợp đồng active/ending chưa có hoá đơn nhận phòng (409 `move_in_invoice_exists`) và chưa có hoá đơn kỳ của tháng bắt đầu (409 `period_already_invoiced`). Tạo bản nháp từ cùng cách tính với move-in-preview.',
   ],
   'GET /api/audit-logs': [
     'Lịch sử thay đổi',
@@ -370,6 +408,35 @@ const OVERRIDES = {
       },
     ],
   },
+  'POST /api/buildings/{buildingId}/billing/{period}/drafts': {
+    parameters: [
+      {
+        name: 'Idempotency-Key',
+        in: 'header',
+        required: true,
+        description: 'Bắt buộc; gọi lại cùng key và kỳ trả kết quả cũ, không tạo trùng.',
+        schema: { type: 'string', minLength: 8, maxLength: 128 },
+      },
+    ],
+  },
+  'POST /api/invoices/{id}/lines': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'InvoiceLineInput' } } },
+    },
+  },
+  'POST /api/invoices/issue': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'InvoiceIssueInput' } } },
+    },
+  },
+  'POST /api/invoices/{id}/void': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'InvoiceVoidInput' } } },
+    },
+  },
   'GET /api/buildings/{buildingId}/readings': {
     parameters: [
       {
@@ -609,6 +676,7 @@ export default {
     'libs/stay/shared/src/expense.ts',
     'libs/stay/shared/src/deposit.ts',
     'libs/stay/shared/src/reading.ts',
+    'libs/stay/shared/src/invoice.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },
   sessionCookie: 'stay.session_token',

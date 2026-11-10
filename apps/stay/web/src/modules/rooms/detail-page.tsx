@@ -291,7 +291,9 @@ export default function RoomDetailPage() {
             <ul className="grid gap-2">
               {room.invoices.map((invoice) => (
                 <li key={invoice.id} className="flex flex-wrap justify-between gap-2">
-                  <span className="text-ink">{invoice.code ?? invoice.period}</span>
+                  <Link className="text-accent" to={`/invoices/${invoice.id}`}>
+                    {invoice.code ?? invoice.period}
+                  </Link>
                   <span className="text-ink">{money(invoice.total)}</span>
                 </li>
               ))}

@@ -4,6 +4,7 @@ import buildingsRouter from './buildings/buildings.router.js';
 import contractsRouter from './contracts/contracts.router.js';
 import depositsRouter from './deposits/deposits.router.js';
 import expensesRouter from './expenses/expenses.router.js';
+import invoicesRouter from './invoices/invoices.router.js';
 import meRouter from './me/me.router.js';
 import readingsRouter from './readings/readings.router.js';
 import roomsRouter from './rooms/rooms.router.js';
@@ -16,6 +17,7 @@ import uploadsRouter from './uploads/uploads.router.js';
 const apiRouter = Router();
 
 apiRouter.use(auditRouter);
+apiRouter.use(invoicesRouter);
 apiRouter.use(readingsRouter);
 apiRouter.use(expensesRouter);
 apiRouter.use(depositsRouter);

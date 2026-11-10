@@ -5,7 +5,7 @@ import {
   selectFields,
   setAuditChanges,
 } from '@p4/server-core';
-import { meterConsumption } from '@stay/billing';
+import { type MeterSegment, meterConsumption } from '@stay/billing';
 import type {
   MeterReadingInput,
   MeterReplacementInput,
@@ -91,13 +91,19 @@ async function context(user: StayUser, meterId: string, transaction: Transaction
   return { meter, room, contract };
 }
 
-/** The same segment computation serves grid, validation and ST-14 invoice snapshots. */
-export async function periodMeter(
-  contract: ContractModel,
+/** Contract facts the meter chain depends on; invoices pass the room/baseline at a date. */
+export type MeterContract = Pick<
+  ContractModel,
+  'roomId' | 'startDate' | 'initialElectric' | 'initialWater'
+>;
+
+/** Meters of the window, the baseline/closing readings used and the closed-meter segments. */
+async function meterWindow(
+  contract: MeterContract,
   kind: 'electricity' | 'water',
   period: string,
   transaction: Transaction,
-): Promise<ReadingMeter | null> {
+) {
   const { start, end } = periodBounds(period);
   if (contract.startDate > end) return null;
   const meters = await MeterModel.findAll({
@@ -118,7 +124,8 @@ export async function periodMeter(
   });
   const last = meters.at(-1);
   if (!last) return null;
-  const segments = [];
+  const segments: MeterSegment[] = [];
+  const baselines: MeterReadingModel[] = [];
   let previous = 0;
   let current: MeterReadingModel | null = null;
   for (const meter of meters) {
@@ -131,6 +138,7 @@ export async function periodMeter(
       order: [['period', 'DESC']],
       transaction,
     });
+    if (prior) baselines.push(prior);
     const baseline =
       prior?.reading ??
       (meter.installedOn <= contract.startDate
@@ -148,6 +156,19 @@ export async function periodMeter(
       segments.push({ meterId: meter.id, startReading: baseline, endReading: meter.finalReading });
     }
   }
+  return { last, segments, previous, current, baselines };
+}
+
+/** The same segment computation serves grid, validation and ST-14 invoice snapshots. */
+export async function periodMeter(
+  contract: MeterContract,
+  kind: 'electricity' | 'water',
+  period: string,
+  transaction: Transaction,
+): Promise<ReadingMeter | null> {
+  const window = await meterWindow(contract, kind, period, transaction);
+  if (!window) return null;
+  const { last, segments, previous, current } = window;
   const carriedConsumption = segments.length ? meterConsumption(segments).consumption : 0;
   const consumption = current
     ? meterConsumption([
@@ -167,8 +188,33 @@ export async function periodMeter(
   };
 }
 
+/**
+ * ST-14: billed segments of `period` (the consumption month) and the meter readings they use.
+ * `null` when the contract has no day in `period` or the room has no meter of `kind`;
+ * `segments` is `null` when the closing reading of `period` is missing.
+ */
+export async function periodMeterUsage(
+  contract: MeterContract,
+  kind: 'electricity' | 'water',
+  period: string,
+  transaction: Transaction,
+): Promise<{ segments: MeterSegment[] | null; readings: MeterReadingModel[] } | 'no_meter' | null> {
+  if (contract.startDate > periodBounds(period).end) return null;
+  const window = await meterWindow(contract, kind, period, transaction);
+  if (!window) return 'no_meter';
+  const { last, segments, previous, current, baselines } = window;
+  if (!current) return { segments: null, readings: baselines };
+  return {
+    segments: [
+      ...segments,
+      { meterId: last.id, startReading: previous, endReading: current.reading },
+    ],
+    readings: [...baselines, current],
+  };
+}
+
 async function withAverage(
-  contract: ContractModel,
+  contract: MeterContract,
   kind: 'electricity' | 'water',
   period: string,
   transaction: Transaction,

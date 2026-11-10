@@ -1,7 +1,12 @@
-/** Building usage from rooms and contracts. Invoice-dependent guards are filled by ST-14. */
+/** Building usage from rooms, contracts and invoices. */
 import type { BuildingStats } from '@stay/shared';
 import { Op, type Transaction } from 'sequelize';
-import { ContractModel, RoomModel } from '@/sequelize/models/index.js';
+import {
+  ContractModel,
+  InvoiceLineModel,
+  InvoiceModel,
+  RoomModel,
+} from '@/sequelize/models/index.js';
 import { roomOccupancies } from '../rooms/room-status.js';
 
 export interface BlockingRoom {
@@ -54,23 +59,44 @@ export async function roomsWithActiveContracts(
   }));
 }
 
-/** Invoices exist for the building, so its code (used in invoice codes) is locked (ST-14). */
+/** An invoice of the building was issued, so its code (used in invoice codes) is locked. */
 export async function buildingHasInvoices(
-  _buildingId: string,
-  _transaction?: Transaction,
+  buildingId: string,
+  transaction?: Transaction,
 ): Promise<boolean> {
-  return false;
+  const count = await InvoiceModel.count({
+    where: { buildingId, code: { [Op.ne]: null } },
+    transaction,
+  });
+
+  return count > 0;
 }
 
 /**
- * An override effective on `effectiveFrom` would change a price already snapshotted by an issued
- * invoice of the building (issued on or after that date). ST-14 adds the invoice query.
+ * A price override dated `effectiveFrom` was snapshotted by an issued (non-void) invoice of the
+ * building issued on or after that date, so it cannot be replaced.
  */
 export async function priceHistoryInvoiced(
-  _buildingId: string,
-  _serviceId: string,
-  _effectiveFrom: string,
-  _transaction: Transaction,
+  buildingId: string,
+  serviceId: string,
+  effectiveFrom: string,
+  transaction: Transaction,
 ): Promise<boolean> {
-  return false;
+  const invoices = await InvoiceModel.findAll({
+    where: {
+      buildingId,
+      issuedOn: { [Op.gte]: effectiveFrom },
+      status: { [Op.in]: ['issued', 'partially_paid', 'paid'] },
+    },
+    attributes: ['id'],
+    transaction,
+  });
+
+  if (!invoices.length) return false;
+  const count = await InvoiceLineModel.count({
+    where: { invoiceId: { [Op.in]: invoices.map((row) => row.id) }, serviceId },
+    transaction,
+  });
+
+  return count > 0;
 }

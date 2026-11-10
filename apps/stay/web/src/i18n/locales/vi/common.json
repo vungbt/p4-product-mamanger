@@ -40,7 +40,9 @@
     "expenseCategories": "Danh mục chi phí",
     "contractNew": "Tạo hợp đồng",
     "contractDetail": "Chi tiết hợp đồng",
-    "deposits": "Sổ cọc"
+    "deposits": "Sổ cọc",
+    "invoiceRun": "Lập hoá đơn kỳ",
+    "invoiceDetail": "Chi tiết hoá đơn"
   },
   "header": {
     "back": "Quay lại",
