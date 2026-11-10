@@ -1,5 +1,6 @@
-import { AlertDialog, Button, EmptyState, Skeleton } from '@itclabs/react-ui';
+import { AlertDialog, Button, DropdownMenu, EmptyState, Skeleton } from '@itclabs/react-ui';
 import { useCancelContract, useContract } from '@stay/sdk/react';
+import type { ContractChangeKind } from '@stay/sdk/shared';
 import { ApiSdkError, getErrorMessage } from '@stay/sdk/shared';
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -7,10 +8,12 @@ import { useCanOn } from '@/libraries/ability';
 import { displayDate, formatVnd } from '@/libraries/format';
 import { DepositLedger } from '@/modules/deposits/ledger';
 import { useRoomBuilding } from '@/modules/rooms/use-room-building';
+import { CHANGE_LABELS, ContractChangeDialog } from './change-dialog';
 import { CONTRACT_LABELS, LoadError } from './contract-ui';
 
 const TABS = ['Tổng quan', 'Hoá đơn', 'Cọc', 'Yêu cầu', 'Lịch sử'];
 const EVENT_LABELS: Record<string, string> = {
+  ...CHANGE_LABELS,
   created: 'Tạo bản nháp',
   updated: 'Cập nhật bản nháp',
   activated: 'Kích hoạt',
@@ -23,6 +26,7 @@ export default function ContractDetailPage() {
   const cancel = useCancelContract();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
+  const [change, setChange] = useState<ContractChangeKind | null>(null);
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const data = query.data;
@@ -57,6 +61,15 @@ export default function ContractDetailPage() {
               Huỷ bản nháp
             </Button>
           </div>
+        )}
+        {canUpdate && ['active', 'ending'].includes(data.status) && (
+          <DropdownMenu
+            trigger={<Button variant="secondary">Thay đổi</Button>}
+            triggerAsChild
+            items={(Object.entries(CHANGE_LABELS) as [ContractChangeKind, string][]).map(
+              ([value, label]) => ({ id: value, label, onSelect: () => setChange(value) }),
+            )}
+          />
         )}
       </header>
       {error && (
@@ -153,12 +166,16 @@ export default function ContractDetailPage() {
             <ol className="grid gap-3">
               {data.events.map((e) => (
                 <li key={e.id}>
-                  {EVENT_LABELS[e.type] ?? e.type} ·{' '}
+                  {EVENT_LABELS[e.type] ?? e.type} · {e.actorName} ·{' '}
                   {new Intl.DateTimeFormat('vi-VN', {
                     dateStyle: 'short',
                     timeStyle: 'short',
                     timeZone: 'Asia/Ho_Chi_Minh',
                   }).format(new Date(e.createdAt))}
+                  {typeof e.payload.effectiveDate === 'string' && (
+                    <> · Hiệu lực {displayDate(e.payload.effectiveDate)}</>
+                  )}
+                  {typeof e.payload.rent === 'number' && <> · {formatVnd(e.payload.rent)}</>}
                 </li>
               ))}
             </ol>
@@ -173,6 +190,9 @@ export default function ContractDetailPage() {
       <Link to="/contracts" className="font-semibold text-accent">
         Về danh sách hợp đồng
       </Link>
+      {change && (
+        <ContractChangeDialog contract={data} kind={change} onClose={() => setChange(null)} />
+      )}
       <AlertDialog
         open={confirm}
         onOpenChange={setConfirm}

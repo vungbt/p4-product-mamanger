@@ -38,6 +38,8 @@ for (const width of [1280, 375]) {
     await quickTenant.getByRole('textbox', { name: /Họ tên/ }).fill(name);
     await quickTenant.getByRole('textbox', { name: /Số điện thoại/ }).fill('0901234567');
     await quickTenant.getByRole('button', { name: 'Thêm người thuê', exact: true }).click();
+    // The new tenant must land in the occupants before it can be chosen as the representative.
+    await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
     await chooseOption(page, page, 'Người đại diện', name);
     await page.getByRole('button', { name: 'Lưu nháp & tiếp tục' }).click();
     await expect(page.getByRole('heading', { name: 'Bước 3: Dịch vụ & xe' })).toBeVisible();

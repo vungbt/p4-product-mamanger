@@ -137,6 +137,21 @@ try {
     description:
       'Bắt buộc, không chỉ khoảng trắng khi type=forfeited. Lưu trong note của bút toán.',
   };
+  for (const action of [
+    'renew',
+    'rent-change',
+    'occupants',
+    'occupants/{occupantId}/leave',
+    'vehicles',
+    'services',
+    'room-change',
+  ]) {
+    spec.paths[`/api/contracts/{id}/${action}`].post.responses['422'] = {
+      description:
+        'Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions.',
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+    };
+  }
   spec.paths['/api/contracts/{id}/deposits'].post.responses['422'] = {
     description: 'Số dư cọc không đủ hoặc số tiền vượt giới hạn an toàn.',
     content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },

@@ -198,3 +198,46 @@ locking the room row first (the same serialization point used for saves/replacem
 unlock the readings in its transaction. Earlier edits are blocked when a later reading is locked.
 Invoice creation remains disabled on O-19 until ST-14. CI integration coverage is in
 `tests/readings.integration.test.mjs`; real-API browser coverage is in `e2e/readings.spec.ts`.
+
+### ST-12 contract changes / ST-14 and ST-17 integration
+
+Run migration `20261116000100-contract-changes.cjs` before deploying ST-12. It adds
+`stay_contract_room_at(contract_uuid, business_date)` for room status/filter queries;
+no background scheduler is needed for future moves. The latest destination is held
+against other commands immediately; room/tenant views switch on the Vietnam effective date.
+Room changes must be recorded in increasing effective-date order to preserve the meter chain.
+
+All seven change routes accept `version`, `effectiveDate`, optional `Idempotency-Key`,
+and `preview: true` for validation without business mutations (the request audit remains). Responses contain `{ impact,
+contract }` (`contract: null` for previews). `impact.period` is the effective month;
+`firstIssuePeriod` uses the building/system issue day, and `utilityPeriod` is the next
+month for a room move. Counts and rent are resolved at the actual **issue date**;
+there is no automatic rent split for a mid-month change. A room move's rent difference
+needs a manual surcharge/discount. `toDate` is exclusive: someone leaving on D is
+no longer counted on D. Contract start/end dates themselves remain inclusive.
+
+`src/modules/contracts/contracts.resolvers.ts` exports:
+
+- `contractOccupantsAt`, `contractVehiclesAt`, `contractServicesAt(contractId, date, tx?)`:
+  dated registration rows (including tenant/service/vehicle IDs); use their lengths for counts.
+- `contractRentAt(contractId, date, tx?)`: rent history replayed by effective date,
+  creation order breaking same-date ties, with the ST-10 activation event as baseline.
+- `contractFactsAt`: room, rent and initial meter readings at a business date, for
+  settlement (ST-17), tenancy views and invoice snapshots.
+- `contractRoomClosingsForPeriod(contractId, period, tx?)`: old-room utility segments
+  for ST-14, with event ID, old/new room IDs, old initial and closing readings,
+  new initial readings and effective date. Bill each old-room segment separately;
+  use ST-13's most recent billed/read baseline when computing consumption to avoid
+  rebilling prior months. Snapshot rates and source event IDs in invoice lines.
+- `periodIsInvoiced(contractId, period)`: deliberately returns `false` until ST-14.
+  Replace it with a check for issued/non-void invoices. The preview then warns about
+  void/reissue for unpaid invoices or a correction line next period when paid.
+
+Events retain actor ID, effective date and structured payload; history DTOs resolve
+actor display names. Audit rows contain only building/contract IDs, version and date,
+never names, phones, plates or free text. ST-17 must keep dated history/events intact
+and close registrations when settling; deposit application continues through ST-11.
+
+Integration coverage is in `tests/contract-changes.integration.test.mjs` and runs
+only through the existing CI Postgres/API runner. Web E2E fixtures create uniquely
+coded rooms only in building A and require the real migrated API.

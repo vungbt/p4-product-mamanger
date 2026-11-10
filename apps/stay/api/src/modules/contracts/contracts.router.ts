@@ -12,6 +12,8 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { formBody } from '@/shared/input.js';
 import { auditPolicies } from './contracts.audit.js';
+import { readChangeInput } from './contracts.changes.input.js';
+import { changeContract } from './contracts.changes.js';
 import { readContractInput } from './contracts.input.js';
 import {
   activateContract,
@@ -104,6 +106,112 @@ router.get(
   authRequired,
   requireScopedAbility('read', 'Contract'),
   apiHandler((req) => moveInPreview(currentUser(req), uuidRouteId(req))),
+);
+
+router.post(
+  '/contracts/:id/renew',
+  authRequired,
+  requireScopedAbility('update', 'Contract'),
+  apiHandler((req) =>
+    changeContract(
+      currentUser(req),
+      uuidRouteId(req),
+      'renew',
+      readChangeInput(formBody(req), 'renew'),
+      req.get('Idempotency-Key'),
+    ),
+  ),
+);
+
+router.post(
+  '/contracts/:id/rent-change',
+  authRequired,
+  requireScopedAbility('update', 'Contract'),
+  apiHandler((req) =>
+    changeContract(
+      currentUser(req),
+      uuidRouteId(req),
+      'rent-change',
+      readChangeInput(formBody(req), 'rent-change'),
+      req.get('Idempotency-Key'),
+    ),
+  ),
+);
+
+router.post(
+  '/contracts/:id/occupants',
+  authRequired,
+  requireScopedAbility('update', 'Contract'),
+  apiHandler((req) =>
+    changeContract(
+      currentUser(req),
+      uuidRouteId(req),
+      'occupants',
+      readChangeInput(formBody(req), 'occupants'),
+      req.get('Idempotency-Key'),
+    ),
+  ),
+);
+
+router.post(
+  '/contracts/:id/vehicles',
+  authRequired,
+  requireScopedAbility('update', 'Contract'),
+  apiHandler((req) =>
+    changeContract(
+      currentUser(req),
+      uuidRouteId(req),
+      'vehicles',
+      readChangeInput(formBody(req), 'vehicles'),
+      req.get('Idempotency-Key'),
+    ),
+  ),
+);
+
+router.post(
+  '/contracts/:id/services',
+  authRequired,
+  requireScopedAbility('update', 'Contract'),
+  apiHandler((req) =>
+    changeContract(
+      currentUser(req),
+      uuidRouteId(req),
+      'services',
+      readChangeInput(formBody(req), 'services'),
+      req.get('Idempotency-Key'),
+    ),
+  ),
+);
+
+router.post(
+  '/contracts/:id/room-change',
+  authRequired,
+  requireScopedAbility('update', 'Contract'),
+  apiHandler((req) =>
+    changeContract(
+      currentUser(req),
+      uuidRouteId(req),
+      'room-change',
+      readChangeInput(formBody(req), 'room-change'),
+      req.get('Idempotency-Key'),
+    ),
+  ),
+);
+
+router.post(
+  '/contracts/:id/occupants/:occupantId/leave',
+  authRequired,
+  requireScopedAbility('update', 'Contract'),
+  apiHandler((req) =>
+    changeContract(
+      currentUser(req),
+      uuidRouteId(req),
+      'leave',
+      readChangeInput(formBody(req), 'leave'),
+      req.get('Idempotency-Key'),
+      uuidRouteId(req, 'occupantId'),
+    ),
+  ),
 );
 
 export default applyAuditPolicies(router, auditPolicies);

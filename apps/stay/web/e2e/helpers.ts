@@ -8,7 +8,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 export async function chooseOption(
   page: Page,
   scope: Page | Locator,
-  label: string,
+  label: string | RegExp,
   option: string | RegExp,
 ) {
   await scope.getByRole('combobox', { name: label }).focus();
