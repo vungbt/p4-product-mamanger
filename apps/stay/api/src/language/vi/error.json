@@ -40,5 +40,15 @@
   "building_not_found": "Không tìm thấy toà nhà.",
   "building_archived": "Toà nhà đã được lưu trữ.",
   "building_has_active_contracts": "Toà nhà còn phòng có hợp đồng hiệu lực.",
-  "price_history_locked": "Đơn giá từ ngày này đã được dùng trong hoá đơn đã phát hành."
+  "price_history_locked": "Đơn giá từ ngày này đã được dùng trong hoá đơn đã phát hành.",
+  "room_not_found": "Không tìm thấy phòng.",
+  "room_archived": "Phòng đã được lưu trữ.",
+  "room_code_format": "Mã phòng chỉ gồm chữ A–Z, số 0–9, dấu chấm và gạch ngang, tối đa 12 ký tự.",
+  "room_code_taken": "Mã phòng đã có trong toà.",
+  "room_has_contract": "Phòng đang có hợp đồng hiệu lực.",
+  "room_floor_range": "Tầng bắt đầu phải nhỏ hơn hoặc bằng tầng kết thúc (0–99).",
+  "room_bulk_limit": "Mỗi lần tạo tối đa {{max}} phòng.",
+  "room_template": "Mẫu mã phải có {number} (và {floor} khi tạo nhiều tầng), chỉ gồm chữ A–Z, số, dấu chấm và gạch ngang.",
+  "decimal_field": "{{attribute}} phải là số dương, tối đa {{max}}, nhiều nhất 2 chữ số thập phân.",
+  "date_not_past": "{{attribute}} không được trước hôm nay."
 }

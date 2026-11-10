@@ -4,7 +4,10 @@ export type StayValueErrorCode =
   | 'INVALID_AMOUNT'
   | 'INVALID_ROUNDING_UNIT'
   | 'AMOUNT_OUT_OF_RANGE'
-  | 'INVALID_INVOICE_CODE';
+  | 'INVALID_INVOICE_CODE'
+  | 'INVALID_ROOM_RANGE'
+  | 'INVALID_ROOM_TEMPLATE'
+  | 'ROOM_BULK_LIMIT';
 
 /** Thrown by the helpers in this package when a value is malformed. */
 export class StayValueError extends Error {

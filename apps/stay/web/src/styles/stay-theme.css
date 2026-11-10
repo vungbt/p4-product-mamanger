@@ -58,3 +58,11 @@
   --color-chart-5: #be185d;
   --color-chart-6: #475569;
 }
+
+/* Room map (screens.md O-07): vacant grey, reserved yellow (warning), occupied green (success)
+   and maintenance orange, a token distinct from the warning yellow.
+   caution-700/caution-50 5.03 · caution-700/surface 5.46 */
+@theme {
+  --color-caution-50: #fff4e6;
+  --color-caution-700: #b4470a;
+}

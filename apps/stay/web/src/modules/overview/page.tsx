@@ -2,16 +2,19 @@ import { Avatar, Icon, type IconName, Tag } from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/libraries/session/auth-provider';
+import { ROUTES } from '@/routing/route-configs';
 
 type OnboardingStep = {
   key: 'prices' | 'rooms' | 'contracts';
   icon: IconName;
   href: string;
+  /** The screen behind the step exists; others show "Sắp có". */
+  ready?: boolean;
 };
 
 const STEPS: OnboardingStep[] = [
   { key: 'prices', icon: 'settings', href: '/settings' },
-  { key: 'rooms', icon: 'building', href: '/rooms' },
+  { key: 'rooms', icon: 'building', href: ROUTES.roomBulk, ready: true },
   { key: 'contracts', icon: 'clipboardText', href: '/contracts' },
 ];
 
@@ -73,9 +76,11 @@ export default function OverviewPage() {
                   <span className="text-ui-sm text-muted">
                     {t(`overview.steps.${step.key}.description`)}
                   </span>
-                  <Tag size="sm" tone="brand" className="mt-1 w-fit">
-                    {t('overview.soon')}
-                  </Tag>
+                  {step.ready ? null : (
+                    <Tag size="sm" tone="brand" className="mt-1 w-fit">
+                      {t('overview.soon')}
+                    </Tag>
+                  )}
                 </span>
               </Link>
             </li>

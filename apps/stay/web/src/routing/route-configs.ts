@@ -16,15 +16,28 @@ export type StayRoute = {
   exact?: boolean;
   /** Reachable by URL but not listed in the menus. */
   hideInMenu?: boolean;
+  /** `name` of the route shown before this one in the breadcrumb (sub-pages). */
+  parent?: string;
 };
 
 const OverviewPage = lazy(() => import('@/modules/overview/page'));
 const PlaceholderPage = lazy(() => import('@/modules/placeholder/page'));
+const RoomMapPage = lazy(() => import('@/modules/rooms/page'));
+const RoomDetailPage = lazy(() => import('@/modules/rooms/detail-page'));
+const RoomFormPage = lazy(() => import('@/modules/rooms/form-page'));
+const RoomBulkPage = lazy(() => import('@/modules/rooms/bulk-page'));
 
 export const ROUTES = {
   login: '/login',
   overview: '/',
+  rooms: '/rooms',
+  roomNew: '/rooms/new',
+  roomBulk: '/rooms/bulk',
 } as const;
+
+/** `/rooms/:id` and `/rooms/:id/edit`. */
+export const roomPath = (id: string) => `${ROUTES.rooms}/${id}`;
+export const roomEditPath = (id: string) => `${roomPath(id)}/edit`;
 
 /** Signed-in app routes (screens.md C-02 menu order). Menus are derived from this list. */
 export const appRoutes: StayRoute[] = [
@@ -38,12 +51,49 @@ export const appRoutes: StayRoute[] = [
     exact: true,
   },
   {
-    path: '/rooms',
+    path: ROUTES.rooms,
     name: 'rooms',
     icon: 'building',
-    component: PlaceholderPage,
+    component: RoomMapPage,
     ability: { action: 'read', subject: 'Room' },
     bottomNav: true,
+  },
+  // Static room paths come before `/rooms/:id` (`useCurrentRoute` takes the first match).
+  {
+    path: ROUTES.roomNew,
+    name: 'roomNew',
+    icon: 'building',
+    component: RoomFormPage,
+    ability: { action: 'manage', subject: 'Room' },
+    hideInMenu: true,
+    parent: 'rooms',
+  },
+  {
+    path: ROUTES.roomBulk,
+    name: 'roomBulk',
+    icon: 'building',
+    component: RoomBulkPage,
+    ability: { action: 'manage', subject: 'Room' },
+    hideInMenu: true,
+    parent: 'rooms',
+  },
+  {
+    path: '/rooms/:id',
+    name: 'roomDetail',
+    icon: 'building',
+    component: RoomDetailPage,
+    ability: { action: 'read', subject: 'Room' },
+    hideInMenu: true,
+    parent: 'rooms',
+  },
+  {
+    path: '/rooms/:id/edit',
+    name: 'roomEdit',
+    icon: 'building',
+    component: RoomFormPage,
+    ability: { action: 'manage', subject: 'Room' },
+    hideInMenu: true,
+    parent: 'rooms',
   },
   {
     path: '/readings',

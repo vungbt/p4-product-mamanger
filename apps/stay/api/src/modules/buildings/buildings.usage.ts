@@ -1,10 +1,12 @@
 /**
- * What other modules know about a building. Rooms (ST-08), contracts (ST-10) and invoices (ST-14)
- * do not exist yet: each function returns the empty answer and the owning task adds its query
- * here, so the building rules (archive, code lock, price history) need no other change.
+ * What other modules know about a building. Contracts (ST-10) and invoices (ST-14) do not exist
+ * yet: each such function returns the empty answer and the owning task adds its query here, so
+ * the building rules (archive, code lock, price history) need no other change.
  */
 import type { BuildingStats } from '@stay/shared';
-import type { Transaction } from 'sequelize';
+import { Op, type Transaction } from 'sequelize';
+import { RoomModel } from '@/sequelize/models/index.js';
+import { roomOccupancies } from '../rooms/room-status.js';
 
 export interface BlockingRoom {
   roomId: string;
@@ -12,11 +14,27 @@ export interface BlockingRoom {
   contractId: string;
 }
 
-/** Room counters per building (ST-08 counts rooms, ST-10 occupied ones). */
+/** Active (non-archived) rooms per building, and those occupied (room-status derivation). */
 export async function buildingStats(buildingIds: readonly string[]) {
-  return new Map<string, BuildingStats>(
+  const stats = new Map<string, BuildingStats>(
     buildingIds.map((id) => [id, { roomCount: 0, occupiedRoomCount: 0 }]),
   );
+  const rooms = buildingIds.length
+    ? await RoomModel.findAll({
+        attributes: ['id', 'buildingId'],
+        where: { buildingId: { [Op.in]: [...buildingIds] }, archivedAt: { [Op.is]: null } },
+      })
+    : [];
+  const occupancies = await roomOccupancies(rooms.map((room) => room.id));
+
+  for (const room of rooms) {
+    const entry = stats.get(room.buildingId);
+
+    if (!entry) continue;
+    entry.roomCount += 1;
+    if (occupancies.get(room.id)?.status === 'occupied') entry.occupiedRoomCount += 1;
+  }
+  return stats;
 }
 
 /** Rooms with an `active`/`ending` contract; a building with any cannot be archived (ST-10). */
