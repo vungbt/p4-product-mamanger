@@ -89,5 +89,12 @@
   "deposit_amount_overflow": "Số tiền cọc vượt giới hạn an toàn.",
   "deposit_contract_not_active": "Không ghi bút toán cọc cho hợp đồng nháp hoặc đã huỷ.",
   "invalid_deposit_entry": "Bút toán cọc không hợp lệ.",
-  "invalid_deposit_type": "Loại bút toán cọc không hợp lệ."
+  "invalid_deposit_type": "Loại bút toán cọc không hợp lệ.",
+  "invoice_not_issued": "Hoá đơn chưa phát hành, chưa thể thu tiền.",
+  "invoice_void": "Hoá đơn đã void, không nhận thanh toán.",
+  "invoice_already_paid": "Hoá đơn đã thu đủ.",
+  "payment_exceeds_remaining": "Số tiền vượt số còn lại của hoá đơn ({{remaining}} đ).",
+  "payment_already_reversed": "Bút toán thu đã được huỷ.",
+  "invalid_payment": "Bút toán thu không hợp lệ.",
+  "payment_amount_overflow": "Tổng tiền thu vượt giới hạn an toàn."
 }

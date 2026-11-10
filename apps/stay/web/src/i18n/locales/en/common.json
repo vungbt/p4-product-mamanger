@@ -12,6 +12,7 @@
     "readings": "Meter readings",
     "invoices": "Invoices",
     "receivables": "Receivables",
+    "payments": "Payments",
     "contracts": "Contracts",
     "tenants": "Tenants",
     "requests": "Requests",
@@ -152,7 +153,8 @@
       "maintenanceOff": "End maintenance",
       "archive": "Archive",
       "bulk": "Create rooms in bulk",
-      "create": "Add room"
+      "create": "Add room",
+      "collect": "Collect payment"
     },
     "map": {
       "description": "Room map · {{building}}",

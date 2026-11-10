@@ -18,6 +18,8 @@ type QuickActionOptions = {
   t: TFunction;
   open: (path: string) => void;
   onMaintenance: (room: Room) => void;
+  /** Set when the user may record payments: "Thu tiền" for a room with debt (ST-15). */
+  onCollect?: (room: Room) => void;
 };
 
 /**
@@ -30,6 +32,7 @@ export function roomQuickActions({
   t,
   open,
   onMaintenance,
+  onCollect,
 }: QuickActionOptions): DropdownMenuEntry[] {
   const entries: DropdownMenuEntry[] = [
     { id: 'view', label: t('rooms.actions.view'), onSelect: () => open(roomPath(room.id)) },
@@ -40,6 +43,12 @@ export function roomQuickActions({
       id: 'contract',
       label: 'Tạo hợp đồng',
       onSelect: () => open(`/contracts/new?roomId=${room.id}`),
+    });
+  if (room.debt > 0 && onCollect)
+    entries.push({
+      id: 'collect',
+      label: t('rooms.actions.collect'),
+      onSelect: () => onCollect(room),
     });
 
   if (!canManage) return entries;
@@ -65,10 +74,11 @@ type RoomTileProps = {
   room: Room;
   canManage: boolean;
   onMaintenance: (room: Room) => void;
+  onCollect?: (room: Room) => void;
 };
 
 /** One room of the map: a compact row on mobile, a card in the floor grid from `sm` up. */
-export function RoomTile({ room, canManage, onMaintenance }: RoomTileProps) {
+export function RoomTile({ room, canManage, onMaintenance, onCollect }: RoomTileProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { formatCurrency } = useFormatters();
@@ -80,7 +90,14 @@ export function RoomTile({ room, canManage, onMaintenance }: RoomTileProps) {
   const occupants = room.contract
     ? t('rooms.map.occupants', { count: room.occupantCount, max: room.maxOccupants })
     : t('rooms.map.maxOccupants', { max: room.maxOccupants });
-  const actions = roomQuickActions({ room, canManage, t, open: navigate, onMaintenance });
+  const actions = roomQuickActions({
+    room,
+    canManage,
+    t,
+    open: navigate,
+    onMaintenance,
+    onCollect,
+  });
 
   return (
     <li

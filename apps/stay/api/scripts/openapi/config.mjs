@@ -32,6 +32,8 @@ const TAG_DESCRIPTIONS = {
     'Hợp đồng thuê, kích hoạt (tạo hoá đơn nhận phòng nháp), huỷ bản nháp và xem trước tiền nhận phòng.',
   invoices:
     'Hoá đơn: xem trước và tạo bản nháp kỳ M (tiền phòng + dịch vụ M, điện nước M−1), phụ thu/giảm trừ, phát hành (cấp mã, khoá chỉ số), void. Mọi số tiền tính bằng `@stay/billing` tại server; dòng hoá đơn là snapshot.',
+  payments:
+    'Thu tiền hoá đơn (một hoặc nhiều lần), sổ thu và huỷ bút toán thu. Thanh toán không sửa/xoá; `paidTotal` và trạng thái hoá đơn luôn tính lại từ tổng các khoản chưa huỷ trong cùng transaction.',
   audit: 'Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.',
   buildings: 'Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.',
   me: 'Người dùng hiện tại và quyền CASL.',
@@ -122,7 +124,7 @@ const OPERATIONS = {
   ],
   'GET /api/invoices/{id}': [
     'Chi tiết hoá đơn',
-    'Kèm các dòng snapshot (đơn giá, tỷ lệ ngày, chỉ số đầu/cuối, dòng làm tròn); tổng các dòng luôn bằng `total`. Ngoài phạm vi trả 404.',
+    'Kèm các dòng snapshot (đơn giá, tỷ lệ ngày, chỉ số đầu/cuối, dòng làm tròn); tổng các dòng luôn bằng `total`. `payments`: lịch sử thu (mới nhất trước, gồm cả bút toán đã huỷ). Ngoài phạm vi trả 404.',
   ],
   'POST /api/invoices/{id}/lines': [
     'Thêm phụ thu/giảm trừ',
@@ -138,11 +140,23 @@ const OPERATIONS = {
   ],
   'POST /api/invoices/{id}/void': [
     'Void hoá đơn',
-    'Chỉ chủ trọ. Bản nháp hoặc hoá đơn đã phát hành chưa có thanh toán (`paidTotal = 0`, ngược lại 409 `invoice_has_payments`); `reason` bắt buộc. Mở khoá chỉ số không còn hoá đơn phát hành nào dùng; kỳ được lập lại bản nháp mới.',
+    'Chỉ chủ trọ. Bản nháp hoặc hoá đơn đã phát hành chưa có thanh toán (`paidTotal = 0`, ngược lại 409 `invoice_has_payments`; huỷ hết bút toán thu thì void được); `reason` bắt buộc. Mở khoá chỉ số không còn hoá đơn phát hành nào dùng; kỳ được lập lại bản nháp mới.',
   ],
   'POST /api/contracts/{id}/move-in-invoice': [
     'Tạo hoá đơn nhận phòng',
     'Cho hợp đồng active/ending chưa có hoá đơn nhận phòng (409 `move_in_invoice_exists`) và chưa có hoá đơn kỳ của tháng bắt đầu (409 `period_already_invoiced`). Tạo bản nháp từ cùng cách tính với move-in-preview.',
+  ],
+  'POST /api/invoices/{id}/payments': [
+    'Thu tiền hoá đơn',
+    'Bắt buộc `Idempotency-Key`: gọi lại cùng key và nội dung trả lại đúng khoản đã ghi, không ghi hai lần (khác nội dung trả 409 `idempotency_conflict`). Khoá dòng hoá đơn nên hai khoản thu song song không vượt tổng. Chỉ hoá đơn đã phát hành chưa thu đủ: nháp 409 `invoice_not_issued`, void 409 `invoice_void`, đã thu đủ 409 `invoice_already_paid`. `amount` > 0 và ≤ số còn lại (vượt trả 422 `payment_exceeds_remaining`, `extensions.remaining`; không tự ghi thừa). `paidOn` không sau hôm nay (Asia/Ho_Chi_Minh). Cập nhật `paidTotal` và trạng thái (`issued` → `partially_paid` → `paid`) trong cùng transaction. Ngoài phạm vi trả 404.',
+  ],
+  'POST /api/payments/{id}/reverse': [
+    'Huỷ bút toán thu',
+    'Thanh toán không sửa/xoá: ghi `reversedAt`, `reverseReason` (bắt buộc), người huỷ. Mỗi khoản chỉ huỷ một lần (409 `payment_already_reversed`). `paidTotal` và trạng thái hoá đơn tính lại từ các khoản còn lại. Quyền `void:Payment` (mặc định chỉ chủ trọ). Ngoài phạm vi trả 404.',
+  ],
+  'GET /api/payments': [
+    'Sổ thu',
+    'Lọc `buildingId`, `dateFrom`/`dateTo` (ngày thu, gồm cả hai đầu), `method`, `invoiceId`; `q` tìm theo mã hoá đơn, mã phòng hoặc mã giao dịch. Khoản đã huỷ chỉ hiện khi `includeReversed=true`. `meta.totals` (theo phương thức) và `meta.totalAmount` tính trên toàn bộ bộ lọc trước phân trang và không gồm khoản đã huỷ. Người quản lý chỉ thấy toà được gán; `buildingId` ngoài phạm vi trả 404.',
   ],
   'GET /api/audit-logs': [
     'Lịch sử thay đổi',
@@ -437,6 +451,28 @@ const OVERRIDES = {
       content: { 'application/json': { schema: { ref: 'InvoiceVoidInput' } } },
     },
   },
+  'POST /api/invoices/{id}/payments': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'PaymentInput' } } },
+    },
+    parameters: [
+      {
+        name: 'Idempotency-Key',
+        in: 'header',
+        required: true,
+        description:
+          'Bắt buộc; mỗi lần mở hộp thoại Thu tiền dùng một key mới, bấm lại dùng lại key.',
+        schema: { type: 'string', minLength: 8, maxLength: 128 },
+      },
+    ],
+  },
+  'POST /api/payments/{id}/reverse': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'PaymentReverseInput' } } },
+    },
+  },
   'GET /api/buildings/{buildingId}/readings': {
     parameters: [
       {
@@ -677,6 +713,7 @@ export default {
     'libs/stay/shared/src/deposit.ts',
     'libs/stay/shared/src/reading.ts',
     'libs/stay/shared/src/invoice.ts',
+    'libs/stay/shared/src/payment.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },
   sessionCookie: 'stay.session_token',

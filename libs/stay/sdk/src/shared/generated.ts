@@ -1409,7 +1409,7 @@ export interface paths {
     };
     /**
      * Chi tiết hoá đơn
-     * @description Kèm các dòng snapshot (đơn giá, tỷ lệ ngày, chỉ số đầu/cuối, dòng làm tròn); tổng các dòng luôn bằng `total`. Ngoài phạm vi trả 404.
+     * @description Kèm các dòng snapshot (đơn giá, tỷ lệ ngày, chỉ số đầu/cuối, dòng làm tròn); tổng các dòng luôn bằng `total`. `payments`: lịch sử thu (mới nhất trước, gồm cả bút toán đã huỷ). Ngoài phạm vi trả 404.
      *
      *     **Quyền:** `read:Invoice`.
      */
@@ -1466,6 +1466,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/invoices/{id}/payments': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thu tiền hoá đơn
+     * @description Bắt buộc `Idempotency-Key`: gọi lại cùng key và nội dung trả lại đúng khoản đã ghi, không ghi hai lần (khác nội dung trả 409 `idempotency_conflict`). Khoá dòng hoá đơn nên hai khoản thu song song không vượt tổng. Chỉ hoá đơn đã phát hành chưa thu đủ: nháp 409 `invoice_not_issued`, void 409 `invoice_void`, đã thu đủ 409 `invoice_already_paid`. `amount` > 0 và ≤ số còn lại (vượt trả 422 `payment_exceeds_remaining`, `extensions.remaining`; không tự ghi thừa). `paidOn` không sau hôm nay (Asia/Ho_Chi_Minh). Cập nhật `paidTotal` và trạng thái (`issued` → `partially_paid` → `paid`) trong cùng transaction. Ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `create:Payment`.
+     */
+    post: operations['post_api_invoices_id_payments'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/invoices/{id}/void': {
     parameters: {
       query?: never;
@@ -1477,7 +1499,7 @@ export interface paths {
     put?: never;
     /**
      * Void hoá đơn
-     * @description Chỉ chủ trọ. Bản nháp hoặc hoá đơn đã phát hành chưa có thanh toán (`paidTotal = 0`, ngược lại 409 `invoice_has_payments`); `reason` bắt buộc. Mở khoá chỉ số không còn hoá đơn phát hành nào dùng; kỳ được lập lại bản nháp mới.
+     * @description Chỉ chủ trọ. Bản nháp hoặc hoá đơn đã phát hành chưa có thanh toán (`paidTotal = 0`, ngược lại 409 `invoice_has_payments`; huỷ hết bút toán thu thì void được); `reason` bắt buộc. Mở khoá chỉ số không còn hoá đơn phát hành nào dùng; kỳ được lập lại bản nháp mới.
      *
      *     **Quyền:** `void:Invoice`.
      */
@@ -1570,6 +1592,50 @@ export interface paths {
      *     **Quyền:** `update:MeterReading`.
      */
     post: operations['post_api_meters_id_replace'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/payments': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Sổ thu
+     * @description Lọc `buildingId`, `dateFrom`/`dateTo` (ngày thu, gồm cả hai đầu), `method`, `invoiceId`; `q` tìm theo mã hoá đơn, mã phòng hoặc mã giao dịch. Khoản đã huỷ chỉ hiện khi `includeReversed=true`. `meta.totals` (theo phương thức) và `meta.totalAmount` tính trên toàn bộ bộ lọc trước phân trang và không gồm khoản đã huỷ. Người quản lý chỉ thấy toà được gán; `buildingId` ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `read:Payment`.
+     */
+    get: operations['get_api_payments'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/payments/{id}/reverse': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Huỷ bút toán thu
+     * @description Thanh toán không sửa/xoá: ghi `reversedAt`, `reverseReason` (bắt buộc), người huỷ. Mỗi khoản chỉ huỷ một lần (409 `payment_already_reversed`). `paidTotal` và trạng thái hoá đơn tính lại từ các khoản còn lại. Quyền `void:Payment` (mặc định chỉ chủ trọ). Ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `void:Payment`.
+     */
+    post: operations['post_api_payments_id_reverse'];
     delete?: never;
     options?: never;
     head?: never;
@@ -2474,6 +2540,33 @@ export interface components {
       total: number;
       totalPages: number;
     };
+    PaymentInput: {
+      amount: number;
+      /** @enum {string} */
+      method: 'bank_transfer' | 'cash' | 'other';
+      note?: string | null;
+      /**
+       * Format: date
+       * @description Không sau hôm nay (Asia/Ho_Chi_Minh).
+       */
+      paidOn: string;
+      reference?: string | null;
+    };
+    PaymentResult: {
+      invoice: {
+        id: string;
+        paidTotal: number;
+        remaining: number;
+        /** @enum {string} */
+        status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
+        total: number;
+        version: number;
+      };
+      payment: components['schemas']['StayPayment'];
+    };
+    PaymentReverseInput: {
+      reason: string;
+    };
     ReadingBulkResult: {
       results: components['schemas']['ReadingSaveResult'][];
     };
@@ -2735,6 +2828,7 @@ export interface components {
       lines: components['schemas']['StayInvoiceLine'][];
       overdue: boolean;
       paidTotal: number;
+      payments: components['schemas']['StayPayment'][];
       period: string;
       remaining: number;
       roomCode: string;
@@ -2842,6 +2936,28 @@ export interface components {
       /** @enum {string} */
       status: 'draft' | 'locked';
       version: number;
+    };
+    StayPayment: {
+      actorName: string | null;
+      amount: number;
+      buildingId: string;
+      contractId: string;
+      createdAt: string;
+      id: string;
+      invoiceCode: string | null;
+      invoiceId: string;
+      /** @enum {string} */
+      method: 'bank_transfer' | 'cash' | 'other';
+      note: string | null;
+      paidOn: string;
+      reference: string | null;
+      reversedAt: string | null;
+      reversedByName: string | null;
+      reverseReason: string | null;
+      roomCode: string;
+      roomId: string;
+      /** @enum {string} */
+      status: 'recorded' | 'reversed';
     };
     StayRoom: {
       archivedAt: string | null;
@@ -8323,6 +8439,61 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  post_api_invoices_id_payments: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description Bắt buộc; mỗi lần mở hộp thoại Thu tiền dùng một key mới, bấm lại dùng lại key. */
+        'Idempotency-Key': string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PaymentInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PaymentResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description Hoá đơn chưa phát hành (`invoice_not_issued`), đã void (`invoice_void`), đã thu đủ (`invoice_already_paid`) hoặc key đã dùng với nội dung khác (`idempotency_conflict`). */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      /** @description Số tiền vượt số còn lại (`payment_exceeds_remaining`, `extensions.remaining`). */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
   post_api_invoices_id_void: {
     parameters: {
       query?: never;
@@ -8478,6 +8649,98 @@ export interface operations {
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_payments: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+        dateFrom?: string;
+        dateTo?: string;
+        includeReversed?: 'false' | 'true';
+        invoiceId?: string;
+        method?: 'bank_transfer' | 'cash' | 'other';
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'paidOn' | 'amount' | 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayPayment'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'] & {
+              totalAmount: number;
+              /** @description Một dòng cho mỗi phương thức (kể cả 0), không gồm khoản đã huỷ. */
+              totals: {
+                amount: number;
+                count: number;
+                /** @enum {string} */
+                method: 'cash' | 'bank_transfer' | 'other';
+              }[];
+            };
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_payments_id_reverse: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PaymentReverseInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PaymentResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description Bút toán đã được huỷ (`payment_already_reversed`). */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
       429: components['responses']['RateLimited'];
     };
   };

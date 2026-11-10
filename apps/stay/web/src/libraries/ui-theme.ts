@@ -20,6 +20,7 @@ import {
   MenuIcon,
   MessageIcon,
   MessagesIcon,
+  MoneyReceiveIcon,
   MoneyTimeIcon,
   MoreVerticalIcon,
   PhoneIcon,
@@ -30,6 +31,7 @@ import {
   SettingsIcon,
   SignalOffIcon,
   UsersIcon,
+  WalletMoneyIcon,
 } from '@itclabs/react-ui/icons/outline';
 
 // Register only the glyphs Stay uses, keeping the full catalog out of the bundle.
@@ -56,6 +58,7 @@ export const uiTheme = defineTheme({
       menu: MenuIcon,
       message: MessageIcon,
       messages: MessagesIcon,
+      moneyReceive: MoneyReceiveIcon,
       moneyTime: MoneyTimeIcon,
       moreVertical: MoreVerticalIcon,
       phone: PhoneIcon,
@@ -66,6 +69,7 @@ export const uiTheme = defineTheme({
       settings: SettingsIcon,
       signalOff: SignalOffIcon,
       users: UsersIcon,
+      walletMoney: WalletMoneyIcon,
     },
   },
 });

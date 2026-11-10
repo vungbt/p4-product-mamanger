@@ -12,6 +12,7 @@
     "readings": "Chốt số",
     "invoices": "Hoá đơn",
     "receivables": "Công nợ",
+    "payments": "Sổ thu",
     "contracts": "Hợp đồng",
     "tenants": "Người thuê",
     "requests": "Yêu cầu",
@@ -152,7 +153,8 @@
       "maintenanceOff": "Tắt bảo trì",
       "archive": "Lưu trữ",
       "bulk": "Tạo nhanh nhiều phòng",
-      "create": "Thêm phòng"
+      "create": "Thêm phòng",
+      "collect": "Thu tiền"
     },
     "map": {
       "description": "Sơ đồ phòng · {{building}}",

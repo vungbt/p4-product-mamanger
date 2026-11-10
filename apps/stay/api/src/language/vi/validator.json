@@ -64,7 +64,14 @@
     "fileId": "Ảnh",
     "file": "File",
     "rows": "Các dòng",
-    "purpose": "Mục đích"
+    "purpose": "Mục đích",
+    "amount": "Số tiền",
+    "method": "Phương thức",
+    "paidOn": "Ngày thu",
+    "reference": "Mã giao dịch",
+    "dateFrom": "Từ ngày",
+    "dateTo": "Đến ngày",
+    "invoiceId": "Hoá đơn"
   },
   "message": {
     "required": "Trường :attribute là bắt buộc.",

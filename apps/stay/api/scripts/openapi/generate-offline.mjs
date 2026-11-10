@@ -124,6 +124,64 @@ try {
       },
     ],
   };
+  spec.paths['/api/payments'].get.responses['200'].content[
+    'application/json'
+  ].schema.properties.meta = {
+    allOf: [
+      { $ref: '#/components/schemas/PaginationMeta' },
+      {
+        type: 'object',
+        required: ['totals', 'totalAmount'],
+        properties: {
+          totals: {
+            type: 'array',
+            description: 'Một dòng cho mỗi phương thức (kể cả 0), không gồm khoản đã huỷ.',
+            items: {
+              type: 'object',
+              required: ['method', 'amount', 'count'],
+              properties: {
+                method: { type: 'string', enum: ['cash', 'bank_transfer', 'other'] },
+                amount: { type: 'integer' },
+                count: { type: 'integer' },
+              },
+            },
+          },
+          totalAmount: { type: 'integer' },
+        },
+      },
+    ],
+  };
+  const paymentInput = spec.components.schemas.PaymentInput;
+  paymentInput.properties.amount = {
+    type: 'integer',
+    minimum: 1,
+    maximum: Number.MAX_SAFE_INTEGER,
+  };
+  paymentInput.properties.paidOn = {
+    type: 'string',
+    format: 'date',
+    description: 'Không sau hôm nay (Asia/Ho_Chi_Minh).',
+  };
+  paymentInput.properties.reference = { type: ['string', 'null'], maxLength: 120 };
+  paymentInput.properties.note = { type: ['string', 'null'], maxLength: 2000 };
+  spec.components.schemas.PaymentReverseInput.properties.reason = {
+    type: 'string',
+    minLength: 1,
+    maxLength: 2000,
+  };
+  spec.paths['/api/invoices/{id}/payments'].post.responses['409'] = {
+    description:
+      'Hoá đơn chưa phát hành (`invoice_not_issued`), đã void (`invoice_void`), đã thu đủ (`invoice_already_paid`) hoặc key đã dùng với nội dung khác (`idempotency_conflict`).',
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+  };
+  spec.paths['/api/invoices/{id}/payments'].post.responses['422'] = {
+    description: 'Số tiền vượt số còn lại (`payment_exceeds_remaining`, `extensions.remaining`).',
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+  };
+  spec.paths['/api/payments/{id}/reverse'].post.responses['409'] = {
+    description: 'Bút toán đã được huỷ (`payment_already_reversed`).',
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+  };
   const depositInput = spec.components.schemas.DepositInput;
   depositInput.properties.amount = {
     type: 'integer',

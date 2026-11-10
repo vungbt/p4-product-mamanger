@@ -58,6 +58,7 @@ import { auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { assertVersion } from '@/shared/input.js';
 import { runIdempotent } from '@/shared/persistence.js';
 import type { ModelOrder } from '@/types/database.js';
+import { invoicePayments } from '../payments/payments.dto.js';
 import {
   type BillingContext,
   billingContext,
@@ -201,7 +202,7 @@ function lineDto(line: InvoiceLineModel): StayInvoiceLine {
 }
 
 async function invoiceDto(row: InvoiceModel, transaction?: Transaction): Promise<StayInvoice> {
-  const [[summary], lines] = await Promise.all([
+  const [[summary], lines, payments] = await Promise.all([
     summaries([row], transaction),
     InvoiceLineModel.findAll({
       where: { invoiceId: row.id },
@@ -211,6 +212,7 @@ async function invoiceDto(row: InvoiceModel, transaction?: Transaction): Promise
       ],
       transaction,
     }),
+    invoicePayments(row.id, transaction),
   ]);
 
   if (!summary) throw new NotFound();
@@ -220,6 +222,7 @@ async function invoiceDto(row: InvoiceModel, transaction?: Transaction): Promise
     voidReason: row.voidReason,
     voidedAt: row.voidedAt?.toISOString() ?? null,
     lines: lines.map(lineDto),
+    payments,
   };
 }
 

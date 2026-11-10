@@ -202,11 +202,12 @@ for (const width of [1280, 375]) {
     expect(issued.status).toBe('issued');
     expect(issued.code).toMatch(new RegExp(`^A-${year}02-\\d{3}$`));
 
-    // Detail: code, lines, coming-soon actions, then void with a required reason.
+    // Detail: code, lines, actions, then void with a required reason.
     await page.goto(`/invoices/${issued.id}`);
     await expect(page.getByRole('heading', { level: 1, name: issued.code ?? '' })).toBeVisible();
     await expect(lines.filter({ hasText: 'Phụ thu: Phí vệ sinh' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Thu tiền', exact: true })).toBeDisabled();
+    // ST-15: an issued invoice with something left takes payments (see payments.spec.ts).
+    await expect(page.getByRole('button', { name: 'Thu tiền', exact: true })).toBeEnabled();
     await expect(page.getByRole('button', { name: 'Chia sẻ', exact: true })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Thêm phụ thu / giảm trừ' })).toHaveCount(0);
     expect(await noHorizontalScroll(page)).toBe(true);

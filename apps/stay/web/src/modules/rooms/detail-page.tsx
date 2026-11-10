@@ -14,8 +14,9 @@ import { ApiSdkError, getErrorMessage } from '@stay/sdk/shared';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useCanAccess } from '@/libraries/ability';
+import { useCanAccess, useCanOn } from '@/libraries/ability';
 import { ROUTES, roomEditPath } from '@/routing/route-configs';
+import { RoomPaymentDialog } from '../payments/payment-dialog';
 import { MaintenanceDialog } from './components/maintenance-dialog';
 import { RoomStatusBadge } from './room-status';
 import { useRoomBuilding } from './use-room-building';
@@ -73,8 +74,10 @@ export default function RoomDetailPage() {
   const { formatCurrency, formatDate, formatNumber } = useFormatters();
   const [maintenanceOpen, setMaintenanceOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [collectOpen, setCollectOpen] = useState(false);
 
   const room = query.data;
+  const canPay = useCanOn('create', 'Payment', { buildingId: room?.buildingId });
 
   useRoomBuilding(room?.buildingId);
 
@@ -148,23 +151,33 @@ export default function RoomDetailPage() {
           </span>
         }
         action={
-          canManage && !archived ? (
+          (canManage && !archived) || (canPay && room.debt > 0) ? (
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => navigate(roomEditPath(room.id))}>
-                {t('rooms.actions.edit')}
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={locked}
-                onClick={() => setMaintenanceOpen(true)}
-              >
-                {room.maintenance
-                  ? t('rooms.actions.maintenanceOff')
-                  : t('rooms.actions.maintenanceOn')}
-              </Button>
-              <Button variant="ghost" disabled={locked} onClick={() => setArchiveOpen(true)}>
-                {t('rooms.actions.archive')}
-              </Button>
+              {canPay && room.debt > 0 ? (
+                <Button onClick={() => setCollectOpen(true)}>{t('rooms.actions.collect')}</Button>
+              ) : null}
+              {canManage && !archived ? (
+                <>
+                  <Button
+                    variant={room.debt > 0 && canPay ? 'secondary' : 'primary'}
+                    onClick={() => navigate(roomEditPath(room.id))}
+                  >
+                    {t('rooms.actions.edit')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    disabled={locked}
+                    onClick={() => setMaintenanceOpen(true)}
+                  >
+                    {room.maintenance
+                      ? t('rooms.actions.maintenanceOff')
+                      : t('rooms.actions.maintenanceOn')}
+                  </Button>
+                  <Button variant="ghost" disabled={locked} onClick={() => setArchiveOpen(true)}>
+                    {t('rooms.actions.archive')}
+                  </Button>
+                </>
+              ) : null}
             </div>
           ) : null
         }
@@ -304,6 +317,13 @@ export default function RoomDetailPage() {
         </Section>
       </div>
 
+      {collectOpen ? (
+        <RoomPaymentDialog
+          roomId={room.id}
+          roomCode={room.code}
+          onClose={() => setCollectOpen(false)}
+        />
+      ) : null}
       <MaintenanceDialog
         room={maintenanceOpen ? room : null}
         onClose={() => setMaintenanceOpen(false)}

@@ -64,7 +64,14 @@
     "fileId": "Image",
     "file": "File",
     "rows": "Rows",
-    "purpose": "Purpose"
+    "purpose": "Purpose",
+    "amount": "Amount",
+    "method": "Method",
+    "paidOn": "Payment date",
+    "reference": "Reference",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "invoiceId": "Invoice"
   },
   "message": {
     "query_string": "Query parameters must contain a single string value."
