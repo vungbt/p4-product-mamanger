@@ -349,11 +349,7 @@ export default function RoomBulkPage() {
           </Button>
           <FormSubmit form={form}>
             {(isSubmitting) => (
-              <Button
-                type="submit"
-                variant={current ? 'secondary' : 'primary'}
-                loading={isSubmitting}
-              >
+              <Button type="submit" variant="secondary" loading={isSubmitting}>
                 {t('rooms.bulk.preview')}
               </Button>
             )}
