@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc && tsc-alias -p tsconfig.json && cp -R src/language dist/language",
+    "build": "tsc && tsc-alias -p tsconfig.json && rm -rf dist/language && cp -R src/language dist/language",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "lint": "pnpm -w exec biome check apps/stay/api",
