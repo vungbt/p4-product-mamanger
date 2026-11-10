@@ -25,6 +25,9 @@ tags:
     description: Người dùng hiện tại và quyền CASL.
   - name: operations
     description: Kiểm tra trạng thái dịch vụ.
+  - name: rooms
+    description: Phòng theo toà, sơ đồ phòng, tạo nhanh nhiều phòng, đồng hồ điện/nước và bảo trì. Trạng thái phòng suy ra
+      từ hợp đồng.
   - name: settings
     description: "Cấu hình hệ thống: kỳ thu mặc định và danh mục dịch vụ, đơn giá mặc định."
   - name: auth-native
@@ -944,6 +947,701 @@ paths:
                   - data
         "400":
           $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{buildingId}/rooms:
+    get:
+      tags:
+        - rooms
+      operationId: get_api_buildings_buildingId_rooms
+      summary: Danh sách phòng của toà (sơ đồ phòng)
+      description: >-
+        Phòng chưa lưu trữ, mặc định theo tầng rồi mã. Lọc `floor`, `status` (trạng thái suy ra: `vacant`, `reserved`,
+        `occupied`, `maintenance`), tìm `q` theo mã phòng. Kèm hợp đồng hiện tại, số người ở, công nợ (rỗng/0 cho tới
+        khi có hợp đồng và hoá đơn). Toà ngoài phạm vi trả 404.
+
+
+        **Quyền:** `read:Room`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - floor
+              - code
+              - listPrice
+              - createdAt
+            default: floor
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: floor
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 99
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - maintenance
+              - occupied
+              - reserved
+              - vacant
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayRoom"
+                  message:
+                    type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - rooms
+      operationId: post_api_buildings_buildingId_rooms
+      summary: Tạo phòng
+      description: >-
+        Mã A–Z, 0–9, `.`, `-` (tối đa 12, tự viết hoa), duy nhất trong các phòng chưa lưu trữ của toà. Tạo kèm một đồng
+        hồ điện và một đồng hồ nước với chỉ số ban đầu là số nguyên ≥ 0 (mặc định 0). Toà đã lưu trữ trả 409.
+
+
+        **Quyền:** `manage:Room`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  minLength: 1
+                  maxLength: 12
+                floor:
+                  type: integer
+                  minimum: 0
+                  maximum: 99
+                areaM2:
+                  type:
+                    - number
+                    - "null"
+                  exclusiveMinimum: 0
+                  maximum: 1000
+                listPrice:
+                  type: integer
+                  minimum: 0
+                  maximum: 1000000000
+                maxOccupants:
+                  type: integer
+                  minimum: 1
+                  maximum: 20
+                note:
+                  type: string
+                  maxLength: 1000
+                serviceIds:
+                  type: array
+                  maxItems: 50
+                  items:
+                    type: string
+                    format: uuid
+                electricSerial:
+                  type: string
+                  maxLength: 40
+                waterSerial:
+                  type: string
+                  maxLength: 40
+              required:
+                - code
+                - floor
+                - listPrice
+                - maxOccupants
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayRoomDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{buildingId}/rooms/summary:
+    get:
+      tags:
+        - rooms
+      operationId: get_api_buildings_buildingId_rooms_summary
+      summary: Tổng số phòng theo trạng thái
+      description: |-
+        Đếm phòng chưa lưu trữ theo trạng thái suy ra và danh sách tầng, dùng cho đầu sơ đồ phòng và bộ lọc tầng.
+
+        **Quyền:** `read:Room`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RoomSummary"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{buildingId}/rooms/bulk/preview:
+    post:
+      tags:
+        - rooms
+      operationId: post_api_buildings_buildingId_rooms_bulk_preview
+      summary: Xem trước tạo nhanh nhiều phòng
+      description: >-
+        Sinh mã theo mẫu (`{floor}` = số tầng, `{number}` = số phòng 2 chữ số, ví dụ `{floor}{number}` → 101…104) và
+        đánh dấu mã đã có (`exists`, sẽ bỏ qua). Tối đa 200 phòng mỗi lần.
+
+
+        **Quyền:** `manage:Room`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                floorFrom:
+                  type: integer
+                  minimum: 0
+                  maximum: 99
+                floorTo:
+                  type: integer
+                  minimum: 0
+                  maximum: 99
+                roomsPerFloor:
+                  type: integer
+                  minimum: 1
+                  maximum: 50
+                template:
+                  type: string
+                  minLength: 1
+                  maxLength: 40
+              required:
+                - floorFrom
+                - floorTo
+                - roomsPerFloor
+                - template
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RoomBulkPreview"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{buildingId}/rooms/bulk:
+    post:
+      tags:
+        - rooms
+      operationId: post_api_buildings_buildingId_rooms_bulk
+      summary: Tạo nhanh nhiều phòng
+      description: >-
+        Tạo các mã sinh từ mẫu trong một giao dịch, bỏ qua mã đã có (`skipped`). Giá niêm yết chung, sửa từng phòng qua
+        `prices` (mã phải thuộc danh sách sinh ra). Gọi lại cùng `Idempotency-Key` và cùng nội dung trả lại kết quả lần
+        đầu, không tạo trùng; khác nội dung trả 409 `idempotency_conflict`.
+
+
+        **Quyền:** `manage:Room`. Bắt buộc header `Idempotency-Key`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Dùng lại đúng key khi retry cùng payload; khác payload sẽ trả 409.
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                floorFrom:
+                  type: integer
+                  minimum: 0
+                  maximum: 99
+                floorTo:
+                  type: integer
+                  minimum: 0
+                  maximum: 99
+                roomsPerFloor:
+                  type: integer
+                  minimum: 1
+                  maximum: 50
+                template:
+                  type: string
+                  minLength: 1
+                  maxLength: 40
+                listPrice:
+                  type: integer
+                  minimum: 0
+                  maximum: 1000000000
+                maxOccupants:
+                  type: integer
+                  minimum: 1
+                  maximum: 20
+                areaM2:
+                  type:
+                    - number
+                    - "null"
+                  exclusiveMinimum: 0
+                  maximum: 1000
+                serviceIds:
+                  type: array
+                  maxItems: 50
+                  items:
+                    type: string
+                    format: uuid
+                prices:
+                  type: array
+                  maxItems: 200
+                  items:
+                    type: object
+                    required:
+                      - code
+                      - listPrice
+                    properties:
+                      code:
+                        type: string
+                        maxLength: 12
+                      listPrice:
+                        type: integer
+                        minimum: 0
+                        maximum: 1000000000
+              required:
+                - floorFrom
+                - floorTo
+                - roomsPerFloor
+                - template
+                - listPrice
+                - maxOccupants
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RoomBulkResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/rooms/{id}:
+    get:
+      tags:
+        - rooms
+      operationId: get_api_rooms_id
+      summary: Chi tiết phòng
+      description: >-
+        Thông tin phòng, dịch vụ mặc định, đồng hồ đang dùng (chỉ số ban đầu, chỉ số gần nhất), hợp đồng hiện tại, người
+        ở và 6 hoá đơn gần nhất (rỗng cho tới khi có hợp đồng, chốt số và hoá đơn). Phòng thuộc toà ngoài phạm vi trả
+        404.
+
+
+        **Quyền:** `read:Room`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayRoomDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - rooms
+      operationId: put_api_rooms_id
+      summary: Sửa phòng
+      description: >-
+        Gửi đủ các trường như khi tạo (trừ chỉ số/seri đồng hồ: thay đồng hồ ở ST-13). Không sửa tay trạng thái thuê.
+        Phòng đã lưu trữ trả 409 `room_archived`. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409
+        `version_conflict`.
+
+
+        **Quyền:** `manage:Room`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: integer
+                  minimum: 1
+                code:
+                  type: string
+                  minLength: 1
+                  maxLength: 12
+                floor:
+                  type: integer
+                  minimum: 0
+                  maximum: 99
+                areaM2:
+                  type:
+                    - number
+                    - "null"
+                  exclusiveMinimum: 0
+                  maximum: 1000
+                listPrice:
+                  type: integer
+                  minimum: 0
+                  maximum: 1000000000
+                maxOccupants:
+                  type: integer
+                  minimum: 1
+                  maximum: 20
+                note:
+                  type: string
+                  maxLength: 1000
+                serviceIds:
+                  type: array
+                  maxItems: 50
+                  items:
+                    type: string
+                    format: uuid
+              required:
+                - version
+                - code
+                - floor
+                - listPrice
+                - maxOccupants
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayRoomDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/rooms/{id}/maintenance:
+    post:
+      tags:
+        - rooms
+      operationId: post_api_rooms_id_maintenance
+      summary: Bật/tắt bảo trì phòng
+      description: >-
+        Bật cần `reason`, `until` (tuỳ chọn) không trước hôm nay. Phòng đang có hợp đồng hiệu lực trả 409
+        `room_has_contract`. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+
+
+        **Quyền:** `manage:Room`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                maintenance:
+                  type: boolean
+                version:
+                  type: integer
+                  minimum: 1
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                until:
+                  type: string
+                  maxLength: 10
+              required:
+                - maintenance
+                - version
+                - reason
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayRoomDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/rooms/{id}/archive:
+    post:
+      tags:
+        - rooms
+      operationId: post_api_rooms_id_archive
+      summary: Lưu trữ phòng
+      description: |-
+        Ẩn phòng khỏi sơ đồ và giải phóng mã phòng. Phòng đang có hợp đồng hiệu lực trả 409 `room_has_contract`.
+
+        **Quyền:** `manage:Room`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: archive
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayRoomDetail"
+                  message:
+                    type: string
+                required:
+                  - data
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -4547,6 +5245,263 @@ components:
         - pageSize
         - total
         - totalPages
+    RoomBulkPreview:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoomBulkPreviewItem"
+        createCount:
+          type: number
+        skipCount:
+          type: number
+      required:
+        - items
+        - createCount
+        - skipCount
+    RoomBulkPreviewItem:
+      type: object
+      properties:
+        code:
+          type: string
+        floor:
+          type: number
+        exists:
+          type: boolean
+      required:
+        - code
+        - floor
+        - exists
+    RoomBulkResult:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        created:
+          type: array
+          items:
+            $ref: "#/components/schemas/StayRoom"
+        skipped:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoomBulkSkipped"
+      required:
+        - buildingId
+        - created
+        - skipped
+    RoomBulkSkipped:
+      type: object
+      properties:
+        code:
+          type: string
+        floor:
+          type: number
+        reason:
+          type: string
+          enum:
+            - exists
+      required:
+        - code
+        - floor
+        - reason
+    RoomContractSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - cancelled
+            - draft
+            - ended
+            - ending
+        primaryTenantName:
+          type:
+            - string
+            - "null"
+        startDate:
+          type: string
+        endDate:
+          type:
+            - string
+            - "null"
+        rent:
+          type: number
+        depositHeld:
+          type: number
+      required:
+        - id
+        - code
+        - status
+        - primaryTenantName
+        - startDate
+        - endDate
+        - rent
+        - depositHeld
+    RoomInvoiceSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type:
+            - string
+            - "null"
+        kind:
+          type: string
+          enum:
+            - monthly
+            - move_in
+            - settlement
+        period:
+          type: string
+        status:
+          type: string
+          enum:
+            - draft
+            - issued
+            - paid
+            - partially_paid
+            - void
+        total:
+          type: number
+        paidTotal:
+          type: number
+        dueOn:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - code
+        - kind
+        - period
+        - status
+        - total
+        - paidTotal
+        - dueOn
+    RoomMeter:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+            - electricity
+            - water
+        serial:
+          type:
+            - string
+            - "null"
+        installedOn:
+          type: string
+        initialReading:
+          type: number
+        latestReading:
+          type:
+            - number
+            - "null"
+        latestPeriod:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - kind
+        - serial
+        - installedOn
+        - initialReading
+        - latestReading
+        - latestPeriod
+    RoomOccupant:
+      type: object
+      properties:
+        tenantId:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type:
+            - string
+            - "null"
+        isPrimary:
+          type: boolean
+        fromDate:
+          type: string
+      required:
+        - tenantId
+        - fullName
+        - phone
+        - isPrimary
+        - fromDate
+    RoomService:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        kind:
+          type: string
+          enum:
+            - electricity
+            - per_person
+            - per_room
+            - per_vehicle
+            - water
+        unit:
+          type: string
+        active:
+          type: boolean
+      required:
+        - id
+        - code
+        - name
+        - kind
+        - unit
+        - active
+    RoomStatusCounts:
+      type: object
+      properties:
+        vacant:
+          type: number
+        reserved:
+          type: number
+        occupied:
+          type: number
+        maintenance:
+          type: number
+      required:
+        - vacant
+        - reserved
+        - occupied
+        - maintenance
+    RoomSummary:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        total:
+          type: number
+        counts:
+          $ref: "#/components/schemas/RoomStatusCounts"
+        floors:
+          type: array
+          items:
+            type: number
+      required:
+        - buildingId
+        - total
+        - counts
+        - floors
     StayBuilding:
       type: object
       properties:
@@ -4760,6 +5715,198 @@ components:
           $ref: "#/components/schemas/StayUser"
       required:
         - user
+    StayRoom:
+      type: object
+      properties:
+        id:
+          type: string
+        buildingId:
+          type: string
+        code:
+          type: string
+        floor:
+          type: number
+        areaM2:
+          type:
+            - number
+            - "null"
+        listPrice:
+          type: number
+        maxOccupants:
+          type: number
+        maintenance:
+          type: boolean
+        maintenanceReason:
+          type:
+            - string
+            - "null"
+        maintenanceUntil:
+          type:
+            - string
+            - "null"
+        note:
+          type:
+            - string
+            - "null"
+        archivedAt:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum:
+            - maintenance
+            - occupied
+            - reserved
+            - vacant
+        defaultServiceIds:
+          type: array
+          items:
+            type: string
+        contract:
+          anyOf:
+            - $ref: "#/components/schemas/RoomContractSummary"
+            - type: "null"
+        occupantCount:
+          type: number
+        debt:
+          type: number
+        version:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - buildingId
+        - code
+        - floor
+        - areaM2
+        - listPrice
+        - maxOccupants
+        - maintenance
+        - maintenanceReason
+        - maintenanceUntil
+        - note
+        - archivedAt
+        - status
+        - defaultServiceIds
+        - contract
+        - occupantCount
+        - debt
+        - version
+        - createdAt
+        - updatedAt
+    StayRoomDetail:
+      type: object
+      properties:
+        buildingCode:
+          type: string
+        buildingName:
+          type: string
+        defaultServices:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoomService"
+        meters:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoomMeter"
+        occupants:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoomOccupant"
+        invoices:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoomInvoiceSummary"
+        id:
+          type: string
+        buildingId:
+          type: string
+        code:
+          type: string
+        floor:
+          type: number
+        areaM2:
+          type:
+            - number
+            - "null"
+        listPrice:
+          type: number
+        maxOccupants:
+          type: number
+        maintenance:
+          type: boolean
+        maintenanceReason:
+          type:
+            - string
+            - "null"
+        maintenanceUntil:
+          type:
+            - string
+            - "null"
+        note:
+          type:
+            - string
+            - "null"
+        archivedAt:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum:
+            - maintenance
+            - occupied
+            - reserved
+            - vacant
+        defaultServiceIds:
+          type: array
+          items:
+            type: string
+        contract:
+          anyOf:
+            - $ref: "#/components/schemas/RoomContractSummary"
+            - type: "null"
+        occupantCount:
+          type: number
+        debt:
+          type: number
+        version:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - buildingCode
+        - buildingName
+        - defaultServices
+        - meters
+        - occupants
+        - invoices
+        - id
+        - buildingId
+        - code
+        - floor
+        - areaM2
+        - listPrice
+        - maxOccupants
+        - maintenance
+        - maintenanceReason
+        - maintenanceUntil
+        - note
+        - archivedAt
+        - status
+        - defaultServiceIds
+        - contract
+        - occupantCount
+        - debt
+        - version
+        - createdAt
+        - updatedAt
     StayRule:
       type: object
       properties:

@@ -7,6 +7,7 @@ export * from './errors.js';
 export * from './invoice-code.js';
 export * from './money.js';
 export * from './period.js';
+export * from './room.js';
 export * from './schemas.js';
 export * from './settings.js';
 export * from './status.js';

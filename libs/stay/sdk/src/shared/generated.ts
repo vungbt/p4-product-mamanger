@@ -626,6 +626,100 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/buildings/{buildingId}/rooms': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh sách phòng của toà (sơ đồ phòng)
+     * @description Phòng chưa lưu trữ, mặc định theo tầng rồi mã. Lọc `floor`, `status` (trạng thái suy ra: `vacant`, `reserved`, `occupied`, `maintenance`), tìm `q` theo mã phòng. Kèm hợp đồng hiện tại, số người ở, công nợ (rỗng/0 cho tới khi có hợp đồng và hoá đơn). Toà ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `read:Room`.
+     */
+    get: operations['get_api_buildings_buildingId_rooms'];
+    put?: never;
+    /**
+     * Tạo phòng
+     * @description Mã A–Z, 0–9, `.`, `-` (tối đa 12, tự viết hoa), duy nhất trong các phòng chưa lưu trữ của toà. Tạo kèm một đồng hồ điện và một đồng hồ nước với chỉ số ban đầu là số nguyên ≥ 0 (mặc định 0). Toà đã lưu trữ trả 409.
+     *
+     *     **Quyền:** `manage:Room`.
+     */
+    post: operations['post_api_buildings_buildingId_rooms'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/buildings/{buildingId}/rooms/bulk': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Tạo nhanh nhiều phòng
+     * @description Tạo các mã sinh từ mẫu trong một giao dịch, bỏ qua mã đã có (`skipped`). Giá niêm yết chung, sửa từng phòng qua `prices` (mã phải thuộc danh sách sinh ra). Gọi lại cùng `Idempotency-Key` và cùng nội dung trả lại kết quả lần đầu, không tạo trùng; khác nội dung trả 409 `idempotency_conflict`.
+     *
+     *     **Quyền:** `manage:Room`. Bắt buộc header `Idempotency-Key`.
+     */
+    post: operations['post_api_buildings_buildingId_rooms_bulk'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/buildings/{buildingId}/rooms/bulk/preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xem trước tạo nhanh nhiều phòng
+     * @description Sinh mã theo mẫu (`{floor}` = số tầng, `{number}` = số phòng 2 chữ số, ví dụ `{floor}{number}` → 101…104) và đánh dấu mã đã có (`exists`, sẽ bỏ qua). Tối đa 200 phòng mỗi lần.
+     *
+     *     **Quyền:** `manage:Room`.
+     */
+    post: operations['post_api_buildings_buildingId_rooms_bulk_preview'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/buildings/{buildingId}/rooms/summary': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Tổng số phòng theo trạng thái
+     * @description Đếm phòng chưa lưu trữ theo trạng thái suy ra và danh sách tầng, dùng cho đầu sơ đồ phòng và bộ lọc tầng.
+     *
+     *     **Quyền:** `read:Room`.
+     */
+    get: operations['get_api_buildings_buildingId_rooms_summary'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/buildings/{id}': {
     parameters: {
       query?: never;
@@ -742,6 +836,78 @@ export interface paths {
     get: operations['get_api_me_capabilities'];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chi tiết phòng
+     * @description Thông tin phòng, dịch vụ mặc định, đồng hồ đang dùng (chỉ số ban đầu, chỉ số gần nhất), hợp đồng hiện tại, người ở và 6 hoá đơn gần nhất (rỗng cho tới khi có hợp đồng, chốt số và hoá đơn). Phòng thuộc toà ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `read:Room`.
+     */
+    get: operations['get_api_rooms_id'];
+    /**
+     * Sửa phòng
+     * @description Gửi đủ các trường như khi tạo (trừ chỉ số/seri đồng hồ: thay đồng hồ ở ST-13). Không sửa tay trạng thái thuê. Phòng đã lưu trữ trả 409 `room_archived`. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Room`.
+     */
+    put: operations['put_api_rooms_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/archive': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Lưu trữ phòng
+     * @description Ẩn phòng khỏi sơ đồ và giải phóng mã phòng. Phòng đang có hợp đồng hiệu lực trả 409 `room_has_contract`.
+     *
+     *     **Quyền:** `manage:Room`.
+     */
+    post: operations['post_api_rooms_id_archive'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/rooms/{id}/maintenance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Bật/tắt bảo trì phòng
+     * @description Bật cần `reason`, `until` (tuỳ chọn) không trước hôm nay. Phòng đang có hợp đồng hiệu lực trả 409 `room_has_contract`. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Room`.
+     */
+    post: operations['post_api_rooms_id_maintenance'];
     delete?: never;
     options?: never;
     head?: never;
@@ -982,6 +1148,88 @@ export interface components {
       total: number;
       totalPages: number;
     };
+    RoomBulkPreview: {
+      createCount: number;
+      items: components['schemas']['RoomBulkPreviewItem'][];
+      skipCount: number;
+    };
+    RoomBulkPreviewItem: {
+      code: string;
+      exists: boolean;
+      floor: number;
+    };
+    RoomBulkResult: {
+      buildingId: string;
+      created: components['schemas']['StayRoom'][];
+      skipped: components['schemas']['RoomBulkSkipped'][];
+    };
+    RoomBulkSkipped: {
+      code: string;
+      floor: number;
+      /** @enum {string} */
+      reason: 'exists';
+    };
+    RoomContractSummary: {
+      code: string;
+      depositHeld: number;
+      endDate: string | null;
+      id: string;
+      primaryTenantName: string | null;
+      rent: number;
+      startDate: string;
+      /** @enum {string} */
+      status: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
+    };
+    RoomInvoiceSummary: {
+      code: string | null;
+      dueOn: string | null;
+      id: string;
+      /** @enum {string} */
+      kind: 'monthly' | 'move_in' | 'settlement';
+      paidTotal: number;
+      period: string;
+      /** @enum {string} */
+      status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
+      total: number;
+    };
+    RoomMeter: {
+      id: string;
+      initialReading: number;
+      installedOn: string;
+      /** @enum {string} */
+      kind: 'electricity' | 'water';
+      latestPeriod: string | null;
+      latestReading: number | null;
+      serial: string | null;
+    };
+    RoomOccupant: {
+      fromDate: string;
+      fullName: string;
+      isPrimary: boolean;
+      phone: string | null;
+      tenantId: string;
+    };
+    RoomService: {
+      active: boolean;
+      code: string;
+      id: string;
+      /** @enum {string} */
+      kind: 'electricity' | 'per_person' | 'per_room' | 'per_vehicle' | 'water';
+      name: string;
+      unit: string;
+    };
+    RoomStatusCounts: {
+      maintenance: number;
+      occupied: number;
+      reserved: number;
+      vacant: number;
+    };
+    RoomSummary: {
+      buildingId: string;
+      counts: components['schemas']['RoomStatusCounts'];
+      floors: number[];
+      total: number;
+    };
     StayBuilding: {
       address: string | null;
       archivedAt: string | null;
@@ -1032,6 +1280,58 @@ export interface components {
     };
     StayMe: {
       user: components['schemas']['StayUser'];
+    };
+    StayRoom: {
+      archivedAt: string | null;
+      areaM2: number | null;
+      buildingId: string;
+      code: string;
+      contract: components['schemas']['RoomContractSummary'] | null;
+      createdAt: string;
+      debt: number;
+      defaultServiceIds: string[];
+      floor: number;
+      id: string;
+      listPrice: number;
+      maintenance: boolean;
+      maintenanceReason: string | null;
+      maintenanceUntil: string | null;
+      maxOccupants: number;
+      note: string | null;
+      occupantCount: number;
+      /** @enum {string} */
+      status: 'maintenance' | 'occupied' | 'reserved' | 'vacant';
+      updatedAt: string;
+      version: number;
+    };
+    StayRoomDetail: {
+      archivedAt: string | null;
+      areaM2: number | null;
+      buildingCode: string;
+      buildingId: string;
+      buildingName: string;
+      code: string;
+      contract: components['schemas']['RoomContractSummary'] | null;
+      createdAt: string;
+      debt: number;
+      defaultServiceIds: string[];
+      defaultServices: components['schemas']['RoomService'][];
+      floor: number;
+      id: string;
+      invoices: components['schemas']['RoomInvoiceSummary'][];
+      listPrice: number;
+      maintenance: boolean;
+      maintenanceReason: string | null;
+      maintenanceUntil: string | null;
+      maxOccupants: number;
+      meters: components['schemas']['RoomMeter'][];
+      note: string | null;
+      occupantCount: number;
+      occupants: components['schemas']['RoomOccupant'][];
+      /** @enum {string} */
+      status: 'maintenance' | 'occupied' | 'reserved' | 'vacant';
+      updatedAt: string;
+      version: number;
     };
     StayRule: {
       action:
@@ -4581,6 +4881,210 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_buildings_buildingId_rooms: {
+    parameters: {
+      query?: {
+        floor?: number;
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'floor' | 'code' | 'listPrice' | 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+        status?: 'maintenance' | 'occupied' | 'reserved' | 'vacant';
+      };
+      header?: never;
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayRoom'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_buildings_buildingId_rooms: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          areaM2?: number | null;
+          code: string;
+          electricSerial?: string;
+          floor: number;
+          listPrice: number;
+          maxOccupants: number;
+          note?: string;
+          serviceIds?: string[];
+          waterSerial?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayRoomDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_buildings_buildingId_rooms_bulk: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description Dùng lại đúng key khi retry cùng payload; khác payload sẽ trả 409. */
+        'Idempotency-Key': string;
+      };
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          areaM2?: number | null;
+          floorFrom: number;
+          floorTo: number;
+          listPrice: number;
+          maxOccupants: number;
+          prices?: {
+            code: string;
+            listPrice: number;
+          }[];
+          roomsPerFloor: number;
+          serviceIds?: string[];
+          template: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['RoomBulkResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_buildings_buildingId_rooms_bulk_preview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          floorFrom: number;
+          floorTo: number;
+          roomsPerFloor: number;
+          template: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['RoomBulkPreview'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_buildings_buildingId_rooms_summary: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['RoomSummary'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_buildings_id: {
     parameters: {
       query?: never;
@@ -4813,6 +5317,149 @@ export interface operations {
       };
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_rooms_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayRoomDetail'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_rooms_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          areaM2?: number | null;
+          code: string;
+          floor: number;
+          listPrice: number;
+          maxOccupants: number;
+          note?: string;
+          serviceIds?: string[];
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayRoomDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_rooms_id_archive: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayRoomDetail'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_rooms_id_maintenance: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          maintenance: boolean;
+          reason: string;
+          until?: string;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayRoomDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };

@@ -40,5 +40,15 @@
   "building_not_found": "Building not found.",
   "building_archived": "The building is archived.",
   "building_has_active_contracts": "Some rooms of the building still have active contracts.",
-  "price_history_locked": "Prices from this date were already used by issued invoices."
+  "price_history_locked": "Prices from this date were already used by issued invoices.",
+  "room_not_found": "Room not found.",
+  "room_archived": "The room is archived.",
+  "room_code_format": "Room codes use A–Z, 0–9, dots and hyphens, up to 12 characters.",
+  "room_code_taken": "The building already has a room with this code.",
+  "room_has_contract": "The room has an active contract.",
+  "room_floor_range": "The first floor must not be above the last floor (0–99).",
+  "room_bulk_limit": "At most {{max}} rooms can be created at once.",
+  "room_template": "The template needs {number} (and {floor} for several floors) and may only use A–Z, digits, dots and hyphens.",
+  "decimal_field": "{{attribute}} must be a positive number up to {{max}} with at most 2 decimals.",
+  "date_not_past": "{{attribute}} cannot be before today."
 }

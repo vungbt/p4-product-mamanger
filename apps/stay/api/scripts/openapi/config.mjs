@@ -27,6 +27,8 @@ const TAG_DESCRIPTIONS = {
   buildings: 'Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.',
   me: 'Người dùng hiện tại và quyền CASL.',
   operations: 'Kiểm tra trạng thái dịch vụ.',
+  rooms:
+    'Phòng theo toà, sơ đồ phòng, tạo nhanh nhiều phòng, đồng hồ điện/nước và bảo trì. Trạng thái phòng suy ra từ hợp đồng.',
   settings: 'Cấu hình hệ thống: kỳ thu mặc định và danh mục dịch vụ, đơn giá mặc định.',
 };
 
@@ -94,6 +96,42 @@ const OPERATIONS = {
     'Đặt giá riêng từ một ngày',
     '`price: null` = quay về giá mặc định từ `effectiveFrom`. Đã có bản ghi cùng ngày thì thay thế, trừ khi hoá đơn đã phát hành dùng giá đó (409 `price_history_locked`).',
   ],
+  'GET /api/buildings/{buildingId}/rooms': [
+    'Danh sách phòng của toà (sơ đồ phòng)',
+    'Phòng chưa lưu trữ, mặc định theo tầng rồi mã. Lọc `floor`, `status` (trạng thái suy ra: `vacant`, `reserved`, `occupied`, `maintenance`), tìm `q` theo mã phòng. Kèm hợp đồng hiện tại, số người ở, công nợ (rỗng/0 cho tới khi có hợp đồng và hoá đơn). Toà ngoài phạm vi trả 404.',
+  ],
+  'GET /api/buildings/{buildingId}/rooms/summary': [
+    'Tổng số phòng theo trạng thái',
+    'Đếm phòng chưa lưu trữ theo trạng thái suy ra và danh sách tầng, dùng cho đầu sơ đồ phòng và bộ lọc tầng.',
+  ],
+  'POST /api/buildings/{buildingId}/rooms': [
+    'Tạo phòng',
+    `Mã A–Z, 0–9, \`.\`, \`-\` (tối đa 12, tự viết hoa), duy nhất trong các phòng chưa lưu trữ của toà. Tạo kèm một đồng hồ điện và một đồng hồ nước với chỉ số ban đầu là số nguyên ≥ 0 (mặc định 0). Toà đã lưu trữ trả 409.`,
+  ],
+  'POST /api/buildings/{buildingId}/rooms/bulk/preview': [
+    'Xem trước tạo nhanh nhiều phòng',
+    'Sinh mã theo mẫu (`{floor}` = số tầng, `{number}` = số phòng 2 chữ số, ví dụ `{floor}{number}` → 101…104) và đánh dấu mã đã có (`exists`, sẽ bỏ qua). Tối đa 200 phòng mỗi lần.',
+  ],
+  'POST /api/buildings/{buildingId}/rooms/bulk': [
+    'Tạo nhanh nhiều phòng',
+    'Tạo các mã sinh từ mẫu trong một giao dịch, bỏ qua mã đã có (`skipped`). Giá niêm yết chung, sửa từng phòng qua `prices` (mã phải thuộc danh sách sinh ra). Gọi lại cùng `Idempotency-Key` và cùng nội dung trả lại kết quả lần đầu, không tạo trùng; khác nội dung trả 409 `idempotency_conflict`.',
+  ],
+  'GET /api/rooms/{id}': [
+    'Chi tiết phòng',
+    'Thông tin phòng, dịch vụ mặc định, đồng hồ đang dùng (chỉ số ban đầu, chỉ số gần nhất), hợp đồng hiện tại, người ở và 6 hoá đơn gần nhất (rỗng cho tới khi có hợp đồng, chốt số và hoá đơn). Phòng thuộc toà ngoài phạm vi trả 404.',
+  ],
+  'PUT /api/rooms/{id}': [
+    'Sửa phòng',
+    `Gửi đủ các trường như khi tạo (trừ chỉ số/seri đồng hồ: thay đồng hồ ở ST-13). Không sửa tay trạng thái thuê. Phòng đã lưu trữ trả 409 \`room_archived\`. ${VERSION_NOTE}`,
+  ],
+  'POST /api/rooms/{id}/maintenance': [
+    'Bật/tắt bảo trì phòng',
+    `Bật cần \`reason\`, \`until\` (tuỳ chọn) không trước hôm nay. Phòng đang có hợp đồng hiệu lực trả 409 \`room_has_contract\`. ${VERSION_NOTE}`,
+  ],
+  'POST /api/rooms/{id}/archive': [
+    'Lưu trữ phòng',
+    'Ẩn phòng khỏi sơ đồ và giải phóng mã phòng. Phòng đang có hợp đồng hiệu lực trả 409 `room_has_contract`.',
+  ],
 };
 
 // Billing days are 1–28 or 31 (end of month); the API reports other values per field.
@@ -117,12 +155,42 @@ const buildingFields = {
   },
 };
 
+// Area in m², at most two decimals; `null` when unknown.
+const areaM2 = { schema: { type: ['number', 'null'], exclusiveMinimum: 0, maximum: 1000 } };
+// Default services suggested for contracts; omitted = none.
+const serviceIds = {
+  schema: { type: 'array', maxItems: 50, items: { type: 'string', format: 'uuid' } },
+};
+const roomFields = { areaM2, serviceIds };
+
 const OVERRIDES = {
   'PUT /api/settings': {
     fields: { roundingUnit: { schema: roundingUnit, required: true } },
   },
   'POST /api/buildings': { fields: buildingFields },
   'PUT /api/buildings/{id}': { fields: buildingFields },
+  'POST /api/buildings/{buildingId}/rooms': { fields: roomFields },
+  'PUT /api/rooms/{id}': { fields: roomFields },
+  'POST /api/buildings/{buildingId}/rooms/bulk': {
+    fields: {
+      areaM2,
+      serviceIds,
+      prices: {
+        schema: {
+          type: 'array',
+          maxItems: 200,
+          items: {
+            type: 'object',
+            required: ['code', 'listPrice'],
+            properties: {
+              code: { type: 'string', maxLength: 12 },
+              listPrice: { type: 'integer', minimum: 0, maximum: 1_000_000_000 },
+            },
+          },
+        },
+      },
+    },
+  },
   'PUT /api/buildings/{id}/prices': {
     fields: {
       serviceId: { schema: { type: 'string', format: 'uuid' }, required: true },
@@ -151,6 +219,7 @@ export default {
     'libs/stay/shared/src/account.ts',
     'libs/stay/shared/src/building.ts',
     'libs/stay/shared/src/constants.ts',
+    'libs/stay/shared/src/room.ts',
     'libs/stay/shared/src/settings.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },

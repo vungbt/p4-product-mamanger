@@ -31,7 +31,25 @@
     "serviceId": "Service",
     "price": "Price",
     "effectiveFrom": "Effective from",
-    "date": "Date"
+    "date": "Date",
+    "floor": "Floor",
+    "areaM2": "Area",
+    "listPrice": "List price",
+    "maxOccupants": "Maximum occupants",
+    "note": "Note",
+    "serviceIds": "Default services",
+    "initialElectric": "Initial electricity reading",
+    "initialWater": "Initial water reading",
+    "electricSerial": "Electricity meter serial",
+    "waterSerial": "Water meter serial",
+    "floorFrom": "From floor",
+    "floorTo": "To floor",
+    "roomsPerFloor": "Rooms per floor",
+    "template": "Room code template",
+    "prices": "Room prices",
+    "maintenance": "Maintenance",
+    "reason": "Reason",
+    "until": "Expected end"
   },
   "message": {
     "query_string": "Query parameters must contain a single string value."

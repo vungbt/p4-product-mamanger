@@ -1,15 +1,19 @@
 // Compile-time checks of the generated contract (`pnpm --filter @stay/sdk typecheck`).
 import {
   buildingKeys,
+  roomKeys,
   settingsKeys,
   useBuildingPrices,
   useBuildings,
   useCapabilities,
   useMe,
+  useRoom,
+  useRooms,
   useServices,
 } from '../src/react/index.js';
 import {
   createBuildingApi,
+  createRoomApi,
   createSettingsApi,
   createStaySdk,
   unwrap,
@@ -84,7 +88,55 @@ function checkResourceHooks() {
   ];
 }
 
+async function checkRooms() {
+  const rooms = createRoomApi(sdk);
+  const page = await rooms.list('b-1', { floor: 1, status: 'vacant', pageSize: 100 });
+  const status: 'vacant' | 'reserved' | 'occupied' | 'maintenance' | undefined =
+    page.data[0]?.status;
+  const summary = await rooms.summary('b-1');
+  const vacant: number = summary.counts.vacant;
+  const room = await rooms.detail('r-1');
+  const meterKind: 'electricity' | 'water' | undefined = room.meters[0]?.kind;
+  const preview = await rooms.bulkPreview({
+    buildingId: 'b-1',
+    body: { floorFrom: 1, floorTo: 3, roomsPerFloor: 4, template: '{floor}{number}' },
+  });
+  const exists: boolean | undefined = preview.items[0]?.exists;
+  const bulk = await rooms.bulkCreate({
+    buildingId: 'b-1',
+    idempotencyKey: 'rooms-batch-0001',
+    body: {
+      floorFrom: 1,
+      floorTo: 3,
+      roomsPerFloor: 4,
+      template: '{floor}{number}',
+      listPrice: 3_000_000,
+      maxOccupants: 2,
+      prices: [{ code: '101', listPrice: 3_200_000 }],
+    },
+  });
+  const skipped: 'exists' | undefined = bulk.skipped[0]?.reason;
+
+  await rooms.setMaintenance({
+    id: 'r-1',
+    body: { maintenance: true, reason: 'Sơn lại', version: room.version },
+  });
+  // @ts-expect-error Room status is derived from contracts, never sent.
+  await rooms.update({ id: 'r-1', body: { status: 'occupied' } });
+
+  return [status, vacant, meterKind, exists, skipped];
+}
+
+function checkRoomHooks() {
+  const rooms = useRooms('b-1', { status: 'maintenance' });
+  const room = useRoom('r-1');
+
+  return [rooms.data?.data[0]?.code, room.data?.defaultServices.length, roomKeys.summary('b-1')];
+}
+
 void checkContract;
+void checkRooms;
+void checkRoomHooks;
 void checkHookTypes;
 void checkSettingsAndBuildings;
 void checkResourceHooks;
