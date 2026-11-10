@@ -166,8 +166,15 @@ export default function BuildingsPage() {
 
   const buildings = query.data?.data ?? [];
   const meta = query.data?.meta;
+  // Redirect only on fresh data: a cached count from before "Thêm toà" must not hide the new one.
   const onlyBuilding =
-    canManage && status === 'active' && !urlQuery && page === 1 && meta?.total === 1
+    canManage &&
+    status === 'active' &&
+    !urlQuery &&
+    page === 1 &&
+    !query.isStale &&
+    !query.isFetching &&
+    meta?.total === 1
       ? buildings[0]
       : undefined;
 
