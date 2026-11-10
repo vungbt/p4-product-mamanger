@@ -1,4 +1,4 @@
-import { Alert, cn, IconButton, PageHeader, Tag } from '@itclabs/react-ui';
+import { Alert, cn, IconButton, Tag } from '@itclabs/react-ui';
 import { useBuilding, useBuildingPrices } from '@stay/sdk/react';
 import type { BuildingServicePrice } from '@stay/shared';
 import { useEffect, useState } from 'react';
@@ -8,6 +8,7 @@ import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { isNotFound } from '@/libraries/forms/api-errors';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { ScreenHeader } from '@/libraries/screen-header';
 import NotFoundPage from '@/modules/errors/not-found-page';
 import { type PriceAction, PriceDialog } from './price-dialog';
 
@@ -79,7 +80,7 @@ export default function BuildingPricesPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader
+      <ScreenHeader
         title={t('prices.title')}
         description={
           building.data

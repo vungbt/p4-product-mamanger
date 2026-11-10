@@ -7,7 +7,6 @@ import {
   EmptyState,
   Icon,
   IconButton,
-  PageHeader,
   Switch,
   Tag,
 } from '@itclabs/react-ui';
@@ -21,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { formatVnd } from '@/libraries/format';
 import { isVersionConflict } from '@/libraries/forms/api-errors';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { useIsDesktop } from '@/libraries/use-media-query';
 import { ServiceCreateForm, ServiceEditForm } from './service-forms';
 
@@ -28,9 +28,10 @@ import { ServiceCreateForm, ServiceEditForm } from './service-forms';
 const COLUMNS = {
   kind: 'lg:w-40',
   unit: 'lg:w-20',
-  price: 'lg:w-36 lg:text-right',
-  status: 'lg:w-36',
-  actions: 'lg:w-12',
+  price: 'shrink-0 lg:w-36 lg:text-right',
+  // Mobile: on its own line under the name; desktop: a column before the actions.
+  status: 'order-last basis-full pl-11 lg:order-none lg:basis-auto lg:w-36 lg:pl-0',
+  actions: 'shrink-0 lg:w-12',
 };
 
 type ServiceChange = Pick<StayService, 'active' | 'sortOrder'>;
@@ -121,7 +122,7 @@ export default function ServicesPage() {
   };
 
   const header = (
-    <PageHeader
+    <ScreenHeader
       title={t('services.title')}
       description={t('services.description')}
       action={
@@ -196,7 +197,7 @@ export default function ServicesPage() {
             aria-label={t('services.title')}
             value={ordered.map(({ id }) => id)}
             onValueChange={(ids) => void reorder(ids)}
-            disabled={order !== null || editingId !== null}
+            disabled={order !== null}
             lockAxis="y"
             gap={0}
           >
@@ -216,7 +217,9 @@ export default function ServicesPage() {
                       <SortableHandle label={t('services.dragHandle', { name: service.name })} />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold text-ink">{service.name}</span>
+                      <span className="block break-words font-semibold text-ink lg:truncate">
+                        {service.name}
+                      </span>
                       <span className="block text-ui-sm text-muted lg:hidden">
                         {t(`services.kinds.${service.kind}`)} · {service.unit}
                       </span>

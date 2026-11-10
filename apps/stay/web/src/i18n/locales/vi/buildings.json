@@ -20,9 +20,9 @@
     "noAddress": "Chưa có địa chỉ",
     "rooms": "Số phòng",
     "occupancy": "Lấp đầy",
-    "edit": "Sửa toà {{name}}",
-    "prices": "Đơn giá của toà {{name}}",
-    "archive": "Lưu trữ toà {{name}}",
+    "edit": "Sửa {{name}}",
+    "prices": "Đơn giá của {{name}}",
+    "archive": "Lưu trữ {{name}}",
     "empty": {
       "active": "Chưa có toà nhà",
       "archived": "Chưa có toà nào được lưu trữ"
@@ -32,7 +32,7 @@
     "pagination": "Phân trang danh sách toà"
   },
   "archive": {
-    "title": "Lưu trữ toà {{name}}?",
+    "title": "Lưu trữ {{name}}?",
     "description": "Toà lưu trữ không còn trong bộ chọn toà và không sửa được. Chỉ lưu trữ được khi không còn hợp đồng hiệu lực.",
     "blocked": "Không thể lưu trữ: các phòng sau còn hợp đồng hiệu lực.",
     "blockedUnknown": "Còn phòng có hợp đồng hiệu lực.",
@@ -44,7 +44,7 @@
   "form": {
     "newTitle": "Thêm toà",
     "newDescription": "Mã toà dùng trong mã hoá đơn, ví dụ A-202611-001.",
-    "editTitle": "Sửa toà {{name}}",
+    "editTitle": "Sửa {{name}}",
     "editDescription": "Thông tin toà, kỳ thu riêng và tài khoản nhận tiền.",
     "prices": "Đơn giá của toà",
     "create": "Tạo toà",

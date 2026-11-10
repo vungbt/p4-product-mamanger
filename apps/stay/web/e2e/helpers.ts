@@ -1,5 +1,30 @@
 import path from 'node:path';
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
+
+/**
+ * Picks an option of a kit `Select` (react-select): the combobox input is a tiny focus target,
+ * so open the menu from the keyboard, then click the option.
+ */
+export async function chooseOption(
+  page: Page,
+  scope: Page | Locator,
+  label: string,
+  option: string | RegExp,
+) {
+  await scope.getByRole('combobox', { name: label }).focus();
+  await page.keyboard.press('ArrowDown');
+  await page
+    .getByRole(
+      'option',
+      typeof option === 'string' ? { name: option, exact: true } : { name: option },
+    )
+    .click();
+}
+
+/** Today in Asia/Ho_Chi_Minh as the UI shows dates (`dd/MM/yyyy`). */
+export function todayDisplay() {
+  return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date());
+}
 
 /** Seeded local/CI owner (apps/stay/api README); never valid in production. */
 export const OWNER = {

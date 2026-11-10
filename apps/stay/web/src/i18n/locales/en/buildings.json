@@ -20,9 +20,9 @@
     "noAddress": "No address yet",
     "rooms": "Rooms",
     "occupancy": "Occupancy",
-    "edit": "Edit building {{name}}",
-    "prices": "Prices of building {{name}}",
-    "archive": "Archive building {{name}}",
+    "edit": "Edit {{name}}",
+    "prices": "Prices of {{name}}",
+    "archive": "Archive {{name}}",
     "empty": {
       "active": "No buildings yet",
       "archived": "No archived buildings"
@@ -32,7 +32,7 @@
     "pagination": "Building list pages"
   },
   "archive": {
-    "title": "Archive building {{name}}?",
+    "title": "Archive {{name}}?",
     "description": "An archived building leaves the building selector and can no longer be edited. Only buildings without active contracts can be archived.",
     "blocked": "Cannot archive: these rooms still have active contracts.",
     "blockedUnknown": "Some rooms still have active contracts.",
@@ -44,7 +44,7 @@
   "form": {
     "newTitle": "Add building",
     "newDescription": "The building code is used in invoice codes, e.g. A-202611-001.",
-    "editTitle": "Edit building {{name}}",
+    "editTitle": "Edit {{name}}",
     "editDescription": "Building details, its own billing cycle and payee account.",
     "prices": "Building prices",
     "create": "Create building",

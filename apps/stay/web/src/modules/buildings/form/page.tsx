@@ -6,7 +6,6 @@ import {
   FormSubmit,
   Icon,
   Input,
-  PageHeader,
   Select,
   type SelectOption,
   Textarea,
@@ -42,6 +41,7 @@ import {
 import { ConflictAlert, FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty, useFormValue } from '@/libraries/forms/use-form-value';
+import { ScreenHeader } from '@/libraries/screen-header';
 import NotFoundPage from '@/modules/errors/not-found-page';
 import { billingDayLabel, billingDayOptions } from '@/modules/settings/billing/options';
 import { buildingPricesPath, ROUTES } from '@/routing/route-configs';
@@ -489,7 +489,7 @@ export default function BuildingFormPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader
+      <ScreenHeader
         title={
           id
             ? building

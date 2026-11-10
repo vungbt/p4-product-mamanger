@@ -1,7 +1,8 @@
-import { Icon, type IconName, PageHeader } from '@itclabs/react-ui';
+import { Icon, type IconName } from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { type AbilityCheck, canOpen, useAbility } from '@/libraries/ability';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { ROUTES } from '@/routing/route-configs';
 
 type SettingsLink = {
@@ -47,7 +48,7 @@ export default function SettingsPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader title={t('hub.title')} description={t('hub.description')} />
+      <ScreenHeader title={t('hub.title')} description={t('hub.description')} />
 
       <ul className="grid gap-3 sm:grid-cols-2">
         {links.map((link) => (

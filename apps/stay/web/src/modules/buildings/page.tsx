@@ -4,7 +4,6 @@ import {
   Icon,
   IconButton,
   Input,
-  PageHeader,
   Pagination,
   Tabs,
   TabsList,
@@ -19,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCanAccess } from '@/libraries/ability';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { buildingEditPath, buildingPricesPath, ROUTES } from '@/routing/route-configs';
 import { ArchiveBuildingDialog } from './archive-dialog';
 
@@ -175,7 +175,7 @@ export default function BuildingsPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader
+      <ScreenHeader
         title={t('list.title')}
         description={t('list.description')}
         action={

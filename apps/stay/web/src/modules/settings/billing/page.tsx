@@ -5,7 +5,6 @@ import {
   FormField,
   FormSubmit,
   Input,
-  PageHeader,
   Select,
   Switch,
   useAppForm,
@@ -26,6 +25,7 @@ import {
 import { ConflictAlert, FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty, useFormValue } from '@/libraries/forms/use-form-value';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { billingDayOptions, roundingUnitOptions } from './options';
 
 type BillingValues = {
@@ -215,7 +215,7 @@ export default function BillingSettingsPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader title={t('billing.title')} description={t('billing.description')} />
+      <ScreenHeader title={t('billing.title')} description={t('billing.description')} />
 
       {query.isPending ? (
         <LoadingRows rows={3} />
