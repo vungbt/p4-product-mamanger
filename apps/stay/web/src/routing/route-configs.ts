@@ -26,6 +26,10 @@ const RoomMapPage = lazy(() => import('@/modules/rooms/page'));
 const RoomDetailPage = lazy(() => import('@/modules/rooms/detail-page'));
 const RoomFormPage = lazy(() => import('@/modules/rooms/form-page'));
 const RoomBulkPage = lazy(() => import('@/modules/rooms/bulk-page'));
+const TenantListPage = lazy(() => import('@/modules/tenants/list-page'));
+const TenantProfilePage = lazy(() => import('@/modules/tenants/profile-page'));
+const TenantFormPage = lazy(() => import('@/modules/tenants/form-page'));
+const TenantImportPage = lazy(() => import('@/modules/tenants/import-page'));
 
 export const ROUTES = {
   login: '/login',
@@ -130,8 +134,41 @@ export const appRoutes: StayRoute[] = [
     path: '/tenants',
     name: 'tenants',
     icon: 'users',
-    component: PlaceholderPage,
+    component: TenantListPage,
     ability: { action: 'read', subject: 'Tenant' },
+  },
+  // Static tenant paths come before `/tenants/:id` (`useCurrentRoute` takes the first match).
+  {
+    path: '/tenants/new',
+    name: 'tenantNew',
+    icon: 'users',
+    component: TenantFormPage,
+    ability: { action: 'create', subject: 'Tenant' },
+    hideInMenu: true,
+  },
+  {
+    path: '/tenants/import',
+    name: 'tenantImport',
+    icon: 'users',
+    component: TenantImportPage,
+    ability: { action: 'manage', subject: 'Tenant' },
+    hideInMenu: true,
+  },
+  {
+    path: '/tenants/:id',
+    name: 'tenantProfile',
+    icon: 'users',
+    component: TenantProfilePage,
+    ability: { action: 'read', subject: 'Tenant' },
+    hideInMenu: true,
+  },
+  {
+    path: '/tenants/:id/edit',
+    name: 'tenantEdit',
+    icon: 'users',
+    component: TenantFormPage,
+    ability: { action: 'update', subject: 'Tenant' },
+    hideInMenu: true,
   },
   {
     path: '/requests',

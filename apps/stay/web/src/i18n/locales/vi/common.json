@@ -25,7 +25,11 @@
     "roomNew": "Thêm phòng",
     "roomBulk": "Tạo nhanh nhiều phòng",
     "roomDetail": "Chi tiết phòng",
-    "roomEdit": "Sửa phòng"
+    "roomEdit": "Sửa phòng",
+    "tenantNew": "Thêm người thuê",
+    "tenantImport": "Import người thuê",
+    "tenantProfile": "Hồ sơ người thuê",
+    "tenantEdit": "Sửa người thuê"
   },
   "header": {
     "back": "Quay lại",
@@ -77,7 +81,8 @@
     "backHome": "Về Tổng quan",
     "offline": "Mất kết nối mạng. Dữ liệu sẽ tải lại khi có mạng.",
     "loadFailed": "Không tải được dữ liệu.",
-    "retry": "Thử lại"
+    "retry": "Thử lại",
+    "saveFailed": "Không lưu được. Vui lòng thử lại."
   },
   "placeholder": {
     "title": "Sắp có",
@@ -260,5 +265,160 @@
       "offDone": "Đã tắt bảo trì phòng {{code}}.",
       "failed": "Không đổi được trạng thái bảo trì."
     }
+  },
+  "common": {
+    "save": "Lưu",
+    "saving": "Đang lưu…",
+    "cancel": "Huỷ",
+    "edit": "Sửa",
+    "delete": "Xoá"
+  },
+  "tenants": {
+    "add": "Thêm người thuê",
+    "import": {
+      "title": "Import người thuê",
+      "description": "Nhập hồ sơ người thuê vào {{building}} từ file CSV hoặc XLSX.",
+      "templateStep": "Tải file mẫu",
+      "templateHint": "Giữ nguyên dòng tiêu đề. Bắt buộc Họ tên và Số điện thoại; ngày dạng dd/MM/yyyy.",
+      "downloadXlsx": "Tải mẫu XLSX",
+      "downloadCsv": "Tải mẫu CSV",
+      "fileStep": "Chọn file",
+      "file": "File CSV hoặc XLSX (tối đa 1.000 dòng)",
+      "check": "Kiểm tra file",
+      "previewStep": "Xem trước",
+      "summary": "{{total}} dòng: {{valid}} hợp lệ, {{error}} lỗi, {{duplicate}} trùng.",
+      "line": "Dòng",
+      "rowStatus": {
+        "valid": "Hợp lệ",
+        "error": "Lỗi",
+        "duplicate": "Trùng"
+      },
+      "duplicatePhone": "Trùng SĐT",
+      "duplicateIdNumber": "Trùng CCCD",
+      "noRooms": "Chỉ tạo hồ sơ người thuê; gắn vào phòng khi lập hợp đồng. Dòng lỗi và dòng trùng được bỏ qua.",
+      "commit": "Nhập {{count}} dòng hợp lệ",
+      "restart": "Chọn file khác",
+      "resultStep": "Kết quả",
+      "result": "Đã tạo {{created}} người thuê, bỏ qua {{skipped}} dòng.",
+      "again": "Import file khác"
+    },
+    "backToList": "Về danh sách người thuê",
+    "call": "Gọi {{name}}",
+    "zalo": "Nhắn Zalo cho {{name}}",
+    "yes": "Đã khai báo",
+    "no": "Chưa",
+    "status": {
+      "living": "Đang ở",
+      "left": "Đã rời",
+      "no_contract": "Chưa có hợp đồng",
+      "archived": "Đã lưu trữ"
+    },
+    "filter": {
+      "all": "Tất cả",
+      "living": "Đang ở",
+      "left": "Đã rời",
+      "no_contract": "Chưa có hợp đồng",
+      "archived": "Đã lưu trữ"
+    },
+    "genders": {
+      "male": "Nam",
+      "female": "Nữ",
+      "other": "Khác"
+    },
+    "vehicleTypes": {
+      "motorbike": "Xe máy",
+      "electric_bike": "Xe điện",
+      "bicycle": "Xe đạp",
+      "car": "Ô tô",
+      "other": "Khác"
+    },
+    "fields": {
+      "fullName": "Họ tên",
+      "phone": "Số điện thoại",
+      "room": "Phòng",
+      "status": "Trạng thái",
+      "residenceDeclared": "Tạm trú",
+      "email": "Email",
+      "idNumber": "Số CCCD",
+      "idIssuedAt": "Ngày cấp CCCD",
+      "birthDate": "Ngày sinh",
+      "gender": "Giới tính",
+      "hometown": "Quê quán",
+      "permanentAddress": "Địa chỉ thường trú",
+      "occupation": "Nghề nghiệp / nơi làm",
+      "note": "Ghi chú"
+    },
+    "list": {
+      "search": "Tìm người thuê",
+      "searchPlaceholder": "Tên, SĐT hoặc 4 số cuối CCCD",
+      "empty": "Chưa có người thuê",
+      "emptyDescription": "Thêm người thuê hoặc import từ file để bắt đầu.",
+      "noResults": "Không có người thuê phù hợp",
+      "pagination": "Phân trang người thuê"
+    },
+    "profile": {
+      "notFound": "Không tìm thấy người thuê",
+      "personal": "Thông tin cá nhân",
+      "contracts": "Hợp đồng",
+      "noContracts": "Chưa có hợp đồng.",
+      "portal": "Cổng người thuê",
+      "portalNone": "Chưa mở link cổng người thuê.",
+      "portalOpened": "Mở link lần cuối ngày {{date}}.",
+      "archive": "Lưu trữ",
+      "archiveTitle": "Lưu trữ hồ sơ {{name}}?",
+      "archiveDescription": "Hồ sơ đã lưu trữ bị ẩn khỏi danh sách và không sửa được nữa.",
+      "archived": "Đã lưu trữ hồ sơ."
+    },
+    "documents": {
+      "title": "CCCD",
+      "noId": "Chưa có số CCCD",
+      "show": "Hiện",
+      "hide": "Ẩn",
+      "front": "Ảnh CCCD mặt trước",
+      "back": "Ảnh CCCD mặt sau",
+      "none": "Chưa có ảnh"
+    },
+    "vehicles": {
+      "title": "Xe",
+      "empty": "Chưa có xe.",
+      "add": "Thêm xe",
+      "save": "Lưu xe",
+      "plate": "Biển số",
+      "type": "Loại xe",
+      "plateRequired": "Nhập biển số (ít nhất 4 ký tự)",
+      "edit": "Sửa xe {{plate}}",
+      "remove": "Xoá xe {{plate}}",
+      "removeTitle": "Xoá xe {{plate}}?",
+      "removeDescription": "Xe sẽ bị xoá khỏi hồ sơ người thuê.",
+      "added": "Đã thêm xe {{plate}}.",
+      "removed": "Đã xoá xe {{plate}}."
+    },
+    "form": {
+      "newTitle": "Thêm người thuê",
+      "editTitle": "Sửa người thuê",
+      "optional": "Thông tin bổ sung (có thể nhập sau)",
+      "fullNameRequired": "Nhập họ tên",
+      "phoneInvalid": "Số điện thoại gồm 10 số, bắt đầu bằng 0",
+      "emailInvalid": "Email không hợp lệ",
+      "idNumberInvalid": "Số CCCD gồm 12 chữ số",
+      "idNumberKeep": "Để trống để giữ số CCCD đang lưu.",
+      "choose": "Chọn",
+      "viewExisting": "Xem hồ sơ đã có",
+      "fixErrors": "Vui lòng kiểm tra các trường bị lỗi.",
+      "conflict": "Dữ liệu đã thay đổi, tải lại?",
+      "reload": "Tải lại",
+      "created": "Đã thêm người thuê.",
+      "updated": "Đã lưu hồ sơ.",
+      "leaveTitle": "Rời trang khi chưa lưu?",
+      "leaveDescription": "Các thay đổi chưa lưu sẽ mất.",
+      "leave": "Rời trang",
+      "stay": "Ở lại",
+      "upload": {
+        "uploading": "Đang tải {{name}}…",
+        "done": "Đã tải {{name}}",
+        "error": "Không tải được {{name}}. Chọn lại ảnh JPG/PNG/WEBP dưới 10 MB."
+      }
+    },
+    "importAction": "Nhập từ file"
   }
 }
