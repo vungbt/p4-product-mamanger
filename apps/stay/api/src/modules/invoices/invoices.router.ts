@@ -1,13 +1,14 @@
 import {
   applyAuditPolicies,
   currentUser,
+  InputValidError,
   queryText,
   type RouteAuditPolicies,
   uuidQueryRule,
   uuidRouteId,
   validateListQuery,
 } from '@p4/server-core';
-import { INVOICE_KINDS, INVOICE_STATUSES } from '@stay/shared';
+import { INVOICE_KINDS, INVOICE_STATUSES, isPeriod } from '@stay/shared';
 import { Router } from 'express';
 import { requireScopedAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
@@ -50,20 +51,24 @@ const invoiceQuery = validateListQuery({
     buildingId: uuidQueryRule,
     contractId: uuidQueryRule,
     roomId: uuidQueryRule,
-    period: 'sometimes|required|regex:/^[0-9]{4}-(0[1-9]|1[0-2])$/',
+    // Validated in normalize: validatorjs splits string rules on `|`, which breaks a regex rule.
+    period: 'sometimes|required|string|max:7',
     kind: `sometimes|required|in:${INVOICE_KINDS.join(',')}`,
     status: `sometimes|required|in:${INVOICE_STATUSES.join(',')}`,
     overdue: 'sometimes|required|in:true,false',
   }),
   normalize: (query, base): InvoiceListQuery => {
     const overdue = queryText(query, 'overdue');
+    const period = queryText(query, 'period');
 
+    if (period !== undefined && !isPeriod(period))
+      throw new InputValidError('input_valid_error', { period: ['Kỳ phải có dạng YYYY-MM.'] });
     return {
       ...base,
       buildingId: queryText(query, 'buildingId'),
       contractId: queryText(query, 'contractId'),
       roomId: queryText(query, 'roomId'),
-      period: queryText(query, 'period'),
+      period,
       kind: INVOICE_KINDS.find((kind) => kind === queryText(query, 'kind')),
       status: INVOICE_STATUSES.find((status) => status === queryText(query, 'status')),
       overdue: overdue === undefined ? undefined : overdue === 'true',

@@ -385,6 +385,7 @@ paths:
           in: query
           schema:
             type: string
+            maxLength: 7
         - name: kind
           in: query
           schema:

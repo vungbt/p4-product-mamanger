@@ -89,6 +89,8 @@ test.describe('O-11..O-14 tenants (desktop)', () => {
   test('the list searches tenants and the profile reveals the full CCCD', async ({ page }) => {
     await signIn(page);
     await page.goto('/tenants');
+    // Other suites add tenants to building A, so the seeded one may not be on the first page.
+    await page.getByRole('searchbox', { name: 'Tìm người thuê' }).fill(SEEDED.name);
     await expect(page.getByTestId('tenant-table')).toContainText(SEEDED.name);
     await saveScreenshot(page, 'tenants-list-desktop');
 
@@ -171,6 +173,8 @@ test.describe('O-11..O-14 tenants on mobile (375px)', () => {
       'https://zalo.me/0911000001',
     );
     await page.goto('/tenants');
+    // Other suites add tenants to building A, so the seeded one may not be on the first page.
+    await page.getByRole('searchbox', { name: 'Tìm người thuê' }).fill(SEEDED.name);
     await expect(page.getByTestId('tenant-cards')).toContainText(SEEDED.name);
     expect(await hasNoHorizontalScroll(page)).toBe(true);
     await saveScreenshot(page, 'tenants-list-mobile');
