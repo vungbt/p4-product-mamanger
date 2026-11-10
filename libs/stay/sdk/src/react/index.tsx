@@ -38,3 +38,20 @@ export {
   useUpdateService,
   useUpdateStaySettings,
 } from './settings.js';
+export {
+  tenantKeys,
+  tenantMutationOptions,
+  tenantQueryOptions,
+  useAddVehicle,
+  useArchiveTenant,
+  useAttachTenantDocument,
+  useCommitTenantImport,
+  useCreateTenant,
+  usePreviewTenantImport,
+  useRemoveVehicle,
+  useRevealTenantIdNumber,
+  useTenant,
+  useTenants,
+  useUpdateTenant,
+  useUpdateVehicle,
+} from './tenants.js';

@@ -47,6 +47,19 @@ export const env = {
     clientId: process.env.STAY_GOOGLE_CLIENT_ID || '',
     clientSecret: process.env.STAY_GOOGLE_CLIENT_SECRET || '',
   },
+  /**
+   * Private uploads (CCCD photos). Without all three Cloudinary values the API uses a local stub
+   * storage outside production (tests, CI); production then refuses uploads.
+   */
+  cloudinary: {
+    cloudName: process.env.STAY_CLOUDINARY_CLOUD_NAME || '',
+    apiKey: process.env.STAY_CLOUDINARY_API_KEY || '',
+    apiSecret: process.env.STAY_CLOUDINARY_API_SECRET || '',
+    folder: process.env.STAY_CLOUDINARY_FOLDER || 'stay',
+    apiUrl: process.env.STAY_CLOUDINARY_API_URL || 'https://api.cloudinary.com/v1_1',
+  },
+  /** Directory of the stub storage (non-production only). */
+  uploadStubDir: process.env.STAY_UPLOAD_STUB_DIR || '',
   /** Server URL shown in the API reference; defaults to the current origin. */
   publicApiUrl: process.env.STAY_PUBLIC_API_URL,
 };

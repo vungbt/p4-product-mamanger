@@ -798,6 +798,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/files/{id}/stub': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Xem ảnh private (kho stub)
+     * @description Chỉ khi máy chủ chạy kho stub. Cần `expires` và `signature` từ URL ký trong hồ sơ người thuê; thiếu/sai/hết hạn trả 403.
+     *
+     *     **Công khai.**
+     */
+    get: operations['get_api_files_id_stub'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/me': {
     parameters: {
       query?: never;
@@ -992,6 +1014,328 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/tenants': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh sách người thuê
+     * @description Người quản lý chỉ thấy người thuê của toà được gán. `q` tìm theo tên, SĐT; 4 chữ số cũng khớp 4 số cuối CCCD. `status`: `all` (mặc định, ẩn hồ sơ đã lưu trữ), `living` (đang ở), `left` (đã rời), `no_contract` (chưa có hợp đồng), `archived`. Trạng thái suy ra từ hợp đồng (ST-10). CCCD luôn che giữa.
+     *
+     *     **Quyền:** `read:Tenant`.
+     */
+    get: operations['get_api_tenants'];
+    put?: never;
+    /**
+     * Tạo người thuê
+     * @description Gửi `buildingId` của toà. Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu chấm và tự chuẩn hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và `extensions.duplicateTenant` (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc `dd/MM/yyyy`), không sau hôm nay. Không tự điền giá trị nào.
+     *
+     *     **Quyền:** `create:Tenant`.
+     */
+    post: operations['post_api_tenants'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/tenants/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Hồ sơ người thuê
+     * @description Kèm xe, ảnh CCCD (`url` ký, hết hạn sau 5 phút: đọc lại hồ sơ để lấy URL mới), hợp đồng đã/đang ở. CCCD che giữa; xem đủ qua `reveal-id`. Người thuê ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `read:Tenant`.
+     */
+    get: operations['get_api_tenants_id'];
+    /**
+     * Sửa người thuê
+     * @description Gửi đủ các trường như khi tạo (bỏ trống = `null`), trừ `idNumber`: không gửi thì giữ CCCD đang lưu, `null` để xoá. Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu chấm và tự chuẩn hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và `extensions.duplicateTenant` (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc `dd/MM/yyyy`), không sau hôm nay. Không tự điền giá trị nào. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `update:Tenant`.
+     */
+    put: operations['put_api_tenants_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/tenants/{id}/archive': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Lưu trữ người thuê
+     * @description Hồ sơ đã lưu trữ không sửa được (409 `tenant_archived`). 409 `tenant_has_active_contract` khi còn ở trong hợp đồng hiệu lực.
+     *
+     *     **Quyền:** `delete:Tenant`.
+     */
+    post: operations['post_api_tenants_id_archive'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/tenants/{id}/documents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Gắn ảnh CCCD
+     * @description `fileId` từ `POST /api/uploads/{id}/complete` (mục đích `tenant_document`, cùng toà, do chính người dùng tải lên). Mặt trước/sau mới thay ảnh cũ.
+     *
+     *     **Quyền:** `update:Tenant`.
+     */
+    post: operations['post_api_tenants_id_documents'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/tenants/{id}/reveal-id': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xem đủ số CCCD
+     * @description Mỗi lần gọi ghi một dòng audit `tenant.reveal_id_number` (không chứa số CCCD).
+     *
+     *     **Quyền:** `read:Tenant`.
+     */
+    post: operations['post_api_tenants_id_reveal_id'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/tenants/{id}/vehicles': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thêm xe
+     * @description Biển số viết hoa; không trùng (bỏ qua dấu gạch, chấm, khoảng trắng) trong các xe của người thuê.
+     *
+     *     **Quyền:** `update:Tenant`.
+     */
+    post: operations['post_api_tenants_id_vehicles'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/tenants/{id}/vehicles/{vehicleId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Sửa xe
+     * @description **Quyền:** `update:Tenant`.
+     */
+    put: operations['put_api_tenants_id_vehicles_vehicleId'];
+    post?: never;
+    /**
+     * Xoá xe
+     * @description **Quyền:** `update:Tenant`.
+     */
+    delete: operations['delete_api_tenants_id_vehicles_vehicleId'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/tenants/import': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Nhập người thuê từ bản xem trước
+     * @description Gửi lại `values` của các dòng đã xem trước; máy chủ kiểm tra lại và chỉ tạo dòng hợp lệ trong một transaction. Gọi lại cùng `Idempotency-Key` và cùng nội dung trả kết quả cũ (`replayed: true`), không tạo trùng.
+     *
+     *     **Quyền:** `manage:Tenant`. Bắt buộc header `Idempotency-Key`.
+     */
+    post: operations['post_api_tenants_import'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/tenants/import/preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xem trước file import
+     * @description Gửi `file` (CSV UTF-8 hoặc XLSX, tối đa 2 MB, 1.000 dòng) và `?buildingId=`. Trả trạng thái từng dòng: `valid`, `error` (lỗi theo cột) hoặc `duplicate` (SĐT đã có trong toà hoặc CCCD đã có, hoặc lặp dòng trước trong file). Không ghi DB, không tự gán phòng.
+     *
+     *     **Quyền:** `manage:Tenant`.
+     */
+    post: operations['post_api_tenants_import_preview'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/tenants/import/template': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * File mẫu import người thuê
+     * @description `format=xlsx` (mặc định, các cột định dạng văn bản để giữ số 0 đầu) hoặc `csv` (UTF-8). Chỉ có dòng tiêu đề.
+     *
+     *     **Quyền:** `manage:Tenant`.
+     */
+    get: operations['get_api_tenants_import_template'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/uploads': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xin ticket tải ảnh private
+     * @description Cần quyền tạo/sửa người thuê ở `buildingId`. Ticket hết hạn sau 10 phút; ảnh JPG/PNG/WEBP tối đa 10 MB.
+     *
+     *     **Yêu cầu đăng nhập.**
+     */
+    post: operations['post_api_uploads'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/uploads/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Trạng thái ticket tải ảnh
+     * @description Chỉ người tạo ticket xem được.
+     *
+     *     **Yêu cầu đăng nhập.**
+     */
+    get: operations['get_api_uploads_id'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/uploads/{id}/complete': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xác nhận đã tải ảnh
+     * @description Máy chủ kiểm tra ảnh trên kho lưu trữ (định dạng, dung lượng) rồi tạo file private. Gọi lại trả cùng kết quả.
+     *
+     *     **Yêu cầu đăng nhập.**
+     */
+    post: operations['post_api_uploads_id_complete'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/uploads/{id}/stub': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Nhận ảnh (kho stub)
+     * @description Chỉ khi máy chủ chạy kho stub (dev/test/CI, không cấu hình Cloudinary). URL có chữ ký nằm trong `uploadUrl` của ticket; không dùng cookie.
+     *
+     *     **Công khai.**
+     */
+    post: operations['post_api_uploads_id_stub'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/health': {
     parameters: {
       query?: never;
@@ -1141,6 +1485,11 @@ export interface components {
     BuildingStats: {
       occupiedRoomCount: number;
       roomCount: number;
+    };
+    DuplicateTenantRef: {
+      /** @enum {string} */
+      field: 'idNumber' | 'phone';
+      tenantId: string | null;
     };
     PaginationMeta: {
       page: number;
@@ -1414,6 +1763,73 @@ export interface components {
       transferContentTemplate: string;
       version: number;
     };
+    StayTenant: {
+      archivedAt: string | null;
+      buildingId: string;
+      createdAt: string;
+      currentRoom: components['schemas']['TenantRoomRef'] | null;
+      fullName: string;
+      id: string;
+      idNumberMasked: string | null;
+      phone: string;
+      residenceDeclared: boolean | null;
+      /** @enum {string} */
+      status: 'left' | 'living' | 'no_contract';
+      updatedAt: string;
+      version: number;
+    };
+    StayTenantDetail: {
+      archivedAt: string | null;
+      birthDate: string | null;
+      buildingId: string;
+      contracts: components['schemas']['TenantContractRef'][];
+      createdAt: string;
+      currentRoom: components['schemas']['TenantRoomRef'] | null;
+      documents: components['schemas']['TenantDocument'][];
+      email: string | null;
+      fullName: string;
+      /** @enum {string|null} */
+      gender: 'female' | 'male' | 'other' | null;
+      hometown: string | null;
+      id: string;
+      idIssuedAt: string | null;
+      idNumberMasked: string | null;
+      note: string | null;
+      occupation: string | null;
+      permanentAddress: string | null;
+      phone: string;
+      portalLastOpenedAt: string | null;
+      residenceDeclared: boolean | null;
+      /** @enum {string} */
+      status: 'left' | 'living' | 'no_contract';
+      updatedAt: string;
+      vehicles: components['schemas']['TenantVehicle'][];
+      version: number;
+    };
+    StayUpload: {
+      buildingId: string;
+      expiresAt: string;
+      fileId: string | null;
+      id: string;
+      maxBytes: number;
+      /** @enum {string} */
+      purpose: 'tenant_document';
+      /** @enum {string} */
+      status: 'completed' | 'pending';
+    };
+    StayUploadTicket: {
+      allowedMimeTypes: string[];
+      buildingId: string;
+      expiresAt: string;
+      fileId: string | null;
+      id: string;
+      maxBytes: number;
+      /** @enum {string} */
+      purpose: 'tenant_document';
+      /** @enum {string} */
+      status: 'completed' | 'pending';
+      uploadUrl: string;
+    };
     StayUser: {
       avatarUrl: string | null;
       buildingIds: string[];
@@ -1424,6 +1840,92 @@ export interface components {
       id: string;
       /** @enum {string} */
       role: 'manager' | 'owner' | 'tenant';
+    };
+    TenantContractRef: {
+      code: string;
+      fromDate: string;
+      id: string;
+      room: components['schemas']['TenantRoomRef'];
+      status: string;
+      toDate: string | null;
+    };
+    TenantDocument: {
+      createdAt: string;
+      fileId: string;
+      id: string;
+      /** @enum {string} */
+      kind: 'id_back' | 'id_front' | 'other';
+      url: string | null;
+      urlExpiresAt: string | null;
+    };
+    TenantIdReveal: {
+      idNumber: string | null;
+    };
+    TenantImportCellError: {
+      /** @enum {string} */
+      column:
+        | 'birthDate'
+        | 'email'
+        | 'fullName'
+        | 'gender'
+        | 'hometown'
+        | 'idIssuedAt'
+        | 'idNumber'
+        | 'note'
+        | 'occupation'
+        | 'permanentAddress'
+        | 'phone';
+      message: string;
+    };
+    TenantImportCommitInput: {
+      buildingId: string;
+      rows: components['schemas']['TenantImportCommitRow'][];
+    };
+    TenantImportCommitRow: {
+      line: number;
+      values: unknown;
+    };
+    TenantImportPreview: {
+      buildingId: string;
+      duplicateCount: number;
+      errorCount: number;
+      fileName: string;
+      rows: components['schemas']['TenantImportRow'][];
+      totalRows: number;
+      validCount: number;
+    };
+    TenantImportResult: {
+      buildingId: string;
+      createdCount: number;
+      replayed: boolean;
+      skipped: {
+        line: number;
+        /** @enum {string} */
+        status: 'duplicate' | 'error';
+      }[];
+      skippedCount: number;
+      tenantIds: string[];
+    };
+    TenantImportRow: {
+      duplicate: components['schemas']['DuplicateTenantRef'] | null;
+      errors: components['schemas']['TenantImportCellError'][];
+      line: number;
+      /** @enum {string} */
+      status: 'duplicate' | 'error' | 'valid';
+      values: unknown;
+    };
+    TenantRoomRef: {
+      code: string;
+      id: string;
+    };
+    TenantVehicle: {
+      createdAt: string;
+      id: string;
+      note: string | null;
+      plate: string;
+      tenantId: string;
+      /** @enum {string} */
+      type: 'bicycle' | 'car' | 'electric_bike' | 'motorbike' | 'other';
     };
   };
   responses: {
@@ -5272,6 +5774,32 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_files_id_stub: {
+    parameters: {
+      query?: {
+        expires?: string;
+        signature?: string;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: components['responses']['ValidationError'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_me: {
     parameters: {
       query?: never;
@@ -5639,6 +6167,619 @@ export interface operations {
       400: components['responses']['ValidationError'];
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_tenants: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'fullName' | 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+        status?: 'all' | 'archived' | 'left' | 'living' | 'no_contract';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayTenant'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_tenants: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: date */
+          birthDate?: string | null;
+          /** Format: uuid */
+          buildingId: string;
+          email?: string | null;
+          fullName: string;
+          /** @enum {string|null} */
+          gender?: 'male' | 'female' | 'other' | null;
+          hometown?: string | null;
+          /** Format: date */
+          idIssuedAt?: string | null;
+          idNumber?: string | null;
+          note?: string | null;
+          occupation?: string | null;
+          permanentAddress?: string | null;
+          phone: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayTenantDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_tenants_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayTenantDetail'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_tenants_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: date */
+          birthDate?: string | null;
+          email?: string | null;
+          fullName: string;
+          /** @enum {string|null} */
+          gender?: 'male' | 'female' | 'other' | null;
+          hometown?: string | null;
+          /** Format: date */
+          idIssuedAt?: string | null;
+          idNumber?: string | null;
+          note?: string | null;
+          occupation?: string | null;
+          permanentAddress?: string | null;
+          phone: string;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayTenantDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_tenants_id_archive: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayTenantDetail'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_tenants_id_documents: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: uuid */
+          fileId: string;
+          /** @enum {string} */
+          kind: 'id_front' | 'id_back' | 'other';
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TenantDocument'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_tenants_id_reveal_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TenantIdReveal'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_tenants_id_vehicles: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          note?: string | null;
+          plate: string;
+          /** @enum {string} */
+          type: 'motorbike' | 'electric_bike' | 'bicycle' | 'car' | 'other';
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TenantVehicle'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_tenants_id_vehicles_vehicleId: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        vehicleId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          note?: string | null;
+          plate: string;
+          /** @enum {string} */
+          type: 'motorbike' | 'electric_bike' | 'bicycle' | 'car' | 'other';
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TenantVehicle'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  delete_api_tenants_id_vehicles_vehicleId: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        vehicleId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              id: string;
+            };
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_tenants_import: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description Dùng lại đúng key khi retry cùng payload; khác payload sẽ trả 409. */
+        'Idempotency-Key': string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TenantImportCommitInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TenantImportResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_tenants_import_preview: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'multipart/form-data': {
+          /** Format: binary */
+          file: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TenantImportPreview'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_tenants_import_template: {
+    parameters: {
+      query?: {
+        format?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_uploads: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: uuid */
+          buildingId: string;
+          /** @enum {string} */
+          purpose: 'tenant_document';
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayUploadTicket'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_uploads_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayUpload'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_uploads_id_complete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayUpload'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_uploads_id_stub: {
+    parameters: {
+      query?: {
+        expires?: string;
+        signature?: string;
+      };
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'multipart/form-data': {
+          /** Format: binary */
+          file: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              bytes: number;
+              id: string;
+            };
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };

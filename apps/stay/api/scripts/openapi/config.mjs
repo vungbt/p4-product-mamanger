@@ -30,12 +30,19 @@ const TAG_DESCRIPTIONS = {
   rooms:
     'Phòng theo toà, sơ đồ phòng, tạo nhanh nhiều phòng, đồng hồ điện/nước và bảo trì. Trạng thái phòng suy ra từ hợp đồng.',
   settings: 'Cấu hình hệ thống: kỳ thu mặc định và danh mục dịch vụ, đơn giá mặc định.',
+  tenants:
+    'Hồ sơ người thuê, ảnh CCCD (private), xe và import từ CSV/XLSX. Dữ liệu cá nhân: chỉ chủ trọ và người quản lý toà của người thuê được xem; CCCD che giữa, không ghi rõ vào log/audit.',
+  uploads:
+    'Tải ảnh private (CCCD): xin ticket → gửi file thẳng tới `uploadUrl` → `complete` → gắn `fileId`. Ảnh chỉ xem qua URL ký ngắn hạn.',
 };
 
 const BILLING_DAY_NOTE =
   'Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành.';
 const VERSION_NOTE =
   'Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.';
+
+const TENANT_FIELDS_NOTE =
+  'Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu chấm và tự chuẩn hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và `extensions.duplicateTenant` (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc `dd/MM/yyyy`), không sau hôm nay. Không tự điền giá trị nào.';
 
 const OPERATIONS = {
   'GET /api/me': ['Người dùng hiện tại', 'Gồm vai trò và các toà được gán (người quản lý).'],
@@ -132,6 +139,66 @@ const OPERATIONS = {
     'Lưu trữ phòng',
     'Ẩn phòng khỏi sơ đồ và giải phóng mã phòng. Phòng đang có hợp đồng hiệu lực trả 409 `room_has_contract`.',
   ],
+  'GET /api/tenants': [
+    'Danh sách người thuê',
+    'Người quản lý chỉ thấy người thuê của toà được gán. `q` tìm theo tên, SĐT; 4 chữ số cũng khớp 4 số cuối CCCD. `status`: `all` (mặc định, ẩn hồ sơ đã lưu trữ), `living` (đang ở), `left` (đã rời), `no_contract` (chưa có hợp đồng), `archived`. Trạng thái suy ra từ hợp đồng (ST-10). CCCD luôn che giữa.',
+  ],
+  'POST /api/tenants': ['Tạo người thuê', `Gửi \`buildingId\` của toà. ${TENANT_FIELDS_NOTE}`],
+  'GET /api/tenants/{id}': [
+    'Hồ sơ người thuê',
+    'Kèm xe, ảnh CCCD (`url` ký, hết hạn sau 5 phút: đọc lại hồ sơ để lấy URL mới), hợp đồng đã/đang ở. CCCD che giữa; xem đủ qua `reveal-id`. Người thuê ngoài phạm vi trả 404.',
+  ],
+  'PUT /api/tenants/{id}': [
+    'Sửa người thuê',
+    `Gửi đủ các trường như khi tạo (bỏ trống = \`null\`), trừ \`idNumber\`: không gửi thì giữ CCCD đang lưu, \`null\` để xoá. ${TENANT_FIELDS_NOTE} ${VERSION_NOTE}`,
+  ],
+  'POST /api/tenants/{id}/reveal-id': [
+    'Xem đủ số CCCD',
+    'Mỗi lần gọi ghi một dòng audit `tenant.reveal_id_number` (không chứa số CCCD).',
+  ],
+  'POST /api/tenants/{id}/archive': [
+    'Lưu trữ người thuê',
+    'Hồ sơ đã lưu trữ không sửa được (409 `tenant_archived`). 409 `tenant_has_active_contract` khi còn ở trong hợp đồng hiệu lực.',
+  ],
+  'POST /api/tenants/{id}/documents': [
+    'Gắn ảnh CCCD',
+    '`fileId` từ `POST /api/uploads/{id}/complete` (mục đích `tenant_document`, cùng toà, do chính người dùng tải lên). Mặt trước/sau mới thay ảnh cũ.',
+  ],
+  'POST /api/tenants/{id}/vehicles': [
+    'Thêm xe',
+    'Biển số viết hoa; không trùng (bỏ qua dấu gạch, chấm, khoảng trắng) trong các xe của người thuê.',
+  ],
+  'PUT /api/tenants/{id}/vehicles/{vehicleId}': ['Sửa xe'],
+  'DELETE /api/tenants/{id}/vehicles/{vehicleId}': ['Xoá xe'],
+  'GET /api/tenants/import/template': [
+    'File mẫu import người thuê',
+    '`format=xlsx` (mặc định, các cột định dạng văn bản để giữ số 0 đầu) hoặc `csv` (UTF-8). Chỉ có dòng tiêu đề.',
+  ],
+  'POST /api/tenants/import/preview': [
+    'Xem trước file import',
+    'Gửi `file` (CSV UTF-8 hoặc XLSX, tối đa 2 MB, 1.000 dòng) và `?buildingId=`. Trả trạng thái từng dòng: `valid`, `error` (lỗi theo cột) hoặc `duplicate` (SĐT đã có trong toà hoặc CCCD đã có, hoặc lặp dòng trước trong file). Không ghi DB, không tự gán phòng.',
+  ],
+  'POST /api/tenants/import': [
+    'Nhập người thuê từ bản xem trước',
+    'Gửi lại `values` của các dòng đã xem trước; máy chủ kiểm tra lại và chỉ tạo dòng hợp lệ trong một transaction. Gọi lại cùng `Idempotency-Key` và cùng nội dung trả kết quả cũ (`replayed: true`), không tạo trùng.',
+  ],
+  'POST /api/uploads': [
+    'Xin ticket tải ảnh private',
+    'Cần quyền tạo/sửa người thuê ở `buildingId`. Ticket hết hạn sau 10 phút; ảnh JPG/PNG/WEBP tối đa 10 MB.',
+  ],
+  'GET /api/uploads/{id}': ['Trạng thái ticket tải ảnh', 'Chỉ người tạo ticket xem được.'],
+  'POST /api/uploads/{id}/complete': [
+    'Xác nhận đã tải ảnh',
+    'Máy chủ kiểm tra ảnh trên kho lưu trữ (định dạng, dung lượng) rồi tạo file private. Gọi lại trả cùng kết quả.',
+  ],
+  'POST /api/uploads/{id}/stub': [
+    'Nhận ảnh (kho stub)',
+    'Chỉ khi máy chủ chạy kho stub (dev/test/CI, không cấu hình Cloudinary). URL có chữ ký nằm trong `uploadUrl` của ticket; không dùng cookie.',
+  ],
+  'GET /api/files/{id}/stub': [
+    'Xem ảnh private (kho stub)',
+    'Chỉ khi máy chủ chạy kho stub. Cần `expires` và `signature` từ URL ký trong hồ sơ người thuê; thiếu/sai/hết hạn trả 403.',
+  ],
 };
 
 // Billing days are 1–28 or 31 (end of month); the API reports other values per field.
@@ -166,6 +233,28 @@ const reading = { schema: { type: 'integer', minimum: 0, maximum: 999_999_999 } 
 const initialReadings = { initialElectric: reading, initialWater: reading };
 const roomFields = { areaM2, serviceIds };
 
+const tenantText = (maxLength) => ({ schema: { type: ['string', 'null'], maxLength } });
+const tenantFields = {
+  fullName: { schema: { type: 'string', minLength: 1, maxLength: 120 }, required: true },
+  phone: { schema: { type: 'string', minLength: 10, maxLength: 20 }, required: true },
+  email: tenantText(255),
+  idNumber: { schema: { type: ['string', 'null'], pattern: '^[0-9 .-]{12,20}$' } },
+  idIssuedAt: { schema: { type: ['string', 'null'], format: 'date' } },
+  birthDate: { schema: { type: ['string', 'null'], format: 'date' } },
+  gender: { schema: { type: ['string', 'null'], enum: ['male', 'female', 'other', null] } },
+  hometown: tenantText(255),
+  permanentAddress: tenantText(255),
+  occupation: tenantText(255),
+  note: tenantText(2000),
+};
+const vehicleFields = {
+  plate: { schema: { type: 'string', minLength: 4, maxLength: 20 }, required: true },
+  type: {
+    schema: { type: 'string', enum: ['motorbike', 'electric_bike', 'bicycle', 'car', 'other'] },
+    required: true,
+  },
+  note: tenantText(255),
+};
 const OVERRIDES = {
   'PUT /api/settings': {
     fields: { roundingUnit: { schema: roundingUnit, required: true } },
@@ -202,6 +291,38 @@ const OVERRIDES = {
       },
     },
   },
+  'POST /api/tenants': {
+    fields: {
+      buildingId: { schema: { type: 'string', format: 'uuid' }, required: true },
+      ...tenantFields,
+    },
+  },
+  'PUT /api/tenants/{id}': {
+    fields: {
+      ...tenantFields,
+      version: { schema: { type: 'integer', minimum: 1 }, required: true },
+    },
+  },
+  'POST /api/tenants/{id}/vehicles': { fields: vehicleFields },
+  'PUT /api/tenants/{id}/vehicles/{vehicleId}': { fields: vehicleFields },
+  'POST /api/tenants/{id}/documents': {
+    fields: {
+      kind: { schema: { type: 'string', enum: ['id_front', 'id_back', 'other'] }, required: true },
+      fileId: { schema: { type: 'string', format: 'uuid' }, required: true },
+    },
+  },
+  'POST /api/tenants/import': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'TenantImportCommitInput' } } },
+    },
+  },
+  'POST /api/uploads': {
+    fields: {
+      purpose: { schema: { type: 'string', enum: ['tenant_document'] }, required: true },
+      buildingId: { schema: { type: 'string', format: 'uuid' }, required: true },
+    },
+  },
   'PUT /api/buildings/{id}/prices': {
     fields: {
       serviceId: { schema: { type: 'string', format: 'uuid' }, required: true },
@@ -232,6 +353,8 @@ export default {
     'libs/stay/shared/src/constants.ts',
     'libs/stay/shared/src/room.ts',
     'libs/stay/shared/src/settings.ts',
+    'libs/stay/shared/src/tenant.ts',
+    'libs/stay/shared/src/upload.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },
   sessionCookie: 'stay.session_token',

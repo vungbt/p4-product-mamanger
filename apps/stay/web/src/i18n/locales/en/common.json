@@ -25,7 +25,11 @@
     "roomNew": "Add room",
     "roomBulk": "Create rooms in bulk",
     "roomDetail": "Room details",
-    "roomEdit": "Edit room"
+    "roomEdit": "Edit room",
+    "tenantNew": "New tenant",
+    "tenantImport": "Import tenants",
+    "tenantProfile": "Tenant profile",
+    "tenantEdit": "Edit tenant"
   },
   "header": {
     "back": "Back",
@@ -77,7 +81,8 @@
     "backHome": "Back to Overview",
     "offline": "You are offline. Data will reload when the connection returns.",
     "loadFailed": "Could not load data.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "saveFailed": "Could not save. Please try again."
   },
   "placeholder": {
     "title": "Coming soon",
@@ -260,5 +265,160 @@
       "offDone": "Room {{code}} is out of maintenance.",
       "failed": "Could not change the maintenance status."
     }
+  },
+  "common": {
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "tenants": {
+    "add": "Add tenant",
+    "import": {
+      "title": "Import tenants",
+      "description": "Add tenant profiles to {{building}} from a CSV or XLSX file.",
+      "templateStep": "Download the template",
+      "templateHint": "Keep the header row. Full name and phone are required; dates use dd/MM/yyyy.",
+      "downloadXlsx": "XLSX template",
+      "downloadCsv": "CSV template",
+      "fileStep": "Choose a file",
+      "file": "CSV or XLSX file (up to 1,000 rows)",
+      "check": "Check file",
+      "previewStep": "Preview",
+      "summary": "{{total}} rows: {{valid}} valid, {{error}} with errors, {{duplicate}} duplicates.",
+      "line": "Line",
+      "rowStatus": {
+        "valid": "Valid",
+        "error": "Error",
+        "duplicate": "Duplicate"
+      },
+      "duplicatePhone": "Phone already used",
+      "duplicateIdNumber": "ID number already used",
+      "noRooms": "Only tenant profiles are created; rooms are assigned with contracts. Rows with errors and duplicates are skipped.",
+      "commit": "Import {{count}} valid rows",
+      "restart": "Choose another file",
+      "resultStep": "Result",
+      "result": "Created {{created}} tenants, skipped {{skipped}} rows.",
+      "again": "Import another file"
+    },
+    "backToList": "Back to tenants",
+    "call": "Call {{name}}",
+    "zalo": "Message {{name}} on Zalo",
+    "yes": "Declared",
+    "no": "Not yet",
+    "status": {
+      "living": "Living",
+      "left": "Left",
+      "no_contract": "No contract",
+      "archived": "Archived"
+    },
+    "filter": {
+      "all": "All",
+      "living": "Living",
+      "left": "Left",
+      "no_contract": "No contract",
+      "archived": "Archived"
+    },
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "vehicleTypes": {
+      "motorbike": "Motorbike",
+      "electric_bike": "E-bike",
+      "bicycle": "Bicycle",
+      "car": "Car",
+      "other": "Other"
+    },
+    "fields": {
+      "fullName": "Full name",
+      "phone": "Phone number",
+      "room": "Room",
+      "status": "Status",
+      "residenceDeclared": "Residence",
+      "email": "Email",
+      "idNumber": "ID number (CCCD)",
+      "idIssuedAt": "ID issue date",
+      "birthDate": "Date of birth",
+      "gender": "Gender",
+      "hometown": "Hometown",
+      "permanentAddress": "Permanent address",
+      "occupation": "Occupation / workplace",
+      "note": "Note"
+    },
+    "list": {
+      "search": "Search tenants",
+      "searchPlaceholder": "Name, phone or last 4 ID digits",
+      "empty": "No tenants yet",
+      "emptyDescription": "Add a tenant or import a file to start.",
+      "noResults": "No matching tenants",
+      "pagination": "Tenant pages"
+    },
+    "profile": {
+      "notFound": "Tenant not found",
+      "personal": "Personal information",
+      "contracts": "Contracts",
+      "noContracts": "No contracts yet.",
+      "portal": "Tenant portal",
+      "portalNone": "The portal link has not been opened.",
+      "portalOpened": "Last opened on {{date}}.",
+      "archive": "Archive",
+      "archiveTitle": "Archive {{name}}?",
+      "archiveDescription": "Archived profiles are hidden from the list and can no longer be edited.",
+      "archived": "Profile archived."
+    },
+    "documents": {
+      "title": "ID card",
+      "noId": "No ID number",
+      "show": "Show",
+      "hide": "Hide",
+      "front": "ID card front",
+      "back": "ID card back",
+      "none": "No image"
+    },
+    "vehicles": {
+      "title": "Vehicles",
+      "empty": "No vehicles.",
+      "add": "Add vehicle",
+      "save": "Save vehicle",
+      "plate": "Plate",
+      "type": "Type",
+      "plateRequired": "Enter the plate (at least 4 characters)",
+      "edit": "Edit vehicle {{plate}}",
+      "remove": "Delete vehicle {{plate}}",
+      "removeTitle": "Delete vehicle {{plate}}?",
+      "removeDescription": "The vehicle will be removed from this profile.",
+      "added": "Vehicle {{plate}} added.",
+      "removed": "Vehicle {{plate}} deleted."
+    },
+    "form": {
+      "newTitle": "New tenant",
+      "editTitle": "Edit tenant",
+      "optional": "More details (can be added later)",
+      "fullNameRequired": "Enter the full name",
+      "phoneInvalid": "Phone numbers have 10 digits and start with 0",
+      "emailInvalid": "Invalid email",
+      "idNumberInvalid": "ID numbers have 12 digits",
+      "idNumberKeep": "Leave empty to keep the stored ID number.",
+      "choose": "Choose",
+      "viewExisting": "View existing profile",
+      "fixErrors": "Please check the highlighted fields.",
+      "conflict": "The data changed. Reload?",
+      "reload": "Reload",
+      "created": "Tenant added.",
+      "updated": "Profile saved.",
+      "leaveTitle": "Leave without saving?",
+      "leaveDescription": "Unsaved changes will be lost.",
+      "leave": "Leave",
+      "stay": "Stay",
+      "upload": {
+        "uploading": "Uploading {{name}}…",
+        "done": "Uploaded {{name}}",
+        "error": "Could not upload {{name}}. Choose a JPG/PNG/WEBP image under 10 MB."
+      }
+    },
+    "importAction": "Import"
   }
 }

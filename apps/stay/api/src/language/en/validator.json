@@ -49,7 +49,22 @@
     "prices": "Room prices",
     "maintenance": "Maintenance",
     "reason": "Reason",
-    "until": "Expected end"
+    "until": "Expected end",
+    "fullName": "Full name",
+    "phone": "Phone number",
+    "idNumber": "ID number",
+    "idIssuedAt": "Issue date",
+    "birthDate": "Date of birth",
+    "gender": "Gender",
+    "hometown": "Hometown",
+    "permanentAddress": "Permanent address",
+    "occupation": "Occupation",
+    "plate": "Plate",
+    "type": "Vehicle type",
+    "fileId": "Image",
+    "file": "File",
+    "rows": "Rows",
+    "purpose": "Purpose"
   },
   "message": {
     "query_string": "Query parameters must contain a single string value."

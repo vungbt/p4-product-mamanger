@@ -23,3 +23,15 @@ export {
   type StayServiceUpdateInput,
   type StaySettingsInput,
 } from './settings.js';
+export {
+  createTenantApi,
+  type DuplicateTenantRef,
+  getDuplicateTenant,
+  type TenantCreateInput,
+  type TenantDocumentInput,
+  type TenantImportCommitInput,
+  type TenantListQuery,
+  type TenantUpdateInput,
+  type VehicleInput,
+} from './tenants.js';
+export { createUploadApi, type StayUploadPurpose } from './uploads.js';

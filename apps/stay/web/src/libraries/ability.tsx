@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { useAuth } from '@/libraries/session/auth-provider';
 
 /** Stay bindings of the shared CASL React helpers (one provider at the root). */
-export const { AbilityProvider, useAbility, useCanAccess, useCanAccessSome, Can } =
+export const { AbilityProvider, useAbility, useCanAccess, useCanAccessSome, useCanOn, Can } =
   createAbilityReact(stayAbilityKit);
 
 /** Access a route needs; also filters the menus built from routes. */

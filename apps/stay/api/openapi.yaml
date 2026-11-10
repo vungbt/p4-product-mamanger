@@ -30,6 +30,12 @@ tags:
       từ hợp đồng.
   - name: settings
     description: "Cấu hình hệ thống: kỳ thu mặc định và danh mục dịch vụ, đơn giá mặc định."
+  - name: tenants
+    description: "Hồ sơ người thuê, ảnh CCCD (private), xe và import từ CSV/XLSX. Dữ liệu cá nhân: chỉ chủ trọ và người quản
+      lý toà của người thuê được xem; CCCD che giữa, không ghi rõ vào log/audit."
+  - name: uploads
+    description: "Tải ảnh private (CCCD): xin ticket → gửi file thẳng tới `uploadUrl` → `complete` → gắn `fileId`. Ảnh chỉ
+      xem qua URL ký ngắn hạn."
   - name: auth-native
     description: Better Auth native endpoints. Browser clients use @stay/sdk/auth and HttpOnly `stay.*` session cookies.
 paths:
@@ -1652,6 +1658,1123 @@ paths:
                 properties:
                   data:
                     $ref: "#/components/schemas/StayRoomDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/uploads:
+    post:
+      tags:
+        - uploads
+      operationId: post_api_uploads
+      summary: Xin ticket tải ảnh private
+      description: |-
+        Cần quyền tạo/sửa người thuê ở `buildingId`. Ticket hết hạn sau 10 phút; ảnh JPG/PNG/WEBP tối đa 10 MB.
+
+        **Yêu cầu đăng nhập.**
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                purpose:
+                  type: string
+                  enum:
+                    - tenant_document
+                buildingId:
+                  type: string
+                  format: uuid
+              required:
+                - purpose
+                - buildingId
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayUploadTicket"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/uploads/{id}:
+    get:
+      tags:
+        - uploads
+      operationId: get_api_uploads_id
+      summary: Trạng thái ticket tải ảnh
+      description: |-
+        Chỉ người tạo ticket xem được.
+
+        **Yêu cầu đăng nhập.**
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayUpload"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/uploads/{id}/complete:
+    post:
+      tags:
+        - uploads
+      operationId: post_api_uploads_id_complete
+      summary: Xác nhận đã tải ảnh
+      description: |-
+        Máy chủ kiểm tra ảnh trên kho lưu trữ (định dạng, dung lượng) rồi tạo file private. Gọi lại trả cùng kết quả.
+
+        **Yêu cầu đăng nhập.**
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: complete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayUpload"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/uploads/{id}/stub:
+    post:
+      tags:
+        - uploads
+      operationId: post_api_uploads_id_stub
+      summary: Nhận ảnh (kho stub)
+      description: >-
+        Chỉ khi máy chủ chạy kho stub (dev/test/CI, không cấu hình Cloudinary). URL có chữ ký nằm trong `uploadUrl` của
+        ticket; không dùng cookie.
+
+
+        **Công khai.**
+      security: []
+      x-audit-action: receive
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: expires
+          in: query
+          schema:
+            type: string
+        - name: signature
+          in: query
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      bytes:
+                        type: number
+                    required:
+                      - id
+                      - bytes
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/files/{id}/stub:
+    get:
+      tags:
+        - uploads
+      operationId: get_api_files_id_stub
+      summary: Xem ảnh private (kho stub)
+      description: >-
+        Chỉ khi máy chủ chạy kho stub. Cần `expires` và `signature` từ URL ký trong hồ sơ người thuê; thiếu/sai/hết hạn
+        trả 403.
+
+
+        **Công khai.**
+      security: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: expires
+          in: query
+          schema:
+            type: string
+        - name: signature
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/tenants:
+    get:
+      tags:
+        - tenants
+      operationId: get_api_tenants
+      summary: Danh sách người thuê
+      description: >-
+        Người quản lý chỉ thấy người thuê của toà được gán. `q` tìm theo tên, SĐT; 4 chữ số cũng khớp 4 số cuối CCCD.
+        `status`: `all` (mặc định, ẩn hồ sơ đã lưu trữ), `living` (đang ở), `left` (đã rời), `no_contract` (chưa có hợp
+        đồng), `archived`. Trạng thái suy ra từ hợp đồng (ST-10). CCCD luôn che giữa.
+
+
+        **Quyền:** `read:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - fullName
+              - createdAt
+            default: fullName
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - all
+              - archived
+              - left
+              - living
+              - no_contract
+        - name: buildingId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayTenant"
+                  message:
+                    type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - tenants
+      operationId: post_api_tenants
+      summary: Tạo người thuê
+      description: >-
+        Gửi `buildingId` của toà. Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu
+        chấm và tự chuẩn hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và
+        `extensions.duplicateTenant` (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc
+        `dd/MM/yyyy`), không sau hôm nay. Không tự điền giá trị nào.
+
+
+        **Quyền:** `create:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                buildingId:
+                  type: string
+                  format: uuid
+                gender:
+                  type:
+                    - string
+                    - "null"
+                  enum:
+                    - male
+                    - female
+                    - other
+                    - null
+                fullName:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                phone:
+                  type: string
+                  minLength: 10
+                  maxLength: 20
+                email:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+                idNumber:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^[0-9 .-]{12,20}$
+                idIssuedAt:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+                birthDate:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+                hometown:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+                permanentAddress:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+                occupation:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+                note:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 2000
+              required:
+                - buildingId
+                - fullName
+                - phone
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayTenantDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/tenants/import/template:
+    get:
+      tags:
+        - tenants
+      operationId: get_api_tenants_import_template
+      summary: File mẫu import người thuê
+      description: |-
+        `format=xlsx` (mặc định, các cột định dạng văn bản để giữ số 0 đầu) hoặc `csv` (UTF-8). Chỉ có dòng tiêu đề.
+
+        **Quyền:** `manage:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/tenants/import/preview:
+    post:
+      tags:
+        - tenants
+      operationId: post_api_tenants_import_preview
+      summary: Xem trước file import
+      description: >-
+        Gửi `file` (CSV UTF-8 hoặc XLSX, tối đa 2 MB, 1.000 dòng) và `?buildingId=`. Trả trạng thái từng dòng: `valid`,
+        `error` (lỗi theo cột) hoặc `duplicate` (SĐT đã có trong toà hoặc CCCD đã có, hoặc lặp dòng trước trong file).
+        Không ghi DB, không tự gán phòng.
+
+
+        **Quyền:** `manage:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: query
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/TenantImportPreview"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/tenants/import:
+    post:
+      tags:
+        - tenants
+      operationId: post_api_tenants_import
+      summary: Nhập người thuê từ bản xem trước
+      description: >-
+        Gửi lại `values` của các dòng đã xem trước; máy chủ kiểm tra lại và chỉ tạo dòng hợp lệ trong một transaction.
+        Gọi lại cùng `Idempotency-Key` và cùng nội dung trả kết quả cũ (`replayed: true`), không tạo trùng.
+
+
+        **Quyền:** `manage:Tenant`. Bắt buộc header `Idempotency-Key`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: import
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Dùng lại đúng key khi retry cùng payload; khác payload sẽ trả 409.
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TenantImportCommitInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/TenantImportResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/tenants/{id}:
+    get:
+      tags:
+        - tenants
+      operationId: get_api_tenants_id
+      summary: Hồ sơ người thuê
+      description: >-
+        Kèm xe, ảnh CCCD (`url` ký, hết hạn sau 5 phút: đọc lại hồ sơ để lấy URL mới), hợp đồng đã/đang ở. CCCD che
+        giữa; xem đủ qua `reveal-id`. Người thuê ngoài phạm vi trả 404.
+
+
+        **Quyền:** `read:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayTenantDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - tenants
+      operationId: put_api_tenants_id
+      summary: Sửa người thuê
+      description: >-
+        Gửi đủ các trường như khi tạo (bỏ trống = `null`), trừ `idNumber`: không gửi thì giữ CCCD đang lưu, `null` để
+        xoá. Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu chấm và tự chuẩn
+        hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và `extensions.duplicateTenant`
+        (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc `dd/MM/yyyy`), không sau hôm
+        nay. Không tự điền giá trị nào. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409
+        `version_conflict`.
+
+
+        **Quyền:** `update:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: integer
+                  minimum: 1
+                gender:
+                  type:
+                    - string
+                    - "null"
+                  enum:
+                    - male
+                    - female
+                    - other
+                    - null
+                fullName:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                phone:
+                  type: string
+                  minLength: 10
+                  maxLength: 20
+                email:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+                idNumber:
+                  type:
+                    - string
+                    - "null"
+                  pattern: ^[0-9 .-]{12,20}$
+                idIssuedAt:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+                birthDate:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+                hometown:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+                permanentAddress:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+                occupation:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+                note:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 2000
+              required:
+                - version
+                - fullName
+                - phone
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayTenantDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/tenants/{id}/reveal-id:
+    post:
+      tags:
+        - tenants
+      operationId: post_api_tenants_id_reveal_id
+      summary: Xem đủ số CCCD
+      description: |-
+        Mỗi lần gọi ghi một dòng audit `tenant.reveal_id_number` (không chứa số CCCD).
+
+        **Quyền:** `read:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: inspect
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/TenantIdReveal"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/tenants/{id}/archive:
+    post:
+      tags:
+        - tenants
+      operationId: post_api_tenants_id_archive
+      summary: Lưu trữ người thuê
+      description: >-
+        Hồ sơ đã lưu trữ không sửa được (409 `tenant_archived`). 409 `tenant_has_active_contract` khi còn ở trong hợp
+        đồng hiệu lực.
+
+
+        **Quyền:** `delete:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: archive
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayTenantDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/tenants/{id}/documents:
+    post:
+      tags:
+        - tenants
+      operationId: post_api_tenants_id_documents
+      summary: Gắn ảnh CCCD
+      description: >-
+        `fileId` từ `POST /api/uploads/{id}/complete` (mục đích `tenant_document`, cùng toà, do chính người dùng tải
+        lên). Mặt trước/sau mới thay ảnh cũ.
+
+
+        **Quyền:** `update:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kind:
+                  type: string
+                  enum:
+                    - id_front
+                    - id_back
+                    - other
+                fileId:
+                  type: string
+                  format: uuid
+              required:
+                - kind
+                - fileId
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/TenantDocument"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/tenants/{id}/vehicles:
+    post:
+      tags:
+        - tenants
+      operationId: post_api_tenants_id_vehicles
+      summary: Thêm xe
+      description: |-
+        Biển số viết hoa; không trùng (bỏ qua dấu gạch, chấm, khoảng trắng) trong các xe của người thuê.
+
+        **Quyền:** `update:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plate:
+                  type: string
+                  minLength: 4
+                  maxLength: 20
+                type:
+                  type: string
+                  enum:
+                    - motorbike
+                    - electric_bike
+                    - bicycle
+                    - car
+                    - other
+                note:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+              required:
+                - plate
+                - type
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/TenantVehicle"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/tenants/{id}/vehicles/{vehicleId}:
+    put:
+      tags:
+        - tenants
+      operationId: put_api_tenants_id_vehicles_vehicleId
+      summary: Sửa xe
+      description: "**Quyền:** `update:Tenant`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plate:
+                  type: string
+                  minLength: 4
+                  maxLength: 20
+                type:
+                  type: string
+                  enum:
+                    - motorbike
+                    - electric_bike
+                    - bicycle
+                    - car
+                    - other
+                note:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 255
+              required:
+                - plate
+                - type
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/TenantVehicle"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    delete:
+      tags:
+        - tenants
+      operationId: delete_api_tenants_id_vehicles_vehicleId
+      summary: Xoá xe
+      description: "**Quyền:** `update:Tenant`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: vehicleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                    required:
+                      - id
                   message:
                     type: string
                 required:
@@ -5243,6 +6366,21 @@ components:
       required:
         - roomCount
         - occupiedRoomCount
+    DuplicateTenantRef:
+      type: object
+      properties:
+        field:
+          type: string
+          enum:
+            - idNumber
+            - phone
+        tenantId:
+          type:
+            - string
+            - "null"
+      required:
+        - field
+        - tenantId
     PaginationMeta:
       type: object
       properties:
@@ -6111,6 +7249,247 @@ components:
         - dueDay
         - roundingUnit
         - refundUnusedRent
+    StayTenant:
+      type: object
+      properties:
+        id:
+          type: string
+        buildingId:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+        idNumberMasked:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum:
+            - left
+            - living
+            - no_contract
+        currentRoom:
+          anyOf:
+            - $ref: "#/components/schemas/TenantRoomRef"
+            - type: "null"
+        residenceDeclared:
+          type:
+            - boolean
+            - "null"
+        archivedAt:
+          type:
+            - string
+            - "null"
+        version:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - buildingId
+        - fullName
+        - phone
+        - idNumberMasked
+        - status
+        - currentRoom
+        - residenceDeclared
+        - archivedAt
+        - version
+        - createdAt
+        - updatedAt
+    StayTenantDetail:
+      type: object
+      properties:
+        email:
+          type:
+            - string
+            - "null"
+        idIssuedAt:
+          type:
+            - string
+            - "null"
+        birthDate:
+          type:
+            - string
+            - "null"
+        gender:
+          type:
+            - string
+            - "null"
+          enum:
+            - female
+            - male
+            - other
+            - null
+        hometown:
+          type:
+            - string
+            - "null"
+        permanentAddress:
+          type:
+            - string
+            - "null"
+        occupation:
+          type:
+            - string
+            - "null"
+        note:
+          type:
+            - string
+            - "null"
+        vehicles:
+          type: array
+          items:
+            $ref: "#/components/schemas/TenantVehicle"
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/TenantDocument"
+        contracts:
+          type: array
+          items:
+            $ref: "#/components/schemas/TenantContractRef"
+        portalLastOpenedAt:
+          type:
+            - string
+            - "null"
+        id:
+          type: string
+        buildingId:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+        idNumberMasked:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum:
+            - left
+            - living
+            - no_contract
+        currentRoom:
+          anyOf:
+            - $ref: "#/components/schemas/TenantRoomRef"
+            - type: "null"
+        residenceDeclared:
+          type:
+            - boolean
+            - "null"
+        archivedAt:
+          type:
+            - string
+            - "null"
+        version:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - email
+        - idIssuedAt
+        - birthDate
+        - gender
+        - hometown
+        - permanentAddress
+        - occupation
+        - note
+        - vehicles
+        - documents
+        - contracts
+        - portalLastOpenedAt
+        - id
+        - buildingId
+        - fullName
+        - phone
+        - idNumberMasked
+        - status
+        - currentRoom
+        - residenceDeclared
+        - archivedAt
+        - version
+        - createdAt
+        - updatedAt
+    StayUpload:
+      type: object
+      properties:
+        id:
+          type: string
+        purpose:
+          type: string
+          enum:
+            - tenant_document
+        buildingId:
+          type: string
+        status:
+          type: string
+          enum:
+            - completed
+            - pending
+        fileId:
+          type:
+            - string
+            - "null"
+        maxBytes:
+          type: number
+        expiresAt:
+          type: string
+      required:
+        - id
+        - purpose
+        - buildingId
+        - status
+        - fileId
+        - maxBytes
+        - expiresAt
+    StayUploadTicket:
+      type: object
+      properties:
+        uploadUrl:
+          type: string
+        allowedMimeTypes:
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+        purpose:
+          type: string
+          enum:
+            - tenant_document
+        buildingId:
+          type: string
+        status:
+          type: string
+          enum:
+            - completed
+            - pending
+        fileId:
+          type:
+            - string
+            - "null"
+        maxBytes:
+          type: number
+        expiresAt:
+          type: string
+      required:
+        - uploadUrl
+        - allowedMimeTypes
+        - id
+        - purpose
+        - buildingId
+        - status
+        - fileId
+        - maxBytes
+        - expiresAt
     StayUser:
       type: object
       properties:
@@ -6149,6 +7528,242 @@ components:
         - role
         - buildingIds
         - contractIds
+    TenantContractRef:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        room:
+          $ref: "#/components/schemas/TenantRoomRef"
+        status:
+          type: string
+        fromDate:
+          type: string
+        toDate:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - code
+        - room
+        - status
+        - fromDate
+        - toDate
+    TenantDocument:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+            - id_back
+            - id_front
+            - other
+        fileId:
+          type: string
+        url:
+          type:
+            - string
+            - "null"
+        urlExpiresAt:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+      required:
+        - id
+        - kind
+        - fileId
+        - url
+        - urlExpiresAt
+        - createdAt
+    TenantIdReveal:
+      type: object
+      properties:
+        idNumber:
+          type:
+            - string
+            - "null"
+      required:
+        - idNumber
+    TenantImportCellError:
+      type: object
+      properties:
+        column:
+          type: string
+          enum:
+            - birthDate
+            - email
+            - fullName
+            - gender
+            - hometown
+            - idIssuedAt
+            - idNumber
+            - note
+            - occupation
+            - permanentAddress
+            - phone
+        message:
+          type: string
+      required:
+        - column
+        - message
+    TenantImportCommitInput:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/TenantImportCommitRow"
+      required:
+        - buildingId
+        - rows
+    TenantImportCommitRow:
+      type: object
+      properties:
+        line:
+          type: number
+        values: {}
+      required:
+        - line
+        - values
+    TenantImportPreview:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        fileName:
+          type: string
+        totalRows:
+          type: number
+        validCount:
+          type: number
+        errorCount:
+          type: number
+        duplicateCount:
+          type: number
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/TenantImportRow"
+      required:
+        - buildingId
+        - fileName
+        - totalRows
+        - validCount
+        - errorCount
+        - duplicateCount
+        - rows
+    TenantImportResult:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        createdCount:
+          type: number
+        skippedCount:
+          type: number
+        tenantIds:
+          type: array
+          items:
+            type: string
+        skipped:
+          type: array
+          items:
+            type: object
+            properties:
+              line:
+                type: number
+              status:
+                type: string
+                enum:
+                  - duplicate
+                  - error
+            required:
+              - line
+              - status
+        replayed:
+          type: boolean
+      required:
+        - buildingId
+        - createdCount
+        - skippedCount
+        - tenantIds
+        - skipped
+        - replayed
+    TenantImportRow:
+      type: object
+      properties:
+        line:
+          type: number
+        status:
+          type: string
+          enum:
+            - duplicate
+            - error
+            - valid
+        values: {}
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/TenantImportCellError"
+        duplicate:
+          anyOf:
+            - $ref: "#/components/schemas/DuplicateTenantRef"
+            - type: "null"
+      required:
+        - line
+        - status
+        - values
+        - errors
+        - duplicate
+    TenantRoomRef:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+      required:
+        - id
+        - code
+    TenantVehicle:
+      type: object
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        plate:
+          type: string
+        type:
+          type: string
+          enum:
+            - bicycle
+            - car
+            - electric_bike
+            - motorbike
+            - other
+        note:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+      required:
+        - id
+        - tenantId
+        - plate
+        - type
+        - note
+        - createdAt
     Auth_User:
       type: object
       properties:

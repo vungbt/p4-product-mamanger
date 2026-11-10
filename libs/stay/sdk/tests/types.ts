@@ -3,6 +3,7 @@ import {
   buildingKeys,
   roomKeys,
   settingsKeys,
+  tenantKeys,
   useBuildingPrices,
   useBuildings,
   useCapabilities,
@@ -10,12 +11,17 @@ import {
   useRoom,
   useRooms,
   useServices,
+  useTenant,
+  useTenants,
 } from '../src/react/index.js';
 import {
   createBuildingApi,
   createRoomApi,
   createSettingsApi,
   createStaySdk,
+  createTenantApi,
+  createUploadApi,
+  getDuplicateTenant,
   unwrap,
 } from '../src/shared/index.js';
 
@@ -137,6 +143,54 @@ function checkRoomHooks() {
 void checkContract;
 void checkRooms;
 void checkRoomHooks;
+
+async function checkTenants() {
+  const tenants = createTenantApi(sdk);
+  const page = await tenants.list({ buildingId: 'b-1', status: 'no_contract', q: '1234' });
+  const status: 'living' | 'left' | 'no_contract' | undefined = page.data[0]?.status;
+  const masked: string | null | undefined = page.data[0]?.idNumberMasked;
+  const created = await tenants.create({ buildingId: 'b-1', fullName: 'A', phone: '0901234567' });
+  const url: string | null | undefined = created.documents[0]?.url;
+
+  // @ts-expect-error The list never returns the full CCCD.
+  void page.data[0]?.idNumber;
+  await tenants.update({
+    id: created.id,
+    body: { fullName: 'B', phone: '0901234567', version: 1 },
+  });
+
+  const full: string | null = (await tenants.revealIdNumber(created.id)).idNumber;
+  const preview = await tenants.previewImport({ buildingId: 'b-1', file: new Blob([]) });
+  const result = await tenants.commitImport({
+    idempotencyKey: 'import-key-1',
+    body: {
+      buildingId: 'b-1',
+      rows: preview.rows.map(({ line, values }) => ({ line, values })),
+    },
+  });
+  const replayed: boolean = result.replayed;
+  const fileId: string = await createUploadApi(sdk, { baseUrl: 'https://x.invalid' }).uploadImage({
+    purpose: 'tenant_document',
+    buildingId: 'b-1',
+    file: new Blob([]),
+  });
+
+  await tenants.attachDocument({ id: created.id, body: { kind: 'id_front', fileId } });
+  await tenants.addVehicle({ id: created.id, body: { plate: '59-X1 123.45', type: 'motorbike' } });
+
+  return [status, masked, url, full, replayed, getDuplicateTenant(null)?.tenantId];
+}
+
+function checkTenantHooks() {
+  return [
+    useTenants({ buildingId: 'b-1' }).data?.meta.total,
+    useTenant('t-1').data?.vehicles,
+    tenantKeys.all,
+  ];
+}
+
+void checkTenants;
+void checkTenantHooks;
 void checkHookTypes;
 void checkSettingsAndBuildings;
 void checkResourceHooks;

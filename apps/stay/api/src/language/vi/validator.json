@@ -49,7 +49,22 @@
     "prices": "Giá từng phòng",
     "maintenance": "Bảo trì",
     "reason": "Lý do",
-    "until": "Ngày dự kiến xong"
+    "until": "Ngày dự kiến xong",
+    "fullName": "Họ tên",
+    "phone": "Số điện thoại",
+    "idNumber": "Số CCCD",
+    "idIssuedAt": "Ngày cấp",
+    "birthDate": "Ngày sinh",
+    "gender": "Giới tính",
+    "hometown": "Quê quán",
+    "permanentAddress": "Địa chỉ thường trú",
+    "occupation": "Nghề nghiệp",
+    "plate": "Biển số",
+    "type": "Loại xe",
+    "fileId": "Ảnh",
+    "file": "File",
+    "rows": "Các dòng",
+    "purpose": "Mục đích"
   },
   "message": {
     "required": "Trường :attribute là bắt buộc.",
