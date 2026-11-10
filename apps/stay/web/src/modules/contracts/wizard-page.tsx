@@ -41,6 +41,7 @@ import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, serverError } from '@/libraries/forms/api-errors';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormValue } from '@/libraries/forms/use-form-value';
+import { latestSearchParams } from '@/libraries/search-params';
 import { LoadError } from './contract-ui';
 import { MoveInPreview } from './preview';
 
@@ -239,8 +240,8 @@ function Wizard({
         // Preserve the draft id so reload resumes the same contract.
         guard.allowNavigation();
         setParams(
-          (current) => {
-            const next = new URLSearchParams(current);
+          () => {
+            const next = latestSearchParams();
             next.set('draftId', contract.id);
             next.set('step', String(Math.min(step + 1, 4)));
             return next;

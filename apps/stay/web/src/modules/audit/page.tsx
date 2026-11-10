@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { latestSearchParams } from '@/libraries/search-params';
 
 const filterFields = ['actorId', 'action', 'resourceType', 'resourceId', 'from', 'to'] as const;
 const sortFields = ['createdAt', 'action', 'resourceType'] as const;
@@ -120,8 +121,8 @@ export default function AuditPage() {
   const selected = params.get('entry');
 
   const update = (values: Record<string, string>, resetPage = true) => {
-    setParams((current) => {
-      const next = new URLSearchParams(current);
+    setParams(() => {
+      const next = latestSearchParams();
 
       for (const [key, value] of Object.entries(values)) {
         if (value) next.set(key, value);
@@ -148,8 +149,8 @@ export default function AuditPage() {
       previousBuilding.current = buildingId;
       if (requested === buildingId) return;
       setParams(
-        (current) => {
-          const next = new URLSearchParams(current);
+        () => {
+          const next = latestSearchParams();
 
           next.set('buildingId', buildingId);
           return next;
@@ -169,8 +170,8 @@ export default function AuditPage() {
     }
     previousBuilding.current = buildingId;
     setParams(
-      (current) => {
-        const next = new URLSearchParams(current);
+      () => {
+        const next = latestSearchParams();
 
         next.set('buildingId', buildingId);
         next.delete('page');

@@ -8,6 +8,7 @@ import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { ScreenHeader } from '@/libraries/screen-header';
+import { latestSearchParams } from '@/libraries/search-params';
 import { useIsDesktop } from '@/libraries/use-media-query';
 import { PaymentDialog } from '../payments/payment-dialog';
 import { isCollectable } from '../payments/payment-ui';
@@ -58,8 +59,8 @@ export default function InvoiceListPage() {
 
   const filter = (field: string, value: string | null) =>
     setParams(
-      (current) => {
-        const next = new URLSearchParams(current);
+      () => {
+        const next = latestSearchParams();
 
         if (value) next.set(field, value);
         else next.delete(field);
@@ -74,8 +75,8 @@ export default function InvoiceListPage() {
     const timer = setTimeout(
       () =>
         setParams(
-          (current) => {
-            const next = new URLSearchParams(current);
+          () => {
+            const next = latestSearchParams();
 
             if (search.trim()) next.set('q', search.trim());
             else next.delete('q');

@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { formatVnd } from '@/libraries/format';
 import { ScreenHeader } from '@/libraries/screen-header';
+import { latestSearchParams } from '@/libraries/search-params';
 import { CONTRACT_LABELS, LoadError } from '@/modules/contracts/contract-ui';
 import { DepositActions } from './actions';
 
@@ -24,8 +25,8 @@ export default function DepositsPage() {
 
   const changePage = (next: number) =>
     setParams(
-      (current) => {
-        const result = new URLSearchParams(current);
+      () => {
+        const result = latestSearchParams();
         result.set('page', String(next));
         return result;
       },
