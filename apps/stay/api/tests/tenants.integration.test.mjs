@@ -369,13 +369,19 @@ describe('Stay API: tenants, documents, vehicles and import', { skip: !base }, (
     assert.ok((await ids(`q=${encodeURIComponent(name)}`)).includes(created.body.data.id));
     assert.ok((await ids(`q=${phone.slice(2, 8)}`)).includes(created.body.data.id));
     assert.ok((await ids(`q=${idNumber.slice(-4)}`)).includes(created.body.data.id));
-    assert.ok((await ids('status=no_contract')).includes(created.body.data.id));
+    const byName = `q=${encodeURIComponent(name)}`;
+
+    assert.ok((await ids(`${byName}&status=no_contract`)).includes(created.body.data.id));
     assert.deepEqual(await ids('status=living'), []);
     assert.deepEqual(await ids('status=left'), []);
 
     const bad = await call(cookie, 'GET', '/api/tenants?status=gone');
 
     assert.equal(bad.status, 400);
+    assert.equal(
+      (await call(cookie, 'GET', `/api/tenants?buildingId=${'x'.repeat(36)}`)).status,
+      400,
+    );
 
     const page = await call(cookie, 'GET', `/api/tenants?buildingId=${buildingA.id}&pageSize=5`);
 

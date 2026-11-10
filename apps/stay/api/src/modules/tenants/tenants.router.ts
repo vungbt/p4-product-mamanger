@@ -49,7 +49,7 @@ const validateTenantListQuery = validateListQuery({
   defaultSort: 'fullName',
   rules: () => ({
     status: `sometimes|required|in:${TENANT_STATUS_FILTERS.join(',')}`,
-    buildingId: 'sometimes|required|string|size:36',
+    buildingId: 'sometimes|required|string|regex:/^[0-9a-fA-F-]{36}$/',
   }),
   normalize: (query, base): TenantListQuery => ({
     ...base,
