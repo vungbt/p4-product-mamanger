@@ -22,6 +22,9 @@ export type StayRoute = {
 
 const DepositsPage = lazy(() => import('@/modules/deposits/page'));
 const ReadingsPage = lazy(() => import('@/modules/readings/page'));
+const InvoiceListPage = lazy(() => import('@/modules/invoices/list-page'));
+const BillingRunPage = lazy(() => import('@/modules/invoices/run-page'));
+const InvoiceDetailPage = lazy(() => import('@/modules/invoices/detail-page'));
 const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
 const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
 const ContractListPage = lazy(() => import('@/modules/contracts/list-page'));
@@ -133,9 +136,28 @@ export const appRoutes: StayRoute[] = [
     path: '/invoices',
     name: 'invoices',
     icon: 'receipt',
-    component: PlaceholderPage,
+    component: InvoiceListPage,
     ability: { action: 'read', subject: 'Invoice' },
     bottomNav: true,
+  },
+  // Static invoice paths come before `/invoices/:id` (`useCurrentRoute` takes the first match).
+  {
+    path: '/invoices/run',
+    name: 'invoiceRun',
+    icon: 'receipt',
+    component: BillingRunPage,
+    ability: { action: 'create', subject: 'Invoice' },
+    hideInMenu: true,
+    parent: 'invoices',
+  },
+  {
+    path: '/invoices/:id',
+    name: 'invoiceDetail',
+    icon: 'receipt',
+    component: InvoiceDetailPage,
+    ability: { action: 'read', subject: 'Invoice' },
+    hideInMenu: true,
+    parent: 'invoices',
   },
   {
     path: '/receivables',

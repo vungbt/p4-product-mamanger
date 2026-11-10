@@ -47,7 +47,7 @@ test.describe('C-01 login and session', () => {
 
     await expect(page).toHaveURL('/invoices?period=2026-11');
     await expect(page.getByRole('heading', { level: 1, name: 'Hoá đơn' })).toBeVisible();
-    await expect(page.getByText('Sắp có')).toBeVisible();
+    await expect(page.getByLabel('Kỳ', { exact: true })).toHaveValue('2026-11');
   });
 
   test('shows field errors and a generic message for wrong credentials', async ({ page }) => {

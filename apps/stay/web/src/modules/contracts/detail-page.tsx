@@ -7,6 +7,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useCanOn } from '@/libraries/ability';
 import { displayDate, formatVnd } from '@/libraries/format';
 import { DepositLedger } from '@/modules/deposits/ledger';
+import { ContractInvoices } from '@/modules/invoices/contract-invoices';
 import { useRoomBuilding } from '@/modules/rooms/use-room-building';
 import { CHANGE_LABELS, ContractChangeDialog } from './change-dialog';
 import { CONTRACT_LABELS, LoadError } from './contract-ui';
@@ -158,6 +159,8 @@ export default function ContractDetailPage() {
             </div>
             {data.note && <p className="whitespace-pre-wrap">{data.note}</p>}
           </>
+        ) : tab === 'Hoá đơn' ? (
+          <ContractInvoices contract={data} />
         ) : tab === 'Cọc' ? (
           <DepositLedger contractId={data.id} buildingId={data.buildingId} status={data.status} />
         ) : tab === 'Lịch sử' ? (

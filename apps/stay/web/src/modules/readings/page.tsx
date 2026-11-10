@@ -1,13 +1,15 @@
-import { Button, Input, Select, Tooltip } from '@itclabs/react-ui';
+import { Button, Input, Select } from '@itclabs/react-ui';
 import { useReadings } from '@stay/sdk/react';
 import { isPeriod, nextPeriod } from '@stay/shared';
 import { useCallback, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { todayIsoDate } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { useAuth } from '@/libraries/session/auth-provider';
+import { billingRunPath } from '@/modules/invoices/invoice-ui';
 import { ReadingRoomCard } from './room-card';
 
 export default function ReadingsPage() {
@@ -50,6 +52,8 @@ function BuildingReadings({
   filter: (field: string, value: string) => void;
 }) {
   const query = useReadings(buildingId, period);
+  const navigate = useNavigate();
+  const canBill = useCanOn('create', 'Invoice', { buildingId });
   const [pending, setPending] = useState<Record<string, boolean>>({});
   const onPending = useCallback(
     (id: string, value: boolean) =>
@@ -104,11 +108,18 @@ function BuildingReadings({
           {unsynced ? (
             <p role="status">{unsynced} phòng chưa đồng bộ. Bản nhập được giữ trên máy.</p>
           ) : null}
-          <Tooltip content="Lập hoá đơn sẽ có trong ST-14. Cần nhập đủ chỉ số trước khi phát hành.">
-            <span className="justify-self-start">
-              <Button disabled>Lập hoá đơn kỳ {displayPeriod(invoicePeriod)}</Button>
-            </span>
-          </Tooltip>
+          {canBill ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={() => navigate(billingRunPath(invoicePeriod))}>
+                Lập hoá đơn kỳ {displayPeriod(invoicePeriod)}
+              </Button>
+              {rooms.length && complete < rooms.length ? (
+                <p className="text-ui-sm text-muted">
+                  Phòng chưa đủ chỉ số sẽ bị loại khỏi kỳ hoá đơn.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           {query.isLoading ? (
             <LoadingRows />
           ) : query.isError ? (

@@ -40,7 +40,9 @@
     "expenseCategories": "Expense categories",
     "contractNew": "New contract",
     "contractDetail": "Contract details",
-    "deposits": "Deposits"
+    "deposits": "Deposits",
+    "invoiceRun": "Billing run",
+    "invoiceDetail": "Invoice detail"
   },
   "header": {
     "back": "Back",
