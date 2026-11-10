@@ -20,6 +20,7 @@ export type StayRoute = {
   parent?: string;
 };
 
+const DepositsPage = lazy(() => import('@/modules/deposits/page'));
 const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
 const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
 const ContractListPage = lazy(() => import('@/modules/contracts/list-page'));
@@ -166,6 +167,13 @@ export const appRoutes: StayRoute[] = [
     ability: { action: 'read', subject: 'Contract' },
     hideInMenu: true,
     parent: 'contracts',
+  },
+  {
+    path: '/deposits',
+    name: 'deposits',
+    icon: 'creditCard',
+    component: DepositsPage,
+    ability: { action: 'read', subject: 'Deposit' },
   },
   {
     path: '/tenants',

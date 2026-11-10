@@ -5,6 +5,7 @@ export * from './building.js';
 export * from './constants.js';
 export * from './contract.js';
 export * from './date.js';
+export * from './deposit.js';
 export * from './errors.js';
 export * from './expense.js';
 export * from './invoice-code.js';

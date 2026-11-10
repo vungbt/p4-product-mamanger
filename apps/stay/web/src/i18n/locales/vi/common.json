@@ -39,7 +39,8 @@
     "audit": "Lịch sử thay đổi",
     "expenseCategories": "Danh mục chi phí",
     "contractNew": "Tạo hợp đồng",
-    "contractDetail": "Chi tiết hợp đồng"
+    "contractDetail": "Chi tiết hợp đồng",
+    "deposits": "Sổ cọc"
   },
   "header": {
     "back": "Quay lại",

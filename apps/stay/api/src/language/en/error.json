@@ -84,5 +84,10 @@
   "contract_not_found": "Contract not found.",
   "contract_not_draft": "This action requires a draft contract.",
   "room_maintenance": "Cannot activate a contract for a room under maintenance.",
-  "room_unavailable": "The room or building is archived."
+  "room_unavailable": "The room or building is archived.",
+  "deposit_insufficient_balance": "Insufficient deposit balance.",
+  "deposit_amount_overflow": "Deposit amount exceeds the safe limit.",
+  "deposit_contract_not_active": "Cannot record deposits for draft or cancelled contracts.",
+  "invalid_deposit_entry": "Invalid deposit entry.",
+  "invalid_deposit_type": "Invalid deposit entry type."
 }

@@ -39,7 +39,8 @@
     "audit": "Audit history",
     "expenseCategories": "Expense categories",
     "contractNew": "New contract",
-    "contractDetail": "Contract details"
+    "contractDetail": "Contract details",
+    "deposits": "Deposits"
   },
   "header": {
     "back": "Back",
