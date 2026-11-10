@@ -14,7 +14,7 @@ libs/server-core, libs/ability  dùng chung với P4
 
 Đây là kế hoạch triển khai, không phải checklist. Task chỉ đổi trạng thái sau khi chạy thật và ghi kết quả kiểm chứng vào phần cuối file task.
 
-- [Spec màn hình](screens.md): 48 màn (chủ trọ + người thuê) và các hộp thoại
+- [Spec màn hình](screens.md): 56 màn (chủ trọ, người thuê, công khai) và các hộp thoại
 - [Quy tắc tính tiền và trạng thái](rules.md)
 - [Mô hình dữ liệu](data-model.md)
 - Tham chiếu MVP cũ: dự án SCM (`smart-connection-monorepo`, app `stay-*`) — chỉ lấy nghiệp vụ, không mang code và các lỗi đã liệt kê trong [rules.md](rules.md#những-lỗi-của-scm-không-được-lặp-lại).
@@ -54,6 +54,7 @@ libs/server-core, libs/ability  dùng chung với P4
 | 18 | ST-18 | [Công nợ](st-18.md) | API + Web | ST-15 | Chưa bắt đầu |
 | 19 | ST-19 | [Tổng quan tháng](st-19.md) | API + Web | ST-15, ST-18 | Chưa bắt đầu |
 | 20 | ST-25 | [Cổng người thuê](st-25.md) | API + Web | ST-16, ST-17 | Chưa bắt đầu |
+| 20b | ST-30 | [Hợp đồng online](st-30.md) | API + Web | ST-10, ST-12, ST-17, ST-25 | Chưa bắt đầu |
 | 21 | ST-20 | [Chi phí vận hành](st-20.md) | API + Web | ST-07 | Chưa bắt đầu |
 | 22 | ST-21 | [Báo cáo và xuất Excel](st-21.md) | API + Web | ST-19, ST-20 | Chưa bắt đầu |
 | 23 | ST-22 | [Bảo trì và sửa chữa](st-22.md) | API + Web | ST-08, ST-20, ST-25 | Chưa bắt đầu |
@@ -69,6 +70,7 @@ libs/server-core, libs/ability  dùng chung với P4
 1. **Nền tảng (ST-01 → ST-05):** stay-api/stay-web chạy local, đăng nhập, CASL, SDK, CI xanh, seed dev. P4 không đổi hành vi.
 2. **Dữ liệu nền (ST-06 → ST-09):** cấu hình đơn giá, toà, phòng, người thuê.
 3. **MVP vận hành hằng tháng (ST-10 → ST-19, ST-25):** hợp đồng → chốt số → hoá đơn → thu tiền → chia sẻ → trả phòng → công nợ → tổng quan → **cổng người thuê** (xem hoá đơn, báo đã chuyển khoản, báo hỏng, yêu cầu). **Đủ để dùng thật từ mốc này.**
+3b. **Hợp đồng online (ST-30):** mẫu hợp đồng, người thuê ký xác nhận trên điện thoại, PDF có trang bằng chứng; sau đó phụ lục và biên bản bàn giao/thanh lý.
 4. **Quản lý (ST-20 → ST-24):** chi phí, báo cáo, bảo trì, lịch sử, deploy.
 5. **Mở rộng (ST-26 → ST-29):** tự động hoá, người quản lý, tạm trú, nghiệm thu tổng.
 

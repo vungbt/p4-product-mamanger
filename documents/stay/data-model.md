@@ -77,6 +77,18 @@ Tên cột dưới đây là đề xuất; chốt lại trong migration của ta
 | `payment_claims` | `invoice_id`, `tenant_id`, `amount`, `paid_on`, `receipt_file_id`, `status` (`pending`, `confirmed`, `rejected`), `payment_id`, `reject_reason` | "Tôi đã chuyển khoản"; xác nhận → tạo `payments` (ST-25) |
 | `announcements` | `building_id`, `title`, `body`, `room_ids` (null = cả toà), `pinned`, `expires_at`, `created_by` | Thông báo cho người thuê (ST-25, mốc Quản lý) |
 
+## Hợp đồng online
+
+| Bảng | Cột chính | Ghi chú |
+| --- | --- | --- |
+| `landlord_profiles` | `user_id`, `full_name`, `birth_date`, `id_number`, `id_issued_at`, `permanent_address`, `phone`, `signature_file_id`, `version` | Thông tin bên cho thuê điền vào văn bản (ST-30) |
+| `contract_templates` | `building_id` (null = dùng cho mọi toà), `kind` (`contract`, `addendum`, `handover`, `settlement`), `name`, `active_version_id`, `active` | Mẫu văn bản (ST-30) |
+| `contract_template_versions` | `template_id`, `version`, `body_html`, `variables_used`, `note`, `created_by` | Không sửa; lưu mới = phiên bản mới |
+| `contract_documents` | `contract_id`, `kind`, `template_version_id`, `code` (unique, in trên PDF), `title`, `body_html`, `data_snapshot` (JSONB), `data_sha256`, `edited_manually`, `status`, `signing_order` (`tenant_first`, `owner_first`), `pdf_file_id`, `pdf_sha256`, `paper_scan_file_id`, `supersedes_id`, `cancel_reason`, `version` | Văn bản đã điền dữ liệu (ST-30) |
+| `document_signers` | `document_id`, `role` (`tenant`, `owner`), `tenant_id`, `user_id`, `required`, `token_hash`, `expires_at`, `failed_attempts`, `locked_until`, `status` (`pending`, `viewed`, `signed`, `rejected`), `signed_at`, `signature_file_id`, `typed_name`, `reject_reason`, `signed_data_sha256` | Một dòng cho mỗi người ký |
+| `document_events` | `document_id`, `signer_id`, `type`, `actor_user_id`, `ip`, `user_agent`, `data_sha256`, `created_at` | Chỉ thêm, không sửa/xoá; dùng cho trang bằng chứng |
+| `room_assets` | `room_id`, `name`, `quantity`, `condition`, `compensation_value`, `photo_file_ids`, `archived_at` | Danh mục tài sản cho biên bản bàn giao (ST-30b) |
+
 ## Ràng buộc chính
 
 - Mọi khoá ngoại tới `buildings` để chặn đọc/ghi chéo toà ở tầng query (`accessibleWhere` ở ST-27).
