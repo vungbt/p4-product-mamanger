@@ -52,6 +52,26 @@ curl -b /tmp/stay.jar http://127.0.0.1:3011/api/me/capabilities
 
 Phòng, hợp đồng, hoá đơn chưa có: `src/modules/buildings/buildings.usage.ts` gom các truy vấn ST-08/ST-10/ST-14 sẽ bổ sung (thống kê, chặn lưu trữ, khoá mã toà, khoá lịch sử giá). Giá theo ngày dùng `resolveBuildingPrice` (bọc `resolvePrice` của `@stay/billing`).
 
+## Người thuê, ảnh CCCD và import (ST-09)
+
+| Method | Path | Quyền | Ghi chú |
+| --- | --- | --- | --- |
+| GET/POST | `/api/tenants` | read/create `Tenant` (theo toà) | List chuẩn, `buildingId`, `status=all\|living\|left\|no_contract\|archived`, `q` theo tên/SĐT/4 số cuối CCCD; tạo chỉ cần `fullName` + `phone` |
+| GET/PUT | `/api/tenants/:id` | read/update `Tenant` | CCCD luôn che giữa; PUT có `version`, không gửi `idNumber` = giữ nguyên |
+| POST | `/api/tenants/:id/reveal-id` | read `Tenant` | Số CCCD đầy đủ, mỗi lần ghi audit `tenant.reveal_id_number` (không chứa số) |
+| POST | `/api/tenants/:id/archive` | delete `Tenant` | 409 khi còn ở hợp đồng hiệu lực (ST-10) |
+| POST | `/api/tenants/:id/documents` | update `Tenant` | Gắn `fileId` đã upload (`id_front`/`id_back`/`other`) |
+| POST/PUT/DELETE | `/api/tenants/:id/vehicles[/:vehicleId]` | update `Tenant` | Biển số viết hoa, không trùng trong xe của người thuê |
+| GET | `/api/tenants/import/template?format=xlsx\|csv` | manage `Tenant` (chủ trọ) | File mẫu, chỉ dòng tiêu đề |
+| POST | `/api/tenants/import/preview?buildingId=` | manage `Tenant` | Multipart `file` CSV/XLSX ≤ 2 MB, ≤ 1.000 dòng; lỗi theo dòng/cột, trùng SĐT (trong toà)/CCCD; không ghi DB |
+| POST | `/api/tenants/import` | manage `Tenant` | `Idempotency-Key`; gửi lại `values` đã xem trước, kiểm tra lại, chỉ tạo dòng hợp lệ |
+| POST | `/api/uploads` → `/api/uploads/:id/complete` | create/update `Tenant` ở toà | Ticket 10 phút, ảnh JPG/PNG/WEBP ≤ 10 MB |
+
+- Trạng thái đang ở/đã rời/chưa có hợp đồng và phòng hiện tại suy ra trong `src/modules/tenants/tenants.occupancy.ts` (hiện mọi người là `no_contract`; ST-10 thay bằng truy vấn `contract_occupants`).
+- Dữ liệu cá nhân: audit chỉ ghi id, toà, `version` và danh sách trường đã điền/đổi; không ghi tên, SĐT, CCCD, ngày, địa chỉ, URL hay `storageId`.
+- Ảnh private: trình duyệt gửi file thẳng tới `uploadUrl` của ticket (Cloudinary `authenticated` khi có `STAY_CLOUDINARY_*`), API kiểm tra lại ảnh khi `complete`, hồ sơ trả URL ký hết hạn sau 5 phút. Không cấu hình Cloudinary thì ngoài production dùng **kho stub** (file trong `STAY_UPLOAD_STUB_DIR`, upload/xem qua `/api/uploads/:id/stub` và `/api/files/:id/stub` có chữ ký HMAC, không có đường dẫn công khai); production không có Cloudinary thì upload trả 503.
+- Seed local/CI: 15 người thuê hư cấu ở toà A (SĐT `091100xxxx`, CCCD tiền tố `000`) và vài xe.
+
 ## Xác thực và phân quyền
 
 - Better Auth với `cookiePrefix: 'stay'`: cookie là `stay.session_token` (production: `__Secure-stay.*`), không đè cookie `better-auth.*` của P4 dù cùng `localhost`. Client không dùng cookie gửi `Authorization: Bearer <token>`.
@@ -97,5 +117,8 @@ Script build, migrate, seed hai lần (kiểm tra idempotent), chạy API rồi 
 | `STAY_CORS_ORIGIN` | `http://localhost:5174` | Danh sách origin web, cách nhau bởi dấu phẩy; production không được `*` |
 | `STAY_GOOGLE_CLIENT_ID`, `STAY_GOOGLE_CLIENT_SECRET` | trống | Tuỳ chọn |
 | `STAY_PUBLIC_API_URL` | trống | Server hiển thị trong `/api/docs` |
+| `STAY_CLOUDINARY_CLOUD_NAME`, `STAY_CLOUDINARY_API_KEY`, `STAY_CLOUDINARY_API_SECRET` | trống | Ảnh private (CCCD). Thiếu một giá trị: ngoài production dùng kho stub, production từ chối upload |
+| `STAY_CLOUDINARY_FOLDER` | `stay` | Thư mục gốc trên Cloudinary |
+| `STAY_UPLOAD_STUB_DIR` | thư mục tạm của hệ điều hành | Nơi kho stub lưu file (dev/test/CI) |
 
 Gửi email (đặt lại mật khẩu, xác minh) chưa có: ngoài production link được ghi log, production trả `mail_unavailable`.
