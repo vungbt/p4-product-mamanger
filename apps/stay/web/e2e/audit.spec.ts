@@ -1,5 +1,7 @@
-// Audit UI runs with HTTP fixtures; no API or database is required.
+// Sign in against the seeded API; fixture audit data keeps UI states deterministic.
 import { expect, type Page, test } from '@playwright/test';
+import { STAY_CONTRACT_VERSION, type StayRole, stayAbilityKit } from '@stay/shared';
+import { signIn } from './helpers';
 
 const buildingId = '00000000-0000-4000-8000-000000000001';
 const otherBuilding = '00000000-0000-4000-8000-000000000002';
@@ -15,10 +17,10 @@ const entry = {
   createdAt: '2026-11-10T03:00:00.000Z',
 };
 
-async function mockApi(page: Page, role = 'owner') {
+async function mockApi(page: Page, role?: StayRole) {
   const user = {
     id: entry.actorId,
-    role,
+    role: role ?? 'owner',
     displayName: entry.actorName,
     email: 'test@example.com',
     emailVerified: true,
@@ -35,28 +37,17 @@ async function mockApi(page: Page, role = 'owner') {
     let body: unknown;
     let status = 200;
 
-    if (path === '/api/auth/get-session')
+    if (role && path === '/api/auth/get-session')
       body = {
         user,
         session: { id: 'session', userId: user.id, expiresAt: '2099-01-01T00:00:00Z' },
       };
-    else if (path === '/api/me') body = { data: { user } };
-    else if (path === '/api/me/capabilities')
+    else if (role && path === '/api/me') body = { data: { user } };
+    else if (role && path === '/api/me/capabilities')
       body = {
         data: {
-          contractVersion: '1',
-          rules:
-            role === 'tenant'
-              ? []
-              : role === 'manager'
-                ? [
-                    {
-                      action: 'read',
-                      subject: ['Building', 'AuditLog'],
-                      conditions: { buildingId: { $in: [buildingId] } },
-                    },
-                  ]
-                : [{ action: 'manage', subject: 'all' }],
+          contractVersion: STAY_CONTRACT_VERSION,
+          rules: stayAbilityKit.abilityRules(stayAbilityKit.defineAbilityFor(user)),
         },
       };
     else if (path === '/api/buildings')
@@ -84,7 +75,7 @@ async function mockApi(page: Page, role = 'owner') {
                 totalPages: mode === 'empty' ? 1 : 2,
               },
             };
-    } else body = {};
+    } else return route.fallback();
     await route.fulfill({ status, json: body });
   });
   return {
@@ -98,6 +89,7 @@ async function mockApi(page: Page, role = 'owner') {
 for (const width of [375, 1280]) {
   test(`audit timeline, URL filters and detail at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
+    await signIn(page);
     const api = await mockApi(page);
 
     await page.goto(`/audit?buildingId=${buildingId}&page=2`);
@@ -129,6 +121,7 @@ for (const width of [375, 1280]) {
 }
 
 test('empty, error and retry states', async ({ page }) => {
+  await signIn(page);
   const api = await mockApi(page);
   api.setMode('empty');
 
@@ -142,6 +135,7 @@ test('empty, error and retry states', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'invoice-1' })).toBeVisible();
 });
 
+// Only this role-switching test fixtures identity and capabilities.
 test('manager can open audit; tenant has no audit menu or access', async ({ page }) => {
   await mockApi(page, 'manager');
   await page.goto('/audit');

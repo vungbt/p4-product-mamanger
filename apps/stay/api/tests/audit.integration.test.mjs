@@ -69,7 +69,7 @@ describe('Stay audit viewer', { skip: !base }, () => {
     for (const [index, id] of buildings.entries())
       await BuildingModel.create({
         id,
-        code: `T${id.replaceAll('-', '').slice(0, 5)}`,
+        code: `T${id.replaceAll('-', '').slice(0, 5).toUpperCase()}`,
         name: `Audit ${index}`,
       });
     manager = await createUser(managerId, 'manager');
