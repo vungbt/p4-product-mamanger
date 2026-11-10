@@ -1,4 +1,48 @@
 export interface paths {
+  '/api/audit-logs': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Lịch sử thay đổi
+     * @description Người quản lý chỉ xem các toà được gán. from/to gồm cả ngày kết thúc.
+     *
+     *     **Quyền:** `read:AuditLog`.
+     */
+    get: operations['get_api_audit_logs'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/audit-logs/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chi tiết thay đổi
+     * @description Ngoài phạm vi trả 404; nội dung được redact khi đọc.
+     *
+     *     **Quyền:** `read:AuditLog`.
+     */
+    get: operations['get_api_audit_logs_id'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/auth/account-info': {
     parameters: {
       query?: never;
@@ -1579,6 +1623,28 @@ export interface components {
       floors: number[];
       total: number;
     };
+    StayAuditLog: {
+      action: string;
+      actorId: string | null;
+      actorName: string | null;
+      changes:
+        | (
+            | string
+            | number
+            | boolean
+            | unknown[]
+            | {
+                [key: string]: unknown;
+              }
+          )
+        | null;
+      createdAt: string;
+      id: string;
+      /** @enum {string} */
+      outcome: 'failure' | 'success';
+      resourceId: string;
+      resourceType: string;
+    };
     StayBuilding: {
       address: string | null;
       archivedAt: string | null;
@@ -1991,6 +2057,76 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  get_api_audit_logs: {
+    parameters: {
+      query?: {
+        action?: string;
+        actorId?: string;
+        buildingId?: string;
+        from?: string;
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        resourceId?: string;
+        resourceType?: string;
+        sortBy?: 'createdAt' | 'action' | 'resourceType';
+        sortOrder?: 'asc' | 'desc';
+        to?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayAuditLog'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_audit_logs_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayAuditLog'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   auth_get__account_info: {
     parameters: {
       query?: never;

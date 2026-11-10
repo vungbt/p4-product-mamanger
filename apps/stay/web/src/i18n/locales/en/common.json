@@ -35,7 +35,8 @@
     "tenantNew": "New tenant",
     "tenantImport": "Import tenants",
     "tenantProfile": "Tenant profile",
-    "tenantEdit": "Edit tenant"
+    "tenantEdit": "Edit tenant",
+    "audit": "Audit history"
   },
   "header": {
     "back": "Back",
@@ -426,5 +427,30 @@
       }
     },
     "importAction": "Import"
+  },
+  "audit": {
+    "search": "Search action or record",
+    "actorId": "Actor (ID)",
+    "action": "Action",
+    "resourceType": "Resource type",
+    "resourceId": "Record (ID)",
+    "from": "From",
+    "to": "To",
+    "apply": "Apply",
+    "clear": "Clear filters",
+    "sortBy": "Sort by",
+    "createdAt": "Time",
+    "oldest": "Oldest first",
+    "newest": "Newest first",
+    "empty": "No matching history.",
+    "system": "System",
+    "success": "Success",
+    "failure": "Failure",
+    "details": "View changes",
+    "close": "Close details",
+    "pagination": "History pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {{page}} / {{total}}"
   }
 }

@@ -1,5 +1,6 @@
 export * from './ability.js';
 export * from './account.js';
+export * from './audit.js';
 export * from './building.js';
 export * from './constants.js';
 export * from './date.js';

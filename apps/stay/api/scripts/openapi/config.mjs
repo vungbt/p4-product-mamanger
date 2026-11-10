@@ -24,6 +24,7 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 - Mọi dữ liệu nghiệp vụ gắn \`buildingId\`; quyền kiểm tra theo toà.`;
 
 const TAG_DESCRIPTIONS = {
+  audit: 'Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.',
   buildings: 'Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.',
   me: 'Người dùng hiện tại và quyền CASL.',
   operations: 'Kiểm tra trạng thái dịch vụ.',
@@ -45,6 +46,14 @@ const TENANT_FIELDS_NOTE =
   'Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu chấm và tự chuẩn hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và `extensions.duplicateTenant` (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc `dd/MM/yyyy`), không sau hôm nay. Không tự điền giá trị nào.';
 
 const OPERATIONS = {
+  'GET /api/audit-logs': [
+    'Lịch sử thay đổi',
+    'Người quản lý chỉ xem các toà được gán. from/to gồm cả ngày kết thúc.',
+  ],
+  'GET /api/audit-logs/{id}': [
+    'Chi tiết thay đổi',
+    'Ngoài phạm vi trả 404; nội dung được redact khi đọc.',
+  ],
   'GET /api/me': ['Người dùng hiện tại', 'Gồm vai trò và các toà được gán (người quản lý).'],
   'GET /api/me/capabilities': [
     'Quyền của người dùng hiện tại',
@@ -349,6 +358,7 @@ export default {
     { file: 'libs/shared/src/index.ts', names: ['ApiError', 'PaginationMeta'] },
     'libs/stay/shared/src/ability.ts',
     'libs/stay/shared/src/account.ts',
+    'libs/stay/shared/src/audit.ts',
     'libs/stay/shared/src/building.ts',
     'libs/stay/shared/src/constants.ts',
     'libs/stay/shared/src/room.ts',

@@ -19,6 +19,8 @@ servers:
   - url: /
     description: Current API server
 tags:
+  - name: audit
+    description: Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.
   - name: buildings
     description: Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.
   - name: me
@@ -39,6 +41,156 @@ tags:
   - name: auth-native
     description: Better Auth native endpoints. Browser clients use @stay/sdk/auth and HttpOnly `stay.*` session cookies.
 paths:
+  /api/audit-logs:
+    get:
+      tags:
+        - audit
+      operationId: get_api_audit_logs
+      summary: Lịch sử thay đổi
+      description: |-
+        Người quản lý chỉ xem các toà được gán. from/to gồm cả ngày kết thúc.
+
+        **Quyền:** `read:AuditLog`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - createdAt
+              - action
+              - resourceType
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: actorId
+          in: query
+          schema:
+            type: string
+        - name: buildingId
+          in: query
+          schema:
+            type: string
+        - name: action
+          in: query
+          schema:
+            type: string
+            maxLength: 128
+        - name: resourceType
+          in: query
+          schema:
+            type: string
+            maxLength: 80
+        - name: resourceId
+          in: query
+          schema:
+            type: string
+            maxLength: 128
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayAuditLog"
+                  message:
+                    type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/audit-logs/{id}:
+    get:
+      tags:
+        - audit
+      operationId: get_api_audit_logs_id
+      summary: Chi tiết thay đổi
+      description: |-
+        Ngoài phạm vi trả 404; nội dung được redact khi đọc.
+
+        **Quyền:** `read:AuditLog`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayAuditLog"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
   /api/me:
     get:
       tags:
@@ -6654,6 +6806,54 @@ components:
         - total
         - counts
         - floors
+    StayAuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+        actorId:
+          type:
+            - string
+            - "null"
+        actorName:
+          type:
+            - string
+            - "null"
+        action:
+          type: string
+        resourceType:
+          type: string
+        resourceId:
+          type: string
+        outcome:
+          type: string
+          enum:
+            - failure
+            - success
+        changes:
+          anyOf:
+            - anyOf:
+                - type: string
+                - type: number
+                - type: boolean
+                - type: boolean
+                - type: array
+                  items: {}
+                - type: object
+                  additionalProperties: {}
+            - type: "null"
+        createdAt:
+          type: string
+      required:
+        - id
+        - actorId
+        - actorName
+        - action
+        - resourceType
+        - resourceId
+        - outcome
+        - changes
+        - createdAt
     StayBuilding:
       type: object
       properties:

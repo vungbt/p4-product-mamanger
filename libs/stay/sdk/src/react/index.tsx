@@ -1,5 +1,6 @@
 'use client';
 
+export { auditKeys, auditQueryOptions, useAuditLog, useAuditLogs } from './audit.js';
 export {
   buildingKeys,
   buildingMutationOptions,
