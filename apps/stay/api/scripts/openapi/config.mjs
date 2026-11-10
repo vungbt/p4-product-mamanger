@@ -289,8 +289,8 @@ const OVERRIDES = {
           },
         },
       },
-      },
     },
+  },
   'POST /api/tenants': {
     fields: {
       buildingId: { schema: { type: 'string', format: 'uuid' }, required: true },
