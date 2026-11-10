@@ -7,6 +7,7 @@ import {
   initBuildingServicePriceModel,
 } from './building-service-price.model.js';
 import { DomainEventModel, initDomainEventModel } from './domain-event.model.js';
+import { FileModel, initFileModel } from './file.model.js';
 import { IdempotencyRecordModel, initIdempotencyRecordModel } from './idempotency-record.model.js';
 import { initMeterModel, MeterModel } from './meter.model.js';
 import { initRoomModel, RoomModel } from './room.model.js';
@@ -16,7 +17,11 @@ import {
 } from './room-default-service.model.js';
 import { initServiceDefinitionModel, ServiceDefinitionModel } from './service-definition.model.js';
 import { initSystemSettingModel, SystemSettingModel } from './system-setting.model.js';
+import { initTenantModel, TenantModel } from './tenant.model.js';
+import { initTenantDocumentModel, TenantDocumentModel } from './tenant-document.model.js';
+import { initUploadTicketModel, UploadTicketModel } from './upload-ticket.model.js';
 import { initUserModel, UserModel } from './user.model.js';
+import { initVehicleModel, VehicleModel } from './vehicle.model.js';
 
 initUserModel(sequelize);
 initAuditLogModel(sequelize);
@@ -30,6 +35,11 @@ initBuildingServicePriceModel(sequelize);
 initRoomModel(sequelize);
 initRoomDefaultServiceModel(sequelize);
 initMeterModel(sequelize);
+initFileModel(sequelize);
+initUploadTicketModel(sequelize);
+initTenantModel(sequelize);
+initTenantDocumentModel(sequelize);
+initVehicleModel(sequelize);
 
 BuildingMemberModel.belongsTo(BuildingModel, { foreignKey: 'buildingId', as: 'building' });
 BuildingMemberModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user' });
@@ -53,6 +63,7 @@ export {
   BuildingModel,
   BuildingServicePriceModel,
   DomainEventModel,
+  FileModel,
   IdempotencyRecordModel,
   MeterModel,
   RoomDefaultServiceModel,
@@ -60,5 +71,9 @@ export {
   ServiceDefinitionModel,
   SystemSettingModel,
   sequelize,
+  TenantDocumentModel,
+  TenantModel,
+  UploadTicketModel,
   UserModel,
+  VehicleModel,
 };

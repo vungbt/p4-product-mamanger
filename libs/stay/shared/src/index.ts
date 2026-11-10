@@ -11,3 +11,5 @@ export * from './room.js';
 export * from './schemas.js';
 export * from './settings.js';
 export * from './status.js';
+export * from './tenant.js';
+export * from './upload.js';
