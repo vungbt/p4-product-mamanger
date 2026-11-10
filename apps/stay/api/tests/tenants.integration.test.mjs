@@ -8,6 +8,8 @@ import ExcelJS from 'exceljs';
 import {
   AuditLogModel,
   BuildingModel,
+  ContractModel,
+  ContractOccupantModel,
   sequelize,
   TenantModel,
 } from '../dist/sequelize/models/index.js';
@@ -360,20 +362,76 @@ describe('Stay API: tenants, documents, vehicles and import', { skip: !base }, (
     const idNumber = uniqueIdNumber();
     const phone = uniquePhone();
     const name = `Tìm Kiếm ${suffix}`;
-    const created = await createTenant({ fullName: name, phone, idNumber });
+    const freshBuilding = await call(cookie, 'POST', '/api/buildings', {
+      code: `S${suffix.toUpperCase()}`,
+      name: `Search ${suffix}`,
+    });
+
+    assert.equal(freshBuilding.status, 201, JSON.stringify(freshBuilding.body));
+    const buildingId = freshBuilding.body.data.id;
+    const created = await createTenant({ buildingId, fullName: name, phone, idNumber });
+
+    assert.equal(created.status, 201, JSON.stringify(created.body));
     const ids = async (query) =>
       (
-        await call(cookie, 'GET', `/api/tenants?buildingId=${buildingA.id}&pageSize=100&${query}`)
+        await call(cookie, 'GET', `/api/tenants?buildingId=${buildingId}&pageSize=100&${query}`)
       ).body.data.map((row) => row.id);
 
-    assert.ok((await ids(`q=${encodeURIComponent(name)}`)).includes(created.body.data.id));
-    assert.ok((await ids(`q=${phone.slice(2, 8)}`)).includes(created.body.data.id));
-    assert.ok((await ids(`q=${idNumber.slice(-4)}`)).includes(created.body.data.id));
+    assert.deepEqual(await ids(`q=${encodeURIComponent(name)}`), [created.body.data.id]);
+    assert.deepEqual(await ids(`q=${phone.slice(2, 8)}`), [created.body.data.id]);
+    assert.deepEqual(await ids(`q=${idNumber.slice(-4)}`), [created.body.data.id]);
     const byName = `q=${encodeURIComponent(name)}`;
 
     assert.ok((await ids(`${byName}&status=no_contract`)).includes(created.body.data.id));
     assert.deepEqual(await ids('status=living'), []);
     assert.deepEqual(await ids('status=left'), []);
+
+    // Own fixtures exercise derived statuses without relying on building A's seed contracts.
+    for (const [index, status] of ['living', 'left'].entries()) {
+      const tenant = await createTenant({ buildingId, fullName: status, phone: uniquePhone() });
+
+      assert.equal(tenant.status, 201, JSON.stringify(tenant.body));
+      const room = await call(cookie, 'POST', `/api/buildings/${buildingId}/rooms`, {
+        code: `S${index}`,
+        floor: 1,
+        listPrice: 3_000_000,
+        maxOccupants: 2,
+      });
+
+      assert.equal(room.status, 201, JSON.stringify(room.body));
+      const contract = await call(cookie, 'POST', '/api/contracts', {
+        roomId: room.body.data.id,
+        startDate: '2020-01-01',
+        rent: 3_000_000,
+        occupantIds: [tenant.body.data.id],
+        primaryTenantId: tenant.body.data.id,
+      });
+
+      assert.equal(contract.status, 201, JSON.stringify(contract.body));
+      // Move-out has no API yet; set a historical ended contract directly.
+      await ContractModel.update(
+        { status: status === 'living' ? 'active' : 'ended' },
+        { where: { id: contract.body.data.id } },
+      );
+      if (status === 'left')
+        await ContractOccupantModel.update(
+          { toDate: '2020-12-31' },
+          { where: { contractId: contract.body.data.id } },
+        );
+      assert.deepEqual(await ids(`status=${status}`), [tenant.body.data.id]);
+      const detail = await call(cookie, 'GET', `/api/tenants/${tenant.body.data.id}`);
+
+      assert.equal(detail.status, 200, JSON.stringify(detail.body));
+      assert.equal(detail.body.data.status, status);
+      assert.deepEqual(
+        detail.body.data.currentRoom,
+        status === 'living' ? { id: room.body.data.id, code: room.body.data.code } : null,
+      );
+    }
+    assert.deepEqual(await ids('status=no_contract'), [created.body.data.id]);
+    assert.ok((await ids(`${byName}&status=no_contract`)).includes(created.body.data.id));
+    assert.deepEqual(await ids(`${byName}&status=living`), []);
+    assert.deepEqual(await ids(`${byName}&status=left`), []);
 
     const bad = await call(cookie, 'GET', '/api/tenants?status=gone');
 
@@ -383,10 +441,16 @@ describe('Stay API: tenants, documents, vehicles and import', { skip: !base }, (
       400,
     );
 
-    const page = await call(cookie, 'GET', `/api/tenants?buildingId=${buildingA.id}&pageSize=5`);
+    for (let i = 0; i < 3; i++) {
+      const extra = await createTenant({ buildingId, fullName: `Page ${i}`, phone: uniquePhone() });
 
+      assert.equal(extra.status, 201, JSON.stringify(extra.body));
+    }
+    const page = await call(cookie, 'GET', `/api/tenants?buildingId=${buildingId}&pageSize=5`);
+
+    assert.equal(page.status, 200, JSON.stringify(page.body));
     assert.equal(page.body.data.length, 5);
-    assert.ok(page.body.meta.total >= 15);
+    assert.equal(page.body.meta.total, 6);
   });
 
   test('vehicles: add, duplicate plate, update and delete', async () => {

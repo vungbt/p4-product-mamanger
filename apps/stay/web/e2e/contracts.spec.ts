@@ -8,12 +8,14 @@ for (const width of [1280, 375]) {
   }) => {
     await page.setViewportSize({ width, height: 900 });
     await signIn(page);
+    const headers = { origin: new URL(page.url()).origin };
     const buildings = await page.request.get('/api/buildings');
     expect(buildings.ok()).toBe(true);
     const building = (await buildings.json()).data.find((b: { code: string }) => b.code === 'A');
     const suffix = randomUUID().replaceAll('-', '').slice(0, 7).toUpperCase();
     const code = `CT${suffix}`;
     const roomResponse = await page.request.post(`/api/buildings/${building.id}/rooms`, {
+      headers,
       data: {
         code,
         floor: 1,
@@ -78,6 +80,7 @@ for (const width of [1280, 375]) {
     await expect(page.getByRole('link', { name: active.code, exact: true })).toBeVisible();
     // The server rejects a second draft's activation for the occupied room.
     const second = await page.request.post('/api/contracts', {
+      headers,
       data: {
         roomId: room.id,
         startDate: active.startDate,
@@ -89,8 +92,10 @@ for (const width of [1280, 375]) {
     });
     expect(second.status(), await second.text()).toBe(201);
     const secondId = (await second.json()).data.id;
-    expect((await page.request.post(`/api/contracts/${secondId}/activate`)).status()).toBe(409);
-    await page.request.post(`/api/contracts/${secondId}/cancel`);
+    expect(
+      (await page.request.post(`/api/contracts/${secondId}/activate`, { headers })).status(),
+    ).toBe(409);
+    await page.request.post(`/api/contracts/${secondId}/cancel`, { headers });
     await page.goto('/contracts');
     await expect(page.getByRole('heading', { name: 'Hợp đồng', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: active.code, exact: true })).toBeVisible();

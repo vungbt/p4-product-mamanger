@@ -380,7 +380,7 @@ describe('Stay rental contracts', { skip: !base }, () => {
 
   test('manager has building-scoped reads/writes; missing scope is 404, owner-only resources are 403', async () => {
     const id = randomUUID();
-    const email = `contract-manager-${suffix}@stay.local`;
+    const email = `contract-manager-${suffix.toLowerCase()}@stay.local`;
     const password = 'manager-password-123';
     await sequelize.query(
       `INSERT INTO users(id,email,display_name,email_verified,role,account_status) VALUES(:id,:email,'Manager',true,'manager','active');
