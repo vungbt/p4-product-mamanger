@@ -226,6 +226,8 @@ for (const width of [1280, 375]) {
     await page.getByLabel('Kỳ', { exact: true }).fill(period);
     await expect(page).toHaveURL(new RegExp(`period=${period}`));
     const listRow = (code: string) => page.getByTestId('invoice-row').filter({ hasText: code });
+    // The previous (unfiltered) page stays visible until the filtered result arrives.
+    await expect(listRow(eligible.room.code)).toHaveCount(1);
     await expect(listRow(eligible.room.code)).toContainText(issued.code ?? '');
     await expect(listRow(eligible.room.code)).toContainText('Đã huỷ');
     await expect(listRow(excluded.room.code)).toHaveCount(0);
