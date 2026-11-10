@@ -20,6 +20,8 @@ export type StayRoute = {
   parent?: string;
 };
 
+const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
+const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
 const AuditPage = lazy(() => import('@/modules/audit/page'));
 const OverviewPage = lazy(() => import('@/modules/overview/page'));
 const PlaceholderPage = lazy(() => import('@/modules/placeholder/page'));
@@ -202,7 +204,7 @@ export const appRoutes: StayRoute[] = [
     path: '/expenses',
     name: 'expenses',
     icon: 'creditCard',
-    component: PlaceholderPage,
+    component: ExpensesPage,
     ability: { action: 'manage', subject: 'Expense' },
   },
   {
@@ -272,6 +274,15 @@ export const appRoutes: StayRoute[] = [
     ability: { action: 'manage', subject: 'Building' },
     hideInMenu: true,
     parent: 'buildings',
+  },
+  {
+    path: '/settings/expense-categories',
+    name: 'expenseCategories',
+    icon: 'creditCard',
+    component: ExpenseCategoriesPage,
+    ability: { action: 'manage', subject: 'Expense' },
+    hideInMenu: true,
+    parent: 'settings',
   },
   {
     path: '/settings/members',

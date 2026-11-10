@@ -842,6 +842,108 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/expense-categories': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh mục chi phí
+     * @description Gồm các danh mục đã tắt. Chỉ tắt thay vì xoá để giữ lịch sử.
+     *
+     *     **Quyền:** `manage:Expense`.
+     */
+    get: operations['get_api_expense_categories'];
+    put?: never;
+    /**
+     * Thêm danh mục chi phí
+     * @description **Quyền:** `manage:Expense`.
+     */
+    post: operations['post_api_expense_categories'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/expense-categories/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Sửa hoặc tắt danh mục chi phí
+     * @description Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Expense`.
+     */
+    put: operations['put_api_expense_categories_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/expenses': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chi phí vận hành
+     * @description Lọc buildingId, period, categoryId, roomId. meta.totalsByCategory tính trên toàn bộ kết quả lọc, trước phân trang.
+     *
+     *     **Quyền:** `read:Expense`.
+     */
+    get: operations['get_api_expenses'];
+    put?: never;
+    /**
+     * Thêm chi phí
+     * @description Số nguyên VND > 0; kỳ suy ra từ ngày chi theo Asia/Ho_Chi_Minh. Ảnh private cùng toà, purpose expense_receipt.
+     *
+     *     **Quyền:** `manage:Expense`.
+     */
+    post: operations['post_api_expenses'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/expenses/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Sửa chi phí
+     * @description Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Expense`.
+     */
+    put: operations['put_api_expenses_id'];
+    post?: never;
+    /**
+     * Xoá chi phí
+     * @description **Quyền:** `manage:Expense`.
+     */
+    delete: operations['delete_api_expenses_id'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/files/{id}/stub': {
     parameters: {
       query?: never;
@@ -1693,6 +1795,28 @@ export interface components {
       contractVersion: string;
       rules: components['schemas']['StayRule'][];
     };
+    StayExpense: {
+      amount: number;
+      buildingId: string;
+      categoryId: string;
+      id: string;
+      note: string | null;
+      period: string;
+      receipt: {
+        expiresAt: string;
+        url: string;
+      } | null;
+      receiptFileId: string | null;
+      roomId: string | null;
+      spentOn: string;
+      version: number;
+    };
+    StayExpenseCategory: {
+      active: boolean;
+      id: string;
+      name: string;
+      version: number;
+    };
     StayMe: {
       user: components['schemas']['StayUser'];
     };
@@ -1879,7 +2003,7 @@ export interface components {
       id: string;
       maxBytes: number;
       /** @enum {string} */
-      purpose: 'tenant_document';
+      purpose: 'expense_receipt' | 'tenant_document';
       /** @enum {string} */
       status: 'completed' | 'pending';
     };
@@ -1891,7 +2015,7 @@ export interface components {
       id: string;
       maxBytes: number;
       /** @enum {string} */
-      purpose: 'tenant_document';
+      purpose: 'expense_receipt' | 'tenant_document';
       /** @enum {string} */
       status: 'completed' | 'pending';
       uploadUrl: string;
@@ -5910,6 +6034,278 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_expense_categories: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayExpenseCategory'][];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_expense_categories: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @default true */
+          active?: boolean;
+          name: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayExpenseCategory'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_expense_categories_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          /** @default true */
+          active?: boolean;
+          name: string;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayExpenseCategory'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_expenses: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+        categoryId?: string;
+        page?: number;
+        pageSize?: number;
+        period?: string;
+        q?: string;
+        roomId?: string;
+        sortBy?: 'spentOn' | 'amount' | 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayExpense'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'] & {
+              totalsByCategory: {
+                amount: number;
+                /** Format: uuid */
+                categoryId: string;
+              }[];
+            };
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_expenses: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          amount: number;
+          /** Format: uuid */
+          buildingId: string;
+          /** Format: uuid */
+          categoryId: string;
+          note?: string | null;
+          /** Format: uuid */
+          receiptFileId?: string | null;
+          /** Format: uuid */
+          roomId?: string | null;
+          /** @description YYYY-MM-DD in Asia/Ho_Chi_Minh, or an ISO instant with explicit timezone. */
+          spentOn: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayExpense'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_expenses_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          amount: number;
+          /** Format: uuid */
+          buildingId: string;
+          /** Format: uuid */
+          categoryId: string;
+          note?: string | null;
+          /** Format: uuid */
+          receiptFileId?: string | null;
+          /** Format: uuid */
+          roomId?: string | null;
+          /** @description YYYY-MM-DD in Asia/Ho_Chi_Minh, or an ISO instant with explicit timezone. */
+          spentOn: string;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayExpense'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  delete_api_expenses_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              id: string;
+            };
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_files_id_stub: {
     parameters: {
       query?: {
@@ -6795,7 +7191,7 @@ export interface operations {
           /** Format: uuid */
           buildingId: string;
           /** @enum {string} */
-          purpose: 'tenant_document';
+          purpose: 'tenant_document' | 'expense_receipt';
         };
       };
     };

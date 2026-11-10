@@ -1,4 +1,4 @@
-// The generator reads Better Auth's schema from the database, so it runs with the integration suite.
+// Preserve the native auth contract while checking business routes and custom pagination meta.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
@@ -8,11 +8,10 @@ import YAML from 'yaml';
 const base = process.env.STAY_TEST_API_URL;
 
 test('openapi.yaml matches the routes and types in source', { skip: !base }, () => {
-  const result = spawnSync(
-    process.execPath,
-    ['../../api/scripts/openapi/generate.mjs', '--config', 'scripts/openapi/config.mjs', '--check'],
-    { cwd: new URL('..', import.meta.url), encoding: 'utf8' },
-  );
+  const result = spawnSync(process.execPath, ['scripts/openapi/generate-offline.mjs', '--check'], {
+    cwd: new URL('..', import.meta.url),
+    encoding: 'utf8',
+  });
 
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
 });

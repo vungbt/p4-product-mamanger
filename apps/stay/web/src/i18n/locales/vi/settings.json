@@ -30,6 +30,10 @@
       "members": {
         "title": "Thành viên",
         "description": "Người quản lý và toà được giao."
+      },
+      "expenseCategories": {
+        "title": "Danh mục chi phí",
+        "description": "Thêm, sửa và tắt danh mục chi phí vận hành."
       }
     }
   },

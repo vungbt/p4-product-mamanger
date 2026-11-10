@@ -23,6 +23,8 @@ tags:
     description: Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.
   - name: buildings
     description: Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.
+  - name: expenses
+    description: Chi phí vận hành, danh mục chi phí và tổng theo kỳ. Ảnh hoá đơn lưu private.
   - name: me
     description: Người dùng hiện tại và quyền CASL.
   - name: operations
@@ -189,6 +191,484 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/expense-categories:
+    get:
+      tags:
+        - expenses
+      operationId: get_api_expense_categories
+      summary: Danh mục chi phí
+      description: |-
+        Gồm các danh mục đã tắt. Chỉ tắt thay vì xoá để giữ lịch sử.
+
+        **Quyền:** `manage:Expense`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayExpenseCategory"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - expenses
+      operationId: post_api_expense_categories
+      summary: Thêm danh mục chi phí
+      description: "**Quyền:** `manage:Expense`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                active:
+                  type: boolean
+                  default: true
+              required:
+                - name
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayExpenseCategory"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/expense-categories/{id}:
+    put:
+      tags:
+        - expenses
+      operationId: put_api_expense_categories_id
+      summary: Sửa hoặc tắt danh mục chi phí
+      description: |-
+        Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+
+        **Quyền:** `manage:Expense`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: integer
+                  minimum: 1
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                active:
+                  type: boolean
+                  default: true
+              required:
+                - version
+                - name
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayExpenseCategory"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/expenses:
+    get:
+      tags:
+        - expenses
+      operationId: get_api_expenses
+      summary: Chi phí vận hành
+      description: >-
+        Lọc buildingId, period, categoryId, roomId. meta.totalsByCategory tính trên toàn bộ kết quả lọc, trước phân
+        trang.
+
+
+        **Quyền:** `read:Expense`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - spentOn
+              - amount
+              - createdAt
+            default: spentOn
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: buildingId
+          in: query
+          schema:
+            type: string
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+        - name: roomId
+          in: query
+          schema:
+            type: string
+        - name: period
+          in: query
+          schema:
+            type: string
+            maxLength: 7
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayExpense"
+                  message:
+                    type: string
+                  meta:
+                    allOf:
+                      - $ref: "#/components/schemas/PaginationMeta"
+                      - type: object
+                        required:
+                          - totalsByCategory
+                        properties:
+                          totalsByCategory:
+                            type: array
+                            items:
+                              type: object
+                              required:
+                                - categoryId
+                                - amount
+                              properties:
+                                categoryId:
+                                  type: string
+                                  format: uuid
+                                amount:
+                                  type: integer
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - expenses
+      operationId: post_api_expenses
+      summary: Thêm chi phí
+      description: |-
+        Số nguyên VND > 0; kỳ suy ra từ ngày chi theo Asia/Ho_Chi_Minh. Ảnh private cùng toà, purpose expense_receipt.
+
+        **Quyền:** `manage:Expense`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                buildingId:
+                  type: string
+                  format: uuid
+                categoryId:
+                  type: string
+                  format: uuid
+                roomId:
+                  type:
+                    - string
+                    - "null"
+                  format: uuid
+                receiptFileId:
+                  type:
+                    - string
+                    - "null"
+                  format: uuid
+                amount:
+                  type: integer
+                  minimum: 1
+                  maximum: 9007199254740991
+                spentOn:
+                  type: string
+                  description: YYYY-MM-DD in Asia/Ho_Chi_Minh, or an ISO instant with explicit timezone.
+                note:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 2000
+              required:
+                - buildingId
+                - categoryId
+                - amount
+                - spentOn
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayExpense"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/expenses/{id}:
+    put:
+      tags:
+        - expenses
+      operationId: put_api_expenses_id
+      summary: Sửa chi phí
+      description: |-
+        Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+
+        **Quyền:** `manage:Expense`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: integer
+                  minimum: 1
+                buildingId:
+                  type: string
+                  format: uuid
+                categoryId:
+                  type: string
+                  format: uuid
+                roomId:
+                  type:
+                    - string
+                    - "null"
+                  format: uuid
+                receiptFileId:
+                  type:
+                    - string
+                    - "null"
+                  format: uuid
+                amount:
+                  type: integer
+                  minimum: 1
+                  maximum: 9007199254740991
+                spentOn:
+                  type: string
+                  description: YYYY-MM-DD in Asia/Ho_Chi_Minh, or an ISO instant with explicit timezone.
+                note:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 2000
+              required:
+                - version
+                - buildingId
+                - categoryId
+                - amount
+                - spentOn
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayExpense"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    delete:
+      tags:
+        - expenses
+      operationId: delete_api_expenses_id
+      summary: Xoá chi phí
+      description: "**Quyền:** `manage:Expense`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                    required:
+                      - id
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/me:
@@ -1849,6 +2329,7 @@ paths:
                   type: string
                   enum:
                     - tenant_document
+                    - expense_receipt
                 buildingId:
                   type: string
                   format: uuid
@@ -7060,6 +7541,75 @@ components:
       required:
         - contractVersion
         - rules
+    StayExpense:
+      type: object
+      properties:
+        id:
+          type: string
+        buildingId:
+          type: string
+        roomId:
+          type:
+            - string
+            - "null"
+        categoryId:
+          type: string
+        amount:
+          type: number
+        spentOn:
+          type: string
+        period:
+          type: string
+        note:
+          type:
+            - string
+            - "null"
+        receiptFileId:
+          type:
+            - string
+            - "null"
+        receipt:
+          type:
+            - object
+            - "null"
+          properties:
+            url:
+              type: string
+            expiresAt:
+              type: string
+          required:
+            - url
+            - expiresAt
+        version:
+          type: number
+      required:
+        - id
+        - buildingId
+        - roomId
+        - categoryId
+        - amount
+        - spentOn
+        - period
+        - note
+        - receiptFileId
+        - receipt
+        - version
+    StayExpenseCategory:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        active:
+          type: boolean
+        version:
+          type: number
+      required:
+        - id
+        - name
+        - active
+        - version
     StayMe:
       type: object
       properties:
@@ -7626,6 +8176,7 @@ components:
         purpose:
           type: string
           enum:
+            - expense_receipt
             - tenant_document
         buildingId:
           type: string
@@ -7664,6 +8215,7 @@ components:
         purpose:
           type: string
           enum:
+            - expense_receipt
             - tenant_document
         buildingId:
           type: string

@@ -30,6 +30,10 @@
       "members": {
         "title": "Members",
         "description": "Managers and their buildings."
+      },
+      "expenseCategories": {
+        "title": "Expense categories",
+        "description": "Manage operating expense categories."
       }
     }
   },

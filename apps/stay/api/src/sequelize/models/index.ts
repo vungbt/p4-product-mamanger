@@ -7,6 +7,8 @@ import {
   initBuildingServicePriceModel,
 } from './building-service-price.model.js';
 import { DomainEventModel, initDomainEventModel } from './domain-event.model.js';
+import { ExpenseModel, initExpenseModel } from './expense.model.js';
+import { ExpenseCategoryModel, initExpenseCategoryModel } from './expense-category.model.js';
 import { FileModel, initFileModel } from './file.model.js';
 import { IdempotencyRecordModel, initIdempotencyRecordModel } from './idempotency-record.model.js';
 import { initMeterModel, MeterModel } from './meter.model.js';
@@ -23,6 +25,8 @@ import { initUploadTicketModel, UploadTicketModel } from './upload-ticket.model.
 import { initUserModel, UserModel } from './user.model.js';
 import { initVehicleModel, VehicleModel } from './vehicle.model.js';
 
+initExpenseCategoryModel(sequelize);
+initExpenseModel(sequelize);
 initUserModel(sequelize);
 initAuditLogModel(sequelize);
 initDomainEventModel(sequelize);
@@ -63,6 +67,8 @@ export {
   BuildingModel,
   BuildingServicePriceModel,
   DomainEventModel,
+  ExpenseCategoryModel,
+  ExpenseModel,
   FileModel,
   IdempotencyRecordModel,
   MeterModel,

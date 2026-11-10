@@ -36,6 +36,8 @@ function uploadDto(row: UploadTicketModel): StayUpload {
 /** Whether `user` may upload files for `purpose` in `buildingId`. */
 function canUpload(user: StayUser, purpose: StayUploadPurpose, buildingId: string) {
   switch (purpose) {
+    case 'expense_receipt':
+      return canAccessRecord(user, 'manage', 'Expense', { buildingId });
     case 'tenant_document':
       return (
         canAccessRecord(user, 'create', 'Tenant', { buildingId }) ||
@@ -50,15 +52,17 @@ export async function createUpload(
   purpose: StayUploadPurpose,
   buildingId: string,
 ): Promise<StayUploadTicket> {
-  const storage = requireStorage();
-
-  if (!canUpload(user, purpose, buildingId)) throw new NotFound('building_not_found');
+  if (!canUpload(user, purpose, buildingId)) {
+    if (purpose === 'expense_receipt') throw new Forbidden();
+    throw new NotFound('building_not_found');
+  }
 
   const building = await BuildingModel.findByPk(buildingId);
 
   if (!building) throw new NotFound('building_not_found');
   if (building.archivedAt) throw new BaseError('building_archived', 409, 'building_archived');
 
+  const storage = requireStorage();
   const id = randomUUID();
   const row = await UploadTicketModel.create({
     id,

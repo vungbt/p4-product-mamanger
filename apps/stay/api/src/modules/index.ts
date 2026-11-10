@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import auditRouter from './audit/audit.router.js';
 import buildingsRouter from './buildings/buildings.router.js';
+import expensesRouter from './expenses/expenses.router.js';
 import meRouter from './me/me.router.js';
 import roomsRouter from './rooms/rooms.router.js';
 import settingsRouter from './settings/settings.router.js';
@@ -12,6 +13,7 @@ import uploadsRouter from './uploads/uploads.router.js';
 const apiRouter = Router();
 
 apiRouter.use(auditRouter);
+apiRouter.use(expensesRouter);
 apiRouter.use(meRouter);
 apiRouter.use(settingsRouter);
 apiRouter.use(buildingsRouter);

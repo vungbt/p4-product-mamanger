@@ -36,7 +36,8 @@
     "tenantImport": "Import tenants",
     "tenantProfile": "Tenant profile",
     "tenantEdit": "Edit tenant",
-    "audit": "Audit history"
+    "audit": "Audit history",
+    "expenseCategories": "Expense categories"
   },
   "header": {
     "back": "Back",

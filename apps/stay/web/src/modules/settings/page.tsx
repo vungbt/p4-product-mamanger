@@ -6,13 +6,19 @@ import { ScreenHeader } from '@/libraries/screen-header';
 import { ROUTES } from '@/routing/route-configs';
 
 type SettingsLink = {
-  key: 'services' | 'billing' | 'buildings' | 'members';
+  key: 'services' | 'billing' | 'buildings' | 'members' | 'expenseCategories';
   icon: IconName;
   href: string;
   ability: AbilityCheck;
 };
 
 const LINKS: SettingsLink[] = [
+  {
+    key: 'expenseCategories',
+    icon: 'creditCard',
+    href: '/settings/expense-categories',
+    ability: { action: 'manage', subject: 'Expense' },
+  },
   {
     key: 'services',
     icon: 'receipt',

@@ -12,8 +12,8 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed": "sequelize-cli db:seed:all",
     "db:reset": "sequelize-cli db:migrate:undo:all && sequelize-cli db:migrate && sequelize-cli db:seed:all",
-    "openapi:generate": "pnpm build && node ../../api/scripts/openapi/generate.mjs --config scripts/openapi/config.mjs",
-    "openapi:check": "pnpm build && node ../../api/scripts/openapi/generate.mjs --config scripts/openapi/config.mjs --check",
+    "openapi:generate": "pnpm build && node scripts/openapi/generate-offline.mjs",
+    "openapi:check": "pnpm build && node scripts/openapi/generate-offline.mjs --check",
     "test": "pnpm build && node --test --test-concurrency=1 tests/*.test.mjs",
     "prebuild": "pnpm --filter @p4/ability build && pnpm --filter @p4/server-core build && pnpm --filter @stay/billing build",
     "predev": "pnpm --filter @p4/ability build && pnpm --filter @p4/server-core build && pnpm --filter @stay/billing build"
