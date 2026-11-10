@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { displayDate, formatVnd } from '@/libraries/format';
+import { DepositLedger } from '@/modules/deposits/ledger';
 import { useRoomBuilding } from '@/modules/rooms/use-room-building';
 import { CONTRACT_LABELS, LoadError } from './contract-ui';
 
@@ -144,6 +145,8 @@ export default function ContractDetailPage() {
             </div>
             {data.note && <p className="whitespace-pre-wrap">{data.note}</p>}
           </>
+        ) : tab === 'Cọc' ? (
+          <DepositLedger contractId={data.id} buildingId={data.buildingId} status={data.status} />
         ) : tab === 'Lịch sử' ? (
           <>
             <h2 className="text-section font-semibold">Lịch sử</h2>

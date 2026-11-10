@@ -8,6 +8,7 @@ export {
 } from './buildings.js';
 export { createStaySdk, type StaySdk, type StaySdkOptions } from './client.js';
 export * from './contracts.js';
+export * from './deposits.js';
 export { ApiSdkError, getErrorMessage, getFieldError, unwrap } from './errors.js';
 export * from './expenses.js';
 export type { components, operations, paths } from './generated.js';

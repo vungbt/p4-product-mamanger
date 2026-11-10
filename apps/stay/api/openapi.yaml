@@ -25,6 +25,8 @@ tags:
     description: Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.
   - name: contracts
     description: Hợp đồng thuê, kích hoạt, huỷ bản nháp và xem trước tiền nhận phòng. Không tạo hoá đơn (ST-14).
+  - name: deposits
+    description: Sổ cọc bất biến; thu thêm, hoàn, mất cọc và cấn trừ thanh lý.
   - name: expenses
     description: Chi phí vận hành, danh mục chi phí và tổng theo kỳ. Ảnh hoá đơn lưu private.
   - name: me
@@ -671,6 +673,220 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/deposits:
+    get:
+      tags:
+        - deposits
+      operationId: get_api_deposits
+      summary: Sổ cọc
+      description: |-
+        Tổng theo toàn bộ bộ lọc trước phân trang.
+
+        **Quyền:** `read:Deposit`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - code
+              - createdAt
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: buildingId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - active
+              - cancelled
+              - draft
+              - ended
+              - ending
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DepositSummary"
+                  message:
+                    type: string
+                  meta:
+                    allOf:
+                      - $ref: "#/components/schemas/PaginationMeta"
+                      - type: object
+                        required:
+                          - totalHeld
+                          - buildingTotals
+                        properties:
+                          totalHeld:
+                            type: integer
+                          buildingTotals:
+                            type: array
+                            items:
+                              type: object
+                              required:
+                                - buildingId
+                                - held
+                              properties:
+                                buildingId:
+                                  type: string
+                                  format: uuid
+                                held:
+                                  type: integer
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/deposits:
+    get:
+      tags:
+        - deposits
+      operationId: get_api_contracts_id_deposits
+      summary: Lịch sử bút toán cọc
+      description: "**Quyền:** `read:Deposit`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DepositLedger"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - deposits
+      operationId: post_api_contracts_id_deposits
+      summary: Thêm bút toán cọc
+      description: |-
+        Bất biến; số dư âm trả 422; applied chỉ dành cho ST-17.
+
+        **Quyền:** `manage:Deposit`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepositInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DepositEntry"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          description: Số dư cọc không đủ hoặc số tiền vượt giới hạn an toàn.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/contracts:
@@ -7554,6 +7770,165 @@ components:
         - plate
         - fromDate
         - toDate
+    DepositBalance:
+      type: object
+      properties:
+        received:
+          type: number
+        applied:
+          type: number
+        refunded:
+          type: number
+        forfeited:
+          type: number
+        held:
+          type: number
+      required:
+        - received
+        - applied
+        - refunded
+        - forfeited
+        - held
+    DepositEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        contractId:
+          type: string
+        type:
+          type: string
+          enum:
+            - applied
+            - forfeited
+            - received
+            - refunded
+        amount:
+          type: number
+        occurredOn:
+          type: string
+        method:
+          type: string
+          enum:
+            - bank_transfer
+            - cash
+            - other
+        note:
+          type:
+            - string
+            - "null"
+        invoiceId:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+      required:
+        - id
+        - contractId
+        - type
+        - amount
+        - occurredOn
+        - method
+        - note
+        - invoiceId
+        - createdAt
+    DepositInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - forfeited
+            - received
+            - refunded
+        amount:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        occurredOn:
+          type: string
+          format: date
+        method:
+          type: string
+          enum:
+            - bank_transfer
+            - cash
+            - other
+        reason:
+          type:
+            - string
+            - "null"
+          maxLength: 2000
+          description: Bắt buộc, không chỉ khoảng trắng khi type=forfeited. Lưu trong note của bút toán.
+      required:
+        - type
+        - amount
+        - occurredOn
+        - method
+    DepositLedger:
+      type: object
+      properties:
+        contractId:
+          type: string
+        buildingId:
+          type: string
+        balance:
+          $ref: "#/components/schemas/DepositBalance"
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/DepositEntry"
+      required:
+        - contractId
+        - buildingId
+        - balance
+        - entries
+    DepositSummary:
+      type: object
+      properties:
+        contractId:
+          type: string
+        buildingId:
+          type: string
+        code:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - cancelled
+            - draft
+            - ended
+            - ending
+        roomCode:
+          type: string
+        primaryTenantName:
+          type:
+            - string
+            - "null"
+        received:
+          type: number
+        applied:
+          type: number
+        refunded:
+          type: number
+        forfeited:
+          type: number
+        held:
+          type: number
+      required:
+        - contractId
+        - buildingId
+        - code
+        - status
+        - roomCode
+        - primaryTenantName
+        - received
+        - applied
+        - refunded
+        - forfeited
+        - held
     DuplicateTenantRef:
       type: object
       properties:

@@ -87,6 +87,48 @@ try {
       },
     ],
   };
+  spec.paths['/api/deposits'].get.responses['200'].content[
+    'application/json'
+  ].schema.properties.meta = {
+    allOf: [
+      { $ref: '#/components/schemas/PaginationMeta' },
+      {
+        type: 'object',
+        required: ['totalHeld', 'buildingTotals'],
+        properties: {
+          totalHeld: { type: 'integer' },
+          buildingTotals: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: ['buildingId', 'held'],
+              properties: {
+                buildingId: { type: 'string', format: 'uuid' },
+                held: { type: 'integer' },
+              },
+            },
+          },
+        },
+      },
+    ],
+  };
+  const depositInput = spec.components.schemas.DepositInput;
+  depositInput.properties.amount = {
+    type: 'integer',
+    minimum: 1,
+    maximum: Number.MAX_SAFE_INTEGER,
+  };
+  depositInput.properties.occurredOn = { type: 'string', format: 'date' };
+  depositInput.properties.reason = {
+    type: ['string', 'null'],
+    maxLength: 2000,
+    description:
+      'Bắt buộc, không chỉ khoảng trắng khi type=forfeited. Lưu trong note của bút toán.',
+  };
+  spec.paths['/api/contracts/{id}/deposits'].post.responses['422'] = {
+    description: 'Số dư cọc không đủ hoặc số tiền vượt giới hạn an toàn.',
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+  };
   const output = YAML.stringify(spec, { lineWidth: 120, aliasDuplicateObjects: false });
 
   if (process.argv.includes('--check')) {

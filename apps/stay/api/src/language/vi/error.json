@@ -84,5 +84,10 @@
   "contract_not_found": "Không tìm thấy hợp đồng.",
   "contract_not_draft": "Chỉ thao tác được với hợp đồng nháp.",
   "room_maintenance": "Phòng đang bảo trì, không thể kích hoạt hợp đồng.",
-  "room_unavailable": "Phòng hoặc toà đã lưu trữ."
+  "room_unavailable": "Phòng hoặc toà đã lưu trữ.",
+  "deposit_insufficient_balance": "Số dư cọc không đủ.",
+  "deposit_amount_overflow": "Số tiền cọc vượt giới hạn an toàn.",
+  "deposit_contract_not_active": "Không ghi bút toán cọc cho hợp đồng nháp hoặc đã huỷ.",
+  "invalid_deposit_entry": "Bút toán cọc không hợp lệ.",
+  "invalid_deposit_type": "Loại bút toán cọc không hợp lệ."
 }

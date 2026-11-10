@@ -2,6 +2,7 @@ import { Router } from 'express';
 import auditRouter from './audit/audit.router.js';
 import buildingsRouter from './buildings/buildings.router.js';
 import contractsRouter from './contracts/contracts.router.js';
+import depositsRouter from './deposits/deposits.router.js';
 import expensesRouter from './expenses/expenses.router.js';
 import meRouter from './me/me.router.js';
 import roomsRouter from './rooms/rooms.router.js';
@@ -15,6 +16,7 @@ const apiRouter = Router();
 
 apiRouter.use(auditRouter);
 apiRouter.use(expensesRouter);
+apiRouter.use(depositsRouter);
 apiRouter.use(contractsRouter);
 apiRouter.use(meRouter);
 apiRouter.use(settingsRouter);

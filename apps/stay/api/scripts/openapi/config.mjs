@@ -24,6 +24,7 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 - Mọi dữ liệu nghiệp vụ gắn \`buildingId\`; quyền kiểm tra theo toà.`;
 
 const TAG_DESCRIPTIONS = {
+  deposits: 'Sổ cọc bất biến; thu thêm, hoàn, mất cọc và cấn trừ thanh lý.',
   expenses: 'Chi phí vận hành, danh mục chi phí và tổng theo kỳ. Ảnh hoá đơn lưu private.',
   contracts:
     'Hợp đồng thuê, kích hoạt, huỷ bản nháp và xem trước tiền nhận phòng. Không tạo hoá đơn (ST-14).',
@@ -49,6 +50,12 @@ const TENANT_FIELDS_NOTE =
   'Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu chấm và tự chuẩn hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và `extensions.duplicateTenant` (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc `dd/MM/yyyy`), không sau hôm nay. Không tự điền giá trị nào.';
 
 const OPERATIONS = {
+  'GET /api/deposits': ['Sổ cọc', 'Tổng theo toàn bộ bộ lọc trước phân trang.'],
+  'GET /api/contracts/{id}/deposits': ['Lịch sử bút toán cọc'],
+  'POST /api/contracts/{id}/deposits': [
+    'Thêm bút toán cọc',
+    'Bất biến; số dư âm trả 422; applied chỉ dành cho ST-17.',
+  ],
   'GET /api/expense-categories': [
     'Danh mục chi phí',
     'Gồm các danh mục đã tắt. Chỉ tắt thay vì xoá để giữ lịch sử.',
@@ -328,6 +335,20 @@ const contractBody = {
   },
 };
 const OVERRIDES = {
+  'POST /api/contracts/{id}/deposits': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'DepositInput' } } },
+    },
+    parameters: [
+      {
+        name: 'Idempotency-Key',
+        in: 'header',
+        required: false,
+        schema: { type: 'string', minLength: 8, maxLength: 128 },
+      },
+    ],
+  },
   'POST /api/expenses': { fields: expenseFields },
   'PUT /api/expenses/{id}': {
     fields: {
@@ -479,6 +500,7 @@ export default {
     'libs/stay/shared/src/tenant.ts',
     'libs/stay/shared/src/upload.ts',
     'libs/stay/shared/src/expense.ts',
+    'libs/stay/shared/src/deposit.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },
   sessionCookie: 'stay.session_token',

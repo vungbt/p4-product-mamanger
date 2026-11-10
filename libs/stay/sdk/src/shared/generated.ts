@@ -936,6 +936,32 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/contracts/{id}/deposits': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Lịch sử bút toán cọc
+     * @description **Quyền:** `read:Deposit`.
+     */
+    get: operations['get_api_contracts_id_deposits'];
+    put?: never;
+    /**
+     * Thêm bút toán cọc
+     * @description Bất biến; số dư âm trả 422; applied chỉ dành cho ST-17.
+     *
+     *     **Quyền:** `manage:Deposit`.
+     */
+    post: operations['post_api_contracts_id_deposits'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/contracts/{id}/move-in-preview': {
     parameters: {
       query?: never;
@@ -950,6 +976,28 @@ export interface paths {
      *     **Quyền:** `read:Contract`.
      */
     get: operations['get_api_contracts_id_move_in_preview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/deposits': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Sổ cọc
+     * @description Tổng theo toàn bộ bộ lọc trước phân trang.
+     *
+     *     **Quyền:** `read:Deposit`.
+     */
+    get: operations['get_api_deposits'];
     put?: never;
     post?: never;
     delete?: never;
@@ -1798,6 +1846,57 @@ export interface components {
       plate: string;
       toDate: string | null;
       vehicleId: string;
+    };
+    DepositBalance: {
+      applied: number;
+      forfeited: number;
+      held: number;
+      received: number;
+      refunded: number;
+    };
+    DepositEntry: {
+      amount: number;
+      contractId: string;
+      createdAt: string;
+      id: string;
+      invoiceId: string | null;
+      /** @enum {string} */
+      method: 'bank_transfer' | 'cash' | 'other';
+      note: string | null;
+      occurredOn: string;
+      /** @enum {string} */
+      type: 'applied' | 'forfeited' | 'received' | 'refunded';
+    };
+    DepositInput: {
+      amount: number;
+      /** @enum {string} */
+      method: 'bank_transfer' | 'cash' | 'other';
+      /** Format: date */
+      occurredOn: string;
+      /** @description Bắt buộc, không chỉ khoảng trắng khi type=forfeited. Lưu trong note của bút toán. */
+      reason?: string | null;
+      /** @enum {string} */
+      type: 'forfeited' | 'received' | 'refunded';
+    };
+    DepositLedger: {
+      balance: components['schemas']['DepositBalance'];
+      buildingId: string;
+      contractId: string;
+      entries: components['schemas']['DepositEntry'][];
+    };
+    DepositSummary: {
+      applied: number;
+      buildingId: string;
+      code: string;
+      contractId: string;
+      forfeited: number;
+      held: number;
+      primaryTenantName: string | null;
+      received: number;
+      refunded: number;
+      roomCode: string;
+      /** @enum {string} */
+      status: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
     };
     DuplicateTenantRef: {
       /** @enum {string} */
@@ -6458,6 +6557,81 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_contracts_id_deposits: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['DepositLedger'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_deposits: {
+    parameters: {
+      query?: never;
+      header?: {
+        'Idempotency-Key'?: string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DepositInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['DepositEntry'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      /** @description Số dư cọc không đủ hoặc số tiền vượt giới hạn an toàn. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_contracts_id_move_in_preview: {
     parameters: {
       query?: never;
@@ -6484,6 +6658,49 @@ export interface operations {
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_deposits: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'code' | 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+        status?: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['DepositSummary'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'] & {
+              buildingTotals: {
+                /** Format: uuid */
+                buildingId: string;
+                held: number;
+              }[];
+              totalHeld: number;
+            };
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
       429: components['responses']['RateLimited'];
     };
   };
