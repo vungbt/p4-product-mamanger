@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import invoicesRouter from './invoices/invoices.router.js';
 import auditRouter from './audit/audit.router.js';
 import buildingsRouter from './buildings/buildings.router.js';
 import contractsRouter from './contracts/contracts.router.js';
@@ -16,6 +17,7 @@ import uploadsRouter from './uploads/uploads.router.js';
 const apiRouter = Router();
 
 apiRouter.use(auditRouter);
+apiRouter.use(invoicesRouter);
 apiRouter.use(readingsRouter);
 apiRouter.use(expensesRouter);
 apiRouter.use(depositsRouter);

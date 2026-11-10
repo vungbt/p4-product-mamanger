@@ -162,6 +162,7 @@ export async function periodMeter(
     carriedConsumption,
     current: current ? await readingDto(current, transaction) : null,
     consumption,
+    segments: current ? [...segments, { meterId: last.id, startReading: previous, endReading: current.reading }] : segments,
     average: null,
     warnings: consumption === 0 ? ['zero_consumption'] : [],
   };

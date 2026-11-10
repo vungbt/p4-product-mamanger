@@ -2,6 +2,7 @@ import { Op, type Transaction } from 'sequelize';
 import {
   ContractEventModel,
   ContractModel,
+  InvoiceModel,
   ContractOccupantModel,
   ContractServiceModel,
   ContractVehicleModel,
@@ -72,8 +73,8 @@ export async function contractRentAt(contractId: string, date: string, transacti
 }
 
 /** ST-14 replaces this hook with a check of issued, non-void invoices. */
-export async function periodIsInvoiced(_contractId: string, _period: string): Promise<boolean> {
-  return false;
+export async function periodIsInvoiced(contractId: string, period: string): Promise<boolean> {
+  return (await InvoiceModel.count({ where: { contractId, period, status: { [Op.in]: ['issued', 'partially_paid', 'paid'] } } })) > 0;
 }
 
 /** ST-14: bill these closed-room utility segments as separate lines in utilityPeriod. */
@@ -89,5 +90,7 @@ export async function contractRoomClosingsForPeriod(
   });
   return events
     .filter((e) => e.payload.utilityPeriod === period)
-    .map((e) => ({ eventId: e.id, ...e.payload }));
+    .map((e) => ({ eventId: e.id, oldRoomId: String(e.payload.oldRoomId), effectiveDate: String(e.payload.effectiveDate),
+      oldInitialElectric: Number(e.payload.oldInitialElectric), oldInitialWater: Number(e.payload.oldInitialWater),
+      closingElectric: Number(e.payload.closingElectric), closingWater: Number(e.payload.closingWater) }));
 }

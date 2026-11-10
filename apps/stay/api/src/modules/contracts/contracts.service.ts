@@ -1,3 +1,4 @@
+import { createMoveInForActivation } from '../invoices/invoices.service.js';
 import {
   BaseError,
   buildPaginationMeta,
@@ -597,6 +598,7 @@ export async function activateContract(user: StayUser, id: string): Promise<Stay
         { transaction },
       );
     await event(row, user, 'activated', transaction);
+    await createMoveInForActivation(user, row, transaction);
     return contractDto(row, transaction);
   });
 }

@@ -39,6 +39,8 @@ export interface MeterSegmentSnapshot {
 
 /** JSON stored in `invoice_lines.meta`. */
 export interface InvoiceLineMeta {
+  sourceEventId?: string;
+  roomId?: string;
   serviceCode?: string;
   serviceKind?: ServiceKind;
   /** First and last day billed by a prorated rent/service line (inclusive). */

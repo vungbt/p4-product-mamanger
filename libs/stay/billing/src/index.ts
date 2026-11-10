@@ -16,3 +16,5 @@ export {
 export { type DayRatio, dayRatio } from './ratio.js';
 export { computeSettlement, toPrepaidLines } from './settlement.js';
 export * from './types.js';
+
+export { finalizeInvoice, manualLines } from './lines.js';

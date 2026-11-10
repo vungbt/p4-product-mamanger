@@ -1,3 +1,6 @@
+import { InvoiceSequenceModel, initInvoiceSequenceModel } from './invoice-sequence.model.js';
+import { InvoiceLineModel, initInvoiceLineModel } from './invoice-line.model.js';
+import { InvoiceModel, initInvoiceModel } from './invoice.model.js';
 import { sequelize } from '@/sequelize/index.js';
 import { AuditLogModel, initAuditLogModel } from './audit-log.model.js';
 import { BuildingModel, initBuildingModel } from './building.model.js';
@@ -104,3 +107,12 @@ export {
   UserModel,
   VehicleModel,
 };
+
+initInvoiceModel(sequelize);
+export { InvoiceModel };
+
+initInvoiceLineModel(sequelize);
+export { InvoiceLineModel };
+
+initInvoiceSequenceModel(sequelize);
+export { InvoiceSequenceModel };

@@ -39,6 +39,7 @@ export interface ReadingMeter {
   carriedConsumption: number;
   current: StayMeterReading | null;
   consumption: number | null;
+  segments?: { meterId: string; startReading: number; endReading: number }[];
   average: number | null;
   warnings: string[];
 }

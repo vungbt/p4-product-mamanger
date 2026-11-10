@@ -1,7 +1,7 @@
 /** Building usage from rooms and contracts. Invoice-dependent guards are filled by ST-14. */
 import type { BuildingStats } from '@stay/shared';
 import { Op, type Transaction } from 'sequelize';
-import { ContractModel, RoomModel } from '@/sequelize/models/index.js';
+import { ContractModel, InvoiceModel, InvoiceLineModel, RoomModel } from '@/sequelize/models/index.js';
 import { roomOccupancies } from '../rooms/room-status.js';
 
 export interface BlockingRoom {
@@ -56,10 +56,10 @@ export async function roomsWithActiveContracts(
 
 /** Invoices exist for the building, so its code (used in invoice codes) is locked (ST-14). */
 export async function buildingHasInvoices(
-  _buildingId: string,
-  _transaction?: Transaction,
+  buildingId: string,
+  transaction?: Transaction,
 ): Promise<boolean> {
-  return false;
+  return (await InvoiceModel.count({ where: { buildingId }, transaction })) > 0;
 }
 
 /**
@@ -67,10 +67,11 @@ export async function buildingHasInvoices(
  * invoice of the building (issued on or after that date). ST-14 adds the invoice query.
  */
 export async function priceHistoryInvoiced(
-  _buildingId: string,
-  _serviceId: string,
-  _effectiveFrom: string,
-  _transaction: Transaction,
+  buildingId: string,
+  serviceId: string,
+  effectiveFrom: string,
+  transaction: Transaction,
 ): Promise<boolean> {
-  return false;
+  const rows = await InvoiceModel.findAll({ where: { buildingId, issuedOn: { [Op.gte]: effectiveFrom }, status: { [Op.in]: ['issued', 'partially_paid', 'paid'] } }, attributes: ['id'], transaction });
+  return (await InvoiceLineModel.count({ where: { invoiceId: { [Op.in]: rows.map(r => r.id) }, serviceId }, transaction })) > 0;
 }
