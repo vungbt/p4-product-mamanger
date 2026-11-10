@@ -8,6 +8,7 @@ import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { todayIsoDate } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { ScreenHeader } from '@/libraries/screen-header';
+import { latestSearchParams } from '@/libraries/search-params';
 import { useAuth } from '@/libraries/session/auth-provider';
 import { billingRunPath } from '@/modules/invoices/invoice-ui';
 import { ReadingRoomCard } from './room-card';
@@ -27,8 +28,8 @@ export default function ReadingsPage() {
       period={period}
       floor={params.get('floor') ?? ''}
       filter={(field, value) =>
-        setParams((current) => {
-          const next = new URLSearchParams(current);
+        setParams(() => {
+          const next = latestSearchParams();
           if (value) next.set(field, value);
           else next.delete(field);
           return next;

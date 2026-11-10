@@ -8,6 +8,7 @@ import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { ScreenHeader } from '@/libraries/screen-header';
+import { latestSearchParams } from '@/libraries/search-params';
 import { ExpenseForm } from './expense-form';
 
 export default function ExpensesPage() {
@@ -43,8 +44,8 @@ function BuildingExpenses({ buildingId }: { buildingId: string | null }) {
 
   const filter = (field: string, value: string) =>
     setParams(
-      (current) => {
-        const next = new URLSearchParams(current);
+      () => {
+        const next = latestSearchParams();
 
         if (value) next.set(field, value);
         else next.delete(field);
@@ -62,8 +63,8 @@ function BuildingExpenses({ buildingId }: { buildingId: string | null }) {
     const timer = setTimeout(
       () =>
         setParams(
-          (current) => {
-            const next = new URLSearchParams(current);
+          () => {
+            const next = latestSearchParams();
 
             if (search) next.set('q', search);
             else next.delete('q');

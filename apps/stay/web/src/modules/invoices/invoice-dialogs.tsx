@@ -29,7 +29,7 @@ import { useMediaQuery } from '@/libraries/use-media-query';
 import { invoiceErrorMessage } from './invoice-ui';
 
 /** Dialog on desktop, bottom sheet on phones (as the contract change dialogs). */
-function Overlay({
+export function Overlay({
   title,
   description,
   onClose,

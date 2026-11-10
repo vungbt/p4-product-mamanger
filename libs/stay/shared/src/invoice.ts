@@ -1,4 +1,5 @@
 import type { InvoiceKind, InvoiceLineType, InvoiceStatus, MeterKind } from './constants.js';
+import type { StayPayment } from './payment.js';
 
 /** Line types an owner/manager adds by hand to a draft (`POST /api/invoices/:id/lines`). */
 export const MANUAL_INVOICE_LINE_TYPES = ['surcharge', 'discount'] as const;
@@ -94,6 +95,8 @@ export interface StayInvoice extends StayInvoiceSummary {
   voidReason: string | null;
   voidedAt: string | null;
   lines: StayInvoiceLine[];
+  /** Payment history (ST-15), newest first, reversed ones included. */
+  payments: StayPayment[];
 }
 
 /** Why a contract gets no draft for the period. */

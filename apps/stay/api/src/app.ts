@@ -26,7 +26,7 @@ export function createApp() {
   app.use(cors({ origin: env.corsOrigin, credentials: true }));
 
   // Better Auth reads the raw body: mount it before express.json().
-  app.use('/api/auth/sign-in', rateLimit('stay-sign-in', 30));
+  app.use('/api/auth/sign-in', rateLimit('stay-sign-in', env.signInRateLimit));
   app.all('/api/auth/*', toNodeHandler(auth));
 
   app.use(express.json({ limit: '1mb' }));

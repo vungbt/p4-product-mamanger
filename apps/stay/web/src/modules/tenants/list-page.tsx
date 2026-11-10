@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCanOpen } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { latestSearchParams } from '@/libraries/search-params';
 import { PageSpinner } from '@/routing/route-guards';
 import { ContactLinks, formatPhone, TenantStatusTag } from './tenant-ui';
 
@@ -55,8 +56,8 @@ export default function TenantListPage() {
 
   const update = (changes: Record<string, string | null>) => {
     setParams(
-      (current) => {
-        const next = new URLSearchParams(current);
+      () => {
+        const next = latestSearchParams();
 
         for (const [key, value] of Object.entries(changes)) {
           if (value) next.set(key, value);
@@ -75,8 +76,8 @@ export default function TenantListPage() {
 
       if (value !== q)
         setParams(
-          (current) => {
-            const next = new URLSearchParams(current);
+          () => {
+            const next = latestSearchParams();
 
             if (value) next.set('q', value);
             else next.delete('q');

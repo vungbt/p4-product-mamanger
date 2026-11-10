@@ -12,6 +12,8 @@ export STAY_BETTER_AUTH_URL="${STAY_BETTER_AUTH_URL:-http://127.0.0.1:$STAY_PORT
 export STAY_BETTER_AUTH_SECRET="${STAY_BETTER_AUTH_SECRET:-ci-only-stay-better-auth-secret-0123456789}"
 export STAY_CORS_ORIGIN="${STAY_CORS_ORIGIN:-http://localhost:5174}"
 export STAY_TEST_API_URL="http://127.0.0.1:$STAY_PORT"
+# The suites sign in far more than the production limit of 30 per window allows.
+export STAY_SIGN_IN_RATE_LIMIT="${STAY_SIGN_IN_RATE_LIMIT:-1000}"
 
 pnpm build
 pnpm db:migrate

@@ -89,5 +89,12 @@
   "deposit_amount_overflow": "Deposit amount exceeds the safe limit.",
   "deposit_contract_not_active": "Cannot record deposits for draft or cancelled contracts.",
   "invalid_deposit_entry": "Invalid deposit entry.",
-  "invalid_deposit_type": "Invalid deposit entry type."
+  "invalid_deposit_type": "Invalid deposit entry type.",
+  "invoice_not_issued": "The invoice is not issued yet and cannot take payments.",
+  "invoice_void": "The invoice is void and takes no payments.",
+  "invoice_already_paid": "The invoice is already paid in full.",
+  "payment_exceeds_remaining": "The amount exceeds the invoice's remaining amount ({{remaining}} VND).",
+  "payment_already_reversed": "The payment was already reversed.",
+  "invalid_payment": "Invalid payment.",
+  "payment_amount_overflow": "Payment totals exceed the safe limit."
 }

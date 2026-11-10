@@ -6,6 +6,7 @@ import depositsRouter from './deposits/deposits.router.js';
 import expensesRouter from './expenses/expenses.router.js';
 import invoicesRouter from './invoices/invoices.router.js';
 import meRouter from './me/me.router.js';
+import paymentsRouter from './payments/payments.router.js';
 import readingsRouter from './readings/readings.router.js';
 import roomsRouter from './rooms/rooms.router.js';
 import settingsRouter from './settings/settings.router.js';
@@ -18,6 +19,7 @@ const apiRouter = Router();
 
 apiRouter.use(auditRouter);
 apiRouter.use(invoicesRouter);
+apiRouter.use(paymentsRouter);
 apiRouter.use(readingsRouter);
 apiRouter.use(expensesRouter);
 apiRouter.use(depositsRouter);

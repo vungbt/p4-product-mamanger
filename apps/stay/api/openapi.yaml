@@ -36,6 +36,9 @@ tags:
     description: Người dùng hiện tại và quyền CASL.
   - name: operations
     description: Kiểm tra trạng thái dịch vụ.
+  - name: payments
+    description: Thu tiền hoá đơn (một hoặc nhiều lần), sổ thu và huỷ bút toán thu. Thanh toán không sửa/xoá; `paidTotal` và
+      trạng thái hoá đơn luôn tính lại từ tổng các khoản chưa huỷ trong cùng transaction.
   - name: readings
     description: Chốt chỉ số điện nước, lưu theo dòng và thay đồng hồ; tiêu thụ tính theo các đoạn đồng hồ.
   - name: rooms
@@ -494,7 +497,7 @@ paths:
       summary: Chi tiết hoá đơn
       description: >-
         Kèm các dòng snapshot (đơn giá, tỷ lệ ngày, chỉ số đầu/cuối, dòng làm tròn); tổng các dòng luôn bằng `total`.
-        Ngoài phạm vi trả 404.
+        `payments`: lịch sử thu (mới nhất trước, gồm cả bút toán đã huỷ). Ngoài phạm vi trả 404.
 
 
         **Quyền:** `read:Invoice`.
@@ -641,8 +644,8 @@ paths:
       summary: Void hoá đơn
       description: >-
         Chỉ chủ trọ. Bản nháp hoặc hoá đơn đã phát hành chưa có thanh toán (`paidTotal = 0`, ngược lại 409
-        `invoice_has_payments`); `reason` bắt buộc. Mở khoá chỉ số không còn hoá đơn phát hành nào dùng; kỳ được lập lại
-        bản nháp mới.
+        `invoice_has_payments`; huỷ hết bút toán thu thì void được); `reason` bắt buộc. Mở khoá chỉ số không còn hoá đơn
+        phát hành nào dùng; kỳ được lập lại bản nháp mới.
 
 
         **Quyền:** `void:Invoice`.
@@ -732,6 +735,284 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/payments:
+    get:
+      tags:
+        - payments
+      operationId: get_api_payments
+      summary: Sổ thu
+      description: >-
+        Lọc `buildingId`, `dateFrom`/`dateTo` (ngày thu, gồm cả hai đầu), `method`, `invoiceId`; `q` tìm theo mã hoá
+        đơn, mã phòng hoặc mã giao dịch. Khoản đã huỷ chỉ hiện khi `includeReversed=true`. `meta.totals` (theo phương
+        thức) và `meta.totalAmount` tính trên toàn bộ bộ lọc trước phân trang và không gồm khoản đã huỷ. Người quản lý
+        chỉ thấy toà được gán; `buildingId` ngoài phạm vi trả 404.
+
+
+        **Quyền:** `read:Payment`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - paidOn
+              - amount
+              - createdAt
+            default: paidOn
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: buildingId
+          in: query
+          schema:
+            type: string
+        - name: invoiceId
+          in: query
+          schema:
+            type: string
+        - name: method
+          in: query
+          schema:
+            type: string
+            enum:
+              - bank_transfer
+              - cash
+              - other
+        - name: dateFrom
+          in: query
+          schema:
+            type: string
+            maxLength: 10
+        - name: dateTo
+          in: query
+          schema:
+            type: string
+            maxLength: 10
+        - name: includeReversed
+          in: query
+          schema:
+            type: string
+            enum:
+              - "false"
+              - "true"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayPayment"
+                  message:
+                    type: string
+                  meta:
+                    allOf:
+                      - $ref: "#/components/schemas/PaginationMeta"
+                      - type: object
+                        required:
+                          - totals
+                          - totalAmount
+                        properties:
+                          totals:
+                            type: array
+                            description: Một dòng cho mỗi phương thức (kể cả 0), không gồm khoản đã huỷ.
+                            items:
+                              type: object
+                              required:
+                                - method
+                                - amount
+                                - count
+                              properties:
+                                method:
+                                  type: string
+                                  enum:
+                                    - cash
+                                    - bank_transfer
+                                    - other
+                                amount:
+                                  type: integer
+                                count:
+                                  type: integer
+                          totalAmount:
+                            type: integer
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/invoices/{id}/payments:
+    post:
+      tags:
+        - payments
+      operationId: post_api_invoices_id_payments
+      summary: Thu tiền hoá đơn
+      description: >-
+        Bắt buộc `Idempotency-Key`: gọi lại cùng key và nội dung trả lại đúng khoản đã ghi, không ghi hai lần (khác nội
+        dung trả 409 `idempotency_conflict`). Khoá dòng hoá đơn nên hai khoản thu song song không vượt tổng. Chỉ hoá đơn
+        đã phát hành chưa thu đủ: nháp 409 `invoice_not_issued`, void 409 `invoice_void`, đã thu đủ 409
+        `invoice_already_paid`. `amount` > 0 và ≤ số còn lại (vượt trả 422 `payment_exceeds_remaining`,
+        `extensions.remaining`; không tự ghi thừa). `paidOn` không sau hôm nay (Asia/Ho_Chi_Minh). Cập nhật `paidTotal`
+        và trạng thái (`issued` → `partially_paid` → `paid`) trong cùng transaction. Ngoài phạm vi trả 404.
+
+
+        **Quyền:** `create:Payment`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: collect_payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Bắt buộc; mỗi lần mở hộp thoại Thu tiền dùng một key mới, bấm lại dùng lại key.
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PaymentResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Hoá đơn chưa phát hành (`invoice_not_issued`), đã void (`invoice_void`), đã thu đủ (`invoice_already_paid`)
+            hoặc key đã dùng với nội dung khác (`idempotency_conflict`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "422":
+          description: Số tiền vượt số còn lại (`payment_exceeds_remaining`, `extensions.remaining`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/payments/{id}/reverse:
+    post:
+      tags:
+        - payments
+      operationId: post_api_payments_id_reverse
+      summary: Huỷ bút toán thu
+      description: >-
+        Thanh toán không sửa/xoá: ghi `reversedAt`, `reverseReason` (bắt buộc), người huỷ. Mỗi khoản chỉ huỷ một lần
+        (409 `payment_already_reversed`). `paidTotal` và trạng thái hoá đơn tính lại từ các khoản còn lại. Quyền
+        `void:Payment` (mặc định chỉ chủ trọ). Ngoài phạm vi trả 404.
+
+
+        **Quyền:** `void:Payment`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: cancel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentReverseInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PaymentResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Bút toán đã được huỷ (`payment_already_reversed`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/buildings/{buildingId}/readings:
@@ -9625,6 +9906,82 @@ components:
         - pageSize
         - total
         - totalPages
+    PaymentInput:
+      type: object
+      properties:
+        amount:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+        method:
+          type: string
+          enum:
+            - bank_transfer
+            - cash
+            - other
+        paidOn:
+          type: string
+          format: date
+          description: Không sau hôm nay (Asia/Ho_Chi_Minh).
+        reference:
+          type:
+            - string
+            - "null"
+          maxLength: 120
+        note:
+          type:
+            - string
+            - "null"
+          maxLength: 2000
+      required:
+        - amount
+        - method
+        - paidOn
+    PaymentResult:
+      type: object
+      properties:
+        payment:
+          $ref: "#/components/schemas/StayPayment"
+        invoice:
+          type: object
+          properties:
+            id:
+              type: string
+            status:
+              type: string
+              enum:
+                - draft
+                - issued
+                - paid
+                - partially_paid
+                - void
+            total:
+              type: number
+            paidTotal:
+              type: number
+            remaining:
+              type: number
+            version:
+              type: number
+          required:
+            - id
+            - status
+            - total
+            - paidTotal
+            - remaining
+            - version
+      required:
+        - payment
+        - invoice
+    PaymentReverseInput:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 2000
+      required:
+        - reason
     ReadingBulkResult:
       type: object
       properties:
@@ -10484,6 +10841,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/StayInvoiceLine"
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/StayPayment"
         id:
           type: string
         buildingId:
@@ -10543,6 +10904,7 @@ components:
         - voidReason
         - voidedAt
         - lines
+        - payments
         - id
         - buildingId
         - contractId
@@ -10821,6 +11183,85 @@ components:
         - photo
         - status
         - version
+    StayPayment:
+      type: object
+      properties:
+        id:
+          type: string
+        invoiceId:
+          type: string
+        invoiceCode:
+          type:
+            - string
+            - "null"
+        buildingId:
+          type: string
+        contractId:
+          type: string
+        roomId:
+          type: string
+        roomCode:
+          type: string
+        amount:
+          type: number
+        method:
+          type: string
+          enum:
+            - bank_transfer
+            - cash
+            - other
+        paidOn:
+          type: string
+        reference:
+          type:
+            - string
+            - "null"
+        note:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum:
+            - recorded
+            - reversed
+        reversedAt:
+          type:
+            - string
+            - "null"
+        reverseReason:
+          type:
+            - string
+            - "null"
+        reversedByName:
+          type:
+            - string
+            - "null"
+        actorName:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+      required:
+        - id
+        - invoiceId
+        - invoiceCode
+        - buildingId
+        - contractId
+        - roomId
+        - roomCode
+        - amount
+        - method
+        - paidOn
+        - reference
+        - note
+        - status
+        - reversedAt
+        - reverseReason
+        - reversedByName
+        - actorName
+        - createdAt
     StayRoom:
       type: object
       properties:

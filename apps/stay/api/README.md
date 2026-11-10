@@ -300,11 +300,11 @@ Rules (`documents/stay/rules.md`):
 
 Extension points:
 
-- ST-15 payments: lock the invoice row, sum non-reversed payments and call
-  `applyInvoicePaidTotal(row, paidTotal, tx)` (`invoices.service.ts`); the status is recomputed
-  by `invoicePaymentStatus` (`@stay/billing`). Void already refuses `paidTotal > 0`; paid
-  invoices are corrected with an `adjustment` line on the next period (`manualLines` supports it
-  with `referenceInvoiceId`).
+- ST-15 payments (done, see below): `modules/payments` locks the invoice row, sums non-reversed
+  payments and calls `applyInvoicePaidTotal(row, paidTotal, tx)`; the status is recomputed by
+  `invoicePaymentStatus` (`@stay/billing`). Void refuses `paidTotal > 0`; paid invoices are
+  corrected with an `adjustment` line on the next period (`manualLines` supports it with
+  `referenceInvoiceId`).
 - ST-16 share link: `invoices.share_token_hash` exists (nullable, not exposed); store only a hash.
 - ST-17 settlement: compute with `computeSettlement`, persist with
   `saveInvoiceDraft(contract, { invoice, roomId, readings, schedule }, null, tx)` (kind
@@ -314,3 +314,47 @@ Extension points:
 - ST-18 debt/reports: `GET /invoices?overdue=true`, `roomDebts`, and the `(status, due_on)` index.
 
 Integration coverage: `tests/invoices.integration.test.mjs` (CI Postgres/API runner only).
+
+### Payments (ST-15)
+
+Run migration `20261123000100-payments.cjs`: `payments` (`invoice_id`, `building_id`, `amount`
+BIGINT > 0, `method` `cash|bank_transfer|other`, `paid_on`, `reference`, `note`, `reversed_at`,
+`reverse_reason`, `reversed_by`, `actor_id`, `created_at`). Payments are never edited or
+deleted: a mistake is reversed once with a reason. `invoices.paid_total` is always the sum of
+non-reversed payments, written in the same transaction as the payment/reversal.
+
+| Method/path (prefix `/api`) | Quyền | Ghi chú |
+| --- | --- | --- |
+| POST `/invoices/:id/payments` | create `Payment` | Required `Idempotency-Key` (same key + body → the same payment, `idempotency_conflict` for another body). `{ amount, method, paidOn, reference?, note? }`; returns `{ payment, invoice }` (201) |
+| POST `/payments/:id/reverse` | void `Payment` (owner) | `{ reason }`; once only (409 `payment_already_reversed`); returns `{ payment, invoice }` |
+| GET `/payments` | read `Payment` | Standard list (`page/pageSize/q/sortBy=paidOn\|amount\|createdAt/sortOrder`), `buildingId`, `dateFrom`/`dateTo` (inclusive `paidOn`), `method`, `invoiceId`, `includeReversed=true\|false` (default false); `q` = invoice code, room code or reference. `meta.totals` (`{ method, amount, count }` for every method) and `meta.totalAmount` cover the whole filter and never include reversed payments |
+| GET `/invoices/:id` | read `Invoice` | Now includes `payments` (newest first, reversed included) |
+
+Rules (`documents/stay/rules.md` "Hoá đơn", "Thanh toán"):
+
+- Recording locks the invoice row (`SELECT … FOR UPDATE`), so concurrent payments never exceed
+  the total; reversal locks the invoice, then the payment. Only `issued`/`partially_paid`
+  invoices take payments: draft → 409 `invoice_not_issued`, void → 409 `invoice_void`, paid →
+  409 `invoice_already_paid`. `amount` > remaining → 422 `payment_exceeds_remaining` with
+  `extensions.remaining` (never recorded as an overpayment). `paidOn` is not after today
+  (Asia/Ho_Chi_Minh).
+- Status: `issued` → `partially_paid` → `paid`, recomputed after every payment or reversal.
+  Void is allowed again once every payment is reversed (`paidTotal = 0`, "chưa có thanh toán").
+- Managers record payments and read the ledger of assigned buildings (kit rules: read/create
+  `Payment`); reversal needs `void Payment`, which the kit keeps with the owner. Inaccessible
+  invoices, payments and `buildingId` filters are 404.
+- Audit rows `payment.recorded` / `payment.reversed` contain ids, amount, method, `paidOn`,
+  paid total and status before/after only — never the reference, note or reason.
+
+Extension points:
+
+- ST-16 tenant payment claims: confirming a claim creates the payment with
+  `insertPayment(user, invoiceId, input, tx)` (`payments.service.ts`) inside the claim's audited
+  transaction (same locks and checks; store the returned id in `payment_claims.payment_id`;
+  use the claim id for idempotency instead of a header).
+- ST-18 receivables: `invoices.paid_total`/`status` are current after every write; use
+  `GET /invoices?overdue=true`, `roomDebts`, and `GET /payments` (date range + totals per method)
+  for collections. The receivables screen opens the same "Thu tiền" dialog
+  (`apps/stay/web/src/modules/payments/payment-dialog.tsx`).
+
+Integration coverage: `tests/payments.integration.test.mjs` (CI Postgres/API only).

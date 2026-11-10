@@ -27,6 +27,7 @@ test.describe('C-02 shell on mobile (375px)', () => {
     await expect(sheet).toBeVisible();
     await expect(sheet.getByRole('link')).toHaveText([
       'Công nợ',
+      'Sổ thu',
       'Hợp đồng',
       'Sổ cọc',
       'Người thuê',
@@ -85,6 +86,7 @@ test.describe('C-02/C-03 shell on desktop', () => {
       'Chốt số',
       'Hoá đơn',
       'Công nợ',
+      'Sổ thu',
       'Hợp đồng',
       'Sổ cọc',
       'Người thuê',

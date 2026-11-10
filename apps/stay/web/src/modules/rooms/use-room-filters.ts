@@ -1,6 +1,7 @@
 import { ROOM_FLOOR_MAX, ROOM_FLOOR_MIN, type RoomStatus } from '@stay/shared';
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { latestSearchParams } from '@/libraries/search-params';
 import { isRoomStatus } from './room-status';
 
 /** The room map shows a whole building on one page; larger ones paginate. */
@@ -41,8 +42,8 @@ export function useRoomFilters() {
   const setFilters = useCallback(
     (changes: Partial<RoomFilters>) => {
       setParams(
-        (current) => {
-          const next = new URLSearchParams(current);
+        () => {
+          const next = latestSearchParams();
           const merged = { ...filters, page: 1, ...changes };
 
           for (const [key, value] of Object.entries(merged)) {

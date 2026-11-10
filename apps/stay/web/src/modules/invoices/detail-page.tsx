@@ -1,13 +1,16 @@
 import { AlertDialog, Button, cn, EmptyState, IconButton } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useDeleteInvoiceLine, useInvoice, useIssueInvoices } from '@stay/sdk/react';
-import type { StayInvoice, StayInvoiceLine } from '@stay/shared';
+import type { StayInvoice, StayInvoiceLine, StayPayment } from '@stay/shared';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { displayDate, formatVnd } from '@/libraries/format';
 import { isNotFound } from '@/libraries/forms/api-errors';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { PaymentDialog } from '../payments/payment-dialog';
+import { isCollectable, PAYMENT_METHOD_LABELS, PaymentStatusTag } from '../payments/payment-ui';
+import { ReversePaymentDialog } from '../payments/reverse-dialog';
 import { InvoiceLineDialog, VoidInvoiceDialog } from './invoice-dialogs';
 import {
   billingRunPath,
@@ -47,11 +50,14 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
   const canUpdate = useCanOn('update', 'Invoice', record);
   const canIssue = useCanOn('issue', 'Invoice', record);
   const canVoid = useCanOn('void', 'Invoice', record);
+  const canPay = useCanOn('create', 'Payment', record);
+  const canReverse = useCanOn('void', 'Payment', record);
   const issue = useIssueInvoices();
   const remove = useDeleteInvoiceLine();
   const describe = useLineDescription();
-  const [dialog, setDialog] = useState<'line' | 'void' | 'issue' | null>(null);
+  const [dialog, setDialog] = useState<'line' | 'void' | 'issue' | 'payment' | null>(null);
   const [deleting, setDeleting] = useState<StayInvoiceLine | null>(null);
+  const [reversing, setReversing] = useState<StayPayment | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const draft = invoice.status === 'draft';
@@ -114,11 +120,11 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
             </Button>
           ) : null}
           {draft && canIssue ? <Button onClick={() => setDialog('issue')}>Phát hành</Button> : null}
+          {canPay && isCollectable(invoice) ? (
+            <Button onClick={() => setDialog('payment')}>Thu tiền</Button>
+          ) : null}
           {!draft && invoice.status !== 'void' ? (
-            <>
-              <ComingSoonButton>Thu tiền</ComingSoonButton>
-              <ComingSoonButton>Chia sẻ</ComingSoonButton>
-            </>
+            <ComingSoonButton>Chia sẻ</ComingSoonButton>
           ) : null}
           {voidable ? (
             <Button variant="danger" onClick={() => setDialog('void')}>
@@ -206,7 +212,23 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
         <h2 id="invoice-payments-title" className="text-section font-semibold">
           Lịch sử thanh toán
         </h2>
-        <p className="text-muted">Chưa có thanh toán.</p>
+        {invoice.payments.length ? (
+          <ul className="grid divide-y divide-line" aria-label="Các khoản đã thu">
+            {invoice.payments.map((payment) => (
+              <PaymentRow
+                key={payment.id}
+                payment={payment}
+                onReverse={
+                  canReverse && payment.status === 'recorded'
+                    ? () => setReversing(payment)
+                    : undefined
+                }
+              />
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted">Chưa có thanh toán.</p>
+        )}
       </section>
 
       <div className="flex flex-wrap gap-4">
@@ -225,6 +247,12 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
       ) : null}
       {dialog === 'void' ? (
         <VoidInvoiceDialog invoice={invoice} onClose={() => setDialog(null)} onReload={reload} />
+      ) : null}
+      {dialog === 'payment' ? (
+        <PaymentDialog invoice={invoice} onClose={() => setDialog(null)} />
+      ) : null}
+      {reversing ? (
+        <ReversePaymentDialog payment={reversing} onClose={() => setReversing(null)} />
       ) : null}
       <AlertDialog
         open={dialog === 'issue'}
@@ -256,6 +284,59 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
         onConfirm={() => void confirmDelete()}
       />
     </div>
+  );
+}
+
+const recordedAt = (iso: string) =>
+  new Intl.DateTimeFormat('vi-VN', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+    timeZone: 'Asia/Ho_Chi_Minh',
+  }).format(new Date(iso));
+
+/** One payment: date, amount, method, who recorded it; reversed ones struck through with the reason. */
+function PaymentRow({ payment, onReverse }: { payment: StayPayment; onReverse?: () => void }) {
+  const reversed = payment.status === 'reversed';
+
+  return (
+    <li
+      className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 py-3"
+      data-testid="invoice-payment"
+      data-payment-status={payment.status}
+    >
+      <div className="grid min-w-0 flex-1 gap-0.5 break-words">
+        <p className="flex flex-wrap items-center gap-2">
+          <strong className={cn('whitespace-nowrap', reversed && 'text-muted line-through')}>
+            {formatVnd(payment.amount)}
+          </strong>
+          <span>{PAYMENT_METHOD_LABELS[payment.method]}</span>
+          <PaymentStatusTag payment={payment} />
+        </p>
+        <p className="text-ui-sm text-muted">
+          Ngày thu {displayDate(payment.paidOn)}
+          {payment.actorName ? ` · Người ghi ${payment.actorName}` : ''}
+          {payment.reference ? ` · Mã GD ${payment.reference}` : ''}
+        </p>
+        {payment.note ? <p className="text-ui-sm whitespace-pre-wrap">{payment.note}</p> : null}
+        {reversed ? (
+          <p className="text-ui-sm text-muted whitespace-pre-wrap" data-testid="reverse-reason">
+            Đã huỷ{payment.reversedAt ? ` ${recordedAt(payment.reversedAt)}` : ''}
+            {payment.reversedByName ? ` bởi ${payment.reversedByName}` : ''}:{' '}
+            {payment.reverseReason}
+          </p>
+        ) : null}
+      </div>
+      {onReverse ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={`Huỷ bút toán ${formatVnd(payment.amount)} ngày ${displayDate(payment.paidOn)}`}
+          onClick={onReverse}
+        >
+          Huỷ bút toán
+        </Button>
+      ) : null}
+    </li>
   );
 }
 

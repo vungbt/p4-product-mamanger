@@ -26,6 +26,7 @@ import {
 import { InvoiceSequenceModel, initInvoiceSequenceModel } from './invoice-sequence.model.js';
 import { initMeterModel, MeterModel } from './meter.model.js';
 import { initMeterReadingModel, MeterReadingModel } from './meter-reading.model.js';
+import { initPaymentModel, PaymentModel } from './payment.model.js';
 import { initRoomModel, RoomModel } from './room.model.js';
 import {
   initRoomDefaultServiceModel,
@@ -69,6 +70,7 @@ initInvoiceModel(sequelize);
 initInvoiceLineModel(sequelize);
 initInvoiceSequenceModel(sequelize);
 initInvoiceMeterReadingModel(sequelize);
+initPaymentModel(sequelize);
 
 BuildingMemberModel.belongsTo(BuildingModel, { foreignKey: 'buildingId', as: 'building' });
 BuildingMemberModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user' });
@@ -108,6 +110,7 @@ export {
   InvoiceSequenceModel,
   MeterModel,
   MeterReadingModel,
+  PaymentModel,
   RoomDefaultServiceModel,
   RoomModel,
   ServiceDefinitionModel,

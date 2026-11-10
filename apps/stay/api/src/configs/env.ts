@@ -29,6 +29,11 @@ export const env = {
   port,
   nodeEnv,
   isProd: nodeEnv === 'production',
+  // Sign-in attempts per window. Only overridable outside production (CI signs in many times).
+  signInRateLimit:
+    nodeEnv !== 'production' && Number(process.env.STAY_SIGN_IN_RATE_LIMIT) > 0
+      ? Number(process.env.STAY_SIGN_IN_RATE_LIMIT)
+      : 30,
   corsOrigin: parseOrigins(process.env.STAY_CORS_ORIGIN ?? LOCAL_WEB_ORIGINS[0]),
   defaultLocale: process.env.LOCALE_DEFAULT || 'vi',
   database: {

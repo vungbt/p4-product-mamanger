@@ -16,9 +16,10 @@ import type { RoomStatus } from '@stay/shared';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useCanAccess } from '@/libraries/ability';
+import { useCanAccess, useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { ROUTES } from '@/routing/route-configs';
+import { RoomPaymentDialog } from '../payments/payment-dialog';
 import { MaintenanceDialog } from './components/maintenance-dialog';
 import { RoomTile } from './components/room-tile';
 import {
@@ -65,6 +66,8 @@ export default function RoomMapPage() {
   const canManage = useCanAccess('manage', 'Room');
   const [search, setSearch] = useState(filters.q);
   const [maintenanceRoom, setMaintenanceRoom] = useState<Room | null>(null);
+  const [collectRoom, setCollectRoom] = useState<Room | null>(null);
+  const canPay = useCanOn('create', 'Payment', { buildingId: buildingId ?? undefined });
 
   const query: RoomListQuery = {
     page: filters.page,
@@ -191,6 +194,7 @@ export default function RoomMapPage() {
                   room={room}
                   canManage={canManage}
                   onMaintenance={setMaintenanceRoom}
+                  onCollect={canPay ? setCollectRoom : undefined}
                 />
               ))}
             </ul>
@@ -297,6 +301,13 @@ export default function RoomMapPage() {
         onClose={() => setMaintenanceRoom(null)}
         onReload={reload}
       />
+      {collectRoom ? (
+        <RoomPaymentDialog
+          roomId={collectRoom.id}
+          roomCode={collectRoom.code}
+          onClose={() => setCollectRoom(null)}
+        />
+      ) : null}
     </div>
   );
 }

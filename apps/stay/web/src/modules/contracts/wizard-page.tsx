@@ -41,6 +41,7 @@ import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, serverError } from '@/libraries/forms/api-errors';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormValue } from '@/libraries/forms/use-form-value';
+import { latestSearchParams } from '@/libraries/search-params';
 import { LoadError } from './contract-ui';
 import { MoveInPreview } from './preview';
 
@@ -239,8 +240,8 @@ function Wizard({
         // Preserve the draft id so reload resumes the same contract.
         guard.allowNavigation();
         setParams(
-          (current) => {
-            const next = new URLSearchParams(current);
+          () => {
+            const next = latestSearchParams();
             next.set('draftId', contract.id);
             next.set('step', String(Math.min(step + 1, 4)));
             return next;
@@ -687,24 +688,29 @@ export default function ContractWizardPage() {
   const draftId = params.get('draftId') ?? '';
   const query = useContract(draftId);
   const selected = useRoom(params.get('roomId') ?? '');
+  // A draft saved by this wizard only updates the URL: keep the mounted wizard and its unsaved
+  // step state. Only opening an existing draft (or another one) loads and remounts.
+  const [initialDraftId] = useState(draftId);
+  const createdHere = !initialDraftId && Boolean(draftId);
+  const loadsDraft = Boolean(draftId) && !createdHere;
 
   if (
     !buildingId ||
-    (draftId && query.isPending) ||
+    (loadsDraft && query.isPending) ||
     (!draftId && params.get('roomId') && selected.isPending)
   )
     return <Skeleton className="h-64" />;
-  if (draftId && query.isError)
+  if (loadsDraft && query.isError)
     return <LoadError error={query.error} retry={() => void query.refetch()} />;
   if (query.data && query.data.buildingId !== buildingId)
     return <Alert>Hợp đồng thuộc toà khác. Chọn lại toà của hợp đồng để tiếp tục.</Alert>;
-  if (query.data && query.data.status !== 'draft')
+  if (loadsDraft && query.data && query.data.status !== 'draft')
     return <Alert>Hợp đồng này không còn là bản nháp.</Alert>;
   if (!draftId && selected.data && selected.data.status !== 'vacant')
     return <Alert>Chọn một phòng trống để tạo hợp đồng.</Alert>;
   return (
     <Wizard
-      key={`${buildingId}-${draftId || 'new'}`}
+      key={`${buildingId}-${loadsDraft ? draftId : 'new'}`}
       buildingId={buildingId}
       draft={query.data}
       roomId={params.get('roomId') ?? ''}

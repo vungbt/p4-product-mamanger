@@ -1,4 +1,4 @@
-import { Button, Checkbox, cn, EmptyState, Input, Select } from '@itclabs/react-ui';
+import { Button, Checkbox, cn, EmptyState, IconButton, Input, Select } from '@itclabs/react-ui';
 import { useInvoices, useRooms } from '@stay/sdk/react';
 import { INVOICE_KINDS, INVOICE_STATUSES, isPeriod, type StayInvoiceSummary } from '@stay/shared';
 import { useEffect, useState } from 'react';
@@ -8,7 +8,10 @@ import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { ScreenHeader } from '@/libraries/screen-header';
+import { latestSearchParams } from '@/libraries/search-params';
 import { useIsDesktop } from '@/libraries/use-media-query';
+import { PaymentDialog } from '../payments/payment-dialog';
+import { isCollectable } from '../payments/payment-ui';
 import {
   billingRunPath,
   displayPeriod,
@@ -29,6 +32,8 @@ export default function InvoiceListPage() {
   const isDesktop = useIsDesktop();
   const navigate = useNavigate();
   const canCreate = useCanOn('create', 'Invoice', { buildingId: buildingId ?? undefined });
+  const canPay = useCanOn('create', 'Payment', { buildingId: buildingId ?? undefined });
+  const [collecting, setCollecting] = useState<StayInvoiceSummary | null>(null);
 
   const q = params.get('q') ?? '';
   const period = isPeriod(params.get('period')) ? (params.get('period') ?? '') : '';
@@ -54,8 +59,8 @@ export default function InvoiceListPage() {
 
   const filter = (field: string, value: string | null) =>
     setParams(
-      (current) => {
-        const next = new URLSearchParams(current);
+      () => {
+        const next = latestSearchParams();
 
         if (value) next.set(field, value);
         else next.delete(field);
@@ -70,8 +75,8 @@ export default function InvoiceListPage() {
     const timer = setTimeout(
       () =>
         setParams(
-          (current) => {
-            const next = new URLSearchParams(current);
+          () => {
+            const next = latestSearchParams();
 
             if (search.trim()) next.set('q', search.trim());
             else next.delete('q');
@@ -178,7 +183,11 @@ export default function InvoiceListPage() {
             />
           ) : (
             <>
-              {isDesktop ? <InvoiceTable rows={rows} /> : <InvoiceCards rows={rows} />}
+              {isDesktop ? (
+                <InvoiceTable rows={rows} onCollect={canPay ? setCollecting : undefined} />
+              ) : (
+                <InvoiceCards rows={rows} onCollect={canPay ? setCollecting : undefined} />
+              )}
               <p className="text-ui-sm text-muted" data-testid="invoice-page-total">
                 Trang này: tổng {formatVnd(pageSum)} · còn lại {formatVnd(pageRemaining)}
               </p>
@@ -205,7 +214,35 @@ export default function InvoiceListPage() {
           )}
         </>
       )}
+      {collecting ? (
+        <PaymentDialog invoice={collecting} onClose={() => setCollecting(null)} />
+      ) : null}
     </div>
+  );
+}
+
+type RowsProps = {
+  rows: StayInvoiceSummary[];
+  /** Opens "Thu tiền" for an issued invoice with something left to collect. */
+  onCollect?: (invoice: StayInvoiceSummary) => void;
+};
+
+function CollectButton({
+  invoice,
+  onCollect,
+}: {
+  invoice: StayInvoiceSummary;
+  onCollect: RowsProps['onCollect'];
+}) {
+  if (!onCollect || !isCollectable(invoice)) return null;
+  return (
+    <IconButton
+      icon="moneyReceive"
+      variant="ghost"
+      size="sm"
+      label={`Thu tiền hoá đơn ${invoice.code ?? ''}`}
+      onClick={() => onCollect(invoice)}
+    />
   );
 }
 
@@ -217,7 +254,7 @@ function CodeLink({ invoice }: { invoice: StayInvoiceSummary }) {
   );
 }
 
-function InvoiceTable({ rows }: { rows: StayInvoiceSummary[] }) {
+function InvoiceTable({ rows, onCollect }: RowsProps) {
   return (
     <div className="min-w-0 overflow-x-auto rounded-panel border border-line bg-surface">
       <table className="w-full text-left" aria-label="Danh sách hoá đơn">
@@ -230,6 +267,11 @@ function InvoiceTable({ rows }: { rows: StayInvoiceSummary[] }) {
                 </th>
               ),
             )}
+            {onCollect ? (
+              <th scope="col" className="p-3">
+                <span className="sr-only">Thao tác</span>
+              </th>
+            ) : null}
           </tr>
         </thead>
         <tbody>
@@ -262,6 +304,11 @@ function InvoiceTable({ rows }: { rows: StayInvoiceSummary[] }) {
               <td className="p-3">
                 <InvoiceStatusTag invoice={invoice} />
               </td>
+              {onCollect ? (
+                <td className="p-1">
+                  <CollectButton invoice={invoice} onCollect={onCollect} />
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>
@@ -270,7 +317,7 @@ function InvoiceTable({ rows }: { rows: StayInvoiceSummary[] }) {
   );
 }
 
-function InvoiceCards({ rows }: { rows: StayInvoiceSummary[] }) {
+function InvoiceCards({ rows, onCollect }: RowsProps) {
   return (
     <ul className="grid gap-3" aria-label="Danh sách hoá đơn">
       {rows.map((invoice) => (
@@ -285,7 +332,10 @@ function InvoiceCards({ rows }: { rows: StayInvoiceSummary[] }) {
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <CodeLink invoice={invoice} />
-            <InvoiceStatusTag invoice={invoice} />
+            <div className="flex items-center gap-1">
+              <InvoiceStatusTag invoice={invoice} />
+              <CollectButton invoice={invoice} onCollect={onCollect} />
+            </div>
           </div>
           <p>
             Phòng {invoice.roomCode} · Kỳ {displayPeriod(invoice.period)} ·{' '}

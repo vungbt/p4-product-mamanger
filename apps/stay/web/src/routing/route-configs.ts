@@ -25,6 +25,7 @@ const ReadingsPage = lazy(() => import('@/modules/readings/page'));
 const InvoiceListPage = lazy(() => import('@/modules/invoices/list-page'));
 const BillingRunPage = lazy(() => import('@/modules/invoices/run-page'));
 const InvoiceDetailPage = lazy(() => import('@/modules/invoices/detail-page'));
+const PaymentsPage = lazy(() => import('@/modules/payments/page'));
 const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
 const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
 const ContractListPage = lazy(() => import('@/modules/contracts/list-page'));
@@ -165,6 +166,13 @@ export const appRoutes: StayRoute[] = [
     icon: 'moneyTime',
     component: PlaceholderPage,
     ability: { action: 'read', subject: 'Invoice' },
+  },
+  {
+    path: '/payments',
+    name: 'payments',
+    icon: 'walletMoney',
+    component: PaymentsPage,
+    ability: { action: 'read', subject: 'Payment' },
   },
   {
     path: '/contracts',

@@ -25,8 +25,14 @@ async function json(
 
 /** Opens `path` with the test building selected in the header. */
 async function openInBuilding(page: Page, path: string) {
-  await page.evaluate((id) => localStorage.setItem('stay_building_id', id), buildingId);
-  await page.goto(path);
+  // The shell may still persist its default building after sign-in; retry until ours sticks.
+  await expect(async () => {
+    await page.evaluate((id) => localStorage.setItem('stay_building_id', id), buildingId);
+    await page.goto(path);
+    await page.waitForLoadState('networkidle');
+    // The app rewrites the key when it falls back to another building.
+    expect(await page.evaluate(() => localStorage.getItem('stay_building_id'))).toBe(buildingId);
+  }).toPass({ timeout: 20000 });
 }
 
 test.describe

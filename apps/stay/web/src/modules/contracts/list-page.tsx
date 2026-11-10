@@ -15,6 +15,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { displayDate, formatVnd } from '@/libraries/format';
+import { latestSearchParams } from '@/libraries/search-params';
 import { CONTRACT_LABELS, LoadError } from './contract-ui';
 
 export default function ContractListPage() {
@@ -39,8 +40,8 @@ export default function ContractListPage() {
 
   const filter = (key: string, value: string | null) =>
     setParams(
-      (current) => {
-        const next = new URLSearchParams(current);
+      () => {
+        const next = latestSearchParams();
 
         if (value) next.set(key, value);
         else next.delete(key);
@@ -54,8 +55,8 @@ export default function ContractListPage() {
     const timer = setTimeout(() => {
       if (search.trim() !== q)
         setParams(
-          (current) => {
-            const next = new URLSearchParams(current);
+          () => {
+            const next = latestSearchParams();
 
             if (search.trim()) next.set('q', search.trim());
             else next.delete('q');
