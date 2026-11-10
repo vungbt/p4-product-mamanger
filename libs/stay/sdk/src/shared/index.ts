@@ -1,3 +1,4 @@
+export { type AuditListQuery, createAuditApi } from './audit.js';
 export {
   type BuildingCreateInput,
   type BuildingListQuery,

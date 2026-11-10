@@ -20,6 +20,7 @@ export type StayRoute = {
   parent?: string;
 };
 
+const AuditPage = lazy(() => import('@/modules/audit/page'));
 const OverviewPage = lazy(() => import('@/modules/overview/page'));
 const PlaceholderPage = lazy(() => import('@/modules/placeholder/page'));
 const RoomMapPage = lazy(() => import('@/modules/rooms/page'));
@@ -58,6 +59,13 @@ export const buildingPricesPath = (id: string) => `/buildings/${id}/prices`;
 
 /** Signed-in app routes (screens.md C-02 menu order). Menus are derived from this list. */
 export const appRoutes: StayRoute[] = [
+  {
+    path: '/audit',
+    name: 'audit',
+    icon: 'clipboardText',
+    component: AuditPage,
+    ability: { action: 'read', subject: 'AuditLog' },
+  },
   {
     path: ROUTES.overview,
     name: 'overview',

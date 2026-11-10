@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import auditRouter from './audit/audit.router.js';
 import buildingsRouter from './buildings/buildings.router.js';
 import meRouter from './me/me.router.js';
 import roomsRouter from './rooms/rooms.router.js';
@@ -10,6 +11,7 @@ import uploadsRouter from './uploads/uploads.router.js';
 // Mount with `apiRouter.use(...)` so the OpenAPI generator finds the module.
 const apiRouter = Router();
 
+apiRouter.use(auditRouter);
 apiRouter.use(meRouter);
 apiRouter.use(settingsRouter);
 apiRouter.use(buildingsRouter);

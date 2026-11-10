@@ -35,7 +35,8 @@
     "tenantNew": "Thêm người thuê",
     "tenantImport": "Import người thuê",
     "tenantProfile": "Hồ sơ người thuê",
-    "tenantEdit": "Sửa người thuê"
+    "tenantEdit": "Sửa người thuê",
+    "audit": "Lịch sử thay đổi"
   },
   "header": {
     "back": "Quay lại",
@@ -426,5 +427,30 @@
       }
     },
     "importAction": "Nhập từ file"
+  },
+  "audit": {
+    "search": "Tìm hành động hoặc bản ghi",
+    "actorId": "Người thực hiện (ID)",
+    "action": "Hành động",
+    "resourceType": "Loại dữ liệu",
+    "resourceId": "Bản ghi (ID)",
+    "from": "Từ ngày",
+    "to": "Đến ngày",
+    "apply": "Áp dụng",
+    "clear": "Xoá bộ lọc",
+    "sortBy": "Sắp xếp theo",
+    "createdAt": "Thời điểm",
+    "oldest": "Cũ nhất trước",
+    "newest": "Mới nhất trước",
+    "empty": "Chưa có lịch sử phù hợp.",
+    "system": "Hệ thống",
+    "success": "Thành công",
+    "failure": "Thất bại",
+    "details": "Chi tiết thay đổi",
+    "close": "Đóng chi tiết",
+    "pagination": "Phân trang lịch sử",
+    "previous": "Trước",
+    "next": "Sau",
+    "page": "Trang {{page}} / {{total}}"
   }
 }
