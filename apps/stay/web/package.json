@@ -22,6 +22,7 @@
     "@stay/shared": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "i18next": "catalog:",
+    "qrcode.react": "4.2.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-i18next": "catalog:",

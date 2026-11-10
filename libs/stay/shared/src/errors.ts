@@ -7,7 +7,8 @@ export type StayValueErrorCode =
   | 'INVALID_INVOICE_CODE'
   | 'INVALID_ROOM_RANGE'
   | 'INVALID_ROOM_TEMPLATE'
-  | 'ROOM_BULK_LIMIT';
+  | 'ROOM_BULK_LIMIT'
+  | 'INVALID_QR_FIELD';
 
 /** Thrown by the helpers in this package when a value is malformed. */
 export class StayValueError extends Error {
