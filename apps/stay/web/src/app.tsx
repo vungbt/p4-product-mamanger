@@ -2,6 +2,7 @@ import { ToastProvider, UIProvider, type UiImageProps, type UiLinkProps } from '
 import { useTranslation } from 'react-i18next';
 import { createBrowserRouter, Link, RouterProvider } from 'react-router-dom';
 import { CapabilityAbilityProvider } from '@/libraries/ability';
+import { UnsavedChangesProvider } from '@/libraries/forms/unsaved-changes';
 import { OfflineBanner } from '@/libraries/offline-banner';
 import { AuthProvider } from '@/libraries/session/auth-provider';
 import { QueryProvider } from '@/libraries/session/query-provider';
@@ -32,7 +33,9 @@ function Root() {
           <AuthProvider>
             <CapabilityAbilityProvider>
               <OfflineBanner />
-              <AppRoutes />
+              <UnsavedChangesProvider>
+                <AppRoutes />
+              </UnsavedChangesProvider>
             </CapabilityAbilityProvider>
           </AuthProvider>
         </QueryProvider>
