@@ -1,9 +1,11 @@
-/** Room occupants and cross-module usage; invoices remain ST-14/ST-18 extension points. */
+/** Room occupants and cross-module usage (contracts, readings, invoices). */
+import { selectFields } from '@p4/server-core';
 import { isoDateInTimeZone, type RoomInvoiceSummary, type RoomOccupant } from '@stay/shared';
 import { literal, Op, QueryTypes, type Transaction } from 'sequelize';
 import {
   ContractModel,
   ContractOccupantModel,
+  InvoiceModel,
   sequelize,
   TenantModel,
 } from '@/sequelize/models/index.js';
@@ -15,8 +17,23 @@ export interface LatestReading {
 }
 
 /** Unpaid total of issued invoices per room id (ST-14/ST-18); rooms without debt are absent. */
-export async function roomDebts(_roomIds: readonly string[]): Promise<Map<string, number>> {
-  return new Map();
+export async function roomDebts(roomIds: readonly string[]): Promise<Map<string, number>> {
+  if (!roomIds.length) return new Map();
+  const rows = await InvoiceModel.findAll({
+    where: {
+      roomId: { [Op.in]: [...roomIds] },
+      status: { [Op.in]: ['issued', 'partially_paid'] },
+    },
+    attributes: ['roomId', 'total', 'paidTotal'],
+  });
+  const debts = new Map<string, number>();
+
+  for (const row of rows) {
+    const remaining = row.total - row.paidTotal;
+
+    if (remaining > 0) debts.set(row.roomId, (debts.get(row.roomId) ?? 0) + remaining);
+  }
+  return debts;
 }
 
 /** People living in the room under its holding contract, primary tenant first (ST-10). */
@@ -55,12 +72,24 @@ export async function roomOccupants(roomId: string): Promise<RoomOccupant[]> {
   }));
 }
 
-/** The room's latest invoices, newest first (ST-14). */
+/** The room's latest invoices (drafts included, void excluded), newest first (ST-14). */
 export async function roomRecentInvoices(
-  _roomId: string,
-  _limit: number,
+  roomId: string,
+  limit: number,
 ): Promise<RoomInvoiceSummary[]> {
-  return [];
+  const rows = await InvoiceModel.findAll({
+    where: { roomId, status: { [Op.ne]: 'void' } },
+    order: [
+      ['period', 'DESC'],
+      ['createdAt', 'DESC'],
+      ['id', 'DESC'],
+    ],
+    limit,
+  });
+
+  return rows.map((row) =>
+    selectFields(row, ['id', 'code', 'kind', 'period', 'status', 'total', 'paidTotal', 'dueOn']),
+  );
 }
 
 /** Latest reading per meter id (ST-13); meters without readings are absent. */

@@ -1,270 +1,1107 @@
 import { randomUUID } from 'node:crypto';
-import { BaseError, NotFound, buildPaginationMeta, setAuditChanges } from '@p4/server-core';
-import type { ListQuery } from '@p4/shared';
-import { computeMonthlyInvoice, computeMoveInInvoice, finalizeInvoice, manualLines, type ComputedInvoice, type FixedServiceInput, type InvoiceLine, type UtilityInput } from '@stay/billing';
-import { daysInPeriod, formatInvoiceCode, isInvoiceOverdue, isoDateInTimeZone, previousPeriod, type BillingPreview, type InvoiceManualInput, type StayAction, type StayInvoice, type StayUser } from '@stay/shared';
-import { Op, QueryTypes, type Transaction, type WhereOptions } from 'sequelize';
-import { canAccessRecord, accessibleBuildingIds } from '@/middlewares/ability.middleware.js';
-import { BuildingModel, BuildingServicePriceModel, ContractModel, InvoiceModel, InvoiceLineModel, InvoiceSequenceModel, MeterModel, MeterReadingModel, RoomModel, ServiceDefinitionModel, sequelize } from '@/sequelize/models/index.js';
+import {
+  BaseError,
+  buildPaginationMeta,
+  NotFound,
+  searchPattern,
+  selectFields,
+  setAuditChanges,
+} from '@p4/server-core';
+import type { ListQuery, PaginationMeta } from '@p4/shared';
+import {
+  type InvoiceLine,
+  invoiceCodePeriod,
+  invoicePaymentStatus,
+  invoiceSchedule,
+  invoiceTotals,
+  isBillingError,
+  manualLines,
+} from '@stay/billing';
+import {
+  type BillingDraftResult,
+  type BillingPreview,
+  type BillingPreviewRow,
+  firstDayOfPeriod,
+  formatInvoiceCode,
+  type InvoiceIssueResult,
+  type InvoiceKind,
+  type InvoiceLineInput,
+  type InvoiceStatus,
+  type InvoiceVoidInput,
+  isInvoiceOverdue,
+  isoDateInTimeZone,
+  lastDayOfPeriod,
+  type Period,
+  previousPeriod,
+  type StayAction,
+  type StayInvoice,
+  type StayInvoiceLine,
+  type StayInvoiceSummary,
+  type StayUser,
+} from '@stay/shared';
+import { Op, type Transaction, type WhereOptions } from 'sequelize';
+import { canAccessRecord, hasAccess } from '@/middlewares/ability.middleware.js';
+import {
+  BuildingModel,
+  ContractModel,
+  InvoiceLineModel,
+  InvoiceMeterReadingModel,
+  InvoiceModel,
+  InvoiceSequenceModel,
+  MeterModel,
+  MeterReadingModel,
+  RoomModel,
+  sequelize,
+} from '@/sequelize/models/index.js';
 import type { InvoiceAttributes } from '@/sequelize/models/invoice.model.js';
 import { auditedTransaction, recordAudit } from '@/shared/audit.js';
+import { assertVersion } from '@/shared/input.js';
 import { runIdempotent } from '@/shared/persistence.js';
-import { resolveBuildingPrice } from '../buildings/building-prices.service.js';
-import { contractFactsAt, contractOccupantsAt, contractServicesAt, contractVehiclesAt, contractRoomClosingsForPeriod } from '../contracts/contracts.resolvers.js';
-import { periodBounds, periodMeter } from '../readings/readings.service.js';
-import { billingDefaults } from '../settings/settings.service.js';
+import type { ModelOrder } from '@/types/database.js';
+import {
+  type BillingContext,
+  billingContext,
+  type ComputedDraft,
+  computeMonthlyDraft,
+  computeMoveInDraft,
+  exclusionOf,
+} from './invoices.billing.js';
 
-const fail = (code: string): never => { throw new BaseError(code, 409, code); };
-const day = (period: string, value: number) => `${period}-${String(Math.min(value, daysInPeriod(period))).padStart(2, '0')}`;
+export type InvoiceSortField = 'createdAt' | 'period' | 'code' | 'total' | 'dueOn' | 'issuedOn';
 
-async function building(user: StayUser, id: string, action: StayAction, tx: Transaction) {
-  if (!canAccessRecord(user, action, 'Invoice', { buildingId: id })) throw new NotFound();
-  const row = await BuildingModel.findByPk(id, { transaction: tx });
-  if (!row) throw new NotFound();
-  if (action !== 'read' && row.archivedAt) fail('building_archived');
+export interface InvoiceListQuery extends ListQuery<InvoiceSortField> {
+  buildingId?: string;
+  contractId?: string;
+  roomId?: string;
+  period?: string;
+  kind?: InvoiceKind;
+  status?: InvoiceStatus;
+  overdue?: boolean;
+}
+
+/** Statuses of an issued, non-void invoice (paid states are set by ST-15 payments). */
+const ISSUED_STATUSES: InvoiceStatus[] = ['issued', 'partially_paid', 'paid'];
+
+function conflict(code: string, extensions?: Record<string, string | number>): never {
+  throw new BaseError(code, 409, code, extensions);
+}
+
+const today = () => isoDateInTimeZone(new Date());
+
+/* -------------------------------------------------------------------------- */
+/* Access and DTOs                                                             */
+/* -------------------------------------------------------------------------- */
+
+async function findBuilding(
+  user: StayUser,
+  buildingId: string,
+  action: StayAction,
+  transaction: Transaction,
+  lock = false,
+) {
+  if (!canAccessRecord(user, action, 'Invoice', { buildingId })) throw new NotFound();
+  const building = await BuildingModel.findByPk(buildingId, {
+    transaction,
+    ...(lock ? { lock: transaction.LOCK.UPDATE } : {}),
+  });
+
+  if (!building) throw new NotFound();
+  if (action !== 'read' && building.archivedAt) conflict('building_archived');
+  return building;
+}
+
+/** Inaccessible invoices (and drafts for tenants) are 404, never 403. */
+async function findInvoice(
+  user: StayUser,
+  id: string,
+  action: StayAction,
+  transaction?: Transaction,
+) {
+  const row = await InvoiceModel.findByPk(id, { transaction });
+
+  if (
+    !row ||
+    !canAccessRecord(user, action, 'Invoice', {
+      buildingId: row.buildingId,
+      contractId: row.contractId,
+    }) ||
+    (row.status === 'draft' &&
+      !canAccessRecord(user, 'read', 'Invoice', { buildingId: row.buildingId }))
+  )
+    throw new NotFound();
   return row;
 }
 
-async function find(user: StayUser, id: string, action: StayAction, tx: Transaction) {
-  const row = await InvoiceModel.findByPk(id, { transaction: tx });
-  if (!row || !canAccessRecord(user, action, 'Invoice', { buildingId: row.buildingId, contractId: row.contractId })) throw new NotFound();
-  return row;
-}
-
-async function dto(row: InvoiceModel, tx?: Transaction): Promise<StayInvoice> {
-  const [room, lines] = await Promise.all([
-    RoomModel.findByPk(row.roomId, { transaction: tx }),
-    InvoiceLineModel.findAll({ where: { invoiceId: row.id }, order: [['position', 'ASC']], transaction: tx }),
+async function summaries(
+  rows: InvoiceModel[],
+  transaction?: Transaction,
+): Promise<StayInvoiceSummary[]> {
+  const [rooms, contracts] = await Promise.all([
+    RoomModel.findAll({
+      where: { id: { [Op.in]: [...new Set(rows.map((row) => row.roomId))] } },
+      attributes: ['id', 'code'],
+      transaction,
+    }),
+    ContractModel.findAll({
+      where: { id: { [Op.in]: [...new Set(rows.map((row) => row.contractId))] } },
+      attributes: ['id', 'code'],
+      transaction,
+    }),
   ]);
-  return { id: row.id, buildingId: row.buildingId, contractId: row.contractId, roomId: row.roomId,
-    roomCode: room?.code ?? '', kind: row.kind, period: row.period, code: row.code, status: row.status,
-    issuedOn: row.issuedOn, dueOn: row.dueOn, subtotal: row.subtotal, rounding: row.rounding,
-    roundingUnit: row.roundingUnit, total: row.total, paidTotal: row.paidTotal, remaining: row.total - row.paidTotal,
-    overdue: isInvoiceOverdue(row.status, row.dueOn, isoDateInTimeZone(new Date())), voidReason: row.voidReason,
-    version: row.version, lines: lines.map(l => ({ id: l.id, type: l.type, serviceId: l.serviceId,
-      description: l.description, period: l.period, quantity: l.quantity, unit: l.unit, unitPrice: l.unitPrice,
-      ratioNum: l.ratioNum, ratioDen: l.ratioDen, amount: l.amount, meta: l.meta })) };
+  const roomCodes = new Map(rooms.map((room) => [room.id, room.code]));
+  const contractCodes = new Map(contracts.map((contract) => [contract.id, contract.code]));
+  const now = today();
+
+  return rows.map((row) => {
+    const remaining = row.total - row.paidTotal;
+
+    return {
+      ...selectFields(row, [
+        'id',
+        'buildingId',
+        'contractId',
+        'roomId',
+        'kind',
+        'period',
+        'code',
+        'status',
+        'issuedOn',
+        'dueOn',
+        'subtotal',
+        'rounding',
+        'total',
+        'paidTotal',
+        'version',
+      ]),
+      contractCode: contractCodes.get(row.contractId) ?? '',
+      roomCode: roomCodes.get(row.roomId) ?? '',
+      remaining,
+      overdue: isInvoiceOverdue(row.status, row.dueOn, now) && remaining > 0,
+      createdAt: row.createdAt.toISOString(),
+    };
+  });
 }
 
-async function audit(user: StayUser, row: InvoiceModel, action: string, tx: Transaction) {
-  const changes = { buildingId: row.buildingId, contractId: row.contractId, invoiceId: row.id, status: row.status, version: row.version };
-  setAuditChanges(changes);
-  await recordAudit({ actorId: user.id, action: `invoice.${action}`, resourceType: 'invoice', resourceId: row.id, changes }, tx);
-}
-
-/** Only loads dated inputs; every monetary calculation is owned by @stay/billing. */
-async function compute(contract: ContractModel, period: string, moveIn: boolean, tx: Transaction) {
-  const b = await BuildingModel.findByPk(contract.buildingId, { transaction: tx, rejectOnEmpty: true });
-  const defaults = await billingDefaults();
-  const issueDate = moveIn ? contract.startDate : day(period, b.issueDay ?? defaults.issueDay);
-  const [facts, occupants, vehicles, registrations, prices, definitions] = await Promise.all([
-    contractFactsAt(contract.id, issueDate, tx), contractOccupantsAt(contract.id, issueDate, tx),
-    contractVehiclesAt(contract.id, issueDate, tx), contractServicesAt(contract.id, issueDate, tx),
-    BuildingServicePriceModel.findAll({ where: { buildingId: b.id }, transaction: tx }),
-    ServiceDefinitionModel.findAll({ transaction: tx }),
+function lineDto(line: InvoiceLineModel): StayInvoiceLine {
+  return selectFields(line, [
+    'id',
+    'type',
+    'serviceId',
+    'description',
+    'period',
+    'quantity',
+    'unit',
+    'unitPrice',
+    'ratioNum',
+    'ratioDen',
+    'amount',
+    'manual',
+    'meta',
   ]);
-  const services: FixedServiceInput[] = [];
-  const utilities: UtilityInput[] = [];
-  const readingIds = new Set<string>();
-  const rate = (s: ServiceDefinitionModel) => resolveBuildingPrice(s.defaultPrice, prices.filter(p => p.serviceId === s.id), issueDate).price;
-  const oldSegments = moveIn ? [] : await contractRoomClosingsForPeriod(contract.id, period, tx);
-  for (const s of definitions) {
-    if (!registrations.some(r => r.serviceId === s.id)) continue;
-    if (s.kind !== 'electricity' && s.kind !== 'water') {
-      services.push({ serviceId: s.id, code: s.code, name: s.name, kind: s.kind, unit: s.unit, unitPrice: rate(s) });
-      continue;
-    }
-    if (moveIn || contract.startDate.slice(0, 7) >= period) continue;
-    // A room move stores a closing segment independently of the destination's monthly closing.
-    for (const closing of oldSegments) {
-      const oldRoomId = String(closing.oldRoomId);
-      const oldFacts = await contractFactsAt(contract.id, String(closing.effectiveDate).slice(0, 8) + '01', tx);
-      const meter = await MeterModel.findOne({ where: { roomId: oldRoomId, kind: s.kind }, order: [['installedOn', 'DESC']], transaction: tx });
-      const prior = meter ? await MeterReadingModel.findOne({ where: { meterId: meter.id, period: { [Op.lt]: previousPeriod(period) } }, order: [['period', 'DESC']], transaction: tx }) : null;
-      if (prior) readingIds.add(prior.id);
-      const initial = s.kind === 'electricity' ? Number(closing.oldInitialElectric ?? oldFacts.initialElectric) : Number(closing.oldInitialWater ?? oldFacts.initialWater);
-      utilities.push({ kind: s.kind, serviceId: s.id, name: s.name, unit: s.unit, unitPrice: rate(s), segments: [{ meterId: meter?.id, startReading: prior?.reading ?? initial, endReading: Number(s.kind === 'electricity' ? closing.closingElectric : closing.closingWater) }] });
-    }
-    const consumptionPeriod = previousPeriod(period);
-    const atEnd = await contractFactsAt(contract.id, periodBounds(consumptionPeriod).end, tx);
-    // Use a detached model so dated room/baseline resolution cannot mutate the live contract.
-    const dated = ContractModel.build({ ...contract.get(), ...atEnd });
-    const grid = await periodMeter(dated, s.kind, consumptionPeriod, tx);
-    if (!grid?.current || !grid.segments?.length) throw new BaseError(`Thiếu chỉ số ${s.name} kỳ ${consumptionPeriod}`, 422, 'missing_reading');
-    utilities.push({ kind: s.kind, serviceId: s.id, name: s.name, unit: s.unit, unitPrice: rate(s), segments: grid.segments });
-    const readings = await MeterReadingModel.findAll({ where: { meterId: { [Op.in]: grid.segments.map(x => x.meterId) }, period: { [Op.lte]: consumptionPeriod } }, transaction: tx });
-    for (const r of readings) readingIds.add(r.id);
-  }
-  const input = { contract: { startDate: contract.startDate, endDate: contract.endDate, rent: facts.rent }, occupantCount: occupants.length, vehicleCount: vehicles.length, services, roundingUnit: b.roundingUnit ?? defaults.roundingUnit };
-  const result = moveIn ? computeMoveInInvoice(input) : computeMonthlyInvoice({ ...input, period, utilities });
-  let utilityIndex = 0;
-  for (const line of result.lines) {
-    if (line.type !== 'electricity' && line.type !== 'water') continue;
-    const utility = utilities[utilityIndex++];
-    const closing = oldSegments.find(c => utility?.segments.some(s => s.meterId) && Number(line.meta.endReading) === Number(line.type === 'electricity' ? c.closingElectric : c.closingWater));
-    if (closing) { line.meta.sourceEventId = closing.eventId; line.meta.roomId = String(closing.oldRoomId); }
-  }
-  return { result, readingIds: [...readingIds], roomId: facts.roomId, dueOn: day(period, b.dueDay ?? defaults.dueDay) };
 }
 
-async function saveLines(row: InvoiceModel, result: ComputedInvoice, tx: Transaction) {
-  await InvoiceLineModel.destroy({ where: { invoiceId: row.id }, transaction: tx });
-  await InvoiceLineModel.bulkCreate(result.lines.map((l, position) => ({ ...l, invoiceId: row.id, position })), { transaction: tx });
-  await row.update({ subtotal: result.subtotal, rounding: result.rounding, total: result.total }, { transaction: tx });
+async function invoiceDto(row: InvoiceModel, transaction?: Transaction): Promise<StayInvoice> {
+  const [[summary], lines] = await Promise.all([
+    summaries([row], transaction),
+    InvoiceLineModel.findAll({
+      where: { invoiceId: row.id },
+      order: [
+        ['position', 'ASC'],
+        ['createdAt', 'ASC'],
+      ],
+      transaction,
+    }),
+  ]);
+
+  if (!summary) throw new NotFound();
+  return {
+    ...summary,
+    roundingUnit: row.roundingUnit,
+    voidReason: row.voidReason,
+    voidedAt: row.voidedAt?.toISOString() ?? null,
+    lines: lines.map(lineDto),
+  };
 }
 
-async function persist(user: StayUser, contract: ContractModel, period: string, moveIn: boolean, tx: Transaction) {
-  const kind = moveIn ? 'move_in' : 'monthly';
-  let row = await InvoiceModel.findOne({ where: { contractId: contract.id, ...(moveIn ? {} : { period }), kind, status: { [Op.ne]: 'void' } }, transaction: tx });
-  if (row && (row.status !== 'draft' || moveIn)) return row;
-  const loaded = await compute(contract, period, moveIn, tx);
-  if (!row) row = await InvoiceModel.create({ buildingId: contract.buildingId, contractId: contract.id, roomId: loaded.roomId, kind, period: loaded.result.period, dueOn: loaded.dueOn, subtotal: loaded.result.subtotal, rounding: loaded.result.rounding, total: loaded.result.total, roundingUnit: loaded.result.roundingUnit }, { transaction: tx });
-  else {
-    const existing = await InvoiceLineModel.findAll({ where: { invoiceId: row.id, type: { [Op.in]: ['surcharge', 'discount'] } }, transaction: tx });
-    loaded.result = finalizeInvoice(kind, period, [...loaded.result.lines.filter(l => l.type !== 'rounding'), ...existing.map(l => ({ type: l.type, serviceId: l.serviceId, description: l.description, period: l.period, quantity: l.quantity, unit: l.unit, unitPrice: l.unitPrice, ratioNum: l.ratioNum, ratioDen: l.ratioDen, amount: l.amount, meta: l.meta }))], loaded.result.roundingUnit);
-    await row.update({ roomId: loaded.roomId, dueOn: loaded.dueOn, roundingUnit: loaded.result.roundingUnit }, { transaction: tx });
+/** Audit facts: identifiers, period, money and version only (no names, phones or reasons). */
+async function auditInvoice(row: InvoiceModel, action: string, transaction: Transaction) {
+  const changes = {
+    buildingId: row.buildingId,
+    contractId: row.contractId,
+    invoiceId: row.id,
+    kind: row.kind,
+    period: row.period,
+    status: row.status,
+    code: row.code,
+    total: row.total,
+    version: row.version,
+  };
+
+  await recordAudit(
+    { action: `invoice.${action}`, resourceType: 'invoice', resourceId: row.id, changes },
+    transaction,
+  );
+  return changes;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Drafts                                                                      */
+/* -------------------------------------------------------------------------- */
+
+function lineValues(invoiceId: string, line: InvoiceLine, position: number, manual = false) {
+  return {
+    invoiceId,
+    position,
+    manual,
+    ...selectFields(line, [
+      'type',
+      'serviceId',
+      'description',
+      'period',
+      'quantity',
+      'unit',
+      'unitPrice',
+      'ratioNum',
+      'ratioDen',
+      'amount',
+      'meta',
+    ]),
+  };
+}
+
+/**
+ * Creates or refreshes a draft from a computed invoice. Refresh replaces the computed lines and
+ * keeps manual surcharges/discounts; the rounding line and totals are recomputed. Issued
+ * invoices never reach this function.
+ *
+ * ST-17 extension point: persist a settlement draft with `kind: 'settlement'`.
+ */
+export async function saveInvoiceDraft(
+  contract: ContractModel,
+  draft: ComputedDraft,
+  existing: InvoiceModel | null,
+  transaction: Transaction,
+): Promise<InvoiceModel> {
+  if (existing && existing.status !== 'draft') conflict('invoice_not_draft');
+  const computed = draft.invoice.lines.filter((line) => line.type !== 'rounding');
+  const manual = existing
+    ? await InvoiceLineModel.findAll({
+        where: { invoiceId: existing.id, manual: true },
+        order: [['position', 'ASC']],
+        transaction,
+      })
+    : [];
+  const totals = invoiceTotals([...computed, ...manual], draft.invoice.roundingUnit);
+  const values = {
+    roomId: draft.roomId,
+    dueOn: draft.schedule.dueOn,
+    subtotal: totals.subtotal,
+    rounding: totals.rounding,
+    total: totals.total,
+    roundingUnit: draft.invoice.roundingUnit,
+  };
+  let row: InvoiceModel;
+
+  if (existing) {
+    existing.set(values);
+    existing.changed('updatedAt', true);
+    row = await existing.save({ transaction });
+    await InvoiceLineModel.destroy({ where: { invoiceId: row.id, manual: false }, transaction });
+  } else {
+    row = await InvoiceModel.create(
+      {
+        buildingId: contract.buildingId,
+        contractId: contract.id,
+        kind: draft.invoice.kind,
+        period: draft.invoice.period,
+        ...values,
+      },
+      { transaction },
+    );
   }
-  await saveLines(row, loaded.result, tx);
-  await sequelize.query('DELETE FROM invoice_meter_readings WHERE invoice_id=:id', { replacements: { id: row.id }, transaction: tx });
-  for (const id of loaded.readingIds) await sequelize.query('INSERT INTO invoice_meter_readings(invoice_id,reading_id,reading_value) SELECT :invoiceId,id,reading FROM meter_readings WHERE id=:id', { replacements: { invoiceId: row.id, id }, transaction: tx });
-  await audit(user, row, 'draft', tx);
+  await InvoiceLineModel.bulkCreate(
+    computed.map((line, index) => lineValues(row.id, line, index)),
+    { transaction },
+  );
+  for (const [index, line] of manual.entries())
+    await line.update({ position: computed.length + index }, { transaction });
+  if (totals.roundingLine)
+    await InvoiceLineModel.create(
+      lineValues(row.id, totals.roundingLine, computed.length + manual.length),
+      { transaction },
+    );
+  await InvoiceMeterReadingModel.destroy({ where: { invoiceId: row.id }, transaction });
+  await InvoiceMeterReadingModel.bulkCreate(
+    [...new Map(draft.readings.map((reading) => [reading.id, reading])).values()].map(
+      (reading) => ({ invoiceId: row.id, readingId: reading.id, readingValue: reading.reading }),
+    ),
+    { transaction },
+  );
+  await auditInvoice(row, existing ? 'draft_refreshed' : 'draft_created', transaction);
   return row;
 }
 
-/** Activation calls in its existing transaction after validating the contract. */
-export async function createMoveInForActivation(user: StayUser, contract: ContractModel, tx: Transaction) {
-  return persist(user, contract, contract.startDate.slice(0, 7), true, tx);
-}
-
-export async function createMoveInDraft(user: StayUser, id: string): Promise<StayInvoice> {
-  return auditedTransaction(async tx => {
-    const c = await ContractModel.findByPk(id, { transaction: tx, lock: tx.LOCK.UPDATE });
-    if (!c || !canAccessRecord(user, 'create', 'Invoice', { buildingId: c.buildingId, contractId: c.id })) throw new NotFound();
-    if (!['active', 'ending'].includes(c.status)) fail('contract_not_active');
-    const monthly = await InvoiceModel.count({ where: { contractId: id, period: c.startDate.slice(0, 7), kind: 'monthly', status: { [Op.ne]: 'void' } }, transaction: tx });
-    if (monthly) fail('period_already_invoiced');
-    return dto(await createMoveInForActivation(user, c, tx), tx);
+/** Contracts with at least one day in `period` that can be billed monthly. */
+function periodContracts(
+  buildingId: string,
+  period: Period,
+  transaction: Transaction,
+  lock = false,
+) {
+  return ContractModel.findAll({
+    where: {
+      buildingId,
+      status: { [Op.in]: ['active', 'ending'] },
+      startDate: { [Op.lte]: lastDayOfPeriod(period) },
+      [Op.or]: [{ endDate: null }, { endDate: { [Op.gte]: firstDayOfPeriod(period) } }],
+    },
+    order: [['id', 'ASC']],
+    transaction,
+    ...(lock ? { lock: transaction.LOCK.UPDATE } : {}),
   });
 }
 
-async function preview(user: StayUser, buildingId: string, period: string, tx: Transaction): Promise<BillingPreview> {
-  await building(user, buildingId, 'read', tx);
-  const contracts = await ContractModel.findAll({ where: { buildingId, status: { [Op.in]: ['active', 'ending'] }, startDate: { [Op.lte]: periodBounds(period).end }, [Op.or]: [{ endDate: null }, { endDate: { [Op.gte]: `${period}-01` } }] }, order: [['id', 'ASC']], transaction: tx });
-  const rows: BillingPreview['rows'] = [];
-  for (const c of contracts) {
-    const facts = await contractFactsAt(c.id, `${period}-01`, tx);
-    const room = await RoomModel.findByPk(facts.roomId, { transaction: tx });
-    const existing = await InvoiceModel.findOne({ where: { contractId: c.id, period, kind: { [Op.in]: ['monthly', 'move_in'] }, status: { [Op.ne]: 'void' } }, transaction: tx });
-    let reason: string | null = existing && (existing.kind === 'move_in' || existing.status !== 'draft') ? 'Kỳ đã có hoá đơn' : null;
-    let total: number | null = null;
-    if (!reason) {
-      try { total = (await compute(c, period, false, tx)).result.total; }
-      catch (error) { if (!(error instanceof BaseError)) throw error; reason = error.message; }
-    }
-    rows.push({ contractId: c.id, roomId: facts.roomId, roomCode: room?.code ?? '', eligible: !reason, reason, total, invoiceId: existing?.id ?? null });
+interface Evaluation {
+  row: Omit<BillingPreviewRow, 'roomCode' | 'contractCode'>;
+  draft: ComputedDraft | null;
+  existing: InvoiceModel | null;
+}
+
+/** Eligibility and expected total of one contract for period M. */
+async function evaluate(
+  context: BillingContext,
+  contract: ContractModel,
+  period: Period,
+  transaction: Transaction,
+  lock = false,
+): Promise<Evaluation> {
+  const invoices = await InvoiceModel.findAll({
+    where: {
+      contractId: contract.id,
+      period,
+      kind: { [Op.in]: ['monthly', 'move_in'] },
+      status: { [Op.ne]: 'void' },
+    },
+    order: [['id', 'ASC']],
+    transaction,
+    ...(lock ? { lock: transaction.LOCK.UPDATE } : {}),
+  });
+  const moveIn = invoices.find((invoice) => invoice.kind === 'move_in');
+  const existing = invoices.find((invoice) => invoice.kind === 'monthly') ?? null;
+  const base = { contractId: contract.id, roomId: contract.roomId };
+  /** `billed`: the period's invoice total is shown; a stale draft of excluded data is not. */
+  const excluded = (
+    reason: BillingPreviewRow['reason'],
+    invoice: InvoiceModel | null | undefined,
+    detail: BillingPreviewRow['reasonDetail'] = null,
+    billed = false,
+  ): Evaluation => ({
+    row: {
+      ...base,
+      roomId: invoice?.roomId ?? base.roomId,
+      eligible: false,
+      reason,
+      reasonDetail: detail,
+      invoiceId: invoice?.id ?? null,
+      invoiceStatus: invoice?.status ?? null,
+      subtotal: billed && invoice ? invoice.subtotal : null,
+      total: billed && invoice ? invoice.total : null,
+    },
+    draft: null,
+    existing,
+  });
+
+  if (moveIn) return excluded('move_in_invoice', moveIn, null, true);
+  if (existing && existing.status !== 'draft')
+    return excluded('already_issued', existing, null, true);
+  let draft: ComputedDraft;
+
+  try {
+    draft = await computeMonthlyDraft(context, contract, period, transaction);
+  } catch (error) {
+    const exclusion = exclusionOf(error);
+
+    return excluded(exclusion.reason, existing, exclusion.detail);
   }
-  setAuditChanges({ buildingId, period });
-  return { buildingId, period, rows, expectedTotal: rows.reduce((sum, r) => sum + (r.total ?? 0), 0) };
+  const manual = existing
+    ? await InvoiceLineModel.findAll({
+        where: { invoiceId: existing.id, manual: true },
+        attributes: ['type', 'amount'],
+        transaction,
+      })
+    : [];
+  const totals = invoiceTotals(
+    [...draft.invoice.lines, ...manual.map((line) => ({ type: line.type, amount: line.amount }))],
+    draft.invoice.roundingUnit,
+  );
+
+  return {
+    row: {
+      ...base,
+      roomId: draft.roomId,
+      eligible: true,
+      reason: null,
+      reasonDetail: null,
+      invoiceId: existing?.id ?? null,
+      invoiceStatus: existing?.status ?? null,
+      subtotal: totals.subtotal,
+      total: totals.total,
+    },
+    draft,
+    existing,
+  };
 }
 
-export const billingPreview = (user: StayUser, buildingId: string, period: string): Promise<BillingPreview> => auditedTransaction(tx => preview(user, buildingId, period, tx));
+async function previewRows(
+  evaluations: { contract: ContractModel; row: Evaluation['row'] }[],
+  transaction: Transaction,
+): Promise<BillingPreviewRow[]> {
+  const rooms = await RoomModel.findAll({
+    where: { id: { [Op.in]: [...new Set(evaluations.map(({ row }) => row.roomId))] } },
+    attributes: ['id', 'code'],
+    transaction,
+  });
+  const codes = new Map(rooms.map((room) => [room.id, room.code]));
 
-export async function createDrafts(user: StayUser, buildingId: string, period: string, key: string): Promise<BillingPreview> {
-  await auditedTransaction(tx => building(user, buildingId, 'create', tx));
-  await runIdempotent({ scope: `billing.${buildingId}.${period}`, actorId: user.id, key, payload: { buildingId, period } }, async tx => {
-    await BuildingModel.findByPk(buildingId, { transaction: tx, lock: tx.LOCK.UPDATE });
-    const p = await preview(user, buildingId, period, tx);
-    for (const r of p.rows) {
-      if (!r.eligible) continue;
-      const c = await ContractModel.findByPk(r.contractId, { transaction: tx, lock: tx.LOCK.UPDATE, rejectOnEmpty: true });
-      const invoice = await persist(user, c, period, false, tx);
-      r.invoiceId = invoice.id;
+  return evaluations
+    .map(({ contract, row }) => ({
+      ...row,
+      contractCode: contract.code,
+      roomCode: codes.get(row.roomId) ?? '',
+    }))
+    .sort(
+      (a, b) =>
+        a.roomCode.localeCompare(b.roomCode, 'vi', { numeric: true }) ||
+        a.contractCode.localeCompare(b.contractCode),
+    );
+}
+
+async function preview(
+  user: StayUser,
+  buildingId: string,
+  period: Period,
+  transaction: Transaction,
+): Promise<BillingPreview> {
+  const building = await findBuilding(user, buildingId, 'read', transaction);
+  const context = await billingContext(building, transaction);
+  const evaluations = [];
+
+  for (const contract of await periodContracts(buildingId, period, transaction))
+    evaluations.push({
+      contract,
+      row: (await evaluate(context, contract, period, transaction)).row,
+    });
+  const rows = await previewRows(evaluations, transaction);
+  const eligible = rows.filter((row) => row.eligible);
+  const schedule = invoiceSchedule({
+    kind: 'monthly',
+    period,
+    issueDay: context.issueDay,
+    dueDay: context.dueDay,
+    today: today(),
+  });
+
+  return {
+    buildingId,
+    period,
+    utilityPeriod: previousPeriod(period),
+    issueDate: schedule.issuedOn,
+    dueDate: schedule.dueOn,
+    rows,
+    eligibleCount: eligible.length,
+    excludedCount: rows.length - eligible.length,
+    expectedTotal: eligible.reduce((sum, row) => sum + (row.total ?? 0), 0),
+  };
+}
+
+/** Eligible contracts, excluded ones with their reason and the expected totals of period M. */
+export function billingPreview(
+  user: StayUser,
+  buildingId: string,
+  period: Period,
+): Promise<BillingPreview> {
+  return auditedTransaction((transaction) => {
+    setAuditChanges({ buildingId, period });
+    return preview(user, buildingId, period, transaction);
+  });
+}
+
+/**
+ * Creates or refreshes the monthly drafts of every eligible contract. The building row
+ * serializes runs; the same `Idempotency-Key` and body replays without writing again.
+ */
+export async function createDrafts(
+  user: StayUser,
+  buildingId: string,
+  period: Period,
+  key: string,
+): Promise<BillingDraftResult> {
+  return auditedTransaction(async (transaction) => {
+    await findBuilding(user, buildingId, 'create', transaction);
+    const { result, replayed } = await runIdempotent(
+      {
+        scope: `invoice.drafts.${buildingId}.${period}`,
+        actorId: user.id,
+        key,
+        payload: { buildingId, period },
+      },
+      async (tx) => {
+        const building = await findBuilding(user, buildingId, 'create', tx, true);
+        const context = await billingContext(building, tx);
+        let created = 0;
+        let refreshed = 0;
+
+        for (const contract of await periodContracts(buildingId, period, tx, true)) {
+          const { draft, existing } = await evaluate(context, contract, period, tx, true);
+
+          if (!draft) continue;
+          await saveInvoiceDraft(contract, draft, existing, tx);
+          if (existing) refreshed += 1;
+          else created += 1;
+        }
+        return { created, refreshed };
+      },
+    );
+    const counts =
+      typeof result === 'object' && result !== null && !Array.isArray(result) ? result : {};
+    const created = typeof counts.created === 'number' ? counts.created : 0;
+    const refreshed = typeof counts.refreshed === 'number' ? counts.refreshed : 0;
+
+    setAuditChanges({ buildingId, period, created, refreshed, replayed });
+    return {
+      ...(await preview(user, buildingId, period, transaction)),
+      created,
+      refreshed,
+      replayed,
+    };
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Move-in invoices                                                            */
+/* -------------------------------------------------------------------------- */
+
+function billingFailure(error: unknown): never {
+  const exclusion = exclusionOf(error);
+
+  throw new BaseError(exclusion.reason, 422, `billing_${exclusion.reason}`, {
+    reason: exclusion.reason,
+  });
+}
+
+/**
+ * Draft move-in invoice from `computeMoveInInvoice` (start-date prices, occupants, vehicles).
+ * Called by contract activation inside its transaction; returns the existing non-void one.
+ */
+export async function createMoveInForActivation(
+  contract: ContractModel,
+  transaction: Transaction,
+): Promise<InvoiceModel> {
+  const existing = await InvoiceModel.findOne({
+    where: { contractId: contract.id, kind: 'move_in', status: { [Op.ne]: 'void' } },
+    transaction,
+  });
+
+  if (existing) return existing;
+  const building = await BuildingModel.findByPk(contract.buildingId, {
+    transaction,
+    rejectOnEmpty: true,
+  });
+  let draft: ComputedDraft;
+
+  try {
+    draft = await computeMoveInDraft(
+      await billingContext(building, transaction),
+      contract,
+      transaction,
+    );
+  } catch (error) {
+    billingFailure(error);
+  }
+  return saveInvoiceDraft(contract, draft, null, transaction);
+}
+
+/** Move-in draft for an active contract activated before ST-14 (or whose move-in was voided). */
+export async function createMoveInInvoice(
+  user: StayUser,
+  contractId: string,
+): Promise<StayInvoice> {
+  return auditedTransaction(async (transaction) => {
+    const contract = await ContractModel.findByPk(contractId, {
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    if (
+      !contract ||
+      !canAccessRecord(user, 'create', 'Invoice', {
+        buildingId: contract.buildingId,
+        contractId: contract.id,
+      })
+    )
+      throw new NotFound();
+    if (contract.status !== 'active' && contract.status !== 'ending')
+      conflict('contract_not_active');
+    await findBuilding(user, contract.buildingId, 'create', transaction);
+    const invoices = await InvoiceModel.findAll({
+      where: { contractId, kind: { [Op.in]: ['move_in', 'monthly'] }, status: { [Op.ne]: 'void' } },
+      transaction,
+    });
+    const moveIn = invoices.find((invoice) => invoice.kind === 'move_in');
+    const monthly = invoices.find(
+      (invoice) => invoice.kind === 'monthly' && invoice.period === contract.startDate.slice(0, 7),
+    );
+
+    if (moveIn) conflict('move_in_invoice_exists', { invoiceId: moveIn.id });
+    if (monthly) conflict('period_already_invoiced', { invoiceId: monthly.id });
+    return invoiceDto(await createMoveInForActivation(contract, transaction), transaction);
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Reads                                                                       */
+/* -------------------------------------------------------------------------- */
+
+/** Rows `user` may read: assigned buildings (all statuses) or own contracts (issued only). */
+function readableScope(user: StayUser): WhereOptions<InvoiceAttributes> | null {
+  if (hasAccess(user, 'read', 'Invoice')) return null;
+  const buildingIds = user.buildingIds.filter((buildingId) =>
+    canAccessRecord(user, 'read', 'Invoice', { buildingId }),
+  );
+  const contractIds = user.contractIds.filter((contractId) =>
+    canAccessRecord(user, 'read', 'Invoice', { contractId }),
+  );
+
+  return {
+    [Op.or]: [
+      { buildingId: { [Op.in]: buildingIds } },
+      { contractId: { [Op.in]: contractIds }, status: { [Op.ne]: 'draft' } },
+    ],
+  };
+}
+
+export async function listInvoices(
+  user: StayUser,
+  query: InvoiceListQuery,
+): Promise<{ data: StayInvoiceSummary[]; meta: PaginationMeta }> {
+  if (
+    query.buildingId &&
+    !canAccessRecord(user, 'read', 'Invoice', { buildingId: query.buildingId })
+  )
+    throw new NotFound();
+  const scope = readableScope(user);
+  const now = today();
+  const conditions: WhereOptions<InvoiceAttributes>[] = scope ? [scope] : [];
+
+  if (query.buildingId) conditions.push({ buildingId: query.buildingId });
+  if (query.contractId) conditions.push({ contractId: query.contractId });
+  if (query.roomId) conditions.push({ roomId: query.roomId });
+  if (query.period) conditions.push({ period: query.period });
+  if (query.kind) conditions.push({ kind: query.kind });
+  if (query.status) conditions.push({ status: query.status });
+  if (query.q) {
+    const rooms = await RoomModel.findAll({
+      where: { code: { [Op.iLike]: searchPattern(query.q) } },
+      attributes: ['id'],
+    });
+
+    conditions.push({
+      [Op.or]: [
+        { code: { [Op.iLike]: searchPattern(query.q) } },
+        { roomId: { [Op.in]: rooms.map((room) => room.id) } },
+      ],
+    });
+  }
+  const overdue: WhereOptions<InvoiceAttributes> = {
+    status: { [Op.in]: ['issued', 'partially_paid'] },
+    dueOn: { [Op.lt]: now },
+    total: { [Op.gt]: sequelize.col('paid_total') },
+  };
+
+  if (query.overdue === true) conditions.push(overdue);
+  if (query.overdue === false) conditions.push({ [Op.not]: overdue });
+  const order: ModelOrder<InvoiceAttributes> = [
+    [query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'],
+    ['id', 'ASC'],
+  ];
+  const { rows, count } = await InvoiceModel.findAndCountAll({
+    where: { [Op.and]: conditions },
+    order,
+    limit: query.pageSize,
+    offset: (query.page - 1) * query.pageSize,
+  });
+
+  setAuditChanges({ buildingId: query.buildingId ?? null, period: query.period ?? null });
+  return {
+    data: await summaries(rows),
+    meta: buildPaginationMeta(query.page, query.pageSize, count),
+  };
+}
+
+export async function getInvoice(user: StayUser, id: string): Promise<StayInvoice> {
+  const row = await findInvoice(user, id, 'read');
+
+  setAuditChanges({ buildingId: row.buildingId, invoiceId: row.id });
+  return invoiceDto(row);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Manual lines                                                                */
+/* -------------------------------------------------------------------------- */
+
+async function lockedDraft(user: StayUser, id: string, transaction: Transaction, version?: number) {
+  const row = await findInvoice(user, id, 'update', transaction);
+
+  await row.reload({ transaction, lock: transaction.LOCK.UPDATE });
+  if (version !== undefined) assertVersion(row.version, version);
+  if (row.status !== 'draft') conflict('invoice_not_draft');
+  return row;
+}
+
+/** Replaces the rounding line and totals after a manual line was added or removed. */
+async function retotal(row: InvoiceModel, transaction: Transaction) {
+  await InvoiceLineModel.destroy({ where: { invoiceId: row.id, type: 'rounding' }, transaction });
+  const lines = await InvoiceLineModel.findAll({
+    where: { invoiceId: row.id },
+    order: [['position', 'ASC']],
+    transaction,
+  });
+  const totals = invoiceTotals(lines, row.roundingUnit);
+
+  if (totals.roundingLine)
+    await InvoiceLineModel.create(
+      lineValues(row.id, totals.roundingLine, (lines.at(-1)?.position ?? -1) + 1),
+      { transaction },
+    );
+  row.set({ subtotal: totals.subtotal, rounding: totals.rounding, total: totals.total });
+  row.changed('updatedAt', true);
+  await row.save({ transaction });
+}
+
+/** Surcharge or discount on a draft, with its reason; kept when the draft is refreshed. */
+export async function addInvoiceLine(
+  user: StayUser,
+  id: string,
+  input: InvoiceLineInput,
+): Promise<StayInvoice> {
+  return auditedTransaction(async (transaction) => {
+    const row = await lockedDraft(user, id, transaction, input.version);
+    let line: InvoiceLine | undefined;
+
+    try {
+      [line] = manualLines(
+        [{ type: input.type, amount: input.amount, reason: input.reason }],
+        'line',
+      );
+    } catch (error) {
+      if (isBillingError(error)) throw new BaseError(error.message, 422, 'invalid_invoice_line');
+      throw error;
     }
-    return null;
+    if (!line) throw new BaseError('invalid_invoice_line', 422, 'invalid_invoice_line');
+    const last = await InvoiceLineModel.max<number, InvoiceLineModel>('position', {
+      where: { invoiceId: row.id },
+      transaction,
+    });
+
+    await InvoiceLineModel.create(lineValues(row.id, line, (last ?? -1) + 1, true), {
+      transaction,
+    });
+    await retotal(row, transaction);
+    setAuditChanges({ ...(await auditInvoice(row, 'line_added', transaction)), type: input.type });
+    return invoiceDto(row, transaction);
   });
-  return billingPreview(user, buildingId, period);
 }
 
-export function getInvoice(user: StayUser, id: string): Promise<StayInvoice> {
-  return auditedTransaction(async tx => dto(await find(user, id, 'read', tx), tx));
+/** Removes a manual line of a draft; computed snapshot lines cannot be removed (409). */
+export async function deleteInvoiceLine(
+  user: StayUser,
+  id: string,
+  lineId: string,
+): Promise<StayInvoice> {
+  return auditedTransaction(async (transaction) => {
+    const row = await lockedDraft(user, id, transaction);
+    const line = await InvoiceLineModel.findOne({
+      where: { id: lineId, invoiceId: row.id },
+      transaction,
+    });
+
+    if (!line) throw new NotFound();
+    if (!line.manual) conflict('invoice_line_not_manual');
+    await line.destroy({ transaction });
+    await retotal(row, transaction);
+    setAuditChanges({ ...(await auditInvoice(row, 'line_deleted', transaction)), type: line.type });
+    return invoiceDto(row, transaction);
+  });
 }
 
-export interface InvoiceListQuery extends ListQuery<'createdAt' | 'period' | 'code' | 'total' | 'dueOn'> {
-  buildingId?: string; period?: string; roomId?: string; contractId?: string; kind?: InvoiceAttributes['kind']; status?: InvoiceAttributes['status']; overdue?: boolean;
+/* -------------------------------------------------------------------------- */
+/* Issue and void                                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Locks the rooms of the invoices and of their meter readings, in id order. Reading saves and
+ * meter replacements lock the same room rows first, so issue/void serialize with them.
+ */
+async function lockRooms(invoices: InvoiceModel[], transaction: Transaction) {
+  const links = await InvoiceMeterReadingModel.findAll({
+    where: { invoiceId: { [Op.in]: invoices.map((row) => row.id) } },
+    transaction,
+  });
+  const readings = await MeterReadingModel.findAll({
+    where: { id: { [Op.in]: links.map((link) => link.readingId) } },
+    attributes: ['id', 'meterId'],
+    transaction,
+  });
+  const meters = await MeterModel.findAll({
+    where: { id: { [Op.in]: readings.map((reading) => reading.meterId) } },
+    attributes: ['id', 'roomId'],
+    transaction,
+  });
+  const roomIds = [
+    ...new Set([...invoices.map((row) => row.roomId), ...meters.map((meter) => meter.roomId)]),
+  ].sort();
+  const rooms = await RoomModel.findAll({
+    where: { id: { [Op.in]: roomIds } },
+    order: [['id', 'ASC']],
+    lock: transaction.LOCK.UPDATE,
+    transaction,
+  });
+
+  return { rooms };
 }
 
-export async function listInvoices(user: StayUser, query: InvoiceListQuery) {
-  if (query.buildingId && !canAccessRecord(user, 'read', 'Invoice', { buildingId: query.buildingId })) throw new NotFound();
-  const conditions: WhereOptions<InvoiceAttributes>[] = [];
-  const ids = accessibleBuildingIds(user, 'read');
-  if (user.role === 'tenant') conditions.push({ contractId: { [Op.in]: user.contractIds } });
-  else if (ids !== 'all') conditions.push({ buildingId: { [Op.in]: ids } });
-  for (const field of ['buildingId', 'period', 'roomId', 'contractId', 'kind', 'status'] as const) if (query[field]) conditions.push({ [field]: query[field] });
-  if (query.q) conditions.push({ code: { [Op.iLike]: `%${query.q.replace(/[%_\\]/g, '\\$&')}%` } });
-  if (query.overdue) conditions.push({ status: { [Op.in]: ['issued', 'partially_paid'] }, dueOn: { [Op.lt]: isoDateInTimeZone(new Date()) } });
-  const { rows, count } = await InvoiceModel.findAndCountAll({ where: { [Op.and]: conditions }, order: [[query.sortBy ?? 'createdAt', query.sortOrder === 'asc' ? 'ASC' : 'DESC'], ['id', 'ASC']], limit: query.pageSize, offset: (query.page - 1) * query.pageSize });
-  return { data: await Promise.all(rows.map(r => dto(r))), meta: buildPaginationMeta(query.page, query.pageSize, count) };
+async function nextCode(
+  buildingId: string,
+  buildingCode: string,
+  period: Period,
+  transaction: Transaction,
+) {
+  // ON CONFLICT waits for a concurrent creator; FOR UPDATE then serializes the numbers.
+  await sequelize.query(
+    `INSERT INTO invoice_sequences (id, building_id, period, last_number, created_at, updated_at)
+     VALUES (:id, :buildingId, :period, 0, now(), now())
+     ON CONFLICT (building_id, period) DO NOTHING`,
+    { replacements: { id: randomUUID(), buildingId, period }, transaction },
+  );
+  const sequence = await InvoiceSequenceModel.findOne({
+    where: { buildingId, period },
+    lock: transaction.LOCK.UPDATE,
+    transaction,
+    rejectOnEmpty: true,
+  });
+
+  if (sequence.lastNumber >= 999) conflict('invoice_sequence_exhausted', { period });
+  await sequence.update({ lastNumber: sequence.lastNumber + 1 }, { transaction });
+  return formatInvoiceCode(buildingCode, period, sequence.lastNumber);
 }
 
-export async function changeManualLine(user: StayUser, id: string, input?: InvoiceManualInput, lineId?: string): Promise<StayInvoice> {
-  return auditedTransaction(async tx => {
-    const row = await find(user, id, input ? 'update' : 'delete', tx);
-    await row.reload({ transaction: tx, lock: tx.LOCK.UPDATE });
-    if (row.status !== 'draft') fail('invoice_not_draft');
-    const lines = await InvoiceLineModel.findAll({ where: { invoiceId: id }, order: [['position', 'ASC']], transaction: tx });
-    if (lineId && !lines.some(l => l.id === lineId && ['surcharge', 'discount'].includes(l.type))) fail('line_not_manual');
-    const kept: InvoiceLine[] = lines.filter(l => l.type !== 'rounding' && l.id !== lineId).map(l => ({ type: l.type, serviceId: l.serviceId, description: l.description, period: l.period, quantity: l.quantity, unit: l.unit, unitPrice: l.unitPrice, ratioNum: l.ratioNum, ratioDen: l.ratioDen, amount: l.amount, meta: l.meta }));
-    if (input) {
-      const added = manualLines([{ type: input.type, amount: input.amount, reason: input.reason }], 'manualLines');
-      for (const l of added) l.description.params.description = input.description;
-      kept.push(...added);
+/**
+ * Issues drafts in one transaction: assigns `{building}-{YYYYMM}-{nnn}` codes from
+ * `invoice_sequences` (row lock), sets issue/due dates from building/system settings and locks
+ * the meter readings used. A draft whose readings changed since it was computed must be
+ * refreshed first (409 `invoice_readings_changed`).
+ */
+export async function issueInvoices(user: StayUser, ids: string[]): Promise<InvoiceIssueResult> {
+  return auditedTransaction(async (transaction) => {
+    const unique = [...new Set(ids)].sort();
+    const found = await InvoiceModel.findAll({
+      where: { id: { [Op.in]: unique } },
+      transaction,
+    });
+
+    if (
+      found.length !== unique.length ||
+      found.some(
+        (row) =>
+          !canAccessRecord(user, 'issue', 'Invoice', {
+            buildingId: row.buildingId,
+            contractId: row.contractId,
+          }),
+      )
+    )
+      throw new NotFound();
+    const { rooms } = await lockRooms(found, transaction);
+    const rows = await InvoiceModel.findAll({
+      where: { id: { [Op.in]: unique } },
+      order: [['id', 'ASC']],
+      lock: transaction.LOCK.UPDATE,
+      transaction,
+    });
+    // Read after the row locks: a concurrent draft refresh may have replaced the links.
+    const links = await InvoiceMeterReadingModel.findAll({
+      where: { invoiceId: { [Op.in]: unique } },
+      transaction,
+    });
+    const readings = await MeterReadingModel.findAll({
+      where: { id: { [Op.in]: links.map((link) => link.readingId) } },
+      transaction,
+    });
+    const values = new Map(readings.map((reading) => [reading.id, reading.reading]));
+
+    for (const row of rows) {
+      if (row.status !== 'draft') conflict('invoice_not_draft', { invoiceId: row.id });
+      if (
+        links.some(
+          (link) => link.invoiceId === row.id && values.get(link.readingId) !== link.readingValue,
+        )
+      )
+        conflict('invoice_readings_changed', { invoiceId: row.id });
+      const sum = await InvoiceLineModel.sum('amount', {
+        where: { invoiceId: row.id },
+        transaction,
+      });
+
+      if (Number(sum ?? 0) !== row.total) conflict('invoice_total_mismatch', { invoiceId: row.id });
     }
-    await saveLines(row, finalizeInvoice(row.kind, row.period, kept, row.roundingUnit), tx);
-    await audit(user, row, input ? 'line_added' : 'line_deleted', tx);
-    return dto(row, tx);
-  });
-}
+    const buildings = new Map<string, { building: BuildingModel; context: BillingContext }>();
 
-async function lockRooms(rows: InvoiceModel[], tx: Transaction) {
-  const links = await sequelize.query<{ roomId: string }>('SELECT DISTINCT m.room_id AS "roomId" FROM invoice_meter_readings l JOIN meter_readings r ON r.id=l.reading_id JOIN meters m ON m.id=r.meter_id WHERE l.invoice_id IN (:ids)', { replacements: { ids: rows.map(r => r.id) }, type: QueryTypes.SELECT, transaction: tx });
-  const ids = [...new Set([...rows.map(r => r.roomId), ...links.map(l => l.roomId)])].sort();
-  await RoomModel.findAll({ where: { id: ids }, order: [['id', 'ASC']], lock: tx.LOCK.UPDATE, transaction: tx });
-}
+    for (const buildingId of new Set(rows.map((row) => row.buildingId))) {
+      const building = await findBuilding(user, buildingId, 'issue', transaction);
 
-export async function issueInvoices(user: StayUser, ids: string[]): Promise<StayInvoice[]> {
-  return auditedTransaction(async tx => {
-    const rows = await Promise.all([...new Set(ids)].sort().map(id => find(user, id, 'issue', tx)));
-    await lockRooms(rows, tx);
-    for (const row of rows) await row.reload({ transaction: tx, lock: tx.LOCK.UPDATE });
-    for (const row of [...rows].sort((a,b) => a.buildingId.localeCompare(b.buildingId) || a.period.localeCompare(b.period))) {
-      if (row.status !== 'draft') fail('invoice_not_draft');
-      const b = await building(user, row.buildingId, 'issue', tx);
-      const stale = await sequelize.query('SELECT 1 FROM invoice_meter_readings l JOIN meter_readings r ON r.id=l.reading_id WHERE l.invoice_id=:id AND l.reading_value<>r.reading LIMIT 1', { replacements: { id: row.id }, transaction: tx, type: QueryTypes.SELECT });
-      if (stale.length) fail('invoice_readings_changed_refresh_required');
-      const lines = await InvoiceLineModel.findAll({ where: { invoiceId: row.id }, transaction: tx });
-      if (lines.reduce((sum,l) => sum + l.amount, 0) !== row.total) fail('invoice_total_mismatch');
-      // ON CONFLICT waits for concurrent creators; SELECT FOR UPDATE serializes allocation.
-      await sequelize.query('INSERT INTO invoice_sequences(id,building_id,period,last_number) VALUES(:id,:buildingId,:period,0) ON CONFLICT(building_id,period) DO NOTHING', { replacements: { id: randomUUID(), buildingId: row.buildingId, period: row.period }, transaction: tx });
-      const seq = await InvoiceSequenceModel.findOne({ where: { buildingId: row.buildingId, period: row.period }, lock: tx.LOCK.UPDATE, transaction: tx, rejectOnEmpty: true });
-      if (seq.lastNumber >= 999) fail('invoice_sequence_exhausted');
-      await seq.update({ lastNumber: seq.lastNumber + 1 }, { transaction: tx });
-      await row.update({ code: formatInvoiceCode(b.code, row.period, seq.lastNumber), status: 'issued', issuedOn: row.kind === 'move_in' ? isoDateInTimeZone(new Date()) : day(row.period, b.issueDay ?? (await billingDefaults()).issueDay) }, { transaction: tx });
-      await sequelize.query("UPDATE meter_readings SET status='locked', version=version+1 WHERE id IN (SELECT reading_id FROM invoice_meter_readings WHERE invoice_id=:id) AND status<>'locked'", { replacements: { id: row.id }, transaction: tx });
-      await audit(user, row, 'issued', tx);
+      buildings.set(buildingId, { building, context: await billingContext(building, transaction) });
     }
-    return Promise.all(rows.map(r => dto(r, tx)));
+    const contracts = await ContractModel.findAll({
+      where: { id: { [Op.in]: rows.map((row) => row.contractId) } },
+      attributes: ['id', 'startDate'],
+      transaction,
+    });
+    const roomCodes = new Map(rooms.map((room) => [room.id, room.code]));
+    const now = today();
+    const planned = rows.map((row) => {
+      const target = buildings.get(row.buildingId);
+
+      if (!target) throw new NotFound();
+      const schedule = invoiceSchedule({
+        kind: row.kind,
+        period: row.period,
+        issueDay: target.context.issueDay,
+        dueDay: target.context.dueDay,
+        today: now,
+        eventDate: contracts.find((contract) => contract.id === row.contractId)?.startDate,
+      });
+
+      return {
+        row,
+        building: target.building,
+        schedule,
+        codePeriod: invoiceCodePeriod(row.kind, row.period, schedule.issuedOn),
+      };
+    });
+
+    // Sequence rows are locked in (building, period) order; numbers follow room codes.
+    planned.sort(
+      (a, b) =>
+        a.row.buildingId.localeCompare(b.row.buildingId) ||
+        a.codePeriod.localeCompare(b.codePeriod) ||
+        (roomCodes.get(a.row.roomId) ?? '').localeCompare(roomCodes.get(b.row.roomId) ?? '', 'vi', {
+          numeric: true,
+        }) ||
+        a.row.id.localeCompare(b.row.id),
+    );
+    for (const { row, building, schedule, codePeriod } of planned) {
+      const code = await nextCode(building.id, building.code, codePeriod, transaction);
+
+      await row.update(
+        { status: 'issued', code, issuedOn: schedule.issuedOn, dueOn: schedule.dueOn },
+        { transaction },
+      );
+      await auditInvoice(row, 'issued', transaction);
+    }
+    for (const reading of readings)
+      if (reading.status !== 'locked') await reading.update({ status: 'locked' }, { transaction });
+    const data = await summaries(rows, transaction);
+    const total = data.reduce((sum, row) => sum + row.total, 0);
+
+    setAuditChanges({
+      invoiceIds: unique,
+      buildingIds: [...buildings.keys()],
+      count: data.length,
+      total,
+    });
+    return { invoices: data, count: data.length, total };
   });
 }
 
-export async function voidInvoice(user: StayUser, id: string, reason: string): Promise<StayInvoice> {
-  return auditedTransaction(async tx => {
-    const row = await find(user, id, 'void', tx);
-    await lockRooms([row], tx);
-    await row.reload({ transaction: tx, lock: tx.LOCK.UPDATE });
-    if (row.status !== 'issued' || row.paidTotal !== 0 || !reason.trim()) fail('invoice_cannot_void');
-    await row.update({ status: 'void', voidReason: reason.trim() }, { transaction: tx });
-    await sequelize.query("UPDATE meter_readings SET status='draft', version=version+1 WHERE id IN (SELECT reading_id FROM invoice_meter_readings WHERE invoice_id=:id) AND NOT EXISTS (SELECT 1 FROM invoice_meter_readings l JOIN invoices i ON i.id=l.invoice_id WHERE l.reading_id=meter_readings.id AND i.status IN ('issued','partially_paid','paid'))", { replacements: { id }, transaction: tx });
-    await audit(user, row, 'voided', tx);
-    return dto(row, tx);
+/**
+ * Voids a draft or an issued invoice without payments (reason required). Readings no other
+ * issued invoice uses are unlocked, and the period can be drafted again.
+ */
+export async function voidInvoice(
+  user: StayUser,
+  id: string,
+  input: InvoiceVoidInput,
+): Promise<StayInvoice> {
+  return auditedTransaction(async (transaction) => {
+    const found = await findInvoice(user, id, 'void', transaction);
+    await lockRooms([found], transaction);
+    const row = await found.reload({ transaction, lock: transaction.LOCK.UPDATE });
+    const links = await InvoiceMeterReadingModel.findAll({
+      where: { invoiceId: row.id },
+      transaction,
+    });
+
+    if (input.version !== undefined) assertVersion(row.version, input.version);
+    if (row.status === 'void') conflict('invoice_already_void');
+    if (row.paidTotal !== 0 || (row.status !== 'draft' && row.status !== 'issued'))
+      conflict('invoice_has_payments');
+    await row.update(
+      { status: 'void', voidReason: input.reason, voidedAt: new Date() },
+      { transaction },
+    );
+    const readingIds = links.map((link) => link.readingId);
+    const others = await InvoiceMeterReadingModel.findAll({
+      where: { readingId: { [Op.in]: readingIds }, invoiceId: { [Op.ne]: row.id } },
+      transaction,
+    });
+    const stillIssued = await InvoiceModel.findAll({
+      where: {
+        id: { [Op.in]: others.map((link) => link.invoiceId) },
+        status: { [Op.in]: ISSUED_STATUSES },
+      },
+      attributes: ['id'],
+      transaction,
+    });
+    const keep = new Set(
+      others
+        .filter((link) => stillIssued.some((invoice) => invoice.id === link.invoiceId))
+        .map((link) => link.readingId),
+    );
+    const readings = await MeterReadingModel.findAll({
+      where: { id: { [Op.in]: readingIds.filter((readingId) => !keep.has(readingId)) } },
+      transaction,
+    });
+
+    for (const reading of readings)
+      if (reading.status === 'locked') await reading.update({ status: 'draft' }, { transaction });
+    setAuditChanges({
+      ...(await auditInvoice(row, 'voided', transaction)),
+      unlockedReadings: readings.length,
+    });
+    return invoiceDto(row, transaction);
   });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Extension points                                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * ST-15: call inside the payment transaction after locking the invoice row with the new sum of
+ * non-reversed payments. Status is always recomputed from `paidTotal` (never set by hand).
+ */
+export async function applyInvoicePaidTotal(
+  row: InvoiceModel,
+  paidTotal: number,
+  transaction: Transaction,
+): Promise<InvoiceModel> {
+  if (!ISSUED_STATUSES.includes(row.status)) conflict('invoice_not_issued');
+  let status: InvoiceStatus;
+
+  try {
+    status = invoicePaymentStatus(row.total, paidTotal);
+  } catch (error) {
+    if (isBillingError(error)) throw new BaseError(error.message, 422, 'invalid_paid_total');
+    throw error;
+  }
+  return row.update({ paidTotal, status }, { transaction });
 }

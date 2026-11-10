@@ -8,7 +8,7 @@ import {
   sumVnd,
   type Vnd,
 } from '@stay/shared';
-import { BillingError } from './errors.js';
+import { BillingError, withBillingErrors } from './errors.js';
 import { meterConsumption } from './meter.js';
 import type { DayRatio } from './ratio.js';
 import {
@@ -19,7 +19,7 @@ import {
   type ManualLineInput,
   type UtilityInput,
 } from './types.js';
-import { requireCount, requireVnd } from './validate.js';
+import { requireCount, requireRoundingUnit, requireVnd } from './validate.js';
 
 function coverage(ratio: DayRatio): { coveredFrom?: string; coveredTo?: string } {
   return ratio.coveredFrom && ratio.coveredTo
@@ -147,6 +147,8 @@ export function utilityLines(utilities: readonly UtilityInput[], period: Period)
         startReading: first.startReading,
         endReading: last.endReading,
         segments: usage.segments,
+        ...(utility.roomId ? { roomId: utility.roomId } : {}),
+        ...(utility.sourceEventId ? { sourceEventId: utility.sourceEventId } : {}),
       },
     };
   });
@@ -205,6 +207,56 @@ export function manualLines(lines: readonly ManualLineInput[], field: string): I
   });
 }
 
+export interface InvoiceTotals {
+  /** Sum of every line except rounding lines. */
+  subtotal: Vnd;
+  rounding: Vnd;
+  /** Subtotal rounded half-up to `roundingUnit`. */
+  total: Vnd;
+  /** The "Làm tròn" line to append (`null` when `rounding` is 0). */
+  roundingLine: InvoiceLine | null;
+}
+
+/**
+ * Totals of `lines` (stored snapshot lines included); previous rounding lines are ignored and a
+ * new rounding line is returned, so the sum of the lines plus that line equals the total.
+ */
+export function invoiceTotals(
+  lines: readonly Pick<InvoiceLine, 'type' | 'amount'>[],
+  roundingUnit: Vnd,
+): InvoiceTotals {
+  return withBillingErrors(() => {
+    const unit = requireRoundingUnit(roundingUnit);
+    const subtotal = sumVnd(
+      lines.filter((line) => line.type !== 'rounding').map((line) => line.amount),
+    );
+    const total = roundToUnit(subtotal, unit);
+    const rounding = total - subtotal;
+
+    return {
+      subtotal,
+      rounding,
+      total,
+      roundingLine:
+        rounding === 0
+          ? null
+          : {
+              type: 'rounding',
+              serviceId: null,
+              description: { key: LINE_DESCRIPTION_KEYS.rounding, params: { roundingUnit: unit } },
+              period: null,
+              quantity: 1,
+              unit: null,
+              unitPrice: rounding,
+              ratioNum: null,
+              ratioDen: null,
+              amount: rounding,
+              meta: {},
+            },
+    };
+  });
+}
+
 /** Adds the rounding line and totals; the sum of `lines` always equals `total`. */
 export function finalizeInvoice(
   kind: InvoiceKind,
@@ -212,28 +264,15 @@ export function finalizeInvoice(
   lines: InvoiceLine[],
   roundingUnit: Vnd,
 ): ComputedInvoice {
-  const subtotal = sumVnd(lines.map((line) => line.amount));
-  const total = roundToUnit(subtotal, roundingUnit);
-  const rounding = total - subtotal;
-  const allLines: InvoiceLine[] =
-    rounding === 0
-      ? lines
-      : [
-          ...lines,
-          {
-            type: 'rounding',
-            serviceId: null,
-            description: { key: LINE_DESCRIPTION_KEYS.rounding, params: { roundingUnit } },
-            period: null,
-            quantity: 1,
-            unit: null,
-            unitPrice: rounding,
-            ratioNum: null,
-            ratioDen: null,
-            amount: rounding,
-            meta: {},
-          },
-        ];
+  const { subtotal, rounding, total, roundingLine } = invoiceTotals(lines, roundingUnit);
 
-  return { kind, period, lines: allLines, subtotal, rounding, total, roundingUnit };
+  return {
+    kind,
+    period,
+    lines: roundingLine ? [...lines, roundingLine] : lines,
+    subtotal,
+    rounding,
+    total,
+    roundingUnit,
+  };
 }

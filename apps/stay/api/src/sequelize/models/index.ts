@@ -1,6 +1,3 @@
-import { InvoiceSequenceModel, initInvoiceSequenceModel } from './invoice-sequence.model.js';
-import { InvoiceLineModel, initInvoiceLineModel } from './invoice-line.model.js';
-import { InvoiceModel, initInvoiceModel } from './invoice.model.js';
 import { sequelize } from '@/sequelize/index.js';
 import { AuditLogModel, initAuditLogModel } from './audit-log.model.js';
 import { BuildingModel, initBuildingModel } from './building.model.js';
@@ -20,6 +17,13 @@ import { ExpenseModel, initExpenseModel } from './expense.model.js';
 import { ExpenseCategoryModel, initExpenseCategoryModel } from './expense-category.model.js';
 import { FileModel, initFileModel } from './file.model.js';
 import { IdempotencyRecordModel, initIdempotencyRecordModel } from './idempotency-record.model.js';
+import { InvoiceModel, initInvoiceModel } from './invoice.model.js';
+import { InvoiceLineModel, initInvoiceLineModel } from './invoice-line.model.js';
+import {
+  InvoiceMeterReadingModel,
+  initInvoiceMeterReadingModel,
+} from './invoice-meter-reading.model.js';
+import { InvoiceSequenceModel, initInvoiceSequenceModel } from './invoice-sequence.model.js';
 import { initMeterModel, MeterModel } from './meter.model.js';
 import { initMeterReadingModel, MeterReadingModel } from './meter-reading.model.js';
 import { initRoomModel, RoomModel } from './room.model.js';
@@ -61,6 +65,10 @@ initUploadTicketModel(sequelize);
 initTenantModel(sequelize);
 initTenantDocumentModel(sequelize);
 initVehicleModel(sequelize);
+initInvoiceModel(sequelize);
+initInvoiceLineModel(sequelize);
+initInvoiceSequenceModel(sequelize);
+initInvoiceMeterReadingModel(sequelize);
 
 BuildingMemberModel.belongsTo(BuildingModel, { foreignKey: 'buildingId', as: 'building' });
 BuildingMemberModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user' });
@@ -94,6 +102,10 @@ export {
   ExpenseModel,
   FileModel,
   IdempotencyRecordModel,
+  InvoiceLineModel,
+  InvoiceMeterReadingModel,
+  InvoiceModel,
+  InvoiceSequenceModel,
   MeterModel,
   MeterReadingModel,
   RoomDefaultServiceModel,
@@ -107,12 +119,3 @@ export {
   UserModel,
   VehicleModel,
 };
-
-initInvoiceModel(sequelize);
-export { InvoiceModel };
-
-initInvoiceLineModel(sequelize);
-export { InvoiceLineModel };
-
-initInvoiceSequenceModel(sequelize);
-export { InvoiceSequenceModel };

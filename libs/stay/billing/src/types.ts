@@ -39,8 +39,6 @@ export interface MeterSegmentSnapshot {
 
 /** JSON stored in `invoice_lines.meta`. */
 export interface InvoiceLineMeta {
-  sourceEventId?: string;
-  roomId?: string;
   serviceCode?: string;
   serviceKind?: ServiceKind;
   /** First and last day billed by a prorated rent/service line (inclusive). */
@@ -55,6 +53,10 @@ export interface InvoiceLineMeta {
   referenceInvoiceId?: string;
   /** Refund: the invoice that prepaid the refunded days. */
   sourceInvoiceId?: string;
+  /** Metered line of a room the contract has left (room change): that room. */
+  roomId?: string;
+  /** Contract event that produced the line (room change closing readings). */
+  sourceEventId?: string;
 }
 
 /** One row of `invoice_lines`: a complete snapshot, never re-read from price tables. */
@@ -117,6 +119,10 @@ export interface UtilityInput {
   unitPrice: Vnd;
   /** One segment normally; two when the meter was replaced during the window. */
   segments: MeterSegment[];
+  /** Set for the closing segment of a room the contract moved out of; copied to `meta`. */
+  roomId?: string;
+  /** Contract event of that room change; copied to `meta`. */
+  sourceEventId?: string;
 }
 
 export type ManualLineInput =

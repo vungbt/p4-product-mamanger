@@ -1,4 +1,3 @@
-import { createMoveInForActivation } from '../invoices/invoices.service.js';
 import {
   BaseError,
   buildPaginationMeta,
@@ -10,7 +9,6 @@ import {
   setAuditChanges,
 } from '@p4/server-core';
 import type { ListQuery, PaginationMeta } from '@p4/shared';
-import { computeMoveInInvoice, type FixedServiceInput } from '@stay/billing';
 import {
   type ContractInput,
   type ContractStatus,
@@ -24,7 +22,6 @@ import { accessibleBuildingIds, canAccessRecord } from '@/middlewares/ability.mi
 import type { ContractAttributes } from '@/sequelize/models/contract.model.js';
 import {
   BuildingModel,
-  BuildingServicePriceModel,
   ContractEventModel,
   ContractModel,
   ContractOccupantModel,
@@ -44,9 +41,9 @@ import { auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { assertVersion } from '@/shared/input.js';
 import { runIdempotent } from '@/shared/persistence.js';
 import type { ModelOrder } from '@/types/database.js';
-import { resolveBuildingPrice } from '../buildings/building-prices.service.js';
+import { billingContext, computeMoveInDraft } from '../invoices/invoices.billing.js';
+import { createMoveInForActivation } from '../invoices/invoices.service.js';
 import { latestMeterReadings } from '../rooms/rooms.usage.js';
-import { billingDefaults } from '../settings/settings.service.js';
 import { attachableFile, signedFileUrl } from '../uploads/uploads.service.js';
 
 import { contractFactsAt } from './contracts.resolvers.js';
@@ -460,41 +457,21 @@ export async function updateContract(
 
 export async function moveInPreview(user: StayUser, id: string): Promise<MoveInPreview> {
   const row = await findContract(user, id, 'read');
+  const building = await BuildingModel.findByPk(row.buildingId, { rejectOnEmpty: true });
+  const room = await RoomModel.findByPk(row.roomId);
+  // Same computation (start-date prices, occupants, vehicles) as the persisted move-in invoice.
+  const draft = await auditedTransaction(async (transaction) =>
+    computeMoveInDraft(await billingContext(building, transaction), row, transaction),
+  );
+  const invoice = draft.invoice;
+  const lines = invoice.lines.filter((line) => line.type !== 'rounding');
+  const quantity = (kind: string) =>
+    lines.find((line) => line.meta.serviceKind === kind)?.quantity ?? null;
   const contract = await contractDto(row);
   const activeOnStart = (link: { fromDate: string; toDate: string | null }) =>
     link.fromDate <= row.startDate && (!link.toDate || link.toDate > row.startDate);
-  const building = await BuildingModel.findByPk(row.buildingId);
-  const room = await RoomModel.findByPk(row.roomId);
-  const prices = await BuildingServicePriceModel.findAll({ where: { buildingId: row.buildingId } });
-  const definitions = await ServiceDefinitionModel.findAll({
-    where: { id: { [Op.in]: contract.services.filter(activeOnStart).map((s) => s.serviceId) } },
-  });
-  const services: FixedServiceInput[] = [];
-
-  for (const service of definitions) {
-    if (service.kind === 'electricity' || service.kind === 'water') continue;
-    services.push({
-      serviceId: service.id,
-      code: service.code,
-      name: service.name,
-      kind: service.kind,
-      unit: service.unit,
-      unitPrice: resolveBuildingPrice(
-        service.defaultPrice,
-        prices.filter((p) => p.serviceId === service.id),
-        row.startDate,
-      ).price,
-    });
-  }
-  const occupantCount = contract.occupants.filter(activeOnStart).length;
-  const vehicleCount = contract.vehicles.filter(activeOnStart).length;
-  const invoice = computeMoveInInvoice({
-    contract: row,
-    occupantCount,
-    vehicleCount,
-    services,
-    roundingUnit: building?.roundingUnit ?? (await billingDefaults()).roundingUnit,
-  });
+  const occupantCount = quantity('per_person') ?? contract.occupants.filter(activeOnStart).length;
+  const vehicleCount = quantity('per_vehicle') ?? contract.vehicles.filter(activeOnStart).length;
 
   return {
     ...selectFields(invoice, ['period', 'subtotal', 'rounding', 'total']),
@@ -517,7 +494,7 @@ export async function moveInPreview(user: StayUser, id: string): Promise<MoveInP
           ? 'Tiền phòng'
           : line.type === 'rounding'
             ? 'Làm tròn'
-            : (definitions.find((s) => s.id === line.serviceId)?.name ?? 'Dịch vụ'),
+            : String(line.description.params.name ?? 'Dịch vụ'),
     })),
   };
 }
@@ -598,7 +575,8 @@ export async function activateContract(user: StayUser, id: string): Promise<Stay
         { transaction },
       );
     await event(row, user, 'activated', transaction);
-    await createMoveInForActivation(user, row, transaction);
+    // ST-14: the move-in invoice is created as a draft from the same computation as the preview.
+    await createMoveInForActivation(row, transaction);
     return contractDto(row, transaction);
   });
 }

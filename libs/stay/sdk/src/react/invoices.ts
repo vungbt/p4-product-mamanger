@@ -1,0 +1,120 @@
+import {
+  keepPreviousData,
+  mutationOptions,
+  type QueryClient,
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import type { StaySdk } from '../shared/client.js';
+import { createInvoiceApi, type InvoiceListQuery } from '../shared/invoices.js';
+import { useStaySdk } from './provider.js';
+
+export const invoiceKeys = {
+  all: ['stay', 'invoices'] as const,
+  list: (query?: InvoiceListQuery) => ['stay', 'invoices', 'list', query ?? {}] as const,
+  detail: (id: string) => ['stay', 'invoices', 'detail', id] as const,
+  preview: (buildingId: string, period: string) =>
+    ['stay', 'invoices', 'preview', buildingId, period] as const,
+};
+
+export function invoiceQueryOptions(sdk: StaySdk) {
+  const api = createInvoiceApi(sdk);
+
+  return {
+    list: (query?: InvoiceListQuery) =>
+      queryOptions({
+        queryKey: invoiceKeys.list(query),
+        queryFn: ({ signal }) => api.list(query, signal),
+        placeholderData: keepPreviousData,
+      }),
+    detail: (id: string) =>
+      queryOptions({
+        queryKey: invoiceKeys.detail(id),
+        queryFn: ({ signal }) => api.detail(id, signal),
+        enabled: Boolean(id),
+      }),
+    preview: (buildingId: string, period: string) =>
+      queryOptions({
+        queryKey: invoiceKeys.preview(buildingId, period),
+        queryFn: ({ signal }) => api.preview(buildingId, period, signal),
+        enabled: Boolean(buildingId && period),
+        staleTime: 0,
+      }),
+  };
+}
+
+export function invoiceMutationOptions(sdk: StaySdk, client: QueryClient) {
+  const api = createInvoiceApi(sdk);
+  /** Invoices change room debts/recent invoices; issue and void lock/unlock readings. */
+  const refresh = (areas: string[]) => () =>
+    Promise.all(
+      ['invoices', 'rooms', ...areas].map((area) =>
+        client.invalidateQueries({ queryKey: ['stay', area] }),
+      ),
+    );
+
+  return {
+    createDrafts: () =>
+      mutationOptions({ mutationFn: api.createDrafts, retry: false, onSuccess: refresh([]) }),
+    addLine: () =>
+      mutationOptions({ mutationFn: api.addLine, retry: false, onSuccess: refresh([]) }),
+    deleteLine: () =>
+      mutationOptions({ mutationFn: api.deleteLine, retry: false, onSuccess: refresh([]) }),
+    issue: () =>
+      mutationOptions({
+        mutationFn: api.issue,
+        retry: false,
+        onSuccess: refresh(['readings', 'buildings', 'contracts']),
+      }),
+    void: () =>
+      mutationOptions({
+        mutationFn: api.void,
+        retry: false,
+        onSuccess: refresh(['readings', 'contracts']),
+      }),
+    createMoveIn: () =>
+      mutationOptions({
+        mutationFn: api.createMoveIn,
+        retry: false,
+        onSuccess: refresh(['contracts']),
+      }),
+  };
+}
+
+export function useInvoices(query?: InvoiceListQuery) {
+  return useQuery(invoiceQueryOptions(useStaySdk()).list(query));
+}
+
+export function useInvoice(id: string) {
+  return useQuery(invoiceQueryOptions(useStaySdk()).detail(id));
+}
+
+export function useBillingPreview(buildingId: string, period: string) {
+  return useQuery(invoiceQueryOptions(useStaySdk()).preview(buildingId, period));
+}
+
+export function useCreateInvoiceDrafts() {
+  return useMutation(invoiceMutationOptions(useStaySdk(), useQueryClient()).createDrafts());
+}
+
+export function useAddInvoiceLine() {
+  return useMutation(invoiceMutationOptions(useStaySdk(), useQueryClient()).addLine());
+}
+
+export function useDeleteInvoiceLine() {
+  return useMutation(invoiceMutationOptions(useStaySdk(), useQueryClient()).deleteLine());
+}
+
+export function useIssueInvoices() {
+  return useMutation(invoiceMutationOptions(useStaySdk(), useQueryClient()).issue());
+}
+
+export function useVoidInvoice() {
+  return useMutation(invoiceMutationOptions(useStaySdk(), useQueryClient()).void());
+}
+
+export function useCreateMoveInInvoice() {
+  return useMutation(invoiceMutationOptions(useStaySdk(), useQueryClient()).createMoveIn());
+}

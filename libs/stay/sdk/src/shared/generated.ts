@@ -670,6 +670,50 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/buildings/{buildingId}/billing/{period}/drafts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Tạo/làm mới bản nháp hoá đơn kỳ
+     * @description Bắt buộc `Idempotency-Key`: gọi lại cùng key trả kết quả cũ (`replayed: true`), không tạo trùng. Làm mới tính lại bản nháp (giữ dòng phụ thu/giảm trừ thêm tay), không bao giờ tính lại hoá đơn đã phát hành. Hợp đồng bị loại không có hoá đơn. Trả bản xem trước sau khi ghi kèm số bản nháp tạo mới/làm mới.
+     *
+     *     **Quyền:** `create:Invoice`.
+     */
+    post: operations['post_api_buildings_buildingId_billing_period_drafts'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/buildings/{buildingId}/billing/{period}/preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Xem trước lập hoá đơn kỳ
+     * @description `period` là kỳ hoá đơn M (YYYY-MM): tiền phòng và dịch vụ của M, điện nước tiêu thụ trong M−1. Liệt kê hợp đồng active/ending có ngày ở trong M: đủ điều kiện (tổng dự kiến, gồm cả dòng thêm tay của bản nháp) hoặc bị loại kèm `reason` (`missing_reading`, `missing_meter`, `negative_consumption`, `already_issued`, `move_in_invoice`, `no_occupancy`, `invalid_data`). Không ghi dữ liệu. Ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `read:Invoice`.
+     */
+    get: operations['get_api_buildings_buildingId_billing_period_preview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/buildings/{buildingId}/readings': {
     parameters: {
       query?: never;
@@ -933,7 +977,7 @@ export interface paths {
     put?: never;
     /**
      * Kích hoạt hợp đồng
-     * @description Khoá phòng, kiểm tra người ở và chỉ số, ghi nhận cọc đã thu. Không tạo hoá đơn.
+     * @description Khoá phòng, kiểm tra người ở và chỉ số, ghi nhận cọc đã thu và tạo hoá đơn nhận phòng nháp (cùng cách tính với move-in-preview).
      *
      *     **Quyền:** `update:Contract`.
      */
@@ -984,6 +1028,28 @@ export interface paths {
      *     **Quyền:** `manage:Deposit`.
      */
     post: operations['post_api_contracts_id_deposits'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/move-in-invoice': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Tạo hoá đơn nhận phòng
+     * @description Cho hợp đồng active/ending chưa có hoá đơn nhận phòng (409 `move_in_invoice_exists`) và chưa có hoá đơn kỳ của tháng bắt đầu (409 `period_already_invoiced`). Tạo bản nháp từ cùng cách tính với move-in-preview.
+     *
+     *     **Quyền:** `create:Invoice`.
+     */
+    post: operations['post_api_contracts_id_move_in_invoice'];
     delete?: never;
     options?: never;
     head?: never;
@@ -1306,6 +1372,138 @@ export interface paths {
     get: operations['get_api_files_id_stub'];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/invoices': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh sách hoá đơn
+     * @description Lọc buildingId, period, kind, status, roomId, contractId, overdue=true|false (quá hạn suy ra: issued/partially_paid, quá dueOn theo Asia/Ho_Chi_Minh, còn nợ). `q` tìm theo mã hoá đơn hoặc mã phòng. Người thuê chỉ thấy hoá đơn đã phát hành của hợp đồng mình.
+     *
+     *     **Quyền:** `read:Invoice`.
+     */
+    get: operations['get_api_invoices'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/invoices/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chi tiết hoá đơn
+     * @description Kèm các dòng snapshot (đơn giá, tỷ lệ ngày, chỉ số đầu/cuối, dòng làm tròn); tổng các dòng luôn bằng `total`. Ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `read:Invoice`.
+     */
+    get: operations['get_api_invoices_id'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/invoices/{id}/lines': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thêm phụ thu/giảm trừ
+     * @description Chỉ bản nháp (409 `invoice_not_draft`). `amount` > 0; giảm trừ lưu âm. `reason` bắt buộc. Dòng làm tròn và tổng được tính lại. `version` tuỳ chọn: lệch trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `update:Invoice`.
+     */
+    post: operations['post_api_invoices_id_lines'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/invoices/{id}/lines/{lineId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Xoá dòng thêm tay
+     * @description Chỉ bản nháp và dòng `manual` (409 `invoice_line_not_manual`). Dòng làm tròn và tổng được tính lại.
+     *
+     *     **Quyền:** `update:Invoice`.
+     */
+    delete: operations['delete_api_invoices_id_lines_lineId'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/invoices/{id}/void': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Void hoá đơn
+     * @description Chỉ chủ trọ. Bản nháp hoặc hoá đơn đã phát hành chưa có thanh toán (`paidTotal = 0`, ngược lại 409 `invoice_has_payments`); `reason` bắt buộc. Mở khoá chỉ số không còn hoá đơn phát hành nào dùng; kỳ được lập lại bản nháp mới.
+     *
+     *     **Quyền:** `void:Invoice`.
+     */
+    post: operations['post_api_invoices_id_void'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/invoices/issue': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Phát hành hoá đơn
+     * @description Gửi `ids` (1–400 bản nháp). Trong một transaction: khoá phòng, cấp mã `{mã toà}-{YYYYMM}-{nnn}` từ `invoice_sequences` (khoá dòng, không trùng khi phát hành song song; nhận phòng/thanh lý dùng kỳ của ngày phát hành), đặt `issuedOn`/`dueOn` theo kỳ thu của toà/hệ thống, khoá chỉ số đã dùng. 409 `invoice_not_draft`, `invoice_readings_changed` (chỉ số đổi sau khi tạo nháp: làm mới trước), `invoice_sequence_exhausted`.
+     *
+     *     **Quyền:** `issue:Invoice`.
+     */
+    post: operations['post_api_invoices_issue'];
     delete?: never;
     options?: never;
     head?: never;
@@ -1984,6 +2182,59 @@ export interface components {
       updatedAt: string;
       value: string;
     };
+    BillingDraftResult: {
+      buildingId: string;
+      created: number;
+      dueDate: string;
+      eligibleCount: number;
+      excludedCount: number;
+      expectedTotal: number;
+      issueDate: string;
+      period: string;
+      refreshed: number;
+      replayed: boolean;
+      rows: components['schemas']['BillingPreviewRow'][];
+      utilityPeriod: string;
+    };
+    BillingPreview: {
+      buildingId: string;
+      dueDate: string;
+      eligibleCount: number;
+      excludedCount: number;
+      expectedTotal: number;
+      issueDate: string;
+      period: string;
+      rows: components['schemas']['BillingPreviewRow'][];
+      utilityPeriod: string;
+    };
+    BillingPreviewRow: {
+      contractCode: string;
+      contractId: string;
+      eligible: boolean;
+      invoiceId: string | null;
+      /** @enum {string|null} */
+      invoiceStatus: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void' | null;
+      /** @enum {string|null} */
+      reason:
+        | 'already_issued'
+        | 'invalid_data'
+        | 'missing_meter'
+        | 'missing_reading'
+        | 'move_in_invoice'
+        | 'negative_consumption'
+        | 'no_occupancy'
+        | null;
+      reasonDetail: {
+        /** @enum {string} */
+        kind?: 'electricity' | 'water';
+        message?: string;
+        period?: string;
+      } | null;
+      roomCode: string;
+      roomId: string;
+      subtotal: number | null;
+      total: number | null;
+    };
     BillingSettings: {
       dueDay: number;
       issueDay: number;
@@ -2161,6 +2412,25 @@ export interface components {
       /** @enum {string} */
       field: 'idNumber' | 'phone';
       tenantId: string | null;
+    };
+    InvoiceIssueInput: {
+      ids: string[];
+    };
+    InvoiceIssueResult: {
+      count: number;
+      invoices: components['schemas']['StayInvoiceSummary'][];
+      total: number;
+    };
+    InvoiceLineInput: {
+      amount: number;
+      reason: string;
+      /** @enum {string} */
+      type: 'discount' | 'surcharge';
+      version?: number;
+    };
+    InvoiceVoidInput: {
+      reason: string;
+      version?: number;
     };
     MeterReadingInput: {
       confirmHighConsumption?: boolean;
@@ -2449,6 +2719,110 @@ export interface components {
       active: boolean;
       id: string;
       name: string;
+      version: number;
+    };
+    StayInvoice: {
+      buildingId: string;
+      code: string | null;
+      contractCode: string;
+      contractId: string;
+      createdAt: string;
+      dueOn: string;
+      id: string;
+      issuedOn: string | null;
+      /** @enum {string} */
+      kind: 'monthly' | 'move_in' | 'settlement';
+      lines: components['schemas']['StayInvoiceLine'][];
+      overdue: boolean;
+      paidTotal: number;
+      period: string;
+      remaining: number;
+      roomCode: string;
+      roomId: string;
+      rounding: number;
+      roundingUnit: number;
+      /** @enum {string} */
+      status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
+      subtotal: number;
+      total: number;
+      version: number;
+      voidedAt: string | null;
+      voidReason: string | null;
+    };
+    StayInvoiceLine: {
+      amount: number;
+      description: components['schemas']['StayInvoiceLineDescription'];
+      id: string;
+      manual: boolean;
+      meta: components['schemas']['StayInvoiceLineMeta'];
+      period: string | null;
+      quantity: number;
+      ratioDen: number | null;
+      ratioNum: number | null;
+      serviceId: string | null;
+      /** @enum {string} */
+      type:
+        | 'adjustment'
+        | 'deposit'
+        | 'discount'
+        | 'electricity'
+        | 'refund'
+        | 'rent'
+        | 'rounding'
+        | 'service'
+        | 'surcharge'
+        | 'water';
+      unit: string | null;
+      unitPrice: number | null;
+    };
+    StayInvoiceLineDescription: {
+      key: string;
+      params: {
+        [key: string]: string | number;
+      };
+    };
+    StayInvoiceLineMeta: {
+      coveredFrom?: string;
+      coveredTo?: string;
+      endReading?: number;
+      reason?: string;
+      referenceInvoiceId?: string;
+      roomId?: string;
+      segments?: components['schemas']['StayInvoiceMeterSegment'][];
+      serviceCode?: string;
+      serviceKind?: string;
+      sourceEventId?: string;
+      sourceInvoiceId?: string;
+      startReading?: number;
+    };
+    StayInvoiceMeterSegment: {
+      consumption: number;
+      endReading: number;
+      meterId: string | null;
+      startReading: number;
+    };
+    StayInvoiceSummary: {
+      buildingId: string;
+      code: string | null;
+      contractCode: string;
+      contractId: string;
+      createdAt: string;
+      dueOn: string;
+      id: string;
+      issuedOn: string | null;
+      /** @enum {string} */
+      kind: 'monthly' | 'move_in' | 'settlement';
+      overdue: boolean;
+      paidTotal: number;
+      period: string;
+      remaining: number;
+      roomCode: string;
+      roomId: string;
+      rounding: number;
+      /** @enum {string} */
+      status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
+      subtotal: number;
+      total: number;
       version: number;
     };
     StayMe: {
@@ -6292,6 +6666,70 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  post_api_buildings_buildingId_billing_period_drafts: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description Bắt buộc; gọi lại cùng key và kỳ trả kết quả cũ, không tạo trùng. */
+        'Idempotency-Key': string;
+      };
+      path: {
+        buildingId: string;
+        period: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['BillingDraftResult'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_buildings_buildingId_billing_period_preview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        buildingId: string;
+        period: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['BillingPreview'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_buildings_buildingId_readings: {
     parameters: {
       query: {
@@ -7026,6 +7464,36 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  post_api_contracts_id_move_in_invoice: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayInvoice'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_contracts_id_move_in_preview: {
     parameters: {
       query?: never;
@@ -7716,6 +8184,209 @@ export interface operations {
       };
       400: components['responses']['ValidationError'];
       404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_invoices: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+        contractId?: string;
+        kind?: 'monthly' | 'move_in' | 'settlement';
+        overdue?: 'false' | 'true';
+        page?: number;
+        pageSize?: number;
+        period?: string;
+        q?: string;
+        roomId?: string;
+        sortBy?: 'createdAt' | 'period' | 'code' | 'total' | 'dueOn' | 'issuedOn';
+        sortOrder?: 'asc' | 'desc';
+        status?: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayInvoiceSummary'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_invoices_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayInvoice'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_invoices_id_lines: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InvoiceLineInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayInvoice'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  delete_api_invoices_id_lines_lineId: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+        lineId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayInvoice'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_invoices_id_void: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InvoiceVoidInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayInvoice'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_invoices_issue: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InvoiceIssueInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['InvoiceIssueResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };

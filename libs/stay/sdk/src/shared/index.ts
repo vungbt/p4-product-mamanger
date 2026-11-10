@@ -12,6 +12,7 @@ export * from './deposits.js';
 export { ApiSdkError, getErrorMessage, getFieldError, unwrap } from './errors.js';
 export * from './expenses.js';
 export type { components, operations, paths } from './generated.js';
+export * from './invoices.js';
 export * from './readings.js';
 export {
   createRoomApi,
