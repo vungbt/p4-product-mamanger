@@ -10,8 +10,9 @@ Enums, types and small helpers shared by the Stay API and web. No React, no DB.
 - **Business dates** (`YYYY-MM-DD`, no time zone): `isIsoDate`, `parseIsoDate`, `addDays`, `compareIsoDates`, `daysBetweenInclusive`, `periodOfIsoDate`, `firstDayOfPeriod`, `lastDayOfPeriod`, and `isoDateInTimeZone` / `periodOfDate` for an instant in `Asia/Ho_Chi_Minh` (`STAY_TIME_ZONE`).
 - **Money** (integer VND, never floats): `isVnd`, `assertVnd`, `divideRoundHalfUp`, `multiplyDivideRoundHalfUp` (exact, via `bigint`), `roundToUnit`, `sumVnd`, `DEFAULT_ROUNDING_UNIT` (1.000đ). Half-up rounds halves away from zero (`-2.5 → -3`).
 - **Invoice code**: `formatInvoiceCode('A', '2026-11', 1) === 'A-202611-001'`, `parseInvoiceCode`.
+- **VietQR**: `buildVietQrPayload({ bin, accountNumber, amount?, content? })` builds the NAPAS EMVCo payload (tag 38 `A000000727` + `QRIBFTTA`, VND, `VN`, purpose in 62/08, CRC-16/CCITT-FALSE in tag 63 via `crc16Ccitt`); `toTransferText` strips diacritics for transfer content.
 - **Valibot**: `PeriodSchema`, `IsoDateSchema`, `VndSchema`, `NonNegativeVndSchema`.
 
-Malformed values throw `StayValueError` with a `code` (`INVALID_PERIOD`, `INVALID_DATE`, `INVALID_AMOUNT`, `INVALID_ROUNDING_UNIT`, `AMOUNT_OUT_OF_RANGE`, `INVALID_INVOICE_CODE`).
+Malformed values throw `StayValueError` with a `code` (`INVALID_PERIOD`, `INVALID_DATE`, `INVALID_AMOUNT`, `INVALID_ROUNDING_UNIT`, `AMOUNT_OUT_OF_RANGE`, `INVALID_INVOICE_CODE`, `INVALID_QR_FIELD`).
 
 Build with `pnpm --filter @stay/shared build`; test with `pnpm --filter @stay/shared test` (`node --test` on `dist`).

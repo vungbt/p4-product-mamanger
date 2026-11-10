@@ -1,0 +1,13 @@
+{
+  "unsaved": {
+    "title": "Rời trang khi chưa lưu?",
+    "description": "Các thay đổi bạn vừa nhập sẽ bị mất.",
+    "leave": "Rời trang",
+    "stay": "Ở lại"
+  },
+  "conflict": {
+    "title": "Dữ liệu đã thay đổi, tải lại?",
+    "description": "Người khác vừa lưu bản mới hơn. Tải lại để xem dữ liệu mới nhất; thay đổi bạn đang nhập sẽ bị bỏ.",
+    "reload": "Tải lại"
+  }
+}

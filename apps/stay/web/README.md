@@ -22,7 +22,8 @@ pnpm --filter @stay/web build && pnpm --filter @stay/web preview   # bản build
 | `src/libraries/ability.tsx` | `createAbilityReact(stayAbilityKit)` + rule từ `GET /api/me/capabilities` |
 | `src/libraries/buildings` | `BuildingProvider` (`useBuildings`), `BuildingSelector` |
 | `src/routing` | `appRoutes` (route có `ability`, menu sinh từ đây), guard, `AppRoutes` |
-| `src/modules` | Màn: login (C-01), layout (C-02), errors (C-03), overview (O-01 giữ chỗ), placeholder "Sắp có" |
+| `src/modules` | Màn: login (C-01), layout (C-02), errors (C-03), overview (O-01 giữ chỗ), settings (Cài đặt, O-02 `/settings/services`, O-03 `/settings/billing`), buildings (O-04 `/buildings`, O-05 `/buildings/new`, `/buildings/:id/edit`, O-06 `/buildings/:id/prices`), placeholder "Sắp có" |
+| `src/libraries/forms` | Lỗi field từ API (`errorMap.onServer`), 409 "Dữ liệu đã thay đổi, tải lại?", hỏi lại khi rời trang chưa lưu (`useBlocker`, cần data router), trạng thái tải/lỗi |
 
 ## Phiên đăng nhập
 
@@ -35,6 +36,10 @@ Mỗi route trong `src/routing/route-configs.ts` có `ability: { action, subject
 ## Toà nhà
 
 `BuildingProvider` (mount trong `AppLayout`, chỉ khi đã đăng nhập) đọc `useBuildings({ pageSize: 100 })` của `@stay/sdk/react` — `GET /api/buildings` đã lọc theo toà người dùng được xem và ẩn toà lưu trữ. Toà chọn gần nhất lưu ở `localStorage` (`stay_building_id`, có try/catch); nếu toà đó không còn trong danh sách thì dùng toà đầu tiên và ghi lại lựa chọn. Màn nhận 404 từ `GET /api/buildings/:id` gọi `reportMissingBuilding(id)` để bỏ toà đó và tải lại danh sách. Bộ chọn ẩn khi có dưới 2 toà (chỉ hiện tên toà đang dùng từ `sm`). Màn theo toà dùng `useActiveBuilding().buildingId` trong query key để đổi toà thì tải lại.
+
+## Toà nhà: VietQR
+
+Danh sách ngân hàng VietQR (BIN, mã, tên) là JSON tĩnh `src/modules/buildings/vietqr-banks.json` (lấy từ `api.vietqr.io/v2/banks`, không gọi mạng lúc chạy). Mã QR thử 10.000 ₫ ở O-05 dựng payload EMVCo bằng `buildVietQrPayload` (`@stay/shared`, có test CRC16-CCITT) và vẽ bằng `qrcode.react` 4.2.0.
 
 ## Kiểm thử
 

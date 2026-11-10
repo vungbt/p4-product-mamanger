@@ -30,6 +30,12 @@ const TenantListPage = lazy(() => import('@/modules/tenants/list-page'));
 const TenantProfilePage = lazy(() => import('@/modules/tenants/profile-page'));
 const TenantFormPage = lazy(() => import('@/modules/tenants/form-page'));
 const TenantImportPage = lazy(() => import('@/modules/tenants/import-page'));
+const SettingsPage = lazy(() => import('@/modules/settings/page'));
+const ServicesPage = lazy(() => import('@/modules/settings/services/page'));
+const BillingSettingsPage = lazy(() => import('@/modules/settings/billing/page'));
+const BuildingsPage = lazy(() => import('@/modules/buildings/page'));
+const BuildingFormPage = lazy(() => import('@/modules/buildings/form/page'));
+const BuildingPricesPage = lazy(() => import('@/modules/buildings/prices/page'));
 
 export const ROUTES = {
   login: '/login',
@@ -37,11 +43,18 @@ export const ROUTES = {
   rooms: '/rooms',
   roomNew: '/rooms/new',
   roomBulk: '/rooms/bulk',
+  settings: '/settings',
+  services: '/settings/services',
+  billing: '/settings/billing',
+  buildings: '/buildings',
+  newBuilding: '/buildings/new',
 } as const;
 
 /** `/rooms/:id` and `/rooms/:id/edit`. */
 export const roomPath = (id: string) => `${ROUTES.rooms}/${id}`;
 export const roomEditPath = (id: string) => `${roomPath(id)}/edit`;
+export const buildingEditPath = (id: string) => `/buildings/${id}/edit`;
+export const buildingPricesPath = (id: string) => `/buildings/${id}/prices`;
 
 /** Signed-in app routes (screens.md C-02 menu order). Menus are derived from this list. */
 export const appRoutes: StayRoute[] = [
@@ -192,11 +205,65 @@ export const appRoutes: StayRoute[] = [
     ability: { action: 'read', subject: 'Report' },
   },
   {
-    path: '/settings',
+    path: ROUTES.settings,
     name: 'settings',
     icon: 'settings',
-    component: PlaceholderPage,
+    component: SettingsPage,
     ability: { action: 'manage', subject: 'Settings' },
+  },
+  {
+    path: ROUTES.services,
+    name: 'services',
+    icon: 'receipt',
+    component: ServicesPage,
+    ability: { action: 'manage', subject: 'Settings' },
+    hideInMenu: true,
+    parent: 'settings',
+  },
+  {
+    path: ROUTES.billing,
+    name: 'billing',
+    icon: 'calendar',
+    component: BillingSettingsPage,
+    ability: { action: 'manage', subject: 'Settings' },
+    hideInMenu: true,
+    parent: 'settings',
+  },
+  {
+    path: ROUTES.buildings,
+    name: 'buildings',
+    icon: 'buildings',
+    component: BuildingsPage,
+    ability: { action: 'read', subject: 'Building' },
+    hideInMenu: true,
+    parent: 'settings',
+  },
+  {
+    path: ROUTES.newBuilding,
+    name: 'newBuilding',
+    icon: 'buildings',
+    component: BuildingFormPage,
+    ability: { action: 'manage', subject: 'Building' },
+    hideInMenu: true,
+    parent: 'buildings',
+  },
+  {
+    path: '/buildings/:id/edit',
+    name: 'editBuilding',
+    icon: 'buildings',
+    component: BuildingFormPage,
+    ability: { action: 'manage', subject: 'Building' },
+    hideInMenu: true,
+    parent: 'buildings',
+  },
+  {
+    path: '/buildings/:id/prices',
+    name: 'buildingPrices',
+    icon: 'receipt',
+    component: BuildingPricesPage,
+    ability: { action: 'manage', subject: 'Building' },
+    hideInMenu: true,
+    parent: 'buildings',
   },
   {
     path: '/settings/members',

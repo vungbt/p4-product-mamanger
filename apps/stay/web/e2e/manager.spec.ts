@@ -33,8 +33,18 @@ test.describe('building manager (conditional rules)', () => {
     await sidebar.getByRole('link', { name: 'Phòng', exact: true }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Phòng' })).toBeVisible();
 
+    // ST-06: the "Cấu hình đơn giá" onboarding step needs `manage Settings`.
+    await sidebar.getByRole('link', { name: 'Tổng quan', exact: true }).click();
+    await expect(page.getByTestId('onboarding-step-rooms')).toBeVisible();
+    await expect(page.getByTestId('onboarding-step-prices')).toHaveCount(0);
+
     await page.goto('/settings');
     await expect(page.getByTestId('forbidden-page')).toBeVisible();
+    await page.goto('/settings/services');
+    await expect(page.getByTestId('forbidden-page')).toBeVisible();
+    await page.goto('/settings/billing');
+    await expect(page.getByTestId('forbidden-page')).toBeVisible();
+    await saveScreenshot(page, 'o02-services-manager-403');
     await page.goto('/settings/members');
     await expect(page.getByTestId('forbidden-page')).toBeVisible();
   });

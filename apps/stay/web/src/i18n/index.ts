@@ -1,6 +1,12 @@
 import { type AppLocale, createI18n } from '@p4/i18n';
+import enBuildings from './locales/en/buildings.json';
 import en from './locales/en/common.json';
+import enForms from './locales/en/forms.json';
+import enSettings from './locales/en/settings.json';
+import viBuildings from './locales/vi/buildings.json';
 import vi from './locales/vi/common.json';
+import viForms from './locales/vi/forms.json';
+import viSettings from './locales/vi/settings.json';
 
 export const LOCALE_STORAGE_KEY = 'stay_locale';
 
@@ -16,8 +22,8 @@ function readStoredLocale(): AppLocale {
 
 const i18n = createI18n({
   resources: {
-    vi: { common: vi },
-    en: { common: en },
+    vi: { common: vi, forms: viForms, settings: viSettings, buildings: viBuildings },
+    en: { common: en, forms: enForms, settings: enSettings, buildings: enBuildings },
   },
   lng: readStoredLocale(),
   defaultNS: 'common',

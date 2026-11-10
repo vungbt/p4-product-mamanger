@@ -6,7 +6,7 @@ import { BRAND, BrandMark } from '@/brand';
 import { useCanOpen } from '@/libraries/ability';
 import { BuildingSelector } from '@/libraries/buildings/building-selector';
 import { appRoutes, ROUTES } from '@/routing/route-configs';
-import { useCurrentRoute } from '@/routing/use-routes';
+import { routeTrail, useCurrentRoute } from '@/routing/use-routes';
 import AccountMenu from './account-menu';
 
 function hasHistory() {
@@ -62,10 +62,11 @@ export default function AppHeader() {
               route && !isHome
                 ? [
                     { key: 'overview', title: t('nav.overview'), href: ROUTES.overview },
-                    ...(parent
-                      ? [{ key: parent.name, title: t(`nav.${parent.name}`), href: parent.path }]
-                      : []),
-                    { key: route.name, title },
+                    ...routeTrail(route).map((item) =>
+                      item === route
+                        ? { key: item.name, title }
+                        : { key: item.name, title: t(`nav.${item.name}`), href: item.path },
+                    ),
                   ]
                 : [{ key: 'overview', title: t('nav.overview') }]
             }
