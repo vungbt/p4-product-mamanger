@@ -1,7 +1,7 @@
 // Sign in against the seeded API; fixture audit data keeps UI states deterministic.
 import { expect, type Page, test } from '@playwright/test';
 import { STAY_CONTRACT_VERSION, type StayRole, stayAbilityKit } from '@stay/shared';
-import { signIn } from './helpers';
+import { chooseOption, signIn } from './helpers';
 
 const buildingId = '00000000-0000-4000-8000-000000000001';
 const otherBuilding = '00000000-0000-4000-8000-000000000002';
@@ -102,17 +102,21 @@ for (const width of [375, 1280]) {
     );
     await page.getByRole('button', { name: 'Chi tiết thay đổi' }).click();
     await expect(page.locator('pre')).toContainText('[REDACTED]');
-    await page.getByRole('textbox', { name: 'Tìm hành động hoặc bản ghi' }).fill('invoice');
+    await page.getByRole('searchbox', { name: 'Tìm hành động hoặc bản ghi' }).fill('invoice');
     await expect(page).toHaveURL(/q=invoice/);
     await expect(page).not.toHaveURL(/page=2/);
     await page.getByRole('textbox', { name: 'Hành động', exact: true }).fill('issue');
     await page.getByRole('button', { name: 'Áp dụng' }).click();
     await expect(page).toHaveURL(/action=issue/);
+    await chooseOption(page, page, 'Sắp xếp theo', 'Hành động');
+    await expect(page).toHaveURL(/sortBy=action/);
     await page.reload();
     await expect(page.getByRole('textbox', { name: 'Hành động', exact: true })).toHaveValue(
       'issue',
     );
     await expect.poll(() => api.queries.at(-1)?.get('buildingId')).toBe(buildingId);
+    await expect(page.getByRole('combobox', { name: 'Sắp xếp theo' })).toBeVisible();
+    await expect.poll(() => api.queries.at(-1)?.get('sortBy')).toBe('action');
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);
@@ -128,7 +132,7 @@ test('empty, error and retry states', async ({ page }) => {
   await page.goto('/audit');
   await expect(page.getByText('Chưa có lịch sử phù hợp.')).toBeVisible();
   api.setMode('error');
-  await page.getByRole('textbox', { name: 'Tìm hành động hoặc bản ghi' }).fill('failure');
+  await page.getByRole('searchbox', { name: 'Tìm hành động hoặc bản ghi' }).fill('failure');
   await expect(page.getByText('Không tải được dữ liệu.')).toBeVisible();
   api.setMode('data');
   await page.getByRole('button', { name: 'Thử lại', exact: true }).click();

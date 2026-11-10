@@ -56,6 +56,7 @@ function Search({ value, onChange }: { value: string; onChange: (value: string) 
   return (
     <Input
       label={t('audit.search')}
+      aria-label={t('audit.search')}
       value={draft}
       onChange={(event) => setDraft(event.target.value)}
       type="search"
