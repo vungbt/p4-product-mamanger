@@ -67,7 +67,7 @@ Phòng, hợp đồng, hoá đơn chưa có: `src/modules/buildings/buildings.us
 | POST | `/api/tenants/import` | manage `Tenant` | `Idempotency-Key`; gửi lại `values` đã xem trước, kiểm tra lại, chỉ tạo dòng hợp lệ |
 | POST | `/api/uploads` → `/api/uploads/:id/complete` | create/update `Tenant` ở toà | Ticket 10 phút, ảnh JPG/PNG/WEBP ≤ 10 MB |
 
-- Trạng thái đang ở/đã rời/chưa có hợp đồng và phòng hiện tại suy ra trong `src/modules/tenants/tenants.occupancy.ts` (hiện mọi người là `no_contract`; ST-10 thay bằng truy vấn `contract_occupants`).
+- Trạng thái đang ở/đã rời/chưa có hợp đồng và phòng hiện tại suy ra trong `src/modules/tenants/tenants.occupancy.ts` (từ `contract_occupants` và trạng thái hợp đồng).
 - Dữ liệu cá nhân: audit chỉ ghi id, toà, `version` và danh sách trường đã điền/đổi; không ghi tên, SĐT, CCCD, ngày, địa chỉ, URL hay `storageId`.
 - Ảnh private: trình duyệt gửi file thẳng tới `uploadUrl` của ticket (Cloudinary `authenticated` khi có `STAY_CLOUDINARY_*`), API kiểm tra lại ảnh khi `complete`, hồ sơ trả URL ký hết hạn sau 5 phút. Không cấu hình Cloudinary thì ngoài production dùng **kho stub** (file trong `STAY_UPLOAD_STUB_DIR`, upload/xem qua `/api/uploads/:id/stub` và `/api/files/:id/stub` có chữ ký HMAC, không có đường dẫn công khai); production không có Cloudinary thì upload trả 503.
 - Seed local/CI: 15 người thuê hư cấu ở toà A (SĐT `091100xxxx`, CCCD tiền tố `000`) và vài xe.
@@ -122,3 +122,43 @@ Script build, migrate, seed hai lần (kiểm tra idempotent), chạy API rồi 
 | `STAY_UPLOAD_STUB_DIR` | thư mục tạm của hệ điều hành | Nơi kho stub lưu file (dev/test/CI) |
 
 Gửi email (đặt lại mật khẩu, xác minh) chưa có: ngoài production link được ghi log, production trả `mail_unavailable`.
+
+### Rental contracts (ST-10)
+
+`GET/POST /api/contracts`, `GET/PUT /api/contracts/:id`,
+`POST /api/contracts/:id/activate`, `POST /api/contracts/:id/cancel`, and
+`GET /api/contracts/:id/move-in-preview` are available. Lists use the standard pagination,
+search and sorting query, with `buildingId`, `roomId`, `status`, and `expiring=true` filters.
+Managers use building-scoped `create`/`update` permissions for the management actions.
+Draft updates require `version`; creation accepts an optional `Idempotency-Key`.
+Activation serializes on the room row and is backed by `contracts_one_holding_room`.
+
+Move-in amounts come from `computeMoveInInvoice`, resolving building prices on the start date.
+Activation **does not create an invoice**. It records a single positive `received` deposit entry
+when collected, with its method, date and optional note. Initial readings and optional private
+meter photos remain on the contract (`contract_meter` upload purpose).
+
+The local/CI seed adds nine active contracts in building A and is idempotent. The contract
+integration suite runs under `scripts/test-stay-api-integration.sh`; browser coverage is in
+`apps/stay/web/e2e/contracts.spec.ts`. Both require the CI/live API database.
+
+Without a database, regenerate the business contract with the committed Better Auth section:
+
+```sh
+pnpm --filter @stay/api openapi:generate:offline
+pnpm --filter @stay/sdk generate
+```
+
+Extension points:
+
+- ST-11: deposit ledger commands/screens, balance enforcement for deductions; activation already
+  writes received entries. `invoice_id` gets its foreign key when invoices exist.
+- ST-12: dated occupant/service/vehicle registrations, contract terms and change event payloads.
+  Only drafts can be edited by ST-10.
+- ST-13: meter closing/replacement commands and `meter_readings`. `latestMeterReadings` detects
+  that table once present, otherwise uses installed readings. Move-in readings/photos are stored
+  on the contract; activation validates against the current room meters.
+- ST-14: persist/issue move-in invoices, implement invoice-dependent usage guards, and add the
+  deposit invoice foreign key. Reuse the same preview computation and start-date prices.
+- ST-17: ending/ended transitions and settlement; room/tenant derivation already understands
+  holding and ended contracts.

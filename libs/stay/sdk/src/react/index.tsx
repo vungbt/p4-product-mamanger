@@ -13,6 +13,7 @@ export {
   useSetBuildingPrice,
   useUpdateBuilding,
 } from './buildings.js';
+export * from './contracts.js';
 export * from './expenses.js';
 export { meKeys, useCapabilities, useMe } from './me.js';
 export { StaySdkProvider, useStaySdk } from './provider.js';

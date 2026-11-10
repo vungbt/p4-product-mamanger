@@ -38,6 +38,11 @@ function canUpload(user: StayUser, purpose: StayUploadPurpose, buildingId: strin
   switch (purpose) {
     case 'expense_receipt':
       return canAccessRecord(user, 'manage', 'Expense', { buildingId });
+    case 'contract_meter':
+      return (
+        canAccessRecord(user, 'create', 'Contract', { buildingId }) ||
+        canAccessRecord(user, 'update', 'Contract', { buildingId })
+      );
     case 'tenant_document':
       return (
         canAccessRecord(user, 'create', 'Tenant', { buildingId }) ||

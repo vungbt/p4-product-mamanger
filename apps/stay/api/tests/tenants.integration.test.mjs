@@ -170,14 +170,14 @@ describe('Stay API: tenants, documents, vehicles and import', { skip: !base }, (
     assert.equal(list.body.data.length, 1);
     assert.equal(list.body.data[0].fullName, 'Nguyễn Văn An');
     assert.equal(list.body.data[0].idNumberMasked, '000*****0001');
-    assert.equal(list.body.data[0].status, 'no_contract');
-    assert.equal(list.body.data[0].currentRoom, null);
+    assert.equal(list.body.data[0].status, 'living');
+    assert.equal(list.body.data[0].currentRoom.code, '101');
     assert.equal('idNumber' in list.body.data[0], false);
 
     const detail = await call(cookie, 'GET', `/api/tenants/${list.body.data[0].id}`);
 
     assert.equal(detail.body.data.vehicles[0].plate, '59-X1 000.01');
-    assert.equal(detail.body.data.contracts.length, 0);
+    assert.equal(detail.body.data.contracts.length, 1);
     assert.equal((await TenantModel.count({ where: { buildingId: buildingA.id } })) >= 15, true);
   });
 

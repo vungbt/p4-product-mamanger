@@ -16,7 +16,8 @@
     "openapi:check": "pnpm build && node scripts/openapi/generate-offline.mjs --check",
     "test": "pnpm build && node --test --test-concurrency=1 tests/*.test.mjs",
     "prebuild": "pnpm --filter @p4/ability build && pnpm --filter @p4/server-core build && pnpm --filter @stay/billing build",
-    "predev": "pnpm --filter @p4/ability build && pnpm --filter @p4/server-core build && pnpm --filter @stay/billing build"
+    "predev": "pnpm --filter @p4/ability build && pnpm --filter @p4/server-core build && pnpm --filter @stay/billing build",
+    "openapi:generate:offline": "pnpm build && node scripts/openapi/generate-offline.mjs"
   },
   "dependencies": {
     "@p4/ability": "workspace:*",

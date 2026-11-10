@@ -80,5 +80,9 @@
   "import_unknown_columns": "The file has columns that are not in the template.",
   "import_missing_columns": "The file misses a required column (Họ tên, Số điện thoại).",
   "import_duplicate_columns": "The file repeats a column.",
-  "import_rows": "The rows to import are invalid (at most {{max}} rows)."
+  "import_rows": "The rows to import are invalid (at most {{max}} rows).",
+  "contract_not_found": "Contract not found.",
+  "contract_not_draft": "This action requires a draft contract.",
+  "room_maintenance": "Cannot activate a contract for a room under maintenance.",
+  "room_unavailable": "The room or building is archived."
 }

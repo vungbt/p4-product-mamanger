@@ -35,6 +35,13 @@ export function roomQuickActions({
     { id: 'view', label: t('rooms.actions.view'), onSelect: () => open(roomPath(room.id)) },
   ];
 
+  if (room.status === 'vacant')
+    entries.push({
+      id: 'contract',
+      label: 'Tạo hợp đồng',
+      onSelect: () => open(`/contracts/new?roomId=${room.id}`),
+    });
+
   if (!canManage) return entries;
 
   entries.push({

@@ -1,11 +1,7 @@
-/**
- * What other modules know about a building. Contracts (ST-10) and invoices (ST-14) do not exist
- * yet: each such function returns the empty answer and the owning task adds its query here, so
- * the building rules (archive, code lock, price history) need no other change.
- */
+/** Building usage from rooms and contracts. Invoice-dependent guards are filled by ST-14. */
 import type { BuildingStats } from '@stay/shared';
 import { Op, type Transaction } from 'sequelize';
-import { RoomModel } from '@/sequelize/models/index.js';
+import { ContractModel, RoomModel } from '@/sequelize/models/index.js';
 import { roomOccupancies } from '../rooms/room-status.js';
 
 export interface BlockingRoom {
@@ -39,10 +35,23 @@ export async function buildingStats(buildingIds: readonly string[]) {
 
 /** Rooms with an `active`/`ending` contract; a building with any cannot be archived (ST-10). */
 export async function roomsWithActiveContracts(
-  _buildingId: string,
-  _transaction: Transaction,
+  buildingId: string,
+  transaction: Transaction,
 ): Promise<BlockingRoom[]> {
-  return [];
+  const contracts = await ContractModel.findAll({
+    where: { buildingId, status: { [Op.in]: ['active', 'ending'] } },
+    transaction,
+  });
+  const rooms = await RoomModel.findAll({
+    where: { id: { [Op.in]: contracts.map((c) => c.roomId) } },
+    transaction,
+  });
+
+  return contracts.map((c) => ({
+    roomId: c.roomId,
+    roomCode: rooms.find((r) => r.id === c.roomId)?.code ?? '',
+    contractId: c.id,
+  }));
 }
 
 /** Invoices exist for the building, so its code (used in invoice codes) is locked (ST-14). */

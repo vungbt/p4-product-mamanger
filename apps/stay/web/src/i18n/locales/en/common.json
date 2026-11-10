@@ -37,7 +37,9 @@
     "tenantProfile": "Tenant profile",
     "tenantEdit": "Edit tenant",
     "audit": "Audit history",
-    "expenseCategories": "Expense categories"
+    "expenseCategories": "Expense categories",
+    "contractNew": "New contract",
+    "contractDetail": "Contract details"
   },
   "header": {
     "back": "Back",
