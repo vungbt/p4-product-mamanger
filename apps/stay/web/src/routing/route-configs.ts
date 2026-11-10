@@ -20,6 +20,8 @@ export type StayRoute = {
   parent?: string;
 };
 
+const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
+const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
 const AuditPage = lazy(() => import('@/modules/audit/page'));
 const OverviewPage = lazy(() => import('@/modules/overview/page'));
 const PlaceholderPage = lazy(() => import('@/modules/placeholder/page'));
@@ -59,13 +61,6 @@ export const buildingPricesPath = (id: string) => `/buildings/${id}/prices`;
 
 /** Signed-in app routes (screens.md C-02 menu order). Menus are derived from this list. */
 export const appRoutes: StayRoute[] = [
-  {
-    path: '/audit',
-    name: 'audit',
-    icon: 'clipboardText',
-    component: AuditPage,
-    ability: { action: 'read', subject: 'AuditLog' },
-  },
   {
     path: ROUTES.overview,
     name: 'overview',
@@ -202,7 +197,7 @@ export const appRoutes: StayRoute[] = [
     path: '/expenses',
     name: 'expenses',
     icon: 'creditCard',
-    component: PlaceholderPage,
+    component: ExpensesPage,
     ability: { action: 'manage', subject: 'Expense' },
   },
   {
@@ -211,6 +206,13 @@ export const appRoutes: StayRoute[] = [
     icon: 'chart',
     component: PlaceholderPage,
     ability: { action: 'read', subject: 'Report' },
+  },
+  {
+    path: '/audit',
+    name: 'audit',
+    icon: 'clipboardText',
+    component: AuditPage,
+    ability: { action: 'read', subject: 'AuditLog' },
   },
   {
     path: ROUTES.settings,
@@ -272,6 +274,15 @@ export const appRoutes: StayRoute[] = [
     ability: { action: 'manage', subject: 'Building' },
     hideInMenu: true,
     parent: 'buildings',
+  },
+  {
+    path: '/settings/expense-categories',
+    name: 'expenseCategories',
+    icon: 'creditCard',
+    component: ExpenseCategoriesPage,
+    ability: { action: 'manage', subject: 'Expense' },
+    hideInMenu: true,
+    parent: 'settings',
   },
   {
     path: '/settings/members',

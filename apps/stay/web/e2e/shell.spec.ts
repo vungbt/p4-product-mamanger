@@ -25,6 +25,16 @@ test.describe('C-02 shell on mobile (375px)', () => {
     await bottomNav.getByRole('button', { name: 'Thêm' }).click();
     const sheet = page.getByRole('dialog', { name: 'Tất cả chức năng' });
     await expect(sheet).toBeVisible();
+    await expect(sheet.getByRole('link')).toHaveText([
+      'Công nợ',
+      'Hợp đồng',
+      'Người thuê',
+      'Yêu cầu',
+      'Chi phí',
+      'Báo cáo',
+      'Lịch sử thay đổi',
+      'Cài đặt',
+    ]);
     await saveScreenshot(page, 'shell-mobile-more');
     await sheet.getByRole('link', { name: 'Công nợ' }).click();
     await expect(page).toHaveURL('/receivables');
@@ -66,24 +76,22 @@ test.describe('C-02/C-03 shell on desktop', () => {
     await signIn(page);
 
     const sidebar = page.getByTestId('app-sidebar');
-    const labels = await sidebar.getByRole('link').allInnerTexts();
-    const menu = labels.map((label) => label.trim()).filter(Boolean);
-
-    expect(menu).toEqual(
-      expect.arrayContaining([
-        'Tổng quan',
-        'Phòng',
-        'Chốt số',
-        'Hoá đơn',
-        'Công nợ',
-        'Hợp đồng',
-        'Người thuê',
-        'Yêu cầu',
-        'Chi phí',
-        'Báo cáo',
-        'Cài đặt',
-      ]),
-    );
+    await expect(
+      sidebar.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link'),
+    ).toHaveText([
+      'Tổng quan',
+      'Phòng',
+      'Chốt số',
+      'Hoá đơn',
+      'Công nợ',
+      'Hợp đồng',
+      'Người thuê',
+      'Yêu cầu',
+      'Chi phí',
+      'Báo cáo',
+      'Lịch sử thay đổi',
+      'Cài đặt',
+    ]);
 
     await page.goto('/khong-ton-tai');
     await expect(page.getByTestId('not-found-page')).toBeVisible();

@@ -24,6 +24,7 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 - Mọi dữ liệu nghiệp vụ gắn \`buildingId\`; quyền kiểm tra theo toà.`;
 
 const TAG_DESCRIPTIONS = {
+  expenses: 'Chi phí vận hành, danh mục chi phí và tổng theo kỳ. Ảnh hoá đơn lưu private.',
   audit: 'Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.',
   buildings: 'Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.',
   me: 'Người dùng hiện tại và quyền CASL.',
@@ -46,6 +47,22 @@ const TENANT_FIELDS_NOTE =
   'Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu chấm và tự chuẩn hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và `extensions.duplicateTenant` (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc `dd/MM/yyyy`), không sau hôm nay. Không tự điền giá trị nào.';
 
 const OPERATIONS = {
+  'GET /api/expense-categories': [
+    'Danh mục chi phí',
+    'Gồm các danh mục đã tắt. Chỉ tắt thay vì xoá để giữ lịch sử.',
+  ],
+  'POST /api/expense-categories': ['Thêm danh mục chi phí'],
+  'PUT /api/expense-categories/{id}': ['Sửa hoặc tắt danh mục chi phí', VERSION_NOTE],
+  'GET /api/expenses': [
+    'Chi phí vận hành',
+    'Lọc buildingId, period, categoryId, roomId. meta.totalsByCategory tính trên toàn bộ kết quả lọc, trước phân trang.',
+  ],
+  'POST /api/expenses': [
+    'Thêm chi phí',
+    'Số nguyên VND > 0; kỳ suy ra từ ngày chi theo Asia/Ho_Chi_Minh. Ảnh private cùng toà, purpose expense_receipt.',
+  ],
+  'PUT /api/expenses/{id}': ['Sửa chi phí', VERSION_NOTE],
+  'DELETE /api/expenses/{id}': ['Xoá chi phí'],
   'GET /api/audit-logs': [
     'Lịch sử thay đổi',
     'Người quản lý chỉ xem các toà được gán. from/to gồm cả ngày kết thúc.',
@@ -264,7 +281,43 @@ const vehicleFields = {
   },
   note: tenantText(255),
 };
+const expenseFields = {
+  buildingId: { schema: { type: 'string', format: 'uuid' }, required: true },
+  categoryId: { schema: { type: 'string', format: 'uuid' }, required: true },
+  roomId: { schema: { type: ['string', 'null'], format: 'uuid' } },
+  receiptFileId: { schema: { type: ['string', 'null'], format: 'uuid' } },
+  amount: {
+    schema: { type: 'integer', minimum: 1, maximum: Number.MAX_SAFE_INTEGER },
+    required: true,
+  },
+  spentOn: {
+    schema: {
+      type: 'string',
+      description: 'YYYY-MM-DD in Asia/Ho_Chi_Minh, or an ISO instant with explicit timezone.',
+    },
+    required: true,
+  },
+  note: tenantText(2000),
+};
+const categoryFields = {
+  name: { schema: { type: 'string', minLength: 1, maxLength: 120 }, required: true },
+  active: { schema: { type: 'boolean', default: true } },
+};
 const OVERRIDES = {
+  'POST /api/expenses': { fields: expenseFields },
+  'PUT /api/expenses/{id}': {
+    fields: {
+      ...expenseFields,
+      version: { schema: { type: 'integer', minimum: 1 }, required: true },
+    },
+  },
+  'POST /api/expense-categories': { fields: categoryFields },
+  'PUT /api/expense-categories/{id}': {
+    fields: {
+      ...categoryFields,
+      version: { schema: { type: 'integer', minimum: 1 }, required: true },
+    },
+  },
   'PUT /api/settings': {
     fields: { roundingUnit: { schema: roundingUnit, required: true } },
   },
@@ -328,7 +381,10 @@ const OVERRIDES = {
   },
   'POST /api/uploads': {
     fields: {
-      purpose: { schema: { type: 'string', enum: ['tenant_document'] }, required: true },
+      purpose: {
+        schema: { type: 'string', enum: ['tenant_document', 'expense_receipt'] },
+        required: true,
+      },
       buildingId: { schema: { type: 'string', format: 'uuid' }, required: true },
     },
   },
@@ -365,6 +421,7 @@ export default {
     'libs/stay/shared/src/settings.ts',
     'libs/stay/shared/src/tenant.ts',
     'libs/stay/shared/src/upload.ts',
+    'libs/stay/shared/src/expense.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },
   sessionCookie: 'stay.session_token',

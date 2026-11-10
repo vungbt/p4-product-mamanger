@@ -1,5 +1,5 @@
 /** What an upload is for; decides who may create it and where the file may be attached. */
-export const STAY_UPLOAD_PURPOSES = ['tenant_document'] as const;
+export const STAY_UPLOAD_PURPOSES = ['tenant_document', 'expense_receipt'] as const;
 export type StayUploadPurpose = (typeof STAY_UPLOAD_PURPOSES)[number];
 
 export const STAY_UPLOAD_STATUSES = ['pending', 'completed'] as const;

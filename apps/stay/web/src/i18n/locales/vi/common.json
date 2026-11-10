@@ -36,7 +36,8 @@
     "tenantImport": "Import người thuê",
     "tenantProfile": "Hồ sơ người thuê",
     "tenantEdit": "Sửa người thuê",
-    "audit": "Lịch sử thay đổi"
+    "audit": "Lịch sử thay đổi",
+    "expenseCategories": "Danh mục chi phí"
   },
   "header": {
     "back": "Quay lại",
