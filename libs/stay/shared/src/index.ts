@@ -11,6 +11,7 @@ export * from './expense.js';
 export * from './invoice-code.js';
 export * from './money.js';
 export * from './period.js';
+export * from './reading.js';
 export * from './room.js';
 export * from './schemas.js';
 export * from './settings.js';

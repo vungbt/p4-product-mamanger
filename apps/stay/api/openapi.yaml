@@ -33,6 +33,8 @@ tags:
     description: Người dùng hiện tại và quyền CASL.
   - name: operations
     description: Kiểm tra trạng thái dịch vụ.
+  - name: readings
+    description: Chốt chỉ số điện nước, lưu theo dòng và thay đồng hồ; tiêu thụ tính theo các đoạn đồng hồ.
   - name: rooms
     description: Phòng theo toà, sơ đồ phòng, tạo nhanh nhiều phòng, đồng hồ điện/nước và bảo trì. Trạng thái phòng suy ra
       từ hợp đồng.
@@ -195,6 +197,240 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{buildingId}/readings:
+    get:
+      tags:
+        - readings
+      operationId: get_api_buildings_buildingId_readings
+      summary: Chỉ số điện nước toàn toà
+      description: >-
+        Kỳ là tháng tiêu thụ (YYYY-MM). Bao gồm phòng có hợp đồng active/ending, chỉ số trước, tiêu thụ cả hai đoạn khi
+        thay đồng hồ, trung bình tối đa 3 kỳ trước, cảnh báo và trạng thái draft/locked. Ngoài phạm vi quản lý trả 404.
+
+
+        **Quyền:** `read:MeterReading`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: ^[0-9]{4}-(0[1-9]|1[0-2])$
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ReadingGrid"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - readings
+      operationId: put_api_buildings_buildingId_readings
+      summary: Lưu chỉ số theo dòng
+      description: >-
+        Mỗi dòng gửi meterId, period, reading, readOn và version (0 khi tạo). Trả results theo thứ tự đầu vào; dòng lỗi
+        không huỷ dòng hợp lệ. Chỉ số nguyên không âm; số mới nhỏ hơn số cũ bị chặn. Tiêu thụ hơn 2 lần trung bình cần
+        confirmHighConsumption. Version cũ trả lỗi dòng 409; locked không sửa được. Ảnh dùng private upload purpose
+        contract_meter.
+
+
+        **Quyền:** `update:MeterReading`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rows
+              properties:
+                rows:
+                  type: array
+                  minItems: 1
+                  maxItems: 400
+                  items:
+                    $ref: "#/components/schemas/MeterReadingInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ReadingBulkResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/readings/{id}:
+    put:
+      tags:
+        - readings
+      operationId: put_api_readings_id
+      summary: Sửa chỉ số draft
+      description: |-
+        Gửi đủ dữ liệu chỉ số và version; meterId/period không được đổi. 409 khi stale hoặc locked.
+
+        **Quyền:** `update:MeterReading`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeterReadingInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMeterReading"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/meters/{id}/replace:
+    post:
+      tags:
+        - readings
+      operationId: post_api_meters_id_replace
+      summary: Thay đồng hồ
+      description: >-
+        Đóng đồng hồ cũ bằng finalReading và replacedOn, mở đồng hồ cùng loại với initialReading và serial mới. Giữ lịch
+        sử để tính hai đoạn trong kỳ thay. Idempotency-Key tuỳ chọn; retry cùng nội dung trả cùng id đồng hồ mới.
+
+
+        **Quyền:** `update:MeterReading`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeterReplacementInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                    required:
+                      - id
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/expense-categories:
@@ -7944,6 +8180,50 @@ components:
       required:
         - field
         - tenantId
+    MeterReadingInput:
+      type: object
+      properties:
+        meterId:
+          type: string
+        period:
+          type: string
+        reading:
+          type: number
+        readOn:
+          type: string
+        photoFileId:
+          type:
+            - string
+            - "null"
+        version:
+          type: number
+        confirmHighConsumption:
+          type: boolean
+      required:
+        - meterId
+        - period
+        - reading
+        - readOn
+        - version
+    MeterReplacementInput:
+      type: object
+      properties:
+        finalReading:
+          type: number
+        initialReading:
+          type: number
+        replacedOn:
+          type: string
+        serial:
+          type:
+            - string
+            - "null"
+        confirmHighConsumption:
+          type: boolean
+      required:
+        - finalReading
+        - initialReading
+        - replacedOn
     MoveInPreview:
       type: object
       properties:
@@ -8028,6 +8308,118 @@ components:
         - pageSize
         - total
         - totalPages
+    ReadingBulkResult:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingSaveResult"
+      required:
+        - results
+    ReadingGrid:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        period:
+          type: string
+        rooms:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingRoom"
+      required:
+        - buildingId
+        - period
+        - rooms
+    ReadingMeter:
+      type: object
+      properties:
+        meterId:
+          type: string
+        kind:
+          type: string
+          enum:
+            - electricity
+            - water
+        previous:
+          type: number
+        carriedConsumption:
+          type: number
+        current:
+          anyOf:
+            - $ref: "#/components/schemas/StayMeterReading"
+            - type: "null"
+        consumption:
+          type:
+            - number
+            - "null"
+        average:
+          type:
+            - number
+            - "null"
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+        - meterId
+        - kind
+        - previous
+        - carriedConsumption
+        - current
+        - consumption
+        - average
+        - warnings
+    ReadingRoom:
+      type: object
+      properties:
+        roomId:
+          type: string
+        code:
+          type: string
+        floor:
+          type: number
+        contractId:
+          type: string
+        meters:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReadingMeter"
+      required:
+        - roomId
+        - code
+        - floor
+        - contractId
+        - meters
+    ReadingSaveResult:
+      type: object
+      properties:
+        meterId:
+          type: string
+        data:
+          anyOf:
+            - $ref: "#/components/schemas/StayMeterReading"
+            - type: "null"
+        error:
+          type:
+            - object
+            - "null"
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            status:
+              type: number
+          required:
+            - code
+            - message
+            - status
+      required:
+        - meterId
+        - data
+        - error
     RoomBulkPreview:
       type: object
       properties:
@@ -8765,6 +9157,52 @@ components:
           $ref: "#/components/schemas/StayUser"
       required:
         - user
+    StayMeterReading:
+      type: object
+      properties:
+        id:
+          type: string
+        meterId:
+          type: string
+        period:
+          type: string
+        reading:
+          type: number
+        readOn:
+          type: string
+        photoFileId:
+          type:
+            - string
+            - "null"
+        photo:
+          type:
+            - object
+            - "null"
+          properties:
+            url:
+              type: string
+            expiresAt:
+              type: string
+          required:
+            - url
+            - expiresAt
+        status:
+          type: string
+          enum:
+            - draft
+            - locked
+        version:
+          type: number
+      required:
+        - id
+        - meterId
+        - period
+        - reading
+        - readOn
+        - photoFileId
+        - photo
+        - status
+        - version
     StayRoom:
       type: object
       properties:

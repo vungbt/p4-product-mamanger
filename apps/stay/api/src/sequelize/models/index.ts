@@ -18,6 +18,7 @@ import { ExpenseCategoryModel, initExpenseCategoryModel } from './expense-catego
 import { FileModel, initFileModel } from './file.model.js';
 import { IdempotencyRecordModel, initIdempotencyRecordModel } from './idempotency-record.model.js';
 import { initMeterModel, MeterModel } from './meter.model.js';
+import { initMeterReadingModel, MeterReadingModel } from './meter-reading.model.js';
 import { initRoomModel, RoomModel } from './room.model.js';
 import {
   initRoomDefaultServiceModel,
@@ -51,6 +52,7 @@ initBuildingServicePriceModel(sequelize);
 initRoomModel(sequelize);
 initRoomDefaultServiceModel(sequelize);
 initMeterModel(sequelize);
+initMeterReadingModel(sequelize);
 initFileModel(sequelize);
 initUploadTicketModel(sequelize);
 initTenantModel(sequelize);
@@ -90,6 +92,7 @@ export {
   FileModel,
   IdempotencyRecordModel,
   MeterModel,
+  MeterReadingModel,
   RoomDefaultServiceModel,
   RoomModel,
   ServiceDefinitionModel,

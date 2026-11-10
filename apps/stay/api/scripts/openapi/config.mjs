@@ -25,6 +25,8 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 
 const TAG_DESCRIPTIONS = {
   deposits: 'Sổ cọc bất biến; thu thêm, hoàn, mất cọc và cấn trừ thanh lý.',
+  readings:
+    'Chốt chỉ số điện nước, lưu theo dòng và thay đồng hồ; tiêu thụ tính theo các đoạn đồng hồ.',
   expenses: 'Chi phí vận hành, danh mục chi phí và tổng theo kỳ. Ảnh hoá đơn lưu private.',
   contracts:
     'Hợp đồng thuê, kích hoạt, huỷ bản nháp và xem trước tiền nhận phòng. Không tạo hoá đơn (ST-14).',
@@ -55,6 +57,22 @@ const OPERATIONS = {
   'POST /api/contracts/{id}/deposits': [
     'Thêm bút toán cọc',
     'Bất biến; số dư âm trả 422; applied chỉ dành cho ST-17.',
+  ],
+  'GET /api/buildings/{buildingId}/readings': [
+    'Chỉ số điện nước toàn toà',
+    'Kỳ là tháng tiêu thụ (YYYY-MM). Bao gồm phòng có hợp đồng active/ending, chỉ số trước, tiêu thụ cả hai đoạn khi thay đồng hồ, trung bình tối đa 3 kỳ trước, cảnh báo và trạng thái draft/locked. Ngoài phạm vi quản lý trả 404.',
+  ],
+  'PUT /api/buildings/{buildingId}/readings': [
+    'Lưu chỉ số theo dòng',
+    'Mỗi dòng gửi meterId, period, reading, readOn và version (0 khi tạo). Trả results theo thứ tự đầu vào; dòng lỗi không huỷ dòng hợp lệ. Chỉ số nguyên không âm; số mới nhỏ hơn số cũ bị chặn. Tiêu thụ hơn 2 lần trung bình cần confirmHighConsumption. Version cũ trả lỗi dòng 409; locked không sửa được. Ảnh dùng private upload purpose contract_meter.',
+  ],
+  'PUT /api/readings/{id}': [
+    'Sửa chỉ số draft',
+    'Gửi đủ dữ liệu chỉ số và version; meterId/period không được đổi. 409 khi stale hoặc locked.',
+  ],
+  'POST /api/meters/{id}/replace': [
+    'Thay đồng hồ',
+    'Đóng đồng hồ cũ bằng finalReading và replacedOn, mở đồng hồ cùng loại với initialReading và serial mới. Giữ lịch sử để tính hai đoạn trong kỳ thay. Idempotency-Key tuỳ chọn; retry cùng nội dung trả cùng id đồng hồ mới.',
   ],
   'GET /api/expense-categories': [
     'Danh mục chi phí',
@@ -334,12 +352,58 @@ const contractBody = {
     content: { 'application/json': { schema: { ref: 'ContractInput' } } },
   },
 };
+const readingBody = (name) => ({
+  requestBody: { required: true, content: { 'application/json': { schema: { ref: name } } } },
+});
 const OVERRIDES = {
   'POST /api/contracts/{id}/deposits': {
     requestBody: {
       required: true,
       content: { 'application/json': { schema: { ref: 'DepositInput' } } },
     },
+    parameters: [
+      {
+        name: 'Idempotency-Key',
+        in: 'header',
+        required: false,
+        schema: { type: 'string', minLength: 8, maxLength: 128 },
+      },
+    ],
+  },
+  'GET /api/buildings/{buildingId}/readings': {
+    parameters: [
+      {
+        name: 'period',
+        in: 'query',
+        required: true,
+        schema: { type: 'string', pattern: '^[0-9]{4}-(0[1-9]|1[0-2])$' },
+      },
+    ],
+  },
+  'PUT /api/buildings/{buildingId}/readings': {
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['rows'],
+            properties: {
+              rows: {
+                type: 'array',
+                minItems: 1,
+                maxItems: 400,
+                items: { ref: 'MeterReadingInput' },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  'PUT /api/readings/{id}': readingBody('MeterReadingInput'),
+  'POST /api/meters/{id}/replace': {
+    ...readingBody('MeterReplacementInput'),
     parameters: [
       {
         name: 'Idempotency-Key',
@@ -501,6 +565,7 @@ export default {
     'libs/stay/shared/src/upload.ts',
     'libs/stay/shared/src/expense.ts',
     'libs/stay/shared/src/deposit.ts',
+    'libs/stay/shared/src/reading.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },
   sessionCookie: 'stay.session_token',

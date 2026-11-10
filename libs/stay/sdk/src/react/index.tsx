@@ -18,6 +18,7 @@ export * from './deposits.js';
 export * from './expenses.js';
 export { meKeys, useCapabilities, useMe } from './me.js';
 export { StaySdkProvider, useStaySdk } from './provider.js';
+export * from './readings.js';
 export {
   roomKeys,
   roomMutationOptions,

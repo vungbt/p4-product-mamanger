@@ -155,10 +155,46 @@ Extension points:
   writes received entries. `invoice_id` gets its foreign key when invoices exist.
 - ST-12: dated occupant/service/vehicle registrations, contract terms and change event payloads.
   Only drafts can be edited by ST-10.
-- ST-13: meter closing/replacement commands and `meter_readings`. `latestMeterReadings` detects
-  that table once present, otherwise uses installed readings. Move-in readings/photos are stored
-  on the contract; activation validates against the current room meters.
+- ST-13 is implemented: `meter_readings`, closing/replacement commands and `latestMeterReadings`
+  now use recorded readings. Move-in readings/photos remain the contract baseline.
 - ST-14: persist/issue move-in invoices, implement invoice-dependent usage guards, and add the
   deposit invoice foreign key. Reuse the same preview computation and start-date prices.
 - ST-17: ending/ended transitions and settlement; room/tenant derivation already understands
   holding and ended contracts.
+
+### Meter closing (ST-13)
+
+- `GET /api/buildings/:buildingId/readings?period=YYYY-MM`: all rooms with active/ending
+  contracts started by the closing month; previous/current readings, segment consumption,
+  average over available readings in the preceding three calendar months, warnings and lock state.
+  Here `period` is the **consumption month**; the invoice period is the following month.
+- `PUT /api/buildings/:buildingId/readings`: `{ rows: MeterReadingInput[] }` (1–400).
+  Results preserve input order, with data or an error for each row. Each row runs in a savepoint.
+  `version: 0` creates, positive versions update. Validation errors do not roll back valid rows.
+- `PUT /api/readings/:id`: the same full row input, immutable meter/period, stale version = 409.
+- `POST /api/meters/:id/replace`: `{ finalReading, initialReading, replacedOn, serial? }`.
+  Optional `Idempotency-Key` safely replays replacement. Replacement closes the old meter,
+  opens a new one and preserves both consumption segments. Existing draft closing in the
+  replacement month becomes the old meter's final reading; a locked closing blocks replacement.
+
+Readings are whole non-negative numbers, with the room meter limit 999,999,999. Consumption
+uses `meterConsumption` from `@stay/billing`. High consumption (> 2 × available average,
+including a zero average) requires `confirmHighConsumption: true`; no history means no high
+consumption warning. Zero consumption is a soft warning. Photos reuse private `contract_meter`
+upload tickets, verified for uploader, building and purpose. Managers use scoped `read`/`update`
+MeterReading rules; inaccessible records return 404 and unavailable actions return 403.
+
+O-19 `/readings` provides autosave, per-room status, offline localStorage drafts scoped to
+account/building/period/room, floor and period URL filters, photos and replacement. Stored drafts
+retain the original version; conflicts require explicit reload rather than silent overwrites.
+
+The local/CI seed adds the last three completed months for the nine fixture contracts. On the
+first historical seed only, untouched fixture contracts/meters move back to the history start;
+existing readings are preserved. Production seeding is prohibited.
+
+ST-14 extension points: use `periodMeter` in `modules/readings/readings.service.ts` for the same
+segment computation; set `MeterReadingModel.status` to `locked` in the invoice issue transaction,
+locking the room row first (the same serialization point used for saves/replacements). Void must
+unlock the readings in its transaction. Earlier edits are blocked when a later reading is locked.
+Invoice creation remains disabled on O-19 until ST-14. CI integration coverage is in
+`tests/readings.integration.test.mjs`; real-API browser coverage is in `e2e/readings.spec.ts`.
