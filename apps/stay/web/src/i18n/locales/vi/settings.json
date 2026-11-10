@@ -1,0 +1,103 @@
+{
+  "save": "Lưu thay đổi",
+  "saving": "Đang lưu…",
+  "discard": "Huỷ thay đổi",
+  "cancel": "Huỷ",
+  "actions": "Thao tác",
+  "saveFailed": "Không lưu được. Vui lòng thử lại.",
+  "validation": {
+    "required": "Trường này là bắt buộc.",
+    "maxLength": "Tối đa {{max}} ký tự.",
+    "integer": "Đơn giá phải là số nguyên.",
+    "priceRange": "Đơn giá từ 0 đến 1.000.000.000 ₫."
+  },
+  "hub": {
+    "title": "Cài đặt",
+    "description": "Cấu hình dùng chung cho mọi toà nhà.",
+    "links": {
+      "services": {
+        "title": "Dịch vụ & đơn giá",
+        "description": "Điện, nước, internet… và đơn giá mặc định."
+      },
+      "billing": {
+        "title": "Kỳ thu",
+        "description": "Ngày chốt số, ngày phát hành, hạn thanh toán, làm tròn."
+      },
+      "buildings": {
+        "title": "Toà nhà",
+        "description": "Thông tin toà, tài khoản nhận tiền và đơn giá riêng."
+      },
+      "members": {
+        "title": "Thành viên",
+        "description": "Người quản lý và toà được giao."
+      }
+    }
+  },
+  "billing": {
+    "title": "Kỳ thu",
+    "description": "Mặc định của hệ thống; mỗi toà có thể đặt riêng.",
+    "cycleTitle": "Lịch thu tiền",
+    "readingDay": "Ngày chốt số",
+    "issueDay": "Ngày phát hành",
+    "dueDay": "Hạn thanh toán",
+    "dayOfMonth": "Ngày {{day}}",
+    "endOfMonth": "Cuối tháng",
+    "preview": "Chốt số điện nước ngày {{reading}}. Hoá đơn kỳ {{period}} sẽ phát hành {{issue}}, hạn {{due}}, gồm điện nước tháng {{usageMonth}}.",
+    "moneyTitle": "Tiền và chuyển khoản",
+    "roundingUnit": "Làm tròn tổng hoá đơn",
+    "roundingHint": "Làm tròn half-up; phần chênh hiện thành dòng \"Làm tròn\".",
+    "transferTemplate": "Nội dung chuyển khoản",
+    "transferTemplateHint": "{invoiceCode} được thay bằng mã hoá đơn, ví dụ A-202611-001.",
+    "refundUnusedRent": "Hoàn tiền phòng khi trả phòng sớm",
+    "refundHint": "Bật: hoàn tiền phòng và dịch vụ của những ngày chưa ở theo tỷ lệ ngày.",
+    "saved": "Đã lưu kỳ thu.",
+    "dueBeforeIssue": "Hạn thanh toán phải bằng hoặc sau ngày phát hành."
+  },
+  "services": {
+    "title": "Dịch vụ & đơn giá",
+    "description": "Đơn giá mặc định cho mọi toà; toà có thể đặt giá riêng.",
+    "add": "Thêm dịch vụ",
+    "addTitle": "Thêm dịch vụ",
+    "priceWarning": "Áp dụng cho hoá đơn lập từ nay; hoá đơn đã phát hành không đổi.",
+    "emptyTitle": "Chưa có dịch vụ",
+    "emptyDescription": "Thêm điện, nước và các dịch vụ thu hằng tháng.",
+    "order": "Thứ tự",
+    "orderHint": "Kéo biểu tượng ở đầu dòng (hoặc dùng phím Space và mũi tên) để đổi thứ tự hiển thị trên hoá đơn.",
+    "dragHandle": "Kéo để đổi thứ tự {{name}}",
+    "reordered": "Đã cập nhật thứ tự dịch vụ.",
+    "name": "Tên dịch vụ",
+    "kind": "Cách tính",
+    "kindPlaceholder": "Chọn cách tính",
+    "unit": "Đơn vị",
+    "defaultPrice": "Đơn giá mặc định",
+    "status": "Trạng thái",
+    "active": "Đang bật",
+    "inactive": "Đã tắt",
+    "activeLabel": "Bật dịch vụ",
+    "toggle": "Bật/tắt {{name}}",
+    "edit": "Sửa {{name}}",
+    "editTitle": "Sửa {{name}}",
+    "meteredRule": "Chỉ một dịch vụ Điện và một dịch vụ Nước được bật cùng lúc.",
+    "saved": "Đã lưu {{name}}.",
+    "created": "Đã thêm {{name}}.",
+    "activated": "Đã bật {{name}}.",
+    "deactivated": "Đã tắt {{name}}.",
+    "deactivate": "Tắt dịch vụ",
+    "deactivateTitle": "Tắt {{name}}?",
+    "deactivateDescription": "Dịch vụ tắt không được thêm vào hoá đơn lập từ nay; hoá đơn đã phát hành không đổi. Việc gỡ dịch vụ khỏi các hợp đồng đang dùng sẽ được hỏi khi có hợp đồng.",
+    "kinds": {
+      "electricity": "Điện theo kWh",
+      "water": "Nước theo m³",
+      "per_room": "Theo phòng",
+      "per_person": "Theo người",
+      "per_vehicle": "Theo xe"
+    },
+    "defaultUnits": {
+      "electricity": "kWh",
+      "water": "m³",
+      "per_room": "phòng",
+      "per_person": "người",
+      "per_vehicle": "xe"
+    }
+  }
+}

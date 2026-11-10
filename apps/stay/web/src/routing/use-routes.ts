@@ -15,3 +15,15 @@ export function useCurrentRoute(): StayRoute | undefined {
 
   return appRoutes.find(({ path }) => matchPath({ path, end: true }, pathname));
 }
+
+/** `route` preceded by its `parent` chain (breadcrumb order, the route itself last). */
+export function routeTrail(route: StayRoute): StayRoute[] {
+  const trail = [route];
+  let parent = appRoutes.find(({ name }) => name === route.parent);
+
+  while (parent && !trail.includes(parent)) {
+    trail.unshift(parent);
+    parent = appRoutes.find(({ name }) => name === parent?.parent);
+  }
+  return trail;
+}

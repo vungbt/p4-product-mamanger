@@ -1,0 +1,13 @@
+{
+  "unsaved": {
+    "title": "Leave without saving?",
+    "description": "The changes you entered will be lost.",
+    "leave": "Leave",
+    "stay": "Stay"
+  },
+  "conflict": {
+    "title": "The data has changed. Reload?",
+    "description": "Someone saved a newer version. Reload to see the latest data; your unsaved edits will be discarded.",
+    "reload": "Reload"
+  }
+}
