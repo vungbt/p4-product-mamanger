@@ -85,6 +85,9 @@ test.describe('ST-06/ST-07 owner settings and buildings (desktop)', () => {
     await test.step('O-05: unsaved changes ask before leaving', async () => {
       await page.getByRole('button', { name: 'Thêm toà' }).click();
       await expect(page).toHaveURL('/buildings/new');
+      // Wait for the new (empty) form: the edit form stays until the route renders.
+      await expect(page.getByRole('heading', { level: 1, name: 'Thêm toà' })).toBeVisible();
+      await expect(page.getByLabel('Mã toà')).toHaveValue('');
       await page.getByLabel('Tên toà').fill(NAME_B);
       await page.getByTestId('app-sidebar').getByRole('link', { name: 'Tổng quan' }).click();
 
