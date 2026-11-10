@@ -62,8 +62,16 @@ Quy ước chung cho mọi màn:
 | T-09 | Gửi yêu cầu cho chủ trọ | Người thuê | ST-25 | MVP |
 | T-10 | Thông báo và nội quy | Người thuê | ST-25 | Quản lý |
 | T-11 | Link hết hạn / bị thu hồi | Người thuê | ST-25 | MVP |
+| O-35 | Thông tin bên cho thuê và chữ ký | Chủ trọ | ST-30 | Hợp đồng online |
+| O-36 | Mẫu hợp đồng (danh sách) | Chủ trọ | ST-30 | Hợp đồng online |
+| O-37 | Soạn mẫu hợp đồng | Chủ trọ | ST-30 | Hợp đồng online |
+| O-38 | Chi tiết văn bản hợp đồng | Chủ trọ, quản lý | ST-30 | Hợp đồng online |
+| O-39 | Tài sản phòng | Chủ trọ, quản lý | ST-30 (30b) | Hợp đồng online |
+| T-12 | Ký văn bản | Người thuê | ST-30 | Hợp đồng online |
+| T-13 | Văn bản của tôi | Người thuê | ST-30 | Hợp đồng online |
+| P-01 | Kiểm tra văn bản (`/verify/:code`) | Công khai | ST-30 | Hợp đồng online |
 
-Tổng: **3 màn chung, 34 màn chủ trọ/quản lý, 11 màn người thuê**, cộng các hộp thoại liệt kê ở [cuối file](#hộp-thoại-và-sheet).
+Tổng: **3 màn chung, 39 màn chủ trọ/quản lý, 13 màn người thuê, 1 màn công khai**, cộng các hộp thoại liệt kê ở [cuối file](#hộp-thoại-và-sheet).
 
 > Phần người thuê được **đưa vào MVP** (trước đây ST-25 ở giai đoạn mở rộng) vì đây là cách chủ trọ gửi hoá đơn và nhận báo hỏng hằng tháng. Thứ tự trong [README](README.md) đã cập nhật tương ứng.
 
@@ -329,6 +337,58 @@ Người thuê **không tạo tài khoản**. Mỗi người ở trong hợp đ�
 
 ---
 
+## Hợp đồng online
+
+Chi tiết nghiệp vụ, biến trong mẫu và trạng thái văn bản: [st-30.md](st-30.md).
+
+### O-35 Thông tin bên cho thuê và chữ ký
+- **Route** `/settings/landlord` · manage Settings · ST-30
+- **Trường:** họ tên, ngày sinh, CCCD, ngày cấp, thường trú, SĐT · **chữ ký mẫu**: vẽ trên màn hình (canvas, nút Xoá/Vẽ lại) hoặc tải ảnh PNG/JPG nền trong; xem trước chữ ký trên trang ký mẫu.
+- CCCD và chữ ký lưu riêng tư; chỉ chủ trọ xem.
+
+### O-36 Mẫu hợp đồng
+- **Route** `/settings/contract-templates` · manage Settings · ST-30
+- **Danh sách** theo loại (Hợp đồng · Phụ lục · Biên bản bàn giao · Biên bản thanh lý) và toà: tên, phiên bản hiện tại, ngày sửa, số văn bản đã dùng.
+- **Thao tác:** tạo từ mẫu mặc định · tạo trống · sao chép · tắt (mẫu đã dùng không xoá).
+
+### O-37 Soạn mẫu hợp đồng
+- **Route** `/settings/contract-templates/:id` · manage Settings · ST-30
+- **Trái:** trình soạn thảo (`@itclabs/react-ui/editor`): tiêu đề, đoạn, danh sách, bảng, in đậm/nghiêng, căn lề.
+- **Phải:** danh sách **biến** theo nhóm, bấm để chèn; mô tả và ví dụ của từng biến; biến không hợp lệ trong nội dung bị gạch đỏ.
+- **Xem trước:** với dữ liệu mẫu hoặc chọn một hợp đồng thật; xem như PDF A4.
+- **Lưu** tạo phiên bản mới (ghi chú thay đổi); lịch sử phiên bản xem lại được, khôi phục = tạo phiên bản mới từ bản cũ.
+- Mobile: chỉ xem và xem trước; soạn thảo trên desktop (hiện thông báo).
+
+### Tab "Văn bản" trong O-17 Chi tiết hợp đồng
+- Danh sách văn bản của hợp đồng: mã, loại, trạng thái (Nháp / Đã gửi / Đã xem / Người thuê đã ký / Hoàn tất / Từ chối / Đã huỷ / Ký giấy / Bị thay thế / Hết hạn), ngày.
+- **Tạo văn bản:** chọn loại + mẫu → app điền dữ liệu → nếu thiếu trường bắt buộc hiện danh sách và liên kết tới chỗ sửa (hồ sơ người thuê, thông tin bên cho thuê…).
+
+### O-38 Chi tiết văn bản hợp đồng
+- **Route** `/contracts/:id/documents/:documentId` · read Contract · ST-30
+- **Nội dung** dạng trang A4 (bản nháp sửa được, đánh dấu "đã sửa tay" nếu khác mẫu).
+- **Người ký:** từng người, bắt buộc/tuỳ chọn, trạng thái, thời điểm; nút sao chép link ký / gửi lại / thu hồi.
+- **Thao tác:** Gửi (chọn người ký, thứ tự ký) · Chủ trọ ký (xác nhận lại mật khẩu) · Tải PDF · Huỷ (lý do) · Đánh dấu ký giấy + tải scan · Tạo văn bản thay thế.
+- **Lịch sử sự kiện:** tạo, gửi, xem, ký, từ chối, tải… kèm thời điểm và thiết bị.
+
+### O-39 Tài sản phòng (30b)
+- **Trong O-08 Chi tiết phòng**, tab Tài sản: tên, số lượng, tình trạng, giá trị bồi thường, ảnh. Dùng làm danh mục cho biên bản bàn giao.
+
+### T-12 Ký văn bản
+- **Route** `/p/documents/:id` · tenant · ST-30
+- Hiển thị văn bản đầy đủ, dễ đọc trên điện thoại (cỡ chữ lớn, không cần zoom). Thanh tiến độ đọc; nút **Ký** chỉ bật khi đã cuộn hết.
+- **Ký:** tick "Tôi đã đọc và đồng ý toàn bộ nội dung" · nhập họ tên đầy đủ (phải khớp hồ sơ, không phân biệt hoa thường/dấu cách thừa) · nhập 4 số cuối SĐT · **vẽ chữ ký** (hoặc "Dùng chữ ký đánh máy") · Xác nhận.
+- **Từ chối:** lý do bắt buộc.
+- Sau khi ký: trạng thái "Đã ký, chờ chủ trọ ký" hoặc "Hoàn tất" + nút tải PDF.
+- Ghi chú pháp lý ngắn: chữ ký điện tử đơn giản, có giá trị làm bằng chứng; có thể yêu cầu bản giấy.
+
+### T-13 Văn bản của tôi
+- **Route** `/p/documents` · tenant · ST-30
+- Danh sách văn bản của hợp đồng: loại, trạng thái, ngày; văn bản chờ mình ký nổi lên đầu và hiện badge ở trang chủ (T-03).
+
+### P-01 Kiểm tra văn bản
+- **Route** `/verify/:code` · công khai · ST-30
+- Nhập/quét mã văn bản (in ở chân trang PDF) → hiện: loại văn bản, toà, trạng thái, số người đã ký, thời điểm hoàn tất. Tải lên file PDF → báo **khớp** hoặc **không khớp** mã băm. Không hiện nội dung, tên hay CCCD.
+
 ## Hộp thoại và sheet
 
 | Hộp thoại | Mở từ | Nội dung chính |
@@ -350,6 +410,11 @@ Người thuê **không tạo tài khoản**. Mỗi người ở trong hợp đ�
 | Void hoá đơn | O-22 | Lý do bắt buộc; cảnh báo mở khoá chỉ số |
 | Bút toán cọc | O-17, O-18 | Loại (thu thêm / hoàn / mất), số tiền, ngày, lý do |
 | Bật/tắt bảo trì phòng | O-08 | Lý do, ngày dự kiến xong |
+| Tạo văn bản hợp đồng | O-17 | Loại, mẫu, danh sách trường còn thiếu |
+| Gửi văn bản để ký | O-38 | Người ký (bắt buộc/tuỳ chọn), thứ tự ký, sao chép link/tin nhắn mẫu |
+| Chủ trọ ký | O-38 | Xem trước chữ ký, xác nhận lại mật khẩu |
+| Đánh dấu ký giấy | O-38 | Tải bản scan (PDF/ảnh), ngày ký |
+| Vẽ chữ ký | O-35, T-12 | Canvas, Xoá, Vẽ lại, dùng chữ ký đánh máy |
 
 ## Thay đổi so với kế hoạch trước
 
