@@ -80,5 +80,9 @@
   "import_unknown_columns": "File có cột không thuộc file mẫu.",
   "import_missing_columns": "File thiếu cột bắt buộc (Họ tên, Số điện thoại).",
   "import_duplicate_columns": "File có cột bị lặp.",
-  "import_rows": "Danh sách dòng cần nhập không hợp lệ (tối đa {{max}} dòng)."
+  "import_rows": "Danh sách dòng cần nhập không hợp lệ (tối đa {{max}} dòng).",
+  "contract_not_found": "Không tìm thấy hợp đồng.",
+  "contract_not_draft": "Chỉ thao tác được với hợp đồng nháp.",
+  "room_maintenance": "Phòng đang bảo trì, không thể kích hoạt hợp đồng.",
+  "room_unavailable": "Phòng hoặc toà đã lưu trữ."
 }

@@ -3,6 +3,7 @@ export * from './account.js';
 export * from './audit.js';
 export * from './building.js';
 export * from './constants.js';
+export * from './contract.js';
 export * from './date.js';
 export * from './errors.js';
 export * from './expense.js';

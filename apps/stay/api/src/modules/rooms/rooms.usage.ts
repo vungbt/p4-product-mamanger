@@ -1,9 +1,12 @@
-/**
- * What other modules know about a room. Occupants (ST-10), meter readings (ST-13) and invoices
- * (ST-14/ST-18) do not exist yet: each function returns the empty answer and the owning task adds
- * its query here, so the room map and room detail need no other change. No placeholder data.
- */
-import type { RoomInvoiceSummary, RoomOccupant } from '@stay/shared';
+/** Room occupants and cross-module usage; invoices remain ST-14/ST-18 extension points. */
+import { isoDateInTimeZone, type RoomInvoiceSummary, type RoomOccupant } from '@stay/shared';
+import { Op, QueryTypes, type Transaction } from 'sequelize';
+import {
+  ContractModel,
+  ContractOccupantModel,
+  sequelize,
+  TenantModel,
+} from '@/sequelize/models/index.js';
 
 /** Latest recorded reading per meter id (ST-13). */
 export interface LatestReading {
@@ -17,8 +20,34 @@ export async function roomDebts(_roomIds: readonly string[]): Promise<Map<string
 }
 
 /** People living in the room under its holding contract, primary tenant first (ST-10). */
-export async function roomOccupants(_roomId: string): Promise<RoomOccupant[]> {
-  return [];
+export async function roomOccupants(roomId: string): Promise<RoomOccupant[]> {
+  const contract = await ContractModel.findOne({
+    where: { roomId, status: { [Op.in]: ['active', 'ending'] } },
+  });
+  if (!contract) return [];
+  const today = isoDateInTimeZone(new Date());
+  const links = await ContractOccupantModel.findAll({
+    where: {
+      contractId: contract.id,
+      fromDate: { [Op.lte]: today },
+      [Op.or]: [{ toDate: null }, { toDate: { [Op.gte]: today } }],
+    },
+    order: [
+      ['isPrimary', 'DESC'],
+      ['id', 'ASC'],
+    ],
+  });
+  const tenants = await TenantModel.findAll({
+    where: { id: { [Op.in]: links.map((o) => o.tenantId) } },
+  });
+
+  return links.map((o) => ({
+    tenantId: o.tenantId,
+    fullName: tenants.find((t) => t.id === o.tenantId)?.fullName ?? '',
+    phone: tenants.find((t) => t.id === o.tenantId)?.phone ?? null,
+    isPrimary: o.isPrimary,
+    fromDate: o.fromDate,
+  }));
 }
 
 /** The room's latest invoices, newest first (ST-14). */
@@ -31,7 +60,25 @@ export async function roomRecentInvoices(
 
 /** Latest reading per meter id (ST-13); meters without readings are absent. */
 export async function latestMeterReadings(
-  _meterIds: readonly string[],
+  meterIds: readonly string[],
+  transaction?: Transaction,
 ): Promise<Map<string, LatestReading>> {
-  return new Map();
+  if (!meterIds.length) return new Map();
+  // ST-13 owns this table. Until its migration exists, installed readings are the baseline.
+  const [table] = await sequelize.query<{ present: boolean }>(
+    "SELECT to_regclass('public.meter_readings') IS NOT NULL AS present",
+    { type: QueryTypes.SELECT, transaction },
+  );
+
+  if (!table?.present) return new Map();
+  const rows = await sequelize.query<{ meterId: string; reading: string; period: string }>(
+    `SELECT DISTINCT ON (meter_id) meter_id AS "meterId", reading, period
+     FROM meter_readings WHERE meter_id IN (:meterIds)
+     ORDER BY meter_id, read_on DESC, period DESC, id DESC`,
+    { replacements: { meterIds: [...meterIds] }, type: QueryTypes.SELECT, transaction },
+  );
+
+  return new Map(
+    rows.map((row) => [row.meterId, { reading: Number(row.reading), period: row.period }]),
+  );
 }

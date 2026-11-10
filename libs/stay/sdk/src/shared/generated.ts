@@ -842,6 +842,122 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/contracts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh sách hợp đồng
+     * @description Lọc theo toà, phòng, trạng thái và expiring=true (hiệu lực, kết thúc trong 30 ngày).
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_contracts'];
+    put?: never;
+    /**
+     * Tạo bản nháp hợp đồng
+     * @description **Quyền:** `create:Contract`.
+     */
+    post: operations['post_api_contracts'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chi tiết hợp đồng
+     * @description **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_contracts_id'];
+    /**
+     * Sửa bản nháp
+     * @description Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    put: operations['put_api_contracts_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/activate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Kích hoạt hợp đồng
+     * @description Khoá phòng, kiểm tra người ở và chỉ số, ghi nhận cọc đã thu. Không tạo hoá đơn.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_activate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Huỷ bản nháp
+     * @description **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_cancel'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/move-in-preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Xem trước tiền nhận phòng
+     * @description Tính tại server theo ngày bắt đầu, giá toà, số người và xe đăng ký. Không gồm điện nước hay cọc.
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_contracts_id_move_in_preview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/expense-categories': {
     parameters: {
       query?: never;
@@ -1632,10 +1748,81 @@ export interface components {
       occupiedRoomCount: number;
       roomCount: number;
     };
+    ContractEvent: {
+      actorId: string;
+      createdAt: string;
+      id: string;
+      payload: {
+        [key: string]: (string | number | boolean) | null;
+      };
+      type: string;
+    };
+    ContractInput: {
+      depositAmount: number;
+      depositCollected: boolean;
+      depositDate: string | null;
+      /** @enum {string} */
+      depositMethod: 'bank_transfer' | 'cash' | 'other';
+      depositNote: string | null;
+      endDate: string | null;
+      initialElectric: number;
+      initialElectricPhotoFileId: string | null;
+      initialWater: number;
+      initialWaterPhotoFileId: string | null;
+      note: string | null;
+      occupantIds: string[];
+      primaryTenantId: string | null;
+      rent: number;
+      roomId: string;
+      serviceIds: string[];
+      startDate: string;
+      vehicleIds: string[];
+    };
+    ContractOccupant: {
+      fromDate: string;
+      fullName: string;
+      isPrimary: boolean;
+      tenantId: string;
+      toDate: string | null;
+    };
+    ContractService: {
+      fromDate: string;
+      /** @enum {string} */
+      kind: 'electricity' | 'per_person' | 'per_room' | 'per_vehicle' | 'water';
+      name: string;
+      serviceId: string;
+      toDate: string | null;
+    };
+    ContractVehicle: {
+      fromDate: string;
+      plate: string;
+      toDate: string | null;
+      vehicleId: string;
+    };
     DuplicateTenantRef: {
       /** @enum {string} */
       field: 'idNumber' | 'phone';
       tenantId: string | null;
+    };
+    MoveInPreview: {
+      lines: components['schemas']['MoveInPreviewLine'][];
+      occupantCount: number;
+      period: string;
+      rounding: number;
+      subtotal: number;
+      total: number;
+      vehicleCount: number;
+      warnings: string[];
+    };
+    MoveInPreviewLine: {
+      amount: number;
+      label: string;
+      quantity: number;
+      ratioDen: number | null;
+      ratioNum: number | null;
+      serviceId: string | null;
+      type: string;
+      unitPrice: number | null;
     };
     PaginationMeta: {
       page: number;
@@ -1794,6 +1981,44 @@ export interface components {
     StayCapabilities: {
       contractVersion: string;
       rules: components['schemas']['StayRule'][];
+    };
+    StayContract: {
+      buildingId: string;
+      code: string;
+      createdAt: string;
+      depositAmount: number;
+      depositCollected: boolean;
+      depositDate: string | null;
+      depositHeld: number;
+      /** @enum {string} */
+      depositMethod: 'bank_transfer' | 'cash' | 'other';
+      depositNote: string | null;
+      endDate: string | null;
+      events: components['schemas']['ContractEvent'][];
+      id: string;
+      initialElectric: number;
+      initialElectricPhotoFileId: string | null;
+      initialElectricPhotoUrl: string | null;
+      initialWater: number;
+      initialWaterPhotoFileId: string | null;
+      initialWaterPhotoUrl: string | null;
+      note: string | null;
+      occupantIds: string[];
+      occupants: components['schemas']['ContractOccupant'][];
+      primaryTenantId: string | null;
+      primaryTenantName: string | null;
+      rent: number;
+      roomCode: string;
+      roomId: string;
+      serviceIds: string[];
+      services: components['schemas']['ContractService'][];
+      startDate: string;
+      /** @enum {string} */
+      status: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
+      updatedAt: string;
+      vehicleIds: string[];
+      vehicles: components['schemas']['ContractVehicle'][];
+      version: number;
     };
     StayExpense: {
       amount: number;
@@ -2003,7 +2228,7 @@ export interface components {
       id: string;
       maxBytes: number;
       /** @enum {string} */
-      purpose: 'expense_receipt' | 'tenant_document';
+      purpose: 'contract_meter' | 'expense_receipt' | 'tenant_document';
       /** @enum {string} */
       status: 'completed' | 'pending';
     };
@@ -2015,7 +2240,7 @@ export interface components {
       id: string;
       maxBytes: number;
       /** @enum {string} */
-      purpose: 'expense_receipt' | 'tenant_document';
+      purpose: 'contract_meter' | 'expense_receipt' | 'tenant_document';
       /** @enum {string} */
       status: 'completed' | 'pending';
       uploadUrl: string;
@@ -6034,6 +6259,234 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_contracts: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+        expiring?: 'false' | 'true';
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        roomId?: string;
+        sortBy?: 'code' | 'startDate' | 'endDate' | 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+        status?: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayContract'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description Tuỳ chọn; retry cùng key và nội dung trả lại cùng bản nháp. Khác nội dung trả 409. */
+        'Idempotency-Key'?: string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayContract'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_contracts_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayContract'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_contracts_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractInput'] & {
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayContract'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_activate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayContract'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayContract'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_contracts_id_move_in_preview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['MoveInPreview'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_expense_categories: {
     parameters: {
       query?: never;
@@ -7191,7 +7644,7 @@ export interface operations {
           /** Format: uuid */
           buildingId: string;
           /** @enum {string} */
-          purpose: 'tenant_document' | 'expense_receipt';
+          purpose: 'tenant_document' | 'expense_receipt' | 'contract_meter';
         };
       };
     };

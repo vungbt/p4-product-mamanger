@@ -25,6 +25,8 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 
 const TAG_DESCRIPTIONS = {
   expenses: 'Chi phí vận hành, danh mục chi phí và tổng theo kỳ. Ảnh hoá đơn lưu private.',
+  contracts:
+    'Hợp đồng thuê, kích hoạt, huỷ bản nháp và xem trước tiền nhận phòng. Không tạo hoá đơn (ST-14).',
   audit: 'Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.',
   buildings: 'Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.',
   me: 'Người dùng hiện tại và quyền CASL.',
@@ -63,6 +65,22 @@ const OPERATIONS = {
   ],
   'PUT /api/expenses/{id}': ['Sửa chi phí', VERSION_NOTE],
   'DELETE /api/expenses/{id}': ['Xoá chi phí'],
+  'GET /api/contracts': [
+    'Danh sách hợp đồng',
+    'Lọc theo toà, phòng, trạng thái và expiring=true (hiệu lực, kết thúc trong 30 ngày).',
+  ],
+  'POST /api/contracts': ['Tạo bản nháp hợp đồng'],
+  'GET /api/contracts/{id}': ['Chi tiết hợp đồng'],
+  'PUT /api/contracts/{id}': ['Sửa bản nháp', VERSION_NOTE],
+  'POST /api/contracts/{id}/activate': [
+    'Kích hoạt hợp đồng',
+    'Khoá phòng, kiểm tra người ở và chỉ số, ghi nhận cọc đã thu. Không tạo hoá đơn.',
+  ],
+  'POST /api/contracts/{id}/cancel': ['Huỷ bản nháp'],
+  'GET /api/contracts/{id}/move-in-preview': [
+    'Xem trước tiền nhận phòng',
+    'Tính tại server theo ngày bắt đầu, giá toà, số người và xe đăng ký. Không gồm điện nước hay cọc.',
+  ],
   'GET /api/audit-logs': [
     'Lịch sử thay đổi',
     'Người quản lý chỉ xem các toà được gán. from/to gồm cả ngày kết thúc.',
@@ -303,6 +321,12 @@ const categoryFields = {
   name: { schema: { type: 'string', minLength: 1, maxLength: 120 }, required: true },
   active: { schema: { type: 'boolean', default: true } },
 };
+const contractBody = {
+  requestBody: {
+    required: true,
+    content: { 'application/json': { schema: { ref: 'ContractInput' } } },
+  },
+};
 const OVERRIDES = {
   'POST /api/expenses': { fields: expenseFields },
   'PUT /api/expenses/{id}': {
@@ -316,6 +340,38 @@ const OVERRIDES = {
     fields: {
       ...categoryFields,
       version: { schema: { type: 'integer', minimum: 1 }, required: true },
+    },
+  },
+  'POST /api/contracts': {
+    ...contractBody,
+    parameters: [
+      {
+        name: 'Idempotency-Key',
+        in: 'header',
+        required: false,
+        description:
+          'Tuỳ chọn; retry cùng key và nội dung trả lại cùng bản nháp. Khác nội dung trả 409.',
+        schema: { type: 'string', minLength: 8, maxLength: 128 },
+      },
+    ],
+  },
+  'PUT /api/contracts/{id}': {
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            allOf: [
+              { ref: 'ContractInput' },
+              {
+                type: 'object',
+                required: ['version'],
+                properties: { version: { type: 'integer', minimum: 1 } },
+              },
+            ],
+          },
+        },
+      },
     },
   },
   'PUT /api/settings': {
@@ -382,7 +438,7 @@ const OVERRIDES = {
   'POST /api/uploads': {
     fields: {
       purpose: {
-        schema: { type: 'string', enum: ['tenant_document', 'expense_receipt'] },
+        schema: { type: 'string', enum: ['tenant_document', 'expense_receipt', 'contract_meter'] },
         required: true,
       },
       buildingId: { schema: { type: 'string', format: 'uuid' }, required: true },
@@ -417,6 +473,7 @@ export default {
     'libs/stay/shared/src/audit.ts',
     'libs/stay/shared/src/building.ts',
     'libs/stay/shared/src/constants.ts',
+    'libs/stay/shared/src/contract.ts',
     'libs/stay/shared/src/room.ts',
     'libs/stay/shared/src/settings.ts',
     'libs/stay/shared/src/tenant.ts',

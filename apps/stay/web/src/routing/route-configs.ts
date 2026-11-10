@@ -22,6 +22,9 @@ export type StayRoute = {
 
 const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
 const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
+const ContractListPage = lazy(() => import('@/modules/contracts/list-page'));
+const ContractWizardPage = lazy(() => import('@/modules/contracts/wizard-page'));
+const ContractDetailPage = lazy(() => import('@/modules/contracts/detail-page'));
 const AuditPage = lazy(() => import('@/modules/audit/page'));
 const OverviewPage = lazy(() => import('@/modules/overview/page'));
 const PlaceholderPage = lazy(() => import('@/modules/placeholder/page'));
@@ -143,8 +146,26 @@ export const appRoutes: StayRoute[] = [
     path: '/contracts',
     name: 'contracts',
     icon: 'clipboardText',
-    component: PlaceholderPage,
+    component: ContractListPage,
     ability: { action: 'read', subject: 'Contract' },
+  },
+  {
+    path: '/contracts/new',
+    name: 'contractNew',
+    icon: 'clipboardText',
+    component: ContractWizardPage,
+    ability: { action: 'create', subject: 'Contract' },
+    hideInMenu: true,
+    parent: 'contracts',
+  },
+  {
+    path: '/contracts/:id',
+    name: 'contractDetail',
+    icon: 'clipboardText',
+    component: ContractDetailPage,
+    ability: { action: 'read', subject: 'Contract' },
+    hideInMenu: true,
+    parent: 'contracts',
   },
   {
     path: '/tenants',

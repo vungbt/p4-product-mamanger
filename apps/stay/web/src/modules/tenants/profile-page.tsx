@@ -216,7 +216,10 @@ export default function TenantProfilePage() {
           <ul className="grid gap-2">
             {data.contracts.map((contract) => (
               <li key={contract.id} className="text-ink">
-                {contract.code} · {contract.room.code} · {formatDate(contract.fromDate)} –{' '}
+                <Link className="text-accent" to={`/contracts/${contract.id}`}>
+                  {contract.code}
+                </Link>{' '}
+                · {contract.room.code} · {formatDate(contract.fromDate)} –{' '}
                 {formatDate(contract.toDate)}
               </li>
             ))}

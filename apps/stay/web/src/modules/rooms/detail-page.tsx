@@ -13,7 +13,7 @@ import { useArchiveRoom, useRoom } from '@stay/sdk/react';
 import { ApiSdkError, getErrorMessage } from '@stay/sdk/shared';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useCanAccess } from '@/libraries/ability';
 import { ROUTES, roomEditPath } from '@/routing/route-configs';
 import { MaintenanceDialog } from './components/maintenance-dialog';
@@ -211,7 +211,14 @@ export default function RoomDetailPage() {
           {room.contract ? (
             <Facts
               items={[
-                { label: t('rooms.detail.contractCode'), value: room.contract.code },
+                {
+                  label: t('rooms.detail.contractCode'),
+                  value: (
+                    <Link className="text-accent" to={`/contracts/${room.contract.id}`}>
+                      {room.contract.code}
+                    </Link>
+                  ),
+                },
                 {
                   label: t('rooms.detail.primaryTenant'),
                   value: room.contract.primaryTenantName ?? '—',
@@ -222,7 +229,14 @@ export default function RoomDetailPage() {
               ]}
             />
           ) : (
-            <Empty>{t('rooms.detail.noContract')}</Empty>
+            <div className="grid gap-2">
+              <Empty>{t('rooms.detail.noContract')}</Empty>
+              {room.status === 'vacant' && (
+                <Link className="font-semibold text-accent" to={`/contracts/new?roomId=${room.id}`}>
+                  Tạo hợp đồng
+                </Link>
+              )}
+            </div>
           )}
         </Section>
 

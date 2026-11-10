@@ -6,6 +6,12 @@ import {
   BuildingServicePriceModel,
   initBuildingServicePriceModel,
 } from './building-service-price.model.js';
+import { ContractModel, initContractModel } from './contract.model.js';
+import { ContractEventModel, initContractEventModel } from './contract-event.model.js';
+import { ContractOccupantModel, initContractOccupantModel } from './contract-occupant.model.js';
+import { ContractServiceModel, initContractServiceModel } from './contract-service.model.js';
+import { ContractVehicleModel, initContractVehicleModel } from './contract-vehicle.model.js';
+import { DepositEntryModel, initDepositEntryModel } from './deposit-entry.model.js';
 import { DomainEventModel, initDomainEventModel } from './domain-event.model.js';
 import { ExpenseModel, initExpenseModel } from './expense.model.js';
 import { ExpenseCategoryModel, initExpenseCategoryModel } from './expense-category.model.js';
@@ -27,6 +33,12 @@ import { initVehicleModel, VehicleModel } from './vehicle.model.js';
 
 initExpenseCategoryModel(sequelize);
 initExpenseModel(sequelize);
+initContractModel(sequelize);
+initContractOccupantModel(sequelize);
+initContractServiceModel(sequelize);
+initContractVehicleModel(sequelize);
+initContractEventModel(sequelize);
+initDepositEntryModel(sequelize);
 initUserModel(sequelize);
 initAuditLogModel(sequelize);
 initDomainEventModel(sequelize);
@@ -66,6 +78,12 @@ export {
   BuildingMemberModel,
   BuildingModel,
   BuildingServicePriceModel,
+  ContractEventModel,
+  ContractModel,
+  ContractOccupantModel,
+  ContractServiceModel,
+  ContractVehicleModel,
+  DepositEntryModel,
   DomainEventModel,
   ExpenseCategoryModel,
   ExpenseModel,

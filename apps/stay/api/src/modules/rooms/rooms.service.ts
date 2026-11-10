@@ -3,6 +3,7 @@ import {
   buildPaginationMeta,
   listSearch,
   NotFound,
+  searchPattern,
   selectFields,
   setAuditChanges,
 } from '@p4/server-core';
@@ -19,7 +20,7 @@ import {
   type StayRoomDetail,
   type StayUser,
 } from '@stay/shared';
-import { Op, type Transaction, type WhereOptions } from 'sequelize';
+import { literal, Op, type Transaction, type WhereOptions } from 'sequelize';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   BuildingModel,
@@ -27,6 +28,7 @@ import {
   RoomDefaultServiceModel,
   RoomModel,
   ServiceDefinitionModel,
+  sequelize,
 } from '@/sequelize/models/index.js';
 import type { MeterAttributes } from '@/sequelize/models/meter.model.js';
 import type { RoomAttributes } from '@/sequelize/models/room.model.js';
@@ -266,8 +268,16 @@ export async function listRooms(
   const building = await findRoomBuilding(user, buildingId, 'read');
   const conditions: WhereOptions<RoomAttributes>[] = [
     { buildingId: building.id, archivedAt: { [Op.is]: null } },
-    // ST-10 also matches the primary tenant's name.
-    listSearch(RoomModel, query.q, ['code']),
+    query.q
+      ? {
+          [Op.or]: [
+            listSearch(RoomModel, query.q, ['code']),
+            literal(
+              `EXISTS (SELECT 1 FROM contracts c JOIN contract_occupants co ON co.contract_id=c.id JOIN tenants t ON t.id=co.tenant_id WHERE c.room_id="RoomModel".id AND c.status IN ('active','ending') AND co.is_primary AND co.to_date IS NULL AND t.full_name ILIKE ${sequelize.escape(searchPattern(query.q))})`,
+            ),
+          ],
+        }
+      : {},
   ];
 
   if (query.floor !== undefined) conditions.push({ floor: query.floor });
