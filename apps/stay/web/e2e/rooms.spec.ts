@@ -25,8 +25,14 @@ async function json(
 
 /** Opens `path` with the test building selected in the header. */
 async function openInBuilding(page: Page, path: string) {
-  await page.evaluate((id) => localStorage.setItem('stay_building_id', id), buildingId);
-  await page.goto(path);
+  // The shell may still persist its default building after sign-in; retry until ours sticks.
+  await expect(async () => {
+    await page.evaluate((id) => localStorage.setItem('stay_building_id', id), buildingId);
+    await page.goto(path);
+    await expect(page.getByTestId('active-building')).toHaveAttribute('data-building-code', code, {
+      timeout: 3000,
+    });
+  }).toPass({ timeout: 20000 });
 }
 
 test.describe
