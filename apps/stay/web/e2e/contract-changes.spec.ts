@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
-import { chooseOption, signIn } from './helpers';
+import { signIn } from './helpers';
 
 for (const width of [1280, 375]) {
   test(`ST-12 changes, history and room map at ${width}px`, async ({ page }) => {
@@ -65,6 +65,14 @@ for (const width of [1280, 375]) {
     await activate(occupied.id, (await otherTenantResponse.json()).data);
     await page.evaluate((id) => localStorage.setItem('stay_building_id', id), building.id);
     await page.goto(`/contracts/${contract.id}`);
+    // Server search re-renders the menu when results arrive; click only once it has settled.
+    const pickRoom = async (code: string) => {
+      const dialog = page.getByRole('dialog');
+      await dialog.getByRole('combobox', { name: /Phòng mới/ }).fill(code);
+      await expect(page.getByRole('option')).toHaveCount(1);
+      await page.getByRole('option', { name: code, exact: true }).click();
+      await expect(dialog.getByText(code, { exact: true })).toBeVisible();
+    };
     const openChange = async (label: string) => {
       await page.getByRole('button', { name: 'Thay đổi', exact: true }).click();
       await page.getByRole('menuitem', { name: label, exact: true }).click();
@@ -93,8 +101,7 @@ for (const width of [1280, 375]) {
     expect(afterRent.rent).toBe(3500000);
     dialog = await openChange('Đổi phòng');
     // Kit Select performs server search; no assumption about building-wide room totals/pages.
-    await dialog.getByRole('combobox', { name: /Phòng mới/ }).fill(occupied.code);
-    await chooseOption(page, dialog, /Phòng mới/, occupied.code);
+    await pickRoom(occupied.code);
     await dialog.getByRole('spinbutton', { name: /Giá thuê mới/ }).fill('3600000');
     await dialog.getByRole('spinbutton', { name: /Điện cuối phòng cũ/ }).fill('25');
     await dialog.getByRole('spinbutton', { name: /Nước cuối phòng cũ/ }).fill('5');
@@ -114,8 +121,7 @@ for (const width of [1280, 375]) {
       },
     });
     expect(rejected.status()).toBe(409);
-    await dialog.getByRole('combobox', { name: /Phòng mới/ }).fill(target.code);
-    await chooseOption(page, dialog, /Phòng mới/, target.code);
+    await pickRoom(target.code);
     await save(dialog);
     await expect(page.getByText(`Hiệu lực · Phòng ${target.code}`)).toBeVisible();
     await page.getByRole('tab', { name: 'Lịch sử', exact: true }).click();
