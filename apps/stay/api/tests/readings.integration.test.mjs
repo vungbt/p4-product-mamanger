@@ -108,7 +108,7 @@ describe('Stay meter closing', { skip: !base }, () => {
           replacements: {
             id,
             role,
-            email: `${role}-${suffix}@stay.local`,
+            email: `${role}-${suffix.toLowerCase()}@stay.local`,
             accountId: randomUUID(),
             hash: await bcrypt.hash('readings-password-123', 10),
           },
@@ -119,8 +119,11 @@ describe('Stay meter closing', { skip: !base }, () => {
       'INSERT INTO building_members(id,building_id,user_id) VALUES(:id,:buildingId,:userId)',
       { replacements: { id: randomUUID(), buildingId: building.id, userId: managerId } },
     );
-    manager = await login(`manager-${suffix}@stay.local`, 'readings-password-123');
-    tenantCookie = await login(`tenant-${suffix}@stay.local`, 'readings-password-123');
+    manager = await login(`manager-${suffix.toLowerCase()}@stay.local`, 'readings-password-123');
+    tenantCookie = await login(
+      `tenant-${suffix.toLowerCase()}@stay.local`,
+      'readings-password-123',
+    );
   });
   after(async () => {
     await sequelize.close();
