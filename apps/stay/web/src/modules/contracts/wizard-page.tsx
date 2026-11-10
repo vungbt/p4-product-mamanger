@@ -106,13 +106,16 @@ function QuickTenant({
   return (
     <Form
       form={form}
+      aria-labelledby="quick-tenant-heading"
       schema={{
         fullName: v.pipe(v.string(), v.trim(), v.minLength(1, 'Nhập họ tên')),
         phone: v.pipe(v.string(), v.regex(/^0\d{9}$/, 'SĐT gồm 10 số, bắt đầu 0')),
       }}
       className="grid gap-3 rounded-panel border border-line bg-surface p-4"
     >
-      <h2 className="font-semibold">Tạo nhanh người thuê</h2>
+      <h2 id="quick-tenant-heading" className="font-semibold">
+        Tạo nhanh người thuê
+      </h2>
       {error && <Alert tone="danger">{error}</Alert>}
       <FormField name="fullName" label="Họ tên" required>
         <Input />
@@ -443,10 +446,10 @@ function Wizard({
         )}
         {step === 1 && (
           <>
-            <FormField name="occupantIds" label="Người ở">
+            <FormField name="occupantIds">
               {(field) => (
                 <Select
-                  label="Người ở"
+                  label="Người ở trong phòng"
                   multiple
                   value={value.occupantIds}
                   options={(tenants.data?.data ?? []).map((t) => ({

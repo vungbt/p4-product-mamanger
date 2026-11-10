@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
-import { saveScreenshot, signIn } from './helpers';
+import { chooseOption, saveScreenshot, signIn } from './helpers';
 
 for (const width of [1280, 375]) {
   test(`ST-10 wizard activates a vacant room and updates room/tenant views at ${width}px`, async ({
@@ -34,15 +34,16 @@ for (const width of [1280, 375]) {
     await expect(page.getByRole('heading', { name: 'Bước 2: Người ở' })).toBeVisible();
     // Quick creation uses the real tenant endpoint and selects the new tenant as representative.
     const name = `Khách hợp đồng ${suffix}`;
-    await page.getByLabel('Họ tên', { exact: true }).fill(name);
-    await page.getByLabel('Số điện thoại', { exact: true }).fill('0901234567');
-    await page.getByRole('button', { name: 'Thêm người thuê', exact: true }).click();
-    await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
+    const quickTenant = page.getByRole('form', { name: 'Tạo nhanh người thuê', exact: true });
+    await quickTenant.getByRole('textbox', { name: /Họ tên/ }).fill(name);
+    await quickTenant.getByRole('textbox', { name: /Số điện thoại/ }).fill('0901234567');
+    await quickTenant.getByRole('button', { name: 'Thêm người thuê', exact: true }).click();
+    await chooseOption(page, page, 'Người đại diện', name);
     await page.getByRole('button', { name: 'Lưu nháp & tiếp tục' }).click();
     await expect(page.getByRole('heading', { name: 'Bước 3: Dịch vụ & xe' })).toBeVisible();
     await page.getByRole('button', { name: 'Lưu nháp & tiếp tục' }).click();
     await expect(page.getByRole('heading', { name: 'Bước 4: Cọc & chỉ số' })).toBeVisible();
-    await page.getByLabel('Tiền cọc', { exact: true }).fill('3000000');
+    await page.getByRole('spinbutton', { name: /Tiền cọc/ }).fill('3000000');
     await page.getByRole('button', { name: 'Lấy chỉ số gần nhất' }).click();
     await page.getByRole('button', { name: 'Lưu nháp & tiếp tục' }).click();
     await expect(page.getByTestId('move-in-preview')).toContainText('Tiền nhận phòng');
