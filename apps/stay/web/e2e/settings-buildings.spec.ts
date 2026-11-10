@@ -47,7 +47,9 @@ test.describe('ST-06/ST-07 owner settings and buildings (desktop)', () => {
       await expect(form.getByLabel('Đơn vị')).toHaveValue('kWh');
       await form.getByLabel('Đơn giá mặc định').fill('4000');
       await form.getByRole('button', { name: 'Thêm dịch vụ' }).click();
-      await expect(form.getByRole('alert').filter({ hasText: 'đang bật' })).toBeVisible();
+      await expect(
+        form.getByText('Đã có một dịch vụ cùng cách tính (điện/nước) đang bật.'),
+      ).toBeVisible();
       await saveScreenshot(page, 'o02-service-electricity-error-desktop');
       await form.getByRole('button', { name: 'Huỷ' }).click();
       await expect(form).toBeHidden();
