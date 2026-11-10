@@ -174,7 +174,9 @@ export function ContractChangeDialog({
 
   useEffect(() => {
     const errors = apiFormErrors(serverCause, FIELDS, 'Kiểm tra lại thông tin.');
-    for (const field of FIELDS) form.setFieldMeta(field, serverError(errors.fields[field]));
+    // Each change kind mounts only some fields; unmounted ones have no meta to update.
+    for (const field of FIELDS)
+      if (form.getFieldMeta(field)) form.setFieldMeta(field, serverError(errors.fields[field]));
   }, [serverCause, form]);
 
   const Overlay = mobile ? Drawer : Dialog;
