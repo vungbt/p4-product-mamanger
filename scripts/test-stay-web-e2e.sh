@@ -15,6 +15,8 @@ export STAY_BETTER_AUTH_URL="${STAY_BETTER_AUTH_URL:-http://127.0.0.1:$STAY_PORT
 export STAY_BETTER_AUTH_SECRET="${STAY_BETTER_AUTH_SECRET:-ci-only-stay-better-auth-secret-0123456789}"
 export STAY_CORS_ORIGIN="${STAY_CORS_ORIGIN:-http://localhost:5174}"
 export STAY_API_PROXY_TARGET="http://127.0.0.1:$STAY_PORT"
+# Every spec signs in; the production limit of 30 per window is too low for the suite.
+export STAY_SIGN_IN_RATE_LIMIT="${STAY_SIGN_IN_RATE_LIMIT:-1000}"
 
 cd "$api_dir"
 pnpm build

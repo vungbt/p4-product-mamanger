@@ -58,11 +58,11 @@ export function overpayMessage(remaining: number) {
 
 export function PaymentStatusTag({ payment }: { payment: Pick<StayPayment, 'status'> }) {
   return payment.status === 'reversed' ? (
-    <Tag tone="neutral" size="sm" data-payment-status="reversed">
+    <Tag tone="neutral" size="sm" data-payment-badge="reversed">
       Đã huỷ
     </Tag>
   ) : (
-    <Tag tone="success" size="sm" data-payment-status="recorded">
+    <Tag tone="success" size="sm" data-payment-badge="recorded">
       Đã ghi
     </Tag>
   );
