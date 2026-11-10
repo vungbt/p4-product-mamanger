@@ -65,15 +65,15 @@ for (const width of [1280, 375]) {
     await activate(occupied.id, (await otherTenantResponse.json()).data);
     await page.evaluate((id) => localStorage.setItem('stay_building_id', id), building.id);
     await page.goto(`/contracts/${contract.id}`);
-    // Server search re-renders the menu when results arrive; click only once it has settled.
+    // Building A has many rooms: open the menu, search on the server, and click only once the
+    // filtered result is the single remaining option (earlier renders get detached).
     const pickRoom = async (code: string) => {
       const dialog = page.getByRole('dialog');
-      const searched = page.waitForResponse(
-        (r) => r.url().includes('/rooms') && r.url().includes(`q=${code}`) && r.ok(),
-      );
-      await dialog.getByRole('combobox', { name: /Phòng mới/ }).fill(code);
-      await searched;
+      const input = dialog.getByRole('combobox', { name: /Phòng mới/ });
+      await input.focus();
       await page.keyboard.press('ArrowDown');
+      await input.pressSequentially(code);
+      await expect(page.getByRole('option')).toHaveCount(1);
       await page.getByRole('option', { name: code, exact: true }).click();
       await expect(dialog.getByText(code, { exact: true })).toBeVisible();
     };
