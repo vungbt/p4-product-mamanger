@@ -34,6 +34,10 @@
       "expenseCategories": {
         "title": "Expense categories",
         "description": "Manage operating expense categories."
+      },
+      "announcements": {
+        "title": "Tenant announcements",
+        "description": "Notices for the whole building or rooms, pinned, with an expiry, on the tenant portal."
       }
     }
   },

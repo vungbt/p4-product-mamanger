@@ -5,7 +5,7 @@ import {
   queryText,
   uuidRouteId,
 } from '@p4/server-core';
-import { STAY_UPLOAD_MAX_BYTES, STAY_UPLOAD_PURPOSES } from '@stay/shared';
+import { STAFF_UPLOAD_PURPOSES, STAY_UPLOAD_MAX_BYTES } from '@stay/shared';
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import multer from 'multer';
 import { authRequired } from '@/middlewares/auth.middleware.js';
@@ -41,7 +41,7 @@ router.post(
   authRequired,
   apiHandler(async (req) => {
     const body = formBody(req);
-    const purpose = body.enum('purpose', STAY_UPLOAD_PURPOSES);
+    const purpose = body.enum('purpose', STAFF_UPLOAD_PURPOSES);
     const buildingId = body.text('buildingId', 36);
 
     if (!body.errors.buildingId) body.check('buildingId', UUID_PATTERN.test(buildingId));

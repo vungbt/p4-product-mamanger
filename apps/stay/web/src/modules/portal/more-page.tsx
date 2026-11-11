@@ -4,13 +4,13 @@ import { usePortalMe, usePortalSignOut } from '@stay/sdk/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ContactLinks, PortalSection, portalPaths } from './portal-ui';
 
-const LINKS: { to: string; label: string; icon: IconName; soon?: boolean }[] = [
+const LINKS: { to: string; label: string; icon: IconName }[] = [
   { to: portalPaths.usage, label: 'Điện nước', icon: 'bolt' },
+  { to: portalPaths.requests, label: 'Yêu cầu gửi chủ trọ', icon: 'messages' },
   { to: portalPaths.notices, label: 'Thông báo và nội quy', icon: 'megaphone' },
-  { to: portalPaths.request, label: 'Gửi yêu cầu cho chủ trọ', icon: 'messages', soon: true },
 ];
 
-/** "Thêm": điện nước, gửi yêu cầu (part B), thông báo & nội quy, liên hệ, đăng xuất. */
+/** "Thêm": điện nước, yêu cầu, thông báo & nội quy, liên hệ, đăng xuất. */
 export default function PortalMorePage() {
   const me = usePortalMe();
   const signOut = usePortalSignOut();
@@ -39,7 +39,6 @@ export default function PortalMorePage() {
               >
                 <Icon name={item.icon} className="size-5 text-muted" aria-hidden />
                 <span className="min-w-0 flex-1">{item.label}</span>
-                {item.soon ? <span className="text-ui-sm text-muted">Sắp có</span> : null}
               </Link>
             </li>
           ))}

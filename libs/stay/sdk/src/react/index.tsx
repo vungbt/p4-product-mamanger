@@ -1,5 +1,6 @@
 'use client';
 
+export * from './announcements.js';
 export { auditKeys, auditQueryOptions, useAuditLog, useAuditLogs } from './audit.js';
 export * from './automation.js';
 export {
@@ -27,6 +28,7 @@ export { StaySdkProvider, useStaySdk } from './provider.js';
 export * from './readings.js';
 export * from './receivables.js';
 export * from './reports.js';
+export * from './requests.js';
 export * from './residents.js';
 export {
   roomKeys,

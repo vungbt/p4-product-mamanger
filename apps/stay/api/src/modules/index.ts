@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import announcementsRouter from './announcements/announcements.router.js';
 import auditRouter from './audit/audit.router.js';
 import automationRouter from './automation/automation.router.js';
 import buildingsRouter from './buildings/buildings.router.js';
@@ -15,6 +16,7 @@ import portalLinksRouter from './portal/portal-links.router.js';
 import readingsRouter from './readings/readings.router.js';
 import receivablesRouter from './receivables/receivables.router.js';
 import reportsRouter from './reports/reports.router.js';
+import requestsRouter from './requests/requests.router.js';
 import residentsRouter from './residents/residents.router.js';
 import roomsRouter from './rooms/rooms.router.js';
 import settingsRouter from './settings/settings.router.js';
@@ -45,6 +47,8 @@ apiRouter.use(residentsRouter);
 apiRouter.use(uploadsRouter);
 apiRouter.use(tenantsRouter);
 apiRouter.use(portalLinksRouter);
+apiRouter.use(requestsRouter);
+apiRouter.use(announcementsRouter);
 // ST-25 tenant portal: public + portal-cookie routes, outside the staff `authRequired`.
 apiRouter.use(portalRouter);
 

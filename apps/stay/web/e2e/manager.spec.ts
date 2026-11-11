@@ -25,7 +25,13 @@ test.describe('building manager (conditional rules)', () => {
       'Yêu cầu',
       'Báo cáo',
     ]) {
-      await expect(sidebar.getByRole('link', { name: label, exact: true })).toBeVisible();
+      // "Yêu cầu" may carry the badge of new tenant requests (ST-25).
+      await expect(
+        sidebar.getByRole(
+          'link',
+          label === 'Yêu cầu' ? { name: /^Yêu cầu/ } : { name: label, exact: true },
+        ),
+      ).toBeVisible();
     }
     for (const label of ['Cài đặt', 'Thành viên', 'Chi phí']) {
       await expect(sidebar.getByRole('link', { name: label, exact: true })).toHaveCount(0);

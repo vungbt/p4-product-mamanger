@@ -47,6 +47,10 @@ const TAG_DESCRIPTIONS = {
   portal:
     'Cổng người thuê (ST-25): link riêng cho từng người ở (chủ trọ tạo/thu hồi) và các route `/api/portal/*` cho người thuê không cần tài khoản. Vào cổng bằng token của link + 4 số cuối SĐT → cookie phiên cổng HttpOnly `stay_portal_session` (production `__Secure-stay_portal_session`, path `/api/portal`, 90 ngày). Cookie phiên nhân viên (`stay.session_token`) không dùng được ở cổng và cookie cổng không dùng được ở route nhân viên. Mọi dữ liệu chỉ thuộc hợp đồng của link; người ở cùng chỉ hiện tên viết tắt.',
   buildings: 'Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.',
+  requests:
+    'Hộp "Yêu cầu từ người thuê" (O-26, ST-25): báo hỏng, yêu cầu thay đổi hợp đồng và báo chuyển khoản từ cổng người thuê. Người thuê chỉ đề nghị; duyệt yêu cầu gọi đúng thao tác ST-12/ST-17 trong cùng transaction, xác nhận chuyển khoản tạo khoản thu ST-15. Audit chỉ ghi id và trạng thái.',
+  announcements:
+    'Thông báo cho người thuê (O-32): cả toà hoặc một số phòng, ghim, ngày hết hạn hiển thị. Cổng người thuê chỉ hiện thông báo còn hạn của toà/phòng mình.',
   me: 'Người dùng hiện tại và quyền CASL.',
   operations: 'Kiểm tra trạng thái dịch vụ.',
   rooms:
@@ -296,6 +300,87 @@ const OPERATIONS = {
     'Thông báo và nội quy',
     'Thông báo còn hạn của toà (cả toà hoặc phòng của hợp đồng), ghim trước rồi mới nhất; nội quy và SĐT liên hệ của toà.',
   ],
+  'POST /api/portal/invoices/{id}/payment-claims': [
+    'Tôi đã chuyển khoản',
+    'Người thuê báo đã chuyển khoản cho hoá đơn đã phát hành của hợp đồng mình: `amount` 1 … số còn lại (vượt trả 422 `payment_exceeds_remaining`, `extensions.remaining`), `paidOn` không sau hôm nay, `receiptFileId` là ảnh `payment_receipt` tải lên qua `POST /api/portal/uploads` của chính link. Mỗi hoá đơn chỉ một báo chuyển khoản đang chờ (409 `payment_claim_pending`); đã thu đủ 409 `invoice_already_paid`. `Idempotency-Key` (tuỳ chọn): gửi lại cùng key và nội dung trả lại cùng báo chuyển khoản, khác nội dung 409 `idempotency_conflict`. Không ghi sổ thu: chủ trọ xác nhận ở `POST /api/payment-claims/{id}/confirm`. Hoá đơn của hợp đồng khác → 404.',
+  ],
+  'POST /api/portal/payment-claims/{id}/cancel': [
+    'Huỷ báo chuyển khoản',
+    'Chỉ người gửi, khi còn `pending` (409 `request_not_pending`). Của hợp đồng/người khác → 404.',
+  ],
+  'GET /api/portal/maintenance': [
+    'Báo hỏng của phòng',
+    'Báo hỏng của hợp đồng (mới nhất trước, tối đa 100): trạng thái, trả lời của chủ trọ, ảnh (URL ký ngắn hạn), `isOwn`.',
+  ],
+  'POST /api/portal/maintenance': [
+    'Gửi báo hỏng',
+    'Hạng mục `electricity`/`water`/`appliance`/`other`, mức độ `normal`/`urgent`, tiêu đề, mô tả, tối đa 5 ảnh `maintenance_photo` của chính link. Hợp đồng phải active/ending (409 `contract_not_active`). Giới hạn 10 báo hỏng/ngày/hợp đồng (429 `rate_limit_exceeded`).',
+  ],
+  'POST /api/portal/maintenance/{id}/cancel': [
+    'Huỷ báo hỏng',
+    'Chỉ người gửi, khi chủ trọ chưa nhận xử lý (`new`, 409 `request_not_pending`). Của hợp đồng/người khác → 404.',
+  ],
+  'GET /api/portal/requests': [
+    'Yêu cầu của tôi',
+    'Yêu cầu do chính người ở này gửi (mới nhất trước, tối đa 100): loại, nội dung, trạng thái `new`/`accepted`/`rejected`/`cancelled`, trả lời hoặc lý do từ chối.',
+  ],
+  'POST /api/portal/requests': [
+    'Gửi yêu cầu cho chủ trọ',
+    '`type` và `payload` theo loại: `move_out` `{ expectedMoveOutDate ≥ hôm nay, reason? }`, `add_occupant` `{ fullName, phone (10 số, bắt đầu 0), fromDate }`, `remove_occupant` `{ fullName, toDate }`, `add_vehicle` `{ plate, vehicleType, fromDate }`, `remove_vehicle` `{ plate, toDate }`, `other` `{ message }`. Ngày phải trong thời hạn hợp đồng; lỗi field trả dạng `payload.<field>`. Hợp đồng active/ending (409 `contract_not_active`). Chỉ là đề nghị: hợp đồng chỉ đổi khi chủ trọ duyệt. Giới hạn 10 yêu cầu/ngày/hợp đồng.',
+  ],
+  'POST /api/portal/requests/{id}/cancel': [
+    'Huỷ yêu cầu',
+    'Chỉ yêu cầu của chính mình còn `new` (409 `request_not_pending`). Của hợp đồng/người khác → 404.',
+  ],
+  'POST /api/portal/uploads': [
+    'Xin ticket tải ảnh (cổng người thuê)',
+    '`purpose` `payment_receipt` (biên lai) hoặc `maintenance_photo` (ảnh báo hỏng). Ticket 10 phút, thuộc link cổng (không phải tài khoản nhân viên), ảnh JPG/PNG/WEBP ≤ 10 MB gửi thẳng tới `uploadUrl`. Giới hạn 60 ticket/ngày/hợp đồng.',
+  ],
+  'POST /api/portal/uploads/{id}/complete': [
+    'Hoàn tất tải ảnh (cổng người thuê)',
+    'Kiểm tra ảnh đã lưu và trả `fileId` để gắn vào báo chuyển khoản/báo hỏng. Ticket của link khác → 404.',
+  ],
+  'GET /api/requests': [
+    'Hộp yêu cầu từ người thuê',
+    'Báo hỏng (nguồn người thuê), yêu cầu và báo chuyển khoản trong một danh sách, mới nhất trước. Lọc `kind` (`maintenance`, `tenant_request`, `payment_claim`), `status` chung (`pending`, `in_progress`, `done`, `rejected`, `cancelled`), `buildingId`, `contractId` (tab Yêu cầu của hợp đồng), `q` (mã phòng, mã hợp đồng, tên người gửi, tiêu đề, mã hoá đơn). `meta.counts` đếm mọi trạng thái (kể cả 0) theo bộ lọc trừ `status`. Báo hỏng/yêu cầu cần quyền `read:Maintenance`, báo chuyển khoản `read:Payment` theo toà; toà/hợp đồng ngoài phạm vi trả 404. Ảnh trả URL ký ngắn hạn.',
+  ],
+  'POST /api/requests/{id}/accept': [
+    'Duyệt yêu cầu / nhận xử lý báo hỏng',
+    'Báo hỏng: `new`/`open`/`in_progress` → `in_progress` (hoặc `done` khi `done: true`). Yêu cầu (`new`): chạy đúng thao tác hợp đồng trong cùng transaction — `move_out` → báo trả phòng ST-17 (hợp đồng `ending`), `add_occupant` → thêm người ở ST-12 từ ngày hiệu lực, `remove_occupant` → người ở rời đi (`tenantId` chọn người ở nếu tên không khớp đúng một người; `newPrimaryTenantId` khi người đại diện rời đi), `add_vehicle` → tạo xe của người gửi (nếu chưa có) và đăng ký tính phí, `remove_vehicle` → bớt xe (`vehicleId` nếu biển số không khớp), `other` → chỉ đánh dấu đã duyệt. `effectiveDate` ghi đè ngày trong yêu cầu. Lỗi kiểm tra của ST-12/ST-17 (422/409) huỷ toàn bộ, yêu cầu vẫn `new`. Đã xử lý → 409 `request_not_pending`. Quyền `update:Maintenance` theo toà và `update:Contract`.',
+  ],
+  'POST /api/requests/{id}/reject': [
+    'Từ chối yêu cầu / báo hỏng',
+    '`reason` bắt buộc; người thuê thấy lý do. Chỉ khi chưa đóng (409 `request_not_pending`). Audit không ghi lý do.',
+  ],
+  'POST /api/requests/{id}/reply': [
+    'Trả lời người thuê',
+    'Ghi đè trả lời gần nhất (người thuê thấy ở T-08/T-09), không đổi trạng thái. Yêu cầu đã huỷ → 409 `request_not_pending`.',
+  ],
+  'POST /api/payment-claims/{id}/confirm': [
+    'Xác nhận chuyển khoản',
+    'Tạo khoản thu ST-15 (`bank_transfer`, mã giao dịch từ báo chuyển khoản) cho hoá đơn và đánh dấu `confirmed` trong cùng transaction; khoá báo chuyển khoản trước nên bấm lại/gọi đồng thời trả cùng khoản thu, không ghi hai lần. Có thể sửa `amount`, `paidOn`, `reference` khi xác nhận (số tiền vượt số còn lại → 422 `payment_exceeds_remaining`). Đã từ chối/huỷ → 409 `request_not_pending`. Quyền `create:Payment` theo toà.',
+  ],
+  'POST /api/payment-claims/{id}/reject': [
+    'Từ chối báo chuyển khoản',
+    '`reason` bắt buộc (người thuê thấy lý do); hoá đơn không đổi. Chỉ khi `pending`.',
+  ],
+  'GET /api/announcements': [
+    'Thông báo cho người thuê',
+    'Lọc `buildingId`, `status` (`active` còn hiển thị, `expired` đã hết hạn/lưu trữ, `all` mặc định), `q` (tiêu đề, nội dung). Ghim trước rồi mới nhất. Quyền `update:Building` theo toà (chủ trọ, người quản lý toà); ngoài phạm vi trả 404.',
+  ],
+  'POST /api/announcements': [
+    'Tạo thông báo',
+    '`roomIds` rỗng/null = cả toà, ngược lại các phòng đang hoạt động của toà (422 `roomIds`). `expiresOn` là ngày cuối còn hiển thị (Asia/Ho_Chi_Minh), không trước hôm nay; null = không hết hạn. Audit chỉ ghi id, số phòng, ghim, hạn.',
+  ],
+  'PUT /api/announcements/{id}': [
+    'Sửa thông báo',
+    `Gửi đủ trường như khi tạo và \`version\`; không đổi toà. ${VERSION_NOTE}`,
+  ],
+  'POST /api/announcements/{id}/archive': [
+    'Lưu trữ thông báo',
+    'Ẩn với người thuê ngay (hết hạn từ bây giờ, bỏ ghim). Gọi lại không đổi gì.',
+  ],
+  'DELETE /api/announcements/{id}': ['Xoá thông báo', 'Xoá hẳn. Ngoài phạm vi trả 404.'],
   'POST /api/invoices/{id}/payments': [
     'Thu tiền hoá đơn',
     'Bắt buộc `Idempotency-Key`: gọi lại cùng key và nội dung trả lại đúng khoản đã ghi, không ghi hai lần (khác nội dung trả 409 `idempotency_conflict`). Khoá dòng hoá đơn nên hai khoản thu song song không vượt tổng. Chỉ hoá đơn đã phát hành chưa thu đủ: nháp 409 `invoice_not_issued`, void 409 `invoice_void`, đã thu đủ 409 `invoice_already_paid`. `amount` > 0 và ≤ số còn lại (vượt trả 422 `payment_exceeds_remaining`, `extensions.remaining`; không tự ghi thừa). `paidOn` không sau hôm nay (Asia/Ho_Chi_Minh). Cập nhật `paidTotal` và trạng thái (`issued` → `partially_paid` → `paid`) trong cùng transaction. Ngoài phạm vi trả 404.',
@@ -594,6 +679,94 @@ const OVERRIDES = {
     requestBody: {
       required: true,
       content: { 'application/json': { schema: { ref: 'PortalSessionInput' } } },
+    },
+  },
+  'POST /api/portal/invoices/{id}/payment-claims': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'PaymentClaimInput' } } },
+    },
+    parameters: [
+      {
+        name: 'Idempotency-Key',
+        in: 'header',
+        required: false,
+        description: 'Tuỳ chọn; mỗi lần mở form dùng một key, bấm lại dùng lại key.',
+        schema: { type: 'string', minLength: 8, maxLength: 128 },
+      },
+    ],
+  },
+  'POST /api/portal/maintenance': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'PortalMaintenanceInput' } } },
+    },
+  },
+  'POST /api/portal/requests': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'TenantRequestInput' } } },
+    },
+  },
+  'POST /api/portal/uploads': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'PortalUploadInput' } } },
+    },
+  },
+  'POST /api/requests/{id}/accept': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'InboxAcceptInput' } } },
+    },
+  },
+  'POST /api/requests/{id}/reject': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'InboxRejectInput' } } },
+    },
+  },
+  'POST /api/requests/{id}/reply': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'InboxReplyInput' } } },
+    },
+  },
+  'POST /api/payment-claims/{id}/confirm': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'PaymentClaimConfirmInput' } } },
+    },
+  },
+  'POST /api/payment-claims/{id}/reject': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'InboxRejectInput' } } },
+    },
+  },
+  'POST /api/announcements': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'AnnouncementInput' } } },
+    },
+  },
+  'PUT /api/announcements/{id}': {
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            allOf: [
+              { ref: 'AnnouncementInput' },
+              {
+                type: 'object',
+                required: ['version'],
+                properties: { version: { type: 'integer', minimum: 1 } },
+              },
+            ],
+          },
+        },
+      },
     },
   },
   'GET /api/buildings/{buildingId}/residents': {
@@ -1021,6 +1194,7 @@ export default {
     'libs/stay/shared/src/payment.ts',
     'libs/stay/shared/src/overview.ts',
     'libs/stay/shared/src/portal.ts',
+    'libs/stay/shared/src/requests.ts',
     'libs/stay/shared/src/resident.ts',
     'libs/stay/shared/src/report.ts',
   ],

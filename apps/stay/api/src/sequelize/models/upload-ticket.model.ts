@@ -5,7 +5,9 @@ import type { StorageProviderName } from './file.model.js';
 /** A signed, short-lived permission to upload one private file. */
 export interface UploadTicketAttributes {
   id: string;
-  ownerId: string;
+  /** Staff uploader; `null` for a tenant portal upload (`portalLinkId`). */
+  ownerId: string | null;
+  portalLinkId: string | null;
   buildingId: string;
   purpose: StayUploadPurpose;
   provider: StorageProviderName;
@@ -20,7 +22,7 @@ export interface UploadTicketAttributes {
 
 export type UploadTicketCreation = Optional<
   UploadTicketAttributes,
-  'id' | 'status' | 'fileId' | 'createdAt' | 'updatedAt'
+  'id' | 'ownerId' | 'portalLinkId' | 'status' | 'fileId' | 'createdAt' | 'updatedAt'
 >;
 
 export class UploadTicketModel
@@ -28,7 +30,8 @@ export class UploadTicketModel
   implements UploadTicketAttributes
 {
   declare id: string;
-  declare ownerId: string;
+  declare ownerId: string | null;
+  declare portalLinkId: string | null;
   declare buildingId: string;
   declare purpose: StayUploadPurpose;
   declare provider: StorageProviderName;
@@ -45,7 +48,8 @@ export function initUploadTicketModel(sequelize: Sequelize) {
   UploadTicketModel.init(
     {
       id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-      ownerId: { type: DataTypes.UUID, allowNull: false },
+      ownerId: { type: DataTypes.UUID, allowNull: true },
+      portalLinkId: { type: DataTypes.UUID, allowNull: true },
       buildingId: { type: DataTypes.UUID, allowNull: false },
       purpose: { type: DataTypes.STRING(32), allowNull: false },
       provider: { type: DataTypes.STRING(16), allowNull: false },

@@ -17,7 +17,10 @@ const PortalContractPage = lazy(() => import('@/modules/portal/contract-page'));
 const PortalUsagePage = lazy(() => import('@/modules/portal/usage-page'));
 const PortalNoticesPage = lazy(() => import('@/modules/portal/notices-page'));
 const PortalMorePage = lazy(() => import('@/modules/portal/more-page'));
-const PortalComingSoonPage = lazy(() => import('@/modules/portal/coming-soon-page'));
+const PortalMaintenancePage = lazy(() => import('@/modules/portal/maintenance-page'));
+const PortalMaintenanceNewPage = lazy(() => import('@/modules/portal/maintenance-new-page'));
+const PortalRequestsPage = lazy(() => import('@/modules/portal/requests-page'));
+const PortalRequestNewPage = lazy(() => import('@/modules/portal/request-new-page'));
 
 function LazyPage({ component: Page }: { component: LazyExoticComponent<ComponentType> }) {
   return (
@@ -44,8 +47,10 @@ export default function AppRoutes() {
         <Route path="usage" element={<LazyPage component={PortalUsagePage} />} />
         <Route path="notices" element={<LazyPage component={PortalNoticesPage} />} />
         <Route path="more" element={<LazyPage component={PortalMorePage} />} />
-        <Route path="maintenance" element={<LazyPage component={PortalComingSoonPage} />} />
-        <Route path="requests/new" element={<LazyPage component={PortalComingSoonPage} />} />
+        <Route path="maintenance" element={<LazyPage component={PortalMaintenancePage} />} />
+        <Route path="maintenance/new" element={<LazyPage component={PortalMaintenanceNewPage} />} />
+        <Route path="requests" element={<LazyPage component={PortalRequestsPage} />} />
+        <Route path="requests/new" element={<LazyPage component={PortalRequestNewPage} />} />
       </Route>
 
       <Route element={<GuestOnly />}>

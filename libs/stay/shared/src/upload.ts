@@ -3,8 +3,18 @@ export const STAY_UPLOAD_PURPOSES = [
   'tenant_document',
   'expense_receipt',
   'contract_meter',
+  'payment_receipt',
+  'maintenance_photo',
 ] as const;
 export type StayUploadPurpose = (typeof STAY_UPLOAD_PURPOSES)[number];
+
+/** Purposes of staff uploads (`POST /api/uploads`); the others come from the tenant portal. */
+export const STAFF_UPLOAD_PURPOSES = [
+  'tenant_document',
+  'expense_receipt',
+  'contract_meter',
+] as const;
+export type StaffUploadPurpose = (typeof STAFF_UPLOAD_PURPOSES)[number];
 
 export const STAY_UPLOAD_STATUSES = ['pending', 'completed'] as const;
 export type StayUploadStatus = (typeof STAY_UPLOAD_STATUSES)[number];

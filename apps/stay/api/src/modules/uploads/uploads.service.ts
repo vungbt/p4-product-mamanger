@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { BaseError, Forbidden, InputValidError, NotFound, selectFields } from '@p4/server-core';
 import {
+  type PortalUploadPurpose,
   STAY_UPLOAD_MAX_BYTES,
   STAY_UPLOAD_MIME_TYPES,
+  type StaffUploadPurpose,
   type StayUpload,
   type StayUploadPurpose,
   type StayUploadTicket,
@@ -13,6 +15,7 @@ import { env } from '@/configs/env.js';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import { BuildingModel, FileModel, UploadTicketModel } from '@/sequelize/models/index.js';
 import { auditedTransaction, recordAudit } from '@/shared/audit.js';
+import type { PortalPrincipal } from '@/types/express.js';
 import {
   readStubObject,
   requireStorage,
@@ -33,8 +36,19 @@ function uploadDto(row: UploadTicketModel): StayUpload {
   };
 }
 
+/** Who holds a ticket/file: a staff user, or a tenant portal link (ST-25). */
+type UploadOwner =
+  | { ownerId: string; portalLinkId: null }
+  | { ownerId: null; portalLinkId: string };
+
+const staffOwner = (user: StayUser): UploadOwner => ({ ownerId: user.id, portalLinkId: null });
+const portalOwner = (portal: PortalPrincipal): UploadOwner => ({
+  ownerId: null,
+  portalLinkId: portal.linkId,
+});
+
 /** Whether `user` may upload files for `purpose` in `buildingId`. */
-function canUpload(user: StayUser, purpose: StayUploadPurpose, buildingId: string) {
+function canUpload(user: StayUser, purpose: StaffUploadPurpose, buildingId: string) {
   switch (purpose) {
     case 'expense_receipt':
       return canAccessRecord(user, 'manage', 'Expense', { buildingId });
@@ -54,7 +68,7 @@ function canUpload(user: StayUser, purpose: StayUploadPurpose, buildingId: strin
 /** `POST /api/uploads`: a signed ticket to upload one private image. */
 export async function createUpload(
   user: StayUser,
-  purpose: StayUploadPurpose,
+  purpose: StaffUploadPurpose,
   buildingId: string,
 ): Promise<StayUploadTicket> {
   if (!canUpload(user, purpose, buildingId)) {
@@ -62,6 +76,25 @@ export async function createUpload(
     throw new NotFound('building_not_found');
   }
 
+  return issueTicket(staffOwner(user), purpose, buildingId);
+}
+
+/**
+ * `POST /api/portal/uploads` (ST-25): a ticket for a receipt or maintenance photo in the
+ * building of the portal session's contract, owned by the portal link (no staff user).
+ */
+export async function createPortalUpload(
+  portal: PortalPrincipal,
+  purpose: PortalUploadPurpose,
+): Promise<StayUploadTicket> {
+  return issueTicket(portalOwner(portal), purpose, portal.buildingId);
+}
+
+async function issueTicket(
+  owner: UploadOwner,
+  purpose: StayUploadPurpose,
+  buildingId: string,
+): Promise<StayUploadTicket> {
   const building = await BuildingModel.findByPk(buildingId);
 
   if (!building) throw new NotFound('building_not_found');
@@ -71,7 +104,7 @@ export async function createUpload(
   const id = randomUUID();
   const row = await UploadTicketModel.create({
     id,
-    ownerId: user.id,
+    ...owner,
     buildingId,
     purpose,
     provider: storage.name,
@@ -87,9 +120,11 @@ export async function createUpload(
   };
 }
 
-async function ownTicket(user: StayUser, id: string, transaction?: Transaction) {
+async function ownTicket(owner: UploadOwner, id: string, transaction?: Transaction) {
   const row = await UploadTicketModel.findOne({
-    where: { id, ownerId: user.id },
+    where: owner.ownerId
+      ? { id, ownerId: owner.ownerId }
+      : { id, portalLinkId: owner.portalLinkId },
     transaction,
     ...(transaction ? { lock: transaction.LOCK.UPDATE } : {}),
   });
@@ -99,7 +134,7 @@ async function ownTicket(user: StayUser, id: string, transaction?: Transaction) 
 }
 
 export async function getUpload(user: StayUser, id: string): Promise<StayUpload> {
-  return uploadDto(await ownTicket(user, id));
+  return uploadDto(await ownTicket(staffOwner(user), id));
 }
 
 /**
@@ -107,8 +142,20 @@ export async function getUpload(user: StayUser, id: string): Promise<StayUpload>
  * size limit was stored, then records the private file. Repeating it returns the same file.
  */
 export async function completeUpload(user: StayUser, id: string): Promise<StayUpload> {
+  return completeTicket(staffOwner(user), id);
+}
+
+/** `POST /api/portal/uploads/:id/complete`: the same check for a ticket of the portal link. */
+export async function completePortalUpload(
+  portal: PortalPrincipal,
+  id: string,
+): Promise<StayUpload> {
+  return completeTicket(portalOwner(portal), id);
+}
+
+async function completeTicket(owner: UploadOwner, id: string): Promise<StayUpload> {
   return auditedTransaction(async (transaction) => {
-    const row = await ownTicket(user, id, transaction);
+    const row = await ownTicket(owner, id, transaction);
 
     if (row.status === 'completed') return uploadDto(row);
     if (row.expiresAt.getTime() <= Date.now())
@@ -133,7 +180,8 @@ export async function completeUpload(user: StayUser, id: string): Promise<StayUp
         width: stored.width,
         height: stored.height,
         purpose: row.purpose,
-        ownerId: user.id,
+        ownerId: owner.ownerId,
+        portalLinkId: owner.portalLinkId,
         buildingId: row.buildingId,
       },
       { transaction },
@@ -146,7 +194,12 @@ export async function completeUpload(user: StayUser, id: string): Promise<StayUp
         action: 'upload.complete',
         resourceType: 'upload',
         resourceId: row.id,
-        changes: { fileId: file.id, purpose: row.purpose, bytes: stored.bytes },
+        changes: {
+          fileId: file.id,
+          purpose: row.purpose,
+          bytes: stored.bytes,
+          ...(owner.portalLinkId ? { portalLinkId: owner.portalLinkId } : {}),
+        },
       },
       transaction,
     );
@@ -171,6 +224,27 @@ export async function attachableFile(
     file.ownerId === user.id &&
     file.purpose === purpose &&
     file.buildingId === buildingId &&
+    file.private
+    ? file
+    : null;
+}
+
+/**
+ * A completed private file the portal link uploaded for `purpose`, ready to attach to a claim
+ * or a maintenance report; `null` otherwise.
+ */
+export async function attachablePortalFile(
+  portal: PortalPrincipal,
+  fileId: string,
+  purpose: PortalUploadPurpose,
+  transaction: Transaction,
+): Promise<FileModel | null> {
+  const file = await FileModel.findByPk(fileId, { transaction });
+
+  return file &&
+    file.portalLinkId === portal.linkId &&
+    file.purpose === purpose &&
+    file.buildingId === portal.buildingId &&
     file.private
     ? file
     : null;

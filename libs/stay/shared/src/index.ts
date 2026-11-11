@@ -19,6 +19,7 @@ export * from './portal.js';
 export * from './reading.js';
 export * from './receivable.js';
 export * from './report.js';
+export * from './requests.js';
 export * from './resident.js';
 export * from './room.js';
 export * from './schemas.js';

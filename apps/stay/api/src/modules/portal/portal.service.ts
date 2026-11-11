@@ -40,6 +40,7 @@ import {
 import { depositBalance } from '../deposits/deposits.service.js';
 import { ISSUED_STATUSES } from '../invoices/invoices.service.js';
 import { isTenantVisible, publicInvoiceView } from '../invoices/invoices.share.js';
+import { portalInvoiceClaims, portalOpenRequests } from '../requests/requests.portal.js';
 import { billingDefaults } from '../settings/settings.service.js';
 import { portalReferenceDate, todayVn } from './portal.access.js';
 
@@ -138,13 +139,14 @@ async function roomNotices(buildingId: string, roomId: string | undefined, pinne
     .map(noticeDto);
 }
 
-/** `GET /api/portal/me` (T-03). */
+/** `GET /api/portal/me` (T-03), with the open maintenance/request/claim counts (part B). */
 export async function portalMe(portal: PortalPrincipal): Promise<PortalMe> {
   const { contract, building, room } = await portalContract(portal);
-  const [tenant, invoices, pinnedNotices] = await Promise.all([
+  const [tenant, invoices, pinnedNotices, openRequests] = await Promise.all([
     TenantModel.findByPk(portal.tenantId, { attributes: ['id', 'fullName'] }),
     contractInvoices(contract.id),
     roomNotices(building.id, room?.id, true),
+    portalOpenRequests(portal),
   ]);
   const currentInvoice = invoices[0] ?? null;
   const unpaid = invoices.filter((invoice) => invoice.remaining > 0);
@@ -163,6 +165,7 @@ export async function portalMe(portal: PortalPrincipal): Promise<PortalMe> {
     previousDebt: totalDebt - (currentInvoice?.remaining ?? 0),
     unpaidInvoiceCount: unpaid.length,
     pinnedNotices,
+    openRequests,
     sessionExpiresAt: portal.sessionExpiresAt.toISOString(),
   };
 }
@@ -191,7 +194,7 @@ export async function portalInvoice(portal: PortalPrincipal, id: string): Promis
     })
   )
     throw new NotFound();
-  const [view, payments] = await Promise.all([
+  const [view, payments, claims] = await Promise.all([
     publicInvoiceView(row),
     PaymentModel.findAll({
       where: { invoiceId: row.id, reversedAt: null },
@@ -200,11 +203,13 @@ export async function portalInvoice(portal: PortalPrincipal, id: string): Promis
         ['createdAt', 'DESC'],
       ],
     }),
+    portalInvoiceClaims(portal, row.id),
   ]);
 
   return {
     ...view,
     id: row.id,
+    claims,
     payments: payments.map((payment) => ({
       id: payment.id,
       amount: payment.amount,

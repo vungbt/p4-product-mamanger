@@ -1,8 +1,11 @@
 import type { StaySdk } from './client.js';
 import { ApiSdkError, unwrap } from './errors.js';
-import type { components } from './generated.js';
+import type { paths } from './generated.js';
 
-export type StayUploadPurpose = components['schemas']['StayUpload']['purpose'];
+/** Staff purposes (`POST /api/uploads`); the portal has its own upload with a portal ticket. */
+export type StayUploadPurpose = NonNullable<
+  paths['/api/uploads']['post']['requestBody']
+>['content']['application/json']['purpose'];
 
 /**
  * Private uploads: a ticket, then the file goes straight to the storage provider (`uploadUrl`,

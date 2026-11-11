@@ -152,6 +152,66 @@ try {
       },
     ],
   };
+  // ST-25 part B: inbox status counts for the chips (whole filter without `status`).
+  spec.paths['/api/requests'].get.responses['200'].content[
+    'application/json'
+  ].schema.properties.meta = {
+    allOf: [
+      { $ref: '#/components/schemas/PaginationMeta' },
+      {
+        type: 'object',
+        required: ['counts'],
+        properties: {
+          counts: {
+            type: 'array',
+            description: 'Một dòng cho mỗi trạng thái (kể cả 0), theo bộ lọc trừ `status`.',
+            items: {
+              type: 'object',
+              required: ['status', 'count'],
+              properties: {
+                status: {
+                  type: 'string',
+                  enum: ['pending', 'in_progress', 'done', 'rejected', 'cancelled'],
+                },
+                count: { type: 'integer' },
+              },
+            },
+          },
+        },
+      },
+    ],
+  };
+  for (const [url, method, description] of [
+    [
+      '/api/portal/invoices/{id}/payment-claims',
+      'post',
+      'Đã có báo chuyển khoản đang chờ (`payment_claim_pending`), hoá đơn đã thu đủ (`invoice_already_paid`) hoặc key đã dùng với nội dung khác (`idempotency_conflict`).',
+    ],
+    [
+      '/api/requests/{id}/accept',
+      'post',
+      'Đã xử lý (`request_not_pending`) hoặc thao tác hợp đồng bị chặn (`contract_not_active`, `version_conflict`…).',
+    ],
+    ['/api/requests/{id}/reject', 'post', 'Đã xử lý hoặc đã huỷ (`request_not_pending`).'],
+    [
+      '/api/payment-claims/{id}/confirm',
+      'post',
+      'Đã từ chối/huỷ (`request_not_pending`) hoặc hoá đơn không nhận thanh toán (`invoice_void`, `invoice_already_paid`).',
+    ],
+    ['/api/payment-claims/{id}/reject', 'post', 'Không còn chờ xác nhận (`request_not_pending`).'],
+  ])
+    spec.paths[url][method].responses['409'] = {
+      description,
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+    };
+  for (const url of [
+    '/api/portal/invoices/{id}/payment-claims',
+    '/api/payment-claims/{id}/confirm',
+  ])
+    spec.paths[url].post.responses['422'] = {
+      description: 'Số tiền vượt số còn lại (`payment_exceeds_remaining`, `extensions.remaining`).',
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+    };
   // ST-18: totals over the whole filter and bucket counts (matching `q`, not `bucket`).
   const receivableBuckets = ['not_due', '1_7', '8_30', 'over_30'];
   spec.paths['/api/buildings/{buildingId}/receivables'].get.responses['200'].content[

@@ -16,6 +16,8 @@ export interface FileAttributes {
   height: number | null;
   purpose: StayUploadPurpose;
   ownerId: string | null;
+  /** Uploaded on the tenant portal with this link (ST-25). */
+  portalLinkId: string | null;
   buildingId: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -23,7 +25,7 @@ export interface FileAttributes {
 
 export type FileCreation = Optional<
   FileAttributes,
-  'id' | 'private' | 'width' | 'height' | 'createdAt' | 'updatedAt'
+  'id' | 'private' | 'width' | 'height' | 'portalLinkId' | 'createdAt' | 'updatedAt'
 >;
 
 export class FileModel extends Model<FileAttributes, FileCreation> implements FileAttributes {
@@ -37,6 +39,7 @@ export class FileModel extends Model<FileAttributes, FileCreation> implements Fi
   declare height: number | null;
   declare purpose: StayUploadPurpose;
   declare ownerId: string | null;
+  declare portalLinkId: string | null;
   declare buildingId: string;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
@@ -55,6 +58,7 @@ export function initFileModel(sequelize: Sequelize) {
       height: { type: DataTypes.INTEGER, allowNull: true },
       purpose: { type: DataTypes.STRING(32), allowNull: false },
       ownerId: { type: DataTypes.UUID, allowNull: true },
+      portalLinkId: { type: DataTypes.UUID, allowNull: true },
       buildingId: { type: DataTypes.UUID, allowNull: false },
     },
     { sequelize, tableName: 'files', underscored: true },

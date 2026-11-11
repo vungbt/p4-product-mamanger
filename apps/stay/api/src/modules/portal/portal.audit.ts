@@ -21,4 +21,15 @@ export const portalAuditPolicies = {
   'GET /portal/contract': { action: 'read', resourceType: 'tenant_portal' },
   'GET /portal/usage': { action: 'read', resourceType: 'tenant_portal' },
   'GET /portal/notices': { action: 'read', resourceType: 'tenant_portal' },
+  // Part B tenant writes: rows with `actorId: null` and the link/tenant ids (no free text).
+  'POST /portal/invoices/:id/payment-claims': { action: 'create', resourceType: 'payment_claim' },
+  'POST /portal/payment-claims/:id/cancel': { action: 'cancel', resourceType: 'payment_claim' },
+  'GET /portal/maintenance': { action: 'read', resourceType: 'tenant_portal' },
+  'POST /portal/maintenance': { action: 'create', resourceType: 'maintenance_request' },
+  'POST /portal/maintenance/:id/cancel': { action: 'cancel', resourceType: 'maintenance_request' },
+  'GET /portal/requests': { action: 'read', resourceType: 'tenant_portal' },
+  'POST /portal/requests': { action: 'create', resourceType: 'tenant_request' },
+  'POST /portal/requests/:id/cancel': { action: 'cancel', resourceType: 'tenant_request' },
+  'POST /portal/uploads': { action: 'create', resourceType: 'upload' },
+  'POST /portal/uploads/:id/complete': { action: 'complete', resourceType: 'upload' },
 } satisfies RouteAuditPolicies;

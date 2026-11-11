@@ -1,17 +1,24 @@
-import { cn, Drawer, Icon, type IconName } from '@itclabs/react-ui';
+import { Badge, cn, Drawer, Icon, type IconName } from '@itclabs/react-ui';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
+import { usePendingRequestCount } from '@/libraries/use-pending-requests';
 import type { StayRoute } from '@/routing/route-configs';
 import { useMenuRoutes } from '@/routing/use-routes';
 
 const itemClass =
   'flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-control px-1 text-eyebrow font-medium';
 
-function ItemContent({ icon, label }: { icon: IconName; label: ReactNode }) {
+function ItemContent({ icon, label, badge }: { icon: IconName; label: ReactNode; badge?: number }) {
   return (
     <>
-      <Icon name={icon} className="size-6" aria-hidden />
+      {badge ? (
+        <Badge count={badge} max={99} size="sm" label={`${badge} mới`}>
+          <Icon name={icon} className="size-6" aria-hidden />
+        </Badge>
+      ) : (
+        <Icon name={icon} className="size-6" aria-hidden />
+      )}
       <span className="max-w-full truncate">{label}</span>
     </>
   );
@@ -23,6 +30,7 @@ export default function BottomNav() {
   const { pathname } = useLocation();
   const routes = useMenuRoutes();
   const [moreOpen, setMoreOpen] = useState(false);
+  const pending = usePendingRequestCount();
 
   const primary = routes.filter((route) => route.bottomNav);
   const others = routes.filter((route) => !route.bottomNav);
@@ -36,7 +44,11 @@ export default function BottomNav() {
       className={({ isActive }) => className(isActive)}
       onClick={() => setMoreOpen(false)}
     >
-      <ItemContent icon={route.icon} label={t(`nav.${route.name}`)} />
+      <ItemContent
+        icon={route.icon}
+        label={t(`nav.${route.name}`)}
+        badge={route.name === 'requests' ? pending : undefined}
+      />
     </NavLink>
   );
 

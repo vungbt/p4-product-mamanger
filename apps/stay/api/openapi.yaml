@@ -19,6 +19,9 @@ servers:
   - url: /
     description: Current API server
 tags:
+  - name: announcements
+    description: "Thông báo cho người thuê (O-32): cả toà hoặc một số phòng, ghim, ngày hết hạn hiển thị. Cổng người thuê
+      chỉ hiện thông báo còn hạn của toà/phòng mình."
   - name: audit
     description: Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.
   - name: automation
@@ -58,6 +61,10 @@ tags:
       tại Asia/Ho_Chi_Minh (nhóm chưa tới hạn, 1–7, 8–30, > 30 ngày). Chỉ đọc."
   - name: reports
     description: Báo cáo tổng hợp SQL theo tháng, theo phòng, điện nước và xuất sổ Excel. Chỉ đọc, có phân quyền theo toà.
+  - name: requests
+    description: 'Hộp "Yêu cầu từ người thuê" (O-26, ST-25): báo hỏng, yêu cầu thay đổi hợp đồng và báo chuyển khoản từ cổng
+      người thuê. Người thuê chỉ đề nghị; duyệt yêu cầu gọi đúng thao tác ST-12/ST-17 trong cùng transaction, xác nhận
+      chuyển khoản tạo khoản thu ST-15. Audit chỉ ghi id và trạng thái.'
   - name: residents
     description: Tạm trú theo ngày, khai báo theo lần ở và xuất Excel có audit.
   - name: rooms
@@ -7172,6 +7179,719 @@ paths:
           $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/RateLimited"
+  /api/requests:
+    get:
+      tags:
+        - requests
+      operationId: get_api_requests
+      summary: Hộp yêu cầu từ người thuê
+      description: >-
+        Báo hỏng (nguồn người thuê), yêu cầu và báo chuyển khoản trong một danh sách, mới nhất trước. Lọc `kind`
+        (`maintenance`, `tenant_request`, `payment_claim`), `status` chung (`pending`, `in_progress`, `done`,
+        `rejected`, `cancelled`), `buildingId`, `contractId` (tab Yêu cầu của hợp đồng), `q` (mã phòng, mã hợp đồng, tên
+        người gửi, tiêu đề, mã hoá đơn). `meta.counts` đếm mọi trạng thái (kể cả 0) theo bộ lọc trừ `status`. Báo
+        hỏng/yêu cầu cần quyền `read:Maintenance`, báo chuyển khoản `read:Payment` theo toà; toà/hợp đồng ngoài phạm vi
+        trả 404. Ảnh trả URL ký ngắn hạn.
+
+
+        **Quyền:** `read:Maintenance`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - createdAt
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: buildingId
+          in: query
+          schema:
+            type: string
+        - name: contractId
+          in: query
+          schema:
+            type: string
+        - name: kind
+          in: query
+          schema:
+            type: string
+            enum:
+              - maintenance
+              - payment_claim
+              - tenant_request
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - cancelled
+              - done
+              - in_progress
+              - pending
+              - rejected
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/InboxItem"
+                  message:
+                    type: string
+                  meta:
+                    allOf:
+                      - $ref: "#/components/schemas/PaginationMeta"
+                      - type: object
+                        required:
+                          - counts
+                        properties:
+                          counts:
+                            type: array
+                            description: Một dòng cho mỗi trạng thái (kể cả 0), theo bộ lọc trừ `status`.
+                            items:
+                              type: object
+                              required:
+                                - status
+                                - count
+                              properties:
+                                status:
+                                  type: string
+                                  enum:
+                                    - pending
+                                    - in_progress
+                                    - done
+                                    - rejected
+                                    - cancelled
+                                count:
+                                  type: integer
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/requests/{id}/accept:
+    post:
+      tags:
+        - requests
+      operationId: post_api_requests_id_accept
+      summary: Duyệt yêu cầu / nhận xử lý báo hỏng
+      description: >-
+        Báo hỏng: `new`/`open`/`in_progress` → `in_progress` (hoặc `done` khi `done: true`). Yêu cầu (`new`): chạy đúng
+        thao tác hợp đồng trong cùng transaction — `move_out` → báo trả phòng ST-17 (hợp đồng `ending`), `add_occupant`
+        → thêm người ở ST-12 từ ngày hiệu lực, `remove_occupant` → người ở rời đi (`tenantId` chọn người ở nếu tên không
+        khớp đúng một người; `newPrimaryTenantId` khi người đại diện rời đi), `add_vehicle` → tạo xe của người gửi (nếu
+        chưa có) và đăng ký tính phí, `remove_vehicle` → bớt xe (`vehicleId` nếu biển số không khớp), `other` → chỉ đánh
+        dấu đã duyệt. `effectiveDate` ghi đè ngày trong yêu cầu. Lỗi kiểm tra của ST-12/ST-17 (422/409) huỷ toàn bộ, yêu
+        cầu vẫn `new`. Đã xử lý → 409 `request_not_pending`. Quyền `update:Maintenance` theo toà và `update:Contract`.
+
+
+        **Quyền:** `update:Maintenance`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: accept
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InboxAcceptInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/InboxItem"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Đã xử lý (`request_not_pending`) hoặc thao tác hợp đồng bị chặn (`contract_not_active`, `version_conflict`…).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/requests/{id}/reject:
+    post:
+      tags:
+        - requests
+      operationId: post_api_requests_id_reject
+      summary: Từ chối yêu cầu / báo hỏng
+      description: |-
+        `reason` bắt buộc; người thuê thấy lý do. Chỉ khi chưa đóng (409 `request_not_pending`). Audit không ghi lý do.
+
+        **Quyền:** `update:Maintenance`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: reject
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InboxRejectInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/InboxItem"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Đã xử lý hoặc đã huỷ (`request_not_pending`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/requests/{id}/reply:
+    post:
+      tags:
+        - requests
+      operationId: post_api_requests_id_reply
+      summary: Trả lời người thuê
+      description: >-
+        Ghi đè trả lời gần nhất (người thuê thấy ở T-08/T-09), không đổi trạng thái. Yêu cầu đã huỷ → 409
+        `request_not_pending`.
+
+
+        **Quyền:** `update:Maintenance`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: reply
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InboxReplyInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/InboxItem"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/payment-claims/{id}/confirm:
+    post:
+      tags:
+        - requests
+      operationId: post_api_payment_claims_id_confirm
+      summary: Xác nhận chuyển khoản
+      description: >-
+        Tạo khoản thu ST-15 (`bank_transfer`, mã giao dịch từ báo chuyển khoản) cho hoá đơn và đánh dấu `confirmed`
+        trong cùng transaction; khoá báo chuyển khoản trước nên bấm lại/gọi đồng thời trả cùng khoản thu, không ghi hai
+        lần. Có thể sửa `amount`, `paidOn`, `reference` khi xác nhận (số tiền vượt số còn lại → 422
+        `payment_exceeds_remaining`). Đã từ chối/huỷ → 409 `request_not_pending`. Quyền `create:Payment` theo toà.
+
+
+        **Quyền:** `create:Payment`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: confirm
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentClaimConfirmInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/InboxItem"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Đã từ chối/huỷ (`request_not_pending`) hoặc hoá đơn không nhận thanh toán (`invoice_void`,
+            `invoice_already_paid`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "422":
+          description: Số tiền vượt số còn lại (`payment_exceeds_remaining`, `extensions.remaining`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/payment-claims/{id}/reject:
+    post:
+      tags:
+        - requests
+      operationId: post_api_payment_claims_id_reject
+      summary: Từ chối báo chuyển khoản
+      description: |-
+        `reason` bắt buộc (người thuê thấy lý do); hoá đơn không đổi. Chỉ khi `pending`.
+
+        **Quyền:** `create:Payment`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: reject
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InboxRejectInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/InboxItem"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Không còn chờ xác nhận (`request_not_pending`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/announcements:
+    get:
+      tags:
+        - announcements
+      operationId: get_api_announcements
+      summary: Thông báo cho người thuê
+      description: >-
+        Lọc `buildingId`, `status` (`active` còn hiển thị, `expired` đã hết hạn/lưu trữ, `all` mặc định), `q` (tiêu đề,
+        nội dung). Ghim trước rồi mới nhất. Quyền `update:Building` theo toà (chủ trọ, người quản lý toà); ngoài phạm vi
+        trả 404.
+
+
+        **Quyền:** `update:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - createdAt
+              - expiresAt
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: buildingId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - active
+              - all
+              - expired
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayAnnouncement"
+                  message:
+                    type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - announcements
+      operationId: post_api_announcements
+      summary: Tạo thông báo
+      description: >-
+        `roomIds` rỗng/null = cả toà, ngược lại các phòng đang hoạt động của toà (422 `roomIds`). `expiresOn` là ngày
+        cuối còn hiển thị (Asia/Ho_Chi_Minh), không trước hôm nay; null = không hết hạn. Audit chỉ ghi id, số phòng,
+        ghim, hạn.
+
+
+        **Quyền:** `update:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnnouncementInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayAnnouncement"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/announcements/{id}:
+    put:
+      tags:
+        - announcements
+      operationId: put_api_announcements_id
+      summary: Sửa thông báo
+      description: >-
+        Gửi đủ trường như khi tạo và `version`; không đổi toà. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa
+        thì trả 409 `version_conflict`.
+
+
+        **Quyền:** `update:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/AnnouncementInput"
+                - type: object
+                  required:
+                    - version
+                  properties:
+                    version:
+                      type: integer
+                      minimum: 1
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayAnnouncement"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    delete:
+      tags:
+        - announcements
+      operationId: delete_api_announcements_id
+      summary: Xoá thông báo
+      description: |-
+        Xoá hẳn. Ngoài phạm vi trả 404.
+
+        **Quyền:** `update:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/AnnouncementDeleteResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/announcements/{id}/archive:
+    post:
+      tags:
+        - announcements
+      operationId: post_api_announcements_id_archive
+      summary: Lưu trữ thông báo
+      description: |-
+        Ẩn với người thuê ngay (hết hạn từ bây giờ, bỏ ghim). Gọi lại không đổi gì.
+
+        **Quyền:** `update:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: archive
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayAnnouncement"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
   /api/portal/links/lookup:
     post:
       tags:
@@ -7541,6 +8261,496 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/invoices/{id}/payment-claims:
+    post:
+      tags:
+        - portal
+      operationId: post_api_portal_invoices_id_payment_claims
+      summary: Tôi đã chuyển khoản
+      description: >-
+        Người thuê báo đã chuyển khoản cho hoá đơn đã phát hành của hợp đồng mình: `amount` 1 … số còn lại (vượt trả 422
+        `payment_exceeds_remaining`, `extensions.remaining`), `paidOn` không sau hôm nay, `receiptFileId` là ảnh
+        `payment_receipt` tải lên qua `POST /api/portal/uploads` của chính link. Mỗi hoá đơn chỉ một báo chuyển khoản
+        đang chờ (409 `payment_claim_pending`); đã thu đủ 409 `invoice_already_paid`. `Idempotency-Key` (tuỳ chọn): gửi
+        lại cùng key và nội dung trả lại cùng báo chuyển khoản, khác nội dung 409 `idempotency_conflict`. Không ghi sổ
+        thu: chủ trọ xác nhận ở `POST /api/payment-claims/{id}/confirm`. Hoá đơn của hợp đồng khác → 404.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: create
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: false
+          description: Tuỳ chọn; mỗi lần mở form dùng một key, bấm lại dùng lại key.
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentClaimInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalPaymentClaim"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Đã có báo chuyển khoản đang chờ (`payment_claim_pending`), hoá đơn đã thu đủ (`invoice_already_paid`) hoặc
+            key đã dùng với nội dung khác (`idempotency_conflict`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "422":
+          description: Số tiền vượt số còn lại (`payment_exceeds_remaining`, `extensions.remaining`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/payment-claims/{id}/cancel:
+    post:
+      tags:
+        - portal
+      operationId: post_api_portal_payment_claims_id_cancel
+      summary: Huỷ báo chuyển khoản
+      description: |-
+        Chỉ người gửi, khi còn `pending` (409 `request_not_pending`). Của hợp đồng/người khác → 404.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: cancel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalPaymentClaim"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/maintenance:
+    get:
+      tags:
+        - portal
+      operationId: get_api_portal_maintenance
+      summary: Báo hỏng của phòng
+      description: >-
+        Báo hỏng của hợp đồng (mới nhất trước, tối đa 100): trạng thái, trả lời của chủ trọ, ảnh (URL ký ngắn hạn),
+        `isOwn`.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PortalMaintenance"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - portal
+      operationId: post_api_portal_maintenance
+      summary: Gửi báo hỏng
+      description: >-
+        Hạng mục `electricity`/`water`/`appliance`/`other`, mức độ `normal`/`urgent`, tiêu đề, mô tả, tối đa 5 ảnh
+        `maintenance_photo` của chính link. Hợp đồng phải active/ending (409 `contract_not_active`). Giới hạn 10 báo
+        hỏng/ngày/hợp đồng (429 `rate_limit_exceeded`).
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortalMaintenanceInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalMaintenance"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/maintenance/{id}/cancel:
+    post:
+      tags:
+        - portal
+      operationId: post_api_portal_maintenance_id_cancel
+      summary: Huỷ báo hỏng
+      description: |-
+        Chỉ người gửi, khi chủ trọ chưa nhận xử lý (`new`, 409 `request_not_pending`). Của hợp đồng/người khác → 404.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: cancel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalMaintenance"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/requests:
+    get:
+      tags:
+        - portal
+      operationId: get_api_portal_requests
+      summary: Yêu cầu của tôi
+      description: >-
+        Yêu cầu do chính người ở này gửi (mới nhất trước, tối đa 100): loại, nội dung, trạng thái
+        `new`/`accepted`/`rejected`/`cancelled`, trả lời hoặc lý do từ chối.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PortalTenantRequest"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - portal
+      operationId: post_api_portal_requests
+      summary: Gửi yêu cầu cho chủ trọ
+      description: >-
+        `type` và `payload` theo loại: `move_out` `{ expectedMoveOutDate ≥ hôm nay, reason? }`, `add_occupant` `{
+        fullName, phone (10 số, bắt đầu 0), fromDate }`, `remove_occupant` `{ fullName, toDate }`, `add_vehicle` `{
+        plate, vehicleType, fromDate }`, `remove_vehicle` `{ plate, toDate }`, `other` `{ message }`. Ngày phải trong
+        thời hạn hợp đồng; lỗi field trả dạng `payload.<field>`. Hợp đồng active/ending (409 `contract_not_active`). Chỉ
+        là đề nghị: hợp đồng chỉ đổi khi chủ trọ duyệt. Giới hạn 10 yêu cầu/ngày/hợp đồng.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TenantRequestInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalTenantRequest"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/requests/{id}/cancel:
+    post:
+      tags:
+        - portal
+      operationId: post_api_portal_requests_id_cancel
+      summary: Huỷ yêu cầu
+      description: |-
+        Chỉ yêu cầu của chính mình còn `new` (409 `request_not_pending`). Của hợp đồng/người khác → 404.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: cancel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalTenantRequest"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/uploads:
+    post:
+      tags:
+        - portal
+      operationId: post_api_portal_uploads
+      summary: Xin ticket tải ảnh (cổng người thuê)
+      description: >-
+        `purpose` `payment_receipt` (biên lai) hoặc `maintenance_photo` (ảnh báo hỏng). Ticket 10 phút, thuộc link cổng
+        (không phải tài khoản nhân viên), ảnh JPG/PNG/WEBP ≤ 10 MB gửi thẳng tới `uploadUrl`. Giới hạn 60
+        ticket/ngày/hợp đồng.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortalUploadInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayUploadTicket"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/uploads/{id}/complete:
+    post:
+      tags:
+        - portal
+      operationId: post_api_portal_uploads_id_complete
+      summary: Hoàn tất tải ảnh (cổng người thuê)
+      description: |-
+        Kiểm tra ảnh đã lưu và trả `fileId` để gắn vào báo chuyển khoản/báo hỏng. Ticket của link khác → 404.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: complete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayUpload"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/RateLimited"
   /health/live:
@@ -10990,6 +12200,73 @@ components:
           schema:
             $ref: "#/components/schemas/ApiError"
   schemas:
+    AddOccupantRequestPayload:
+      type: object
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+        fromDate:
+          type: string
+      required:
+        - fullName
+        - phone
+        - fromDate
+    AddVehicleRequestPayload:
+      type: object
+      properties:
+        plate:
+          type: string
+        vehicleType:
+          type: string
+          enum:
+            - bicycle
+            - car
+            - electric_bike
+            - motorbike
+            - other
+        fromDate:
+          type: string
+      required:
+        - plate
+        - vehicleType
+        - fromDate
+    AnnouncementDeleteResult:
+      type: object
+      properties:
+        id:
+          type: string
+        deleted:
+          type: boolean
+      required:
+        - id
+        - deleted
+    AnnouncementInput:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        roomIds:
+          type:
+            - array
+            - "null"
+          items:
+            type: string
+        pinned:
+          type: boolean
+        expiresOn:
+          type:
+            - string
+            - "null"
+      required:
+        - buildingId
+        - title
+        - body
     ApiError:
       type: object
       properties:
@@ -11911,6 +13188,269 @@ components:
       required:
         - field
         - tenantId
+    InboxAcceptInput:
+      type: object
+      properties:
+        reply:
+          type:
+            - string
+            - "null"
+        done:
+          type: boolean
+        effectiveDate:
+          type:
+            - string
+            - "null"
+        tenantId:
+          type:
+            - string
+            - "null"
+        newPrimaryTenantId:
+          type:
+            - string
+            - "null"
+        vehicleId:
+          type:
+            - string
+            - "null"
+    InboxItem:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+            - maintenance
+            - payment_claim
+            - tenant_request
+        status:
+          type: string
+          enum:
+            - cancelled
+            - done
+            - in_progress
+            - pending
+            - rejected
+        buildingId:
+          type: string
+        contractId:
+          type:
+            - string
+            - "null"
+        contractCode:
+          type:
+            - string
+            - "null"
+        roomId:
+          type:
+            - string
+            - "null"
+        roomCode:
+          type:
+            - string
+            - "null"
+        tenantId:
+          type:
+            - string
+            - "null"
+        tenantName:
+          type:
+            - string
+            - "null"
+        reply:
+          type:
+            - string
+            - "null"
+        handledByName:
+          type:
+            - string
+            - "null"
+        handledAt:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+        maintenance:
+          anyOf:
+            - $ref: "#/components/schemas/InboxMaintenance"
+            - type: "null"
+        request:
+          anyOf:
+            - $ref: "#/components/schemas/InboxTenantRequest"
+            - type: "null"
+        claim:
+          anyOf:
+            - $ref: "#/components/schemas/InboxPaymentClaim"
+            - type: "null"
+      required:
+        - id
+        - kind
+        - status
+        - buildingId
+        - contractId
+        - contractCode
+        - roomId
+        - roomCode
+        - tenantId
+        - tenantName
+        - reply
+        - handledByName
+        - handledAt
+        - createdAt
+        - maintenance
+        - request
+        - claim
+    InboxMaintenance:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum:
+            - appliance
+            - electricity
+            - other
+            - water
+        severity:
+          type: string
+          enum:
+            - normal
+            - urgent
+        status:
+          type: string
+          enum:
+            - cancelled
+            - done
+            - in_progress
+            - new
+            - open
+            - rejected
+        source:
+          type: string
+          enum:
+            - owner
+            - tenant
+        photos:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestPhoto"
+      required:
+        - title
+        - description
+        - category
+        - severity
+        - status
+        - source
+        - photos
+    InboxPaymentClaim:
+      type: object
+      properties:
+        invoiceId:
+          type: string
+        invoiceCode:
+          type:
+            - string
+            - "null"
+        invoicePeriod:
+          type: string
+        invoiceRemaining:
+          type: number
+        amount:
+          type: number
+        paidOn:
+          type: string
+        reference:
+          type:
+            - string
+            - "null"
+        note:
+          type:
+            - string
+            - "null"
+        status:
+          type: string
+          enum:
+            - cancelled
+            - confirmed
+            - pending
+            - rejected
+        receipt:
+          anyOf:
+            - $ref: "#/components/schemas/RequestPhoto"
+            - type: "null"
+        paymentId:
+          type:
+            - string
+            - "null"
+      required:
+        - invoiceId
+        - invoiceCode
+        - invoicePeriod
+        - invoiceRemaining
+        - amount
+        - paidOn
+        - reference
+        - note
+        - status
+        - receipt
+        - paymentId
+    InboxRejectInput:
+      type: object
+      properties:
+        reason:
+          type: string
+      required:
+        - reason
+    InboxReplyInput:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    InboxTenantRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - add_occupant
+            - add_vehicle
+            - move_out
+            - other
+            - remove_occupant
+            - remove_vehicle
+        payload:
+          $ref: "#/components/schemas/TenantRequestPayload"
+        status:
+          type: string
+          enum:
+            - accepted
+            - cancelled
+            - new
+            - rejected
+        result:
+          type:
+            - object
+            - "null"
+          additionalProperties:
+            anyOf:
+              - anyOf:
+                  - type: string
+                  - type: number
+                  - type: boolean
+                  - type: boolean
+              - type: "null"
+      required:
+        - type
+        - payload
+        - status
+        - result
     InvoiceIssueInput:
       type: object
       properties:
@@ -12161,6 +13701,24 @@ components:
         - ratioNum
         - ratioDen
         - amount
+    MoveOutRequestPayload:
+      type: object
+      properties:
+        expectedMoveOutDate:
+          type: string
+        reason:
+          type:
+            - string
+            - "null"
+      required:
+        - expectedMoveOutDate
+    OtherRequestPayload:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
     OverviewLink:
       type: object
       properties:
@@ -12257,6 +13815,43 @@ components:
         - pageSize
         - total
         - totalPages
+    PaymentClaimConfirmInput:
+      type: object
+      properties:
+        amount:
+          type:
+            - number
+            - "null"
+        paidOn:
+          type:
+            - string
+            - "null"
+        reference:
+          type:
+            - string
+            - "null"
+    PaymentClaimInput:
+      type: object
+      properties:
+        amount:
+          type: number
+        paidOn:
+          type: string
+        receiptFileId:
+          type:
+            - string
+            - "null"
+        reference:
+          type:
+            - string
+            - "null"
+        note:
+          type:
+            - string
+            - "null"
+      required:
+        - amount
+        - paidOn
     PaymentInput:
       type: object
       properties:
@@ -12431,6 +14026,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PortalPayment"
+        claims:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalPaymentClaim"
         buildingName:
           type: string
         buildingAddress:
@@ -12496,6 +14095,7 @@ components:
       required:
         - id
         - payments
+        - claims
         - buildingName
         - buildingAddress
         - roomCode
@@ -12585,6 +14185,92 @@ components:
           type: string
       required:
         - token
+    PortalMaintenance:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum:
+            - appliance
+            - electricity
+            - other
+            - water
+        severity:
+          type: string
+          enum:
+            - normal
+            - urgent
+        status:
+          type: string
+          enum:
+            - cancelled
+            - done
+            - in_progress
+            - new
+            - open
+            - rejected
+        reply:
+          type:
+            - string
+            - "null"
+        repliedAt:
+          type:
+            - string
+            - "null"
+        photos:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestPhoto"
+        isOwn:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - title
+        - description
+        - category
+        - severity
+        - status
+        - reply
+        - repliedAt
+        - photos
+        - isOwn
+        - createdAt
+    PortalMaintenanceInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum:
+            - appliance
+            - electricity
+            - other
+            - water
+        severity:
+          type: string
+          enum:
+            - normal
+            - urgent
+        photoFileIds:
+          type: array
+          items:
+            type: string
+      required:
+        - title
+        - description
+        - category
+        - severity
     PortalMe:
       type: object
       properties:
@@ -12626,6 +14312,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PortalNotice"
+        openRequests:
+          $ref: "#/components/schemas/PortalOpenRequests"
         sessionExpiresAt:
           type: string
       required:
@@ -12641,6 +14329,7 @@ components:
         - previousDebt
         - unpaidInvoiceCount
         - pinnedNotices
+        - openRequests
         - sessionExpiresAt
     PortalNotice:
       type: object
@@ -12701,6 +14390,19 @@ components:
         - name
         - isPrimary
         - isSelf
+    PortalOpenRequests:
+      type: object
+      properties:
+        maintenance:
+          type: number
+        requests:
+          type: number
+        paymentClaims:
+          type: number
+      required:
+        - maintenance
+        - requests
+        - paymentClaims
     PortalPayment:
       type: object
       properties:
@@ -12722,6 +14424,46 @@ components:
         - amount
         - method
         - paidOn
+    PortalPaymentClaim:
+      type: object
+      properties:
+        id:
+          type: string
+        invoiceId:
+          type: string
+        amount:
+          type: number
+        paidOn:
+          type: string
+        status:
+          type: string
+          enum:
+            - cancelled
+            - confirmed
+            - pending
+            - rejected
+        rejectReason:
+          type:
+            - string
+            - "null"
+        isOwn:
+          type: boolean
+        createdAt:
+          type: string
+        handledAt:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - invoiceId
+        - amount
+        - paidOn
+        - status
+        - rejectReason
+        - isOwn
+        - createdAt
+        - handledAt
     PortalSessionInput:
       type: object
       properties:
@@ -12746,6 +14488,57 @@ components:
           type: boolean
       required:
         - signedOut
+    PortalTenantRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - add_occupant
+            - add_vehicle
+            - move_out
+            - other
+            - remove_occupant
+            - remove_vehicle
+        payload:
+          $ref: "#/components/schemas/TenantRequestPayload"
+        status:
+          type: string
+          enum:
+            - accepted
+            - cancelled
+            - new
+            - rejected
+        reply:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+        handledAt:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - type
+        - payload
+        - status
+        - reply
+        - createdAt
+        - handledAt
+    PortalUploadInput:
+      type: object
+      properties:
+        purpose:
+          type: string
+          enum:
+            - maintenance_photo
+            - payment_receipt
+      required:
+        - purpose
     PortalUsage:
       type: object
       properties:
@@ -13132,6 +14925,26 @@ components:
         - meterId
         - data
         - error
+    RemoveOccupantRequestPayload:
+      type: object
+      properties:
+        fullName:
+          type: string
+        toDate:
+          type: string
+      required:
+        - fullName
+        - toDate
+    RemoveVehicleRequestPayload:
+      type: object
+      properties:
+        plate:
+          type: string
+        toDate:
+          type: string
+      required:
+        - plate
+        - toDate
     ReportAmounts:
       type: object
       properties:
@@ -13171,6 +14984,18 @@ components:
         - from
         - to
         - sheets
+    RequestPhoto:
+      type: object
+      properties:
+        fileId:
+          type: string
+        url:
+          type:
+            - string
+            - "null"
+      required:
+        - fileId
+        - url
     ResidentExportInput:
       type: object
       properties:
@@ -13652,6 +15477,59 @@ components:
       required:
         - amount
         - reason
+    StayAnnouncement:
+      type: object
+      properties:
+        id:
+          type: string
+        buildingId:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        roomIds:
+          type:
+            - array
+            - "null"
+          items:
+            type: string
+        roomCodes:
+          type: array
+          items:
+            type: string
+        pinned:
+          type: boolean
+        expiresAt:
+          type:
+            - string
+            - "null"
+        expired:
+          type: boolean
+        createdByName:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        version:
+          type: number
+      required:
+        - id
+        - buildingId
+        - title
+        - body
+        - roomIds
+        - roomCodes
+        - pinned
+        - expiresAt
+        - expired
+        - createdByName
+        - createdAt
+        - updatedAt
+        - version
     StayAuditLog:
       type: object
       properties:
@@ -15336,6 +17214,8 @@ components:
           enum:
             - contract_meter
             - expense_receipt
+            - maintenance_photo
+            - payment_receipt
             - tenant_document
         buildingId:
           type: string
@@ -15376,6 +17256,8 @@ components:
           enum:
             - contract_meter
             - expense_receipt
+            - maintenance_photo
+            - payment_receipt
             - tenant_document
         buildingId:
           type: string
@@ -15727,6 +17609,31 @@ components:
         - link
         - revoked
         - sessionsRevoked
+    TenantRequestInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - add_occupant
+            - add_vehicle
+            - move_out
+            - other
+            - remove_occupant
+            - remove_vehicle
+        payload:
+          $ref: "#/components/schemas/TenantRequestPayload"
+      required:
+        - type
+        - payload
+    TenantRequestPayload:
+      anyOf:
+        - $ref: "#/components/schemas/MoveOutRequestPayload"
+        - $ref: "#/components/schemas/AddOccupantRequestPayload"
+        - $ref: "#/components/schemas/RemoveOccupantRequestPayload"
+        - $ref: "#/components/schemas/AddVehicleRequestPayload"
+        - $ref: "#/components/schemas/RemoveVehicleRequestPayload"
+        - $ref: "#/components/schemas/OtherRequestPayload"
     TenantRoomRef:
       type: object
       properties:

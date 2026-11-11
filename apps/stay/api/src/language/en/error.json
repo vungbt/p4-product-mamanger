@@ -113,5 +113,8 @@
   "portal_link_invalid": "The link is no longer valid. Please contact your landlord.",
   "portal_link_not_found": "Tenant portal link not found.",
   "portal_tenant_not_occupant": "This tenant no longer lives under the contract.",
-  "portal_phone_last4": "{{attribute}} must be exactly 4 digits."
+  "portal_phone_last4": "{{attribute}} must be exactly 4 digits.",
+  "payment_claim_pending": "This invoice already has a transfer claim awaiting confirmation.",
+  "request_not_pending": "The request was already handled or cancelled.",
+  "invalid_request_payload": "The request content is invalid."
 }

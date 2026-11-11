@@ -25,9 +25,14 @@ import {
   initInvoiceMeterReadingModel,
 } from './invoice-meter-reading.model.js';
 import { InvoiceSequenceModel, initInvoiceSequenceModel } from './invoice-sequence.model.js';
+import {
+  initMaintenanceRequestModel,
+  MaintenanceRequestModel,
+} from './maintenance-request.model.js';
 import { initMeterModel, MeterModel } from './meter.model.js';
 import { initMeterReadingModel, MeterReadingModel } from './meter-reading.model.js';
 import { initPaymentModel, PaymentModel } from './payment.model.js';
+import { initPaymentClaimModel, PaymentClaimModel } from './payment-claim.model.js';
 import { initRoomModel, RoomModel } from './room.model.js';
 import {
   initRoomDefaultServiceModel,
@@ -42,6 +47,7 @@ import {
   initTenantPortalSessionModel,
   TenantPortalSessionModel,
 } from './tenant-portal-session.model.js';
+import { initTenantRequestModel, TenantRequestModel } from './tenant-request.model.js';
 import { initUploadTicketModel, UploadTicketModel } from './upload-ticket.model.js';
 import { initUserModel, UserModel } from './user.model.js';
 import { initVehicleModel, VehicleModel } from './vehicle.model.js';
@@ -80,6 +86,9 @@ initPaymentModel(sequelize);
 initTenantPortalLinkModel(sequelize);
 initTenantPortalSessionModel(sequelize);
 initAnnouncementModel(sequelize);
+initPaymentClaimModel(sequelize);
+initMaintenanceRequestModel(sequelize);
+initTenantRequestModel(sequelize);
 
 BuildingMemberModel.belongsTo(BuildingModel, { foreignKey: 'buildingId', as: 'building' });
 BuildingMemberModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user' });
@@ -118,8 +127,10 @@ export {
   InvoiceMeterReadingModel,
   InvoiceModel,
   InvoiceSequenceModel,
+  MaintenanceRequestModel,
   MeterModel,
   MeterReadingModel,
+  PaymentClaimModel,
   PaymentModel,
   RoomDefaultServiceModel,
   RoomModel,
@@ -130,6 +141,7 @@ export {
   TenantModel,
   TenantPortalLinkModel,
   TenantPortalSessionModel,
+  TenantRequestModel,
   UploadTicketModel,
   UserModel,
   VehicleModel,

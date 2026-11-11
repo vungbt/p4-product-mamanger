@@ -1,4 +1,4 @@
-import { Button, EmptyState, Spinner, Tag } from '@itclabs/react-ui';
+import { EmptyState, Spinner, Tag } from '@itclabs/react-ui';
 import { isPortalSessionError } from '@stay/sdk/portal';
 import type { PortalInvoiceSummary } from '@stay/shared';
 import type { ReactNode } from 'react';
@@ -16,7 +16,9 @@ export const portalPaths = {
   notices: '/p/notices',
   more: '/p/more',
   maintenance: '/p/maintenance',
-  request: '/p/requests/new',
+  maintenanceNew: '/p/maintenance/new',
+  requests: '/p/requests',
+  requestNew: '/p/requests/new',
   signedOut: '/p/signed-out',
 } as const;
 
@@ -137,15 +139,6 @@ export function PortalInvoiceStatus({ invoice }: { invoice: PortalInvoiceSummary
     <Tag tone="info" size="sm">
       Chưa thanh toán
     </Tag>
-  );
-}
-
-/** Part-B actions (báo hỏng, yêu cầu, "Tôi đã chuyển khoản") are shown but not available yet. */
-export function ComingSoonButton({ children }: { children: ReactNode }) {
-  return (
-    <Button variant="secondary" disabled>
-      {children} · Sắp có
-    </Button>
   );
 }
 

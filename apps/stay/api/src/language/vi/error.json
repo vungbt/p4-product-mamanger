@@ -113,5 +113,8 @@
   "portal_link_invalid": "Link không còn hiệu lực. Vui lòng liên hệ chủ trọ.",
   "portal_link_not_found": "Không tìm thấy link cổng người thuê.",
   "portal_tenant_not_occupant": "Người thuê này không còn ở trong hợp đồng.",
-  "portal_phone_last4": "{{attribute}} phải gồm đúng 4 chữ số."
+  "portal_phone_last4": "{{attribute}} phải gồm đúng 4 chữ số.",
+  "payment_claim_pending": "Hoá đơn đang có một báo chuyển khoản chờ chủ trọ xác nhận.",
+  "request_not_pending": "Yêu cầu đã được xử lý hoặc đã huỷ.",
+  "invalid_request_payload": "Nội dung yêu cầu không hợp lệ."
 }

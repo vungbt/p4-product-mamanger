@@ -37,6 +37,8 @@ export const portalKeys = {
   contract: () => ['stay-portal', 'contract'] as const,
   usage: () => ['stay-portal', 'usage'] as const,
   notices: () => ['stay-portal', 'notices'] as const,
+  maintenance: () => ['stay-portal', 'maintenance'] as const,
+  requests: () => ['stay-portal', 'requests'] as const,
 };
 
 /** 401 (no session), 404 (invalid link/invoice) and 429 cannot succeed on retry. */
@@ -91,6 +93,18 @@ export function portalQueryOptions(sdk: StaySdk) {
         queryKey: portalKeys.notices(),
         queryFn: ({ signal }) => api.notices(signal),
       }),
+    maintenance: () =>
+      queryOptions({
+        ...base,
+        queryKey: portalKeys.maintenance(),
+        queryFn: ({ signal }) => api.maintenance(signal),
+      }),
+    requests: () =>
+      queryOptions({
+        ...base,
+        queryKey: portalKeys.requests(),
+        queryFn: ({ signal }) => api.requests(signal),
+      }),
   };
 }
 
@@ -99,7 +113,23 @@ export function portalMutationOptions(sdk: StaySdk, client: QueryClient) {
   /** A new or ended session invalidates every cached portal answer. */
   const reset = () => client.removeQueries({ queryKey: portalKeys.all });
 
+  /** A tenant write changes the home counts and the list it belongs to. */
+  const refresh = () => client.invalidateQueries({ queryKey: portalKeys.all });
+
   return {
+    claimPayment: () =>
+      mutationOptions({ mutationFn: api.claimPayment, retry: false, onSuccess: refresh }),
+    cancelClaim: () =>
+      mutationOptions({ mutationFn: api.cancelClaim, retry: false, onSuccess: refresh }),
+    createMaintenance: () =>
+      mutationOptions({ mutationFn: api.createMaintenance, retry: false, onSuccess: refresh }),
+    cancelMaintenance: () =>
+      mutationOptions({ mutationFn: api.cancelMaintenance, retry: false, onSuccess: refresh }),
+    createRequest: () =>
+      mutationOptions({ mutationFn: api.createRequest, retry: false, onSuccess: refresh }),
+    cancelRequest: () =>
+      mutationOptions({ mutationFn: api.cancelRequest, retry: false, onSuccess: refresh }),
+    uploadImage: () => mutationOptions({ mutationFn: api.uploadImage, retry: false }),
     signIn: () => mutationOptions({ mutationFn: api.signIn, retry: false, onSuccess: reset }),
     signOut: () =>
       mutationOptions({
@@ -136,6 +166,47 @@ export function usePortalUsage() {
 
 export function usePortalNotices() {
   return useQuery(portalQueryOptions(usePortalSdk()).notices());
+}
+
+export function usePortalMaintenance() {
+  return useQuery(portalQueryOptions(usePortalSdk()).maintenance());
+}
+
+export function usePortalRequests() {
+  return useQuery(portalQueryOptions(usePortalSdk()).requests());
+}
+
+function usePortalMutations() {
+  return portalMutationOptions(usePortalSdk(), useQueryClient());
+}
+
+export function usePortalClaimPayment() {
+  return useMutation(usePortalMutations().claimPayment());
+}
+
+export function usePortalCancelClaim() {
+  return useMutation(usePortalMutations().cancelClaim());
+}
+
+export function usePortalCreateMaintenance() {
+  return useMutation(usePortalMutations().createMaintenance());
+}
+
+export function usePortalCancelMaintenance() {
+  return useMutation(usePortalMutations().cancelMaintenance());
+}
+
+export function usePortalCreateRequest() {
+  return useMutation(usePortalMutations().createRequest());
+}
+
+export function usePortalCancelRequest() {
+  return useMutation(usePortalMutations().cancelRequest());
+}
+
+/** Receipt / maintenance photo upload with a portal ticket; resolves to the file id. */
+export function usePortalUploadImage() {
+  return useMutation(usePortalMutations().uploadImage());
 }
 
 export function usePortalSignIn() {
