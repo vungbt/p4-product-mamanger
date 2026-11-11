@@ -58,8 +58,6 @@ export default function AppSidebar() {
   return (
     <Sidebar
       data-testid="app-sidebar"
-      tone="brand"
-      variant="floating"
       itemVariant="indicator"
       header={{
         // The kit draws the rounded accent square; the mark letter goes inside.
