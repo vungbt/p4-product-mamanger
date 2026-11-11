@@ -42,7 +42,8 @@ async function rentedRoom(page: Page) {
     (candidate: { code: string }) => candidate.code === 'A',
   );
   expect(building, 'Seeded building A must exist').toBeTruthy();
-  const year = randomInt(2100, 2900);
+  // Within the kit DatePicker range (up to 2100) so the tenant can pick dates of the stay.
+  const year = randomInt(2030, 2100);
   const suffix = randomUUID().replaceAll('-', '').slice(0, 6).toUpperCase();
   const phone = `09${String(randomInt(0, 100_000_000)).padStart(8, '0')}`;
   const fullName = `Khách yêu cầu ${suffix}`;
