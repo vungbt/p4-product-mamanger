@@ -27,7 +27,9 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-i18next": "catalog:",
+    "react-is": "19.2.0",
     "react-router-dom": "catalog:",
+    "recharts": "3.10.1",
     "valibot": "catalog:"
   },
   "devDependencies": {

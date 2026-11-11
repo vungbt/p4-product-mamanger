@@ -185,6 +185,13 @@ try {
       },
     ],
   };
+  // ST-19: `period` is validated in the handler (400 malformed, 422 outside 2000–2099).
+  const overview = spec.paths['/api/buildings/{buildingId}/overview'].get;
+  overview.responses['400'] = { $ref: '#/components/responses/ValidationError' };
+  overview.responses['422'] = {
+    description: 'Kỳ ngoài khoảng 2000–2099 (`period_out_of_range`).',
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+  };
   const paymentInput = spec.components.schemas.PaymentInput;
   paymentInput.properties.amount = {
     type: 'integer',

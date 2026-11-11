@@ -110,6 +110,7 @@
     "signedInAs": "Đăng nhập với {{email}} · {{role}}",
     "onboardingTitle": "Bắt đầu với toà nhà của bạn",
     "onboardingDescription": "Toà chưa có phòng. Làm theo 3 bước để lập hoá đơn kỳ đầu tiên.",
+    "onboardingSetupDescription": "Thiết lập nhanh cho toà: đơn giá, phòng và hợp đồng.",
     "stepLabel": "Bước {{step}}",
     "steps": {
       "prices": {

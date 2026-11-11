@@ -110,6 +110,7 @@
     "signedInAs": "Signed in as {{email}} · {{role}}",
     "onboardingTitle": "Get started with your building",
     "onboardingDescription": "This building has no rooms yet. Follow 3 steps to issue your first invoices.",
+    "onboardingSetupDescription": "Quick setup for the building: prices, rooms and contracts.",
     "stepLabel": "Step {{step}}",
     "steps": {
       "prices": {

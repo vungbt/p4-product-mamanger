@@ -36,6 +36,8 @@ const TAG_DESCRIPTIONS = {
     'Thu tiền hoá đơn (một hoặc nhiều lần), sổ thu và huỷ bút toán thu. Thanh toán không sửa/xoá; `paidTotal` và trạng thái hoá đơn luôn tính lại từ tổng các khoản chưa huỷ trong cùng transaction.',
   receivables:
     'Công nợ theo hợp đồng: hoá đơn đã phát hành chưa thu đủ, tổng còn lại, quá hạn theo `dueOn` và ngày hiện tại Asia/Ho_Chi_Minh (nhóm chưa tới hạn, 1–7, 8–30, > 30 ngày). Chỉ đọc.',
+  overview:
+    'Tổng quan tháng: phải thu/đã thu/còn lại của kỳ, công nợ, phòng theo trạng thái, tỷ lệ lấp đầy, 6 kỳ gần nhất và việc cần làm. Tổng hợp ở server, chỉ đọc.',
   audit: 'Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.',
   buildings: 'Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.',
   me: 'Người dùng hiện tại và quyền CASL.',
@@ -195,6 +197,10 @@ const OPERATIONS = {
   'GET /api/buildings/{buildingId}/receivables': [
     'Công nợ của toà',
     'Mỗi dòng là một hợp đồng có hoá đơn chưa thu đủ (`issued`/`partially_paid`, `total − paidTotal > 0`; nháp và void không tính): mã hợp đồng, phòng hiện tại, người đại diện (`representativePhone` chỉ khi được xem người thuê của toà), số hoá đơn, tổng còn lại, phần quá hạn, hạn cũ nhất, số ngày quá hạn lâu nhất (`dueOn` so với hôm nay theo Asia/Ho_Chi_Minh) và nhóm `bucket` (`not_due`, `1_7`, `8_30`, `over_30`), kèm các hoá đơn đó (hạn cũ nhất trước, có `shareExpiresAt`). `q` tìm theo mã phòng, mã hợp đồng, tên hoặc SĐT người ở; lọc `bucket`; `sortBy` `remaining` (mặc định, giảm dần), `overdueDays`, `roomCode`. `meta.totalRemaining`, `meta.overdueRemaining`, `meta.invoiceCount` tính trên toàn bộ bộ lọc trước phân trang và luôn bằng tổng `total − paidTotal` của các hoá đơn được tính; `meta.buckets` đếm theo `q` nhưng không theo `bucket` (cho các chip). Toà ngoài phạm vi trả 404.',
+  ],
+  'GET /api/buildings/{buildingId}/overview': [
+    'Tổng quan tháng của toà',
+    'Kỳ `period` = M (`YYYY-MM`, năm 2000–2099; ngoài khoảng trả 422 `period_out_of_range`), mặc định kỳ hiện tại: kỳ mới nhất có ngày phát hành (`issueDay` của toà, hoặc mặc định hệ thống) ≤ hôm nay theo Asia/Ho_Chi_Minh. `current`/`previous`/`series` (6 kỳ, cũ trước): `billed` = tổng `total` của hoá đơn kỳ đó đã phát hành (`issued`, `partially_paid`, `paid`; mọi loại `monthly`, `move_in`, `settlement`; nháp và void không tính), `collected` = các khoản thu chưa huỷ của chính các hoá đơn đó (bất kể ngày thu), `remaining` = `billed − collected`. `collectedInMonth` = tiền thu theo ngày `paidOn` trong tháng M (bằng `meta.totalAmount` của sổ thu cùng khoảng ngày). `receivables` bằng tổng của màn Công nợ (cùng truy vấn). `rooms` = phòng chưa lưu trữ theo trạng thái hôm nay; `occupancy` tính tại ngày cuối kỳ (hoặc hôm nay nếu kỳ chưa hết), `rate` = đang thuê / tổng phòng. `todos` luôn đủ 7 mục theo lịch tháng (kể cả 0): `readings` (phòng còn thiếu chỉ số điện hoặc nước tháng M−1, `total` = số phòng cần chốt), `invoices_to_create` (hợp đồng tính tiền được trong M chưa có hoá đơn kỳ/nhận phòng không void), `draft_invoices`, `unshared_invoices` (đã phát hành, còn nợ, không có link còn hạn), `overdue_invoices` (`amount` = tiền quá hạn; mở nhóm quá hạn nặng nhất), `expiring_contracts` (hết hạn trong 30 ngày), `ending_contracts` (đã báo trả phòng). Mỗi mục có `link` `{ path, query }` tới màn xử lý. Toà ngoài phạm vi trả 404.',
   ],
   'GET /api/audit-logs': [
     'Lịch sử thay đổi',
@@ -541,6 +547,17 @@ const OVERRIDES = {
       content: { 'application/json': { schema: { ref: 'PaymentReverseInput' } } },
     },
   },
+  'GET /api/buildings/{buildingId}/overview': {
+    parameters: [
+      {
+        name: 'period',
+        in: 'query',
+        required: false,
+        description: 'Kỳ M; bỏ trống = kỳ hiện tại theo ngày phát hành của toà.',
+        schema: { type: 'string', pattern: '^[0-9]{4}-(0[1-9]|1[0-2])$' },
+      },
+    ],
+  },
   'GET /api/buildings/{buildingId}/readings': {
     parameters: [
       {
@@ -782,6 +799,7 @@ export default {
     'libs/stay/shared/src/reading.ts',
     'libs/stay/shared/src/invoice.ts',
     'libs/stay/shared/src/payment.ts',
+    'libs/stay/shared/src/overview.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },
   sessionCookie: 'stay.session_token',

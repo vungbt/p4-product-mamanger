@@ -48,6 +48,7 @@ grouped AS (
     CAST(COUNT(*) AS int) AS invoice_count,
     SUM(remaining) AS remaining,
     COALESCE(SUM(remaining) FILTER (WHERE overdue_days > 0), 0) AS overdue_remaining,
+    CAST(COUNT(*) FILTER (WHERE overdue_days > 0) AS int) AS overdue_count,
     to_char(MIN(due_on), 'YYYY-MM-DD') AS oldest_due_on,
     CAST(MAX(overdue_days) AS int) AS overdue_days
   FROM unpaid
@@ -112,7 +113,14 @@ interface BucketRecord {
   remaining: string | number;
   overdue_remaining: string | number;
   invoice_count: string | number;
+  overdue_count: string | number;
 }
+
+const BUCKETS_SQL = `${ROWS_SQL}
+SELECT bucket, CAST(COUNT(*) AS int) AS count, SUM(remaining) AS remaining,
+  SUM(overdue_remaining) AS overdue_remaining, SUM(invoice_count) AS invoice_count,
+  SUM(overdue_count) AS overdue_count
+FROM matched GROUP BY bucket`;
 
 /** BIGINT sums arrive as strings; amounts beyond the safe integer range are refused. */
 function vnd(value: string | number | null): number {
@@ -218,13 +226,11 @@ export async function listReceivables(
       });
 
       if (!building) throw new NotFound();
-      const bucketRows = await sequelize.query<BucketRecord>(
-        `${ROWS_SQL}
-        SELECT bucket, CAST(COUNT(*) AS int) AS count, SUM(remaining) AS remaining,
-          SUM(overdue_remaining) AS overdue_remaining, SUM(invoice_count) AS invoice_count
-        FROM matched GROUP BY bucket`,
-        { replacements, type: QueryTypes.SELECT, transaction },
-      );
+      const bucketRows = await sequelize.query<BucketRecord>(BUCKETS_SQL, {
+        replacements,
+        type: QueryTypes.SELECT,
+        transaction,
+      });
       const rows = await sequelize.query<RowRecord>(
         `${ROWS_SQL}
         SELECT * FROM matched
@@ -289,4 +295,43 @@ export async function listReceivables(
       };
     },
   );
+}
+
+/** Building-wide receivable totals (no `q`/`bucket`), with the overdue invoice count. */
+export interface BuildingReceivableTotals {
+  totalRemaining: number;
+  overdueRemaining: number;
+  invoiceCount: number;
+  overdueInvoiceCount: number;
+  /** Contracts per bucket, zeros included. */
+  buckets: { bucket: ReceivableBucket; count: number }[];
+}
+
+/**
+ * The same aggregation as `GET /buildings/:buildingId/receivables` `meta` without filters, so
+ * the overview (ST-19) always equals the receivables screen. Run inside the caller's snapshot.
+ */
+export async function buildingReceivableTotals(
+  buildingId: string,
+  today: string,
+  transaction: Transaction,
+): Promise<BuildingReceivableTotals> {
+  const rows = await sequelize.query<BucketRecord>(BUCKETS_SQL, {
+    replacements: { buildingId, today, statuses: [...UNPAID_STATUSES], pattern: null },
+    type: QueryTypes.SELECT,
+    transaction,
+  });
+  const sum = (field: 'remaining' | 'overdue_remaining' | 'invoice_count' | 'overdue_count') =>
+    vnd(rows.reduce((total, row) => total + vnd(row[field]), 0));
+
+  return {
+    totalRemaining: sum('remaining'),
+    overdueRemaining: sum('overdue_remaining'),
+    invoiceCount: sum('invoice_count'),
+    overdueInvoiceCount: sum('overdue_count'),
+    buckets: RECEIVABLE_BUCKETS.map((bucket) => ({
+      bucket,
+      count: rows.find((row) => row.bucket === bucket)?.count ?? 0,
+    })),
+  };
 }
