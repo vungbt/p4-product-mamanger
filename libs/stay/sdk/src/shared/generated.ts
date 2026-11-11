@@ -1,4 +1,82 @@
 export interface paths {
+  '/api/announcements': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Thông báo cho người thuê
+     * @description Lọc `buildingId`, `status` (`active` còn hiển thị, `expired` đã hết hạn/lưu trữ, `all` mặc định), `q` (tiêu đề, nội dung). Ghim trước rồi mới nhất. Quyền `update:Building` theo toà (chủ trọ, người quản lý toà); ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `update:Building`.
+     */
+    get: operations['get_api_announcements'];
+    put?: never;
+    /**
+     * Tạo thông báo
+     * @description `roomIds` rỗng/null = cả toà, ngược lại các phòng đang hoạt động của toà (422 `roomIds`). `expiresOn` là ngày cuối còn hiển thị (Asia/Ho_Chi_Minh), không trước hôm nay; null = không hết hạn. Audit chỉ ghi id, số phòng, ghim, hạn.
+     *
+     *     **Quyền:** `update:Building`.
+     */
+    post: operations['post_api_announcements'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/announcements/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Sửa thông báo
+     * @description Gửi đủ trường như khi tạo và `version`; không đổi toà. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `update:Building`.
+     */
+    put: operations['put_api_announcements_id'];
+    post?: never;
+    /**
+     * Xoá thông báo
+     * @description Xoá hẳn. Ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `update:Building`.
+     */
+    delete: operations['delete_api_announcements_id'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/announcements/{id}/archive': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Lưu trữ thông báo
+     * @description Ẩn với người thuê ngay (hết hạn từ bây giờ, bỏ ghim). Gọi lại không đổi gì.
+     *
+     *     **Quyền:** `update:Building`.
+     */
+    post: operations['post_api_announcements_id_archive'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/audit-logs': {
     parameters: {
       query?: never;
@@ -1924,6 +2002,50 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/payment-claims/{id}/confirm': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xác nhận chuyển khoản
+     * @description Tạo khoản thu ST-15 (`bank_transfer`, mã giao dịch từ báo chuyển khoản) cho hoá đơn và đánh dấu `confirmed` trong cùng transaction; khoá báo chuyển khoản trước nên bấm lại/gọi đồng thời trả cùng khoản thu, không ghi hai lần. Có thể sửa `amount`, `paidOn`, `reference` khi xác nhận (số tiền vượt số còn lại → 422 `payment_exceeds_remaining`). Đã từ chối/huỷ → 409 `request_not_pending`. Quyền `create:Payment` theo toà.
+     *
+     *     **Quyền:** `create:Payment`.
+     */
+    post: operations['post_api_payment_claims_id_confirm'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/payment-claims/{id}/reject': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Từ chối báo chuyển khoản
+     * @description `reason` bắt buộc (người thuê thấy lý do); hoá đơn không đổi. Chỉ khi `pending`.
+     *
+     *     **Quyền:** `create:Payment`.
+     */
+    post: operations['post_api_payment_claims_id_reject'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/payments': {
     parameters: {
       query?: never;
@@ -2056,6 +2178,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/portal/invoices/{id}/payment-claims': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Tôi đã chuyển khoản
+     * @description Người thuê báo đã chuyển khoản cho hoá đơn đã phát hành của hợp đồng mình: `amount` 1 … số còn lại (vượt trả 422 `payment_exceeds_remaining`, `extensions.remaining`), `paidOn` không sau hôm nay, `receiptFileId` là ảnh `payment_receipt` tải lên qua `POST /api/portal/uploads` của chính link. Mỗi hoá đơn chỉ một báo chuyển khoản đang chờ (409 `payment_claim_pending`); đã thu đủ 409 `invoice_already_paid`. `Idempotency-Key` (tuỳ chọn): gửi lại cùng key và nội dung trả lại cùng báo chuyển khoản, khác nội dung 409 `idempotency_conflict`. Không ghi sổ thu: chủ trọ xác nhận ở `POST /api/payment-claims/{id}/confirm`. Hoá đơn của hợp đồng khác → 404.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_invoices_id_payment_claims'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/portal/links/lookup': {
     parameters: {
       query?: never;
@@ -2072,6 +2216,56 @@ export interface paths {
      *     **Công khai.**
      */
     post: operations['post_api_portal_links_lookup'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/maintenance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Báo hỏng của phòng
+     * @description Báo hỏng của hợp đồng (mới nhất trước, tối đa 100): trạng thái, trả lời của chủ trọ, ảnh (URL ký ngắn hạn), `isOwn`.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_maintenance'];
+    put?: never;
+    /**
+     * Gửi báo hỏng
+     * @description Hạng mục `electricity`/`water`/`appliance`/`other`, mức độ `normal`/`urgent`, tiêu đề, mô tả, tối đa 5 ảnh `maintenance_photo` của chính link. Hợp đồng phải active/ending (409 `contract_not_active`). Giới hạn 10 báo hỏng/ngày/hợp đồng (429 `rate_limit_exceeded`).
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_maintenance'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/maintenance/{id}/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Huỷ báo hỏng
+     * @description Chỉ người gửi, khi chủ trọ chưa nhận xử lý (`new`, 409 `request_not_pending`). Của hợp đồng/người khác → 404.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_maintenance_id_cancel'];
     delete?: never;
     options?: never;
     head?: never;
@@ -2122,6 +2316,78 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/portal/payment-claims/{id}/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Huỷ báo chuyển khoản
+     * @description Chỉ người gửi, khi còn `pending` (409 `request_not_pending`). Của hợp đồng/người khác → 404.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_payment_claims_id_cancel'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/requests': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Yêu cầu của tôi
+     * @description Yêu cầu do chính người ở này gửi (mới nhất trước, tối đa 100): loại, nội dung, trạng thái `new`/`accepted`/`rejected`/`cancelled`, trả lời hoặc lý do từ chối.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_requests'];
+    put?: never;
+    /**
+     * Gửi yêu cầu cho chủ trọ
+     * @description `type` và `payload` theo loại: `move_out` `{ expectedMoveOutDate ≥ hôm nay, reason? }`, `add_occupant` `{ fullName, phone (10 số, bắt đầu 0), fromDate }`, `remove_occupant` `{ fullName, toDate }`, `add_vehicle` `{ plate, vehicleType, fromDate }`, `remove_vehicle` `{ plate, toDate }`, `other` `{ message }`. Ngày phải trong thời hạn hợp đồng; lỗi field trả dạng `payload.<field>`. Hợp đồng active/ending (409 `contract_not_active`). Chỉ là đề nghị: hợp đồng chỉ đổi khi chủ trọ duyệt. Giới hạn 10 yêu cầu/ngày/hợp đồng.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_requests'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/requests/{id}/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Huỷ yêu cầu
+     * @description Chỉ yêu cầu của chính mình còn `new` (409 `request_not_pending`). Của hợp đồng/người khác → 404.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_requests_id_cancel'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/portal/sessions': {
     parameters: {
       query?: never;
@@ -2145,6 +2411,50 @@ export interface paths {
      *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
      */
     delete: operations['delete_api_portal_sessions'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/uploads': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xin ticket tải ảnh (cổng người thuê)
+     * @description `purpose` `payment_receipt` (biên lai) hoặc `maintenance_photo` (ảnh báo hỏng). Ticket 10 phút, thuộc link cổng (không phải tài khoản nhân viên), ảnh JPG/PNG/WEBP ≤ 10 MB gửi thẳng tới `uploadUrl`. Giới hạn 60 ticket/ngày/hợp đồng.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_uploads'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/uploads/{id}/complete': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Hoàn tất tải ảnh (cổng người thuê)
+     * @description Kiểm tra ảnh đã lưu và trả `fileId` để gắn vào báo chuyển khoản/báo hỏng. Ticket của link khác → 404.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_uploads_id_complete'];
+    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
@@ -2298,6 +2608,94 @@ export interface paths {
     get: operations['get_api_reports_utilities'];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/requests': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Hộp yêu cầu từ người thuê
+     * @description Báo hỏng (nguồn người thuê), yêu cầu và báo chuyển khoản trong một danh sách, mới nhất trước. Lọc `kind` (`maintenance`, `tenant_request`, `payment_claim`), `status` chung (`pending`, `in_progress`, `done`, `rejected`, `cancelled`), `buildingId`, `contractId` (tab Yêu cầu của hợp đồng), `q` (mã phòng, mã hợp đồng, tên người gửi, tiêu đề, mã hoá đơn). `meta.counts` đếm mọi trạng thái (kể cả 0) theo bộ lọc trừ `status`. Báo hỏng/yêu cầu cần quyền `read:Maintenance`, báo chuyển khoản `read:Payment` theo toà; toà/hợp đồng ngoài phạm vi trả 404. Ảnh trả URL ký ngắn hạn.
+     *
+     *     **Quyền:** `read:Maintenance`.
+     */
+    get: operations['get_api_requests'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/requests/{id}/accept': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Duyệt yêu cầu / nhận xử lý báo hỏng
+     * @description Báo hỏng: `new`/`open`/`in_progress` → `in_progress` (hoặc `done` khi `done: true`). Yêu cầu (`new`): chạy đúng thao tác hợp đồng trong cùng transaction — `move_out` → báo trả phòng ST-17 (hợp đồng `ending`), `add_occupant` → thêm người ở ST-12 từ ngày hiệu lực, `remove_occupant` → người ở rời đi (`tenantId` chọn người ở nếu tên không khớp đúng một người; `newPrimaryTenantId` khi người đại diện rời đi), `add_vehicle` → tạo xe của người gửi (nếu chưa có) và đăng ký tính phí, `remove_vehicle` → bớt xe (`vehicleId` nếu biển số không khớp), `other` → chỉ đánh dấu đã duyệt. `effectiveDate` ghi đè ngày trong yêu cầu. Lỗi kiểm tra của ST-12/ST-17 (422/409) huỷ toàn bộ, yêu cầu vẫn `new`. Đã xử lý → 409 `request_not_pending`. Quyền `update:Maintenance` theo toà và `update:Contract`.
+     *
+     *     **Quyền:** `update:Maintenance`.
+     */
+    post: operations['post_api_requests_id_accept'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/requests/{id}/reject': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Từ chối yêu cầu / báo hỏng
+     * @description `reason` bắt buộc; người thuê thấy lý do. Chỉ khi chưa đóng (409 `request_not_pending`). Audit không ghi lý do.
+     *
+     *     **Quyền:** `update:Maintenance`.
+     */
+    post: operations['post_api_requests_id_reject'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/requests/{id}/reply': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Trả lời người thuê
+     * @description Ghi đè trả lời gần nhất (người thuê thấy ở T-08/T-09), không đổi trạng thái. Yêu cầu đã huỷ → 409 `request_not_pending`.
+     *
+     *     **Quyền:** `update:Maintenance`.
+     */
+    post: operations['post_api_requests_id_reply'];
     delete?: never;
     options?: never;
     head?: never;
@@ -2850,6 +3248,29 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    AddOccupantRequestPayload: {
+      fromDate: string;
+      fullName: string;
+      phone: string;
+    };
+    AddVehicleRequestPayload: {
+      fromDate: string;
+      plate: string;
+      /** @enum {string} */
+      vehicleType: 'bicycle' | 'car' | 'electric_bike' | 'motorbike' | 'other';
+    };
+    AnnouncementDeleteResult: {
+      deleted: boolean;
+      id: string;
+    };
+    AnnouncementInput: {
+      body: string;
+      buildingId: string;
+      expiresOn?: string | null;
+      pinned?: boolean;
+      roomIds?: string[] | null;
+      title: string;
+    };
     ApiError: {
       code?: string;
       extensions?: {
@@ -3212,6 +3633,84 @@ export interface components {
       field: 'idNumber' | 'phone';
       tenantId: string | null;
     };
+    InboxAcceptInput: {
+      done?: boolean;
+      effectiveDate?: string | null;
+      newPrimaryTenantId?: string | null;
+      reply?: string | null;
+      tenantId?: string | null;
+      vehicleId?: string | null;
+    };
+    InboxItem: {
+      buildingId: string;
+      claim: components['schemas']['InboxPaymentClaim'] | null;
+      contractCode: string | null;
+      contractId: string | null;
+      createdAt: string;
+      handledAt: string | null;
+      handledByName: string | null;
+      id: string;
+      /** @enum {string} */
+      kind: 'maintenance' | 'payment_claim' | 'tenant_request';
+      maintenance: components['schemas']['InboxMaintenance'] | null;
+      reply: string | null;
+      request: components['schemas']['InboxTenantRequest'] | null;
+      roomCode: string | null;
+      roomId: string | null;
+      /** @enum {string} */
+      status: 'cancelled' | 'done' | 'in_progress' | 'pending' | 'rejected';
+      tenantId: string | null;
+      tenantName: string | null;
+    };
+    InboxMaintenance: {
+      /** @enum {string} */
+      category: 'appliance' | 'electricity' | 'other' | 'water';
+      description: string;
+      photos: components['schemas']['RequestPhoto'][];
+      /** @enum {string} */
+      severity: 'normal' | 'urgent';
+      /** @enum {string} */
+      source: 'owner' | 'tenant';
+      /** @enum {string} */
+      status: 'cancelled' | 'done' | 'in_progress' | 'new' | 'open' | 'rejected';
+      title: string;
+    };
+    InboxPaymentClaim: {
+      amount: number;
+      invoiceCode: string | null;
+      invoiceId: string;
+      invoicePeriod: string;
+      invoiceRemaining: number;
+      note: string | null;
+      paidOn: string;
+      paymentId: string | null;
+      receipt: components['schemas']['RequestPhoto'] | null;
+      reference: string | null;
+      /** @enum {string} */
+      status: 'cancelled' | 'confirmed' | 'pending' | 'rejected';
+    };
+    InboxRejectInput: {
+      reason: string;
+    };
+    InboxReplyInput: {
+      message: string;
+    };
+    InboxTenantRequest: {
+      payload: components['schemas']['TenantRequestPayload'];
+      result: {
+        [key: string]: (string | number | boolean) | null;
+      } | null;
+      /** @enum {string} */
+      status: 'accepted' | 'cancelled' | 'new' | 'rejected';
+      /** @enum {string} */
+      type:
+        | 'add_occupant'
+        | 'add_vehicle'
+        | 'move_out'
+        | 'other'
+        | 'remove_occupant'
+        | 'remove_vehicle';
+    };
     InvoiceIssueInput: {
       ids: string[];
     };
@@ -3297,6 +3796,13 @@ export interface components {
       type: string;
       unitPrice: number | null;
     };
+    MoveOutRequestPayload: {
+      expectedMoveOutDate: string;
+      reason?: string | null;
+    };
+    OtherRequestPayload: {
+      message: string;
+    };
     OverviewLink: {
       path: string;
       query: {
@@ -3336,6 +3842,18 @@ export interface components {
       pageSize: number;
       total: number;
       totalPages: number;
+    };
+    PaymentClaimConfirmInput: {
+      amount?: number | null;
+      paidOn?: string | null;
+      reference?: string | null;
+    };
+    PaymentClaimInput: {
+      amount: number;
+      note?: string | null;
+      paidOn: string;
+      receiptFileId?: string | null;
+      reference?: string | null;
     };
     PaymentInput: {
       amount: number;
@@ -3392,6 +3910,7 @@ export interface components {
     PortalInvoice: {
       buildingAddress: string | null;
       buildingName: string;
+      claims: components['schemas']['PortalPaymentClaim'][];
       code: string;
       dueOn: string;
       id: string;
@@ -3438,6 +3957,31 @@ export interface components {
     PortalLinkLookupInput: {
       token: string;
     };
+    PortalMaintenance: {
+      /** @enum {string} */
+      category: 'appliance' | 'electricity' | 'other' | 'water';
+      createdAt: string;
+      description: string;
+      id: string;
+      isOwn: boolean;
+      photos: components['schemas']['RequestPhoto'][];
+      repliedAt: string | null;
+      reply: string | null;
+      /** @enum {string} */
+      severity: 'normal' | 'urgent';
+      /** @enum {string} */
+      status: 'cancelled' | 'done' | 'in_progress' | 'new' | 'open' | 'rejected';
+      title: string;
+    };
+    PortalMaintenanceInput: {
+      /** @enum {string} */
+      category: 'appliance' | 'electricity' | 'other' | 'water';
+      description: string;
+      photoFileIds?: string[];
+      /** @enum {string} */
+      severity: 'normal' | 'urgent';
+      title: string;
+    };
     PortalMe: {
       buildingAddress: string | null;
       buildingName: string;
@@ -3446,6 +3990,7 @@ export interface components {
       /** @enum {string} */
       contractStatus: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
       currentInvoice: components['schemas']['PortalInvoiceSummary'] | null;
+      openRequests: components['schemas']['PortalOpenRequests'];
       pinnedNotices: components['schemas']['PortalNotice'][];
       previousDebt: number;
       roomCode: string;
@@ -3473,12 +4018,29 @@ export interface components {
       isSelf: boolean;
       name: string;
     };
+    PortalOpenRequests: {
+      maintenance: number;
+      paymentClaims: number;
+      requests: number;
+    };
     PortalPayment: {
       amount: number;
       id: string;
       /** @enum {string} */
       method: 'bank_transfer' | 'cash' | 'deposit' | 'other';
       paidOn: string;
+    };
+    PortalPaymentClaim: {
+      amount: number;
+      createdAt: string;
+      handledAt: string | null;
+      id: string;
+      invoiceId: string;
+      isOwn: boolean;
+      paidOn: string;
+      rejectReason: string | null;
+      /** @enum {string} */
+      status: 'cancelled' | 'confirmed' | 'pending' | 'rejected';
     };
     PortalSessionInput: {
       phoneLast4: string;
@@ -3489,6 +4051,27 @@ export interface components {
     };
     PortalSignOutResult: {
       signedOut: boolean;
+    };
+    PortalTenantRequest: {
+      createdAt: string;
+      handledAt: string | null;
+      id: string;
+      payload: components['schemas']['TenantRequestPayload'];
+      reply: string | null;
+      /** @enum {string} */
+      status: 'accepted' | 'cancelled' | 'new' | 'rejected';
+      /** @enum {string} */
+      type:
+        | 'add_occupant'
+        | 'add_vehicle'
+        | 'move_out'
+        | 'other'
+        | 'remove_occupant'
+        | 'remove_vehicle';
+    };
+    PortalUploadInput: {
+      /** @enum {string} */
+      purpose: 'maintenance_photo' | 'payment_receipt';
     };
     PortalUsage: {
       periods: components['schemas']['PortalUsagePeriod'][];
@@ -3615,6 +4198,14 @@ export interface components {
       } | null;
       meterId: string;
     };
+    RemoveOccupantRequestPayload: {
+      fullName: string;
+      toDate: string;
+    };
+    RemoveVehicleRequestPayload: {
+      plate: string;
+      toDate: string;
+    };
     ReportAmounts: {
       billed: number;
       collected: number;
@@ -3626,6 +4217,10 @@ export interface components {
       from: string;
       sheets: ('expenses' | 'invoices' | 'payments' | 'receivables')[];
       to: string;
+    };
+    RequestPhoto: {
+      fileId: string;
+      url: string | null;
     };
     ResidentExportInput: {
       date: string;
@@ -3790,6 +4385,21 @@ export interface components {
     SettlementSurchargeInput: {
       amount: number;
       reason: string;
+    };
+    StayAnnouncement: {
+      body: string;
+      buildingId: string;
+      createdAt: string;
+      createdByName: string | null;
+      expired: boolean;
+      expiresAt: string | null;
+      id: string;
+      pinned: boolean;
+      roomCodes: string[];
+      roomIds: string[] | null;
+      title: string;
+      updatedAt: string;
+      version: number;
     };
     StayAuditLog: {
       action: string;
@@ -4314,7 +4924,12 @@ export interface components {
       id: string;
       maxBytes: number;
       /** @enum {string} */
-      purpose: 'contract_meter' | 'expense_receipt' | 'tenant_document';
+      purpose:
+        | 'contract_meter'
+        | 'expense_receipt'
+        | 'maintenance_photo'
+        | 'payment_receipt'
+        | 'tenant_document';
       /** @enum {string} */
       status: 'completed' | 'pending';
     };
@@ -4326,7 +4941,12 @@ export interface components {
       id: string;
       maxBytes: number;
       /** @enum {string} */
-      purpose: 'contract_meter' | 'expense_receipt' | 'tenant_document';
+      purpose:
+        | 'contract_meter'
+        | 'expense_receipt'
+        | 'maintenance_photo'
+        | 'payment_receipt'
+        | 'tenant_document';
       /** @enum {string} */
       status: 'completed' | 'pending';
       uploadUrl: string;
@@ -4444,6 +5064,24 @@ export interface components {
       revoked: boolean;
       sessionsRevoked: number;
     };
+    TenantRequestInput: {
+      payload: components['schemas']['TenantRequestPayload'];
+      /** @enum {string} */
+      type:
+        | 'add_occupant'
+        | 'add_vehicle'
+        | 'move_out'
+        | 'other'
+        | 'remove_occupant'
+        | 'remove_vehicle';
+    };
+    TenantRequestPayload:
+      | components['schemas']['MoveOutRequestPayload']
+      | components['schemas']['AddOccupantRequestPayload']
+      | components['schemas']['RemoveOccupantRequestPayload']
+      | components['schemas']['AddVehicleRequestPayload']
+      | components['schemas']['RemoveVehicleRequestPayload']
+      | components['schemas']['OtherRequestPayload'];
     TenantRoomRef: {
       code: string;
       id: string;
@@ -4539,6 +5177,171 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  get_api_announcements: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'createdAt' | 'expiresAt';
+        sortOrder?: 'asc' | 'desc';
+        status?: 'active' | 'all' | 'expired';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayAnnouncement'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_announcements: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AnnouncementInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayAnnouncement'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_announcements_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AnnouncementInput'] & {
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayAnnouncement'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  delete_api_announcements_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['AnnouncementDeleteResult'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_announcements_id_archive: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayAnnouncement'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_audit_logs: {
     parameters: {
       query?: {
@@ -10515,6 +11318,101 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  post_api_payment_claims_id_confirm: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PaymentClaimConfirmInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['InboxItem'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description Đã từ chối/huỷ (`request_not_pending`) hoặc hoá đơn không nhận thanh toán (`invoice_void`, `invoice_already_paid`). */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      /** @description Số tiền vượt số còn lại (`payment_exceeds_remaining`, `extensions.remaining`). */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_payment_claims_id_reject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InboxRejectInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['InboxItem'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description Không còn chờ xác nhận (`request_not_pending`). */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_payments: {
     parameters: {
       query?: {
@@ -10739,6 +11637,68 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  post_api_portal_invoices_id_payment_claims: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description Tuỳ chọn; mỗi lần mở form dùng một key, bấm lại dùng lại key. */
+        'Idempotency-Key'?: string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PaymentClaimInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalPaymentClaim'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
+      /** @description Đã có báo chuyển khoản đang chờ (`payment_claim_pending`), hoá đơn đã thu đủ (`invoice_already_paid`) hoặc key đã dùng với nội dung khác (`idempotency_conflict`). */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      /** @description Số tiền vượt số còn lại (`payment_exceeds_remaining`, `extensions.remaining`). */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
   post_api_portal_links_lookup: {
     parameters: {
       query?: never;
@@ -10765,6 +11725,115 @@ export interface operations {
         };
       };
       400: components['responses']['ValidationError'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_maintenance: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalMaintenance'][];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_maintenance: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PortalMaintenanceInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalMaintenance'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_maintenance_id_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalMaintenance'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
@@ -10832,6 +11901,152 @@ export interface operations {
           'application/json': components['schemas']['ApiError'];
         };
       };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_payment_claims_id_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalPaymentClaim'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_requests: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalTenantRequest'][];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_requests: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TenantRequestInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalTenantRequest'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_requests_id_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalTenantRequest'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -10912,6 +12127,82 @@ export interface operations {
           'application/json': components['schemas']['ApiError'];
         };
       };
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_uploads: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PortalUploadInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayUploadTicket'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_uploads_id_complete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayUpload'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
@@ -11161,6 +12452,172 @@ export interface operations {
           'application/json': components['schemas']['ApiError'];
         };
       };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_requests: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+        contractId?: string;
+        kind?: 'maintenance' | 'payment_claim' | 'tenant_request';
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+        status?: 'cancelled' | 'done' | 'in_progress' | 'pending' | 'rejected';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['InboxItem'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'] & {
+              /** @description Một dòng cho mỗi trạng thái (kể cả 0), theo bộ lọc trừ `status`. */
+              counts: {
+                count: number;
+                /** @enum {string} */
+                status: 'pending' | 'in_progress' | 'done' | 'rejected' | 'cancelled';
+              }[];
+            };
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_requests_id_accept: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InboxAcceptInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['InboxItem'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description Đã xử lý (`request_not_pending`) hoặc thao tác hợp đồng bị chặn (`contract_not_active`, `version_conflict`…). */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_requests_id_reject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InboxRejectInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['InboxItem'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description Đã xử lý hoặc đã huỷ (`request_not_pending`). */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_requests_id_reply: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['InboxReplyInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['InboxItem'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };
