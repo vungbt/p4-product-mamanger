@@ -27,6 +27,9 @@ export default function AppSidebar() {
     <Sidebar
       data-testid="app-sidebar"
       itemVariant="bar"
+      // Kit 0.13.0 spaces nav children with gap-5 (meant between groups); a flat list needs the
+      // in-group item spacing. Drop this once the menu uses groups or the kit fixes it.
+      classNames={{ nav: 'gap-1' }}
       header={{
         // The kit draws the rounded accent square; the mark letter goes inside.
         logo: (
