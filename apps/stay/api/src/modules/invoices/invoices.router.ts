@@ -34,6 +34,7 @@ import {
   listInvoices,
   voidInvoice,
 } from './invoices.service.js';
+import { revokeInvoiceShare, shareInvoice, sharePeriodInvoices } from './invoices.share.js';
 
 const router = Router();
 const sortFields: InvoiceSortField[] = [
@@ -97,6 +98,21 @@ router.post(
     ),
   ),
 );
+// ST-16: managers hold `update Invoice` in assigned buildings (`manage` is the owner's wildcard).
+router.post(
+  '/buildings/:buildingId/billing/:period/shares',
+  authRequired,
+  requireScopedAbility('update', 'Invoice'),
+  apiHandler((req) =>
+    sharePeriodInvoices(
+      currentUser(req),
+      uuidRouteId(req, 'buildingId'),
+      routePeriod(req),
+      requiredIdempotencyKey(req),
+      req.get('origin'),
+    ),
+  ),
+);
 router.get(
   '/invoices',
   authRequired,
@@ -144,6 +160,18 @@ router.post(
   ),
 );
 router.post(
+  '/invoices/:id/share',
+  authRequired,
+  requireScopedAbility('update', 'Invoice'),
+  apiHandler((req) => shareInvoice(currentUser(req), uuidRouteId(req), req.get('origin'))),
+);
+router.delete(
+  '/invoices/:id/share',
+  authRequired,
+  requireScopedAbility('update', 'Invoice'),
+  apiHandler((req) => revokeInvoiceShare(currentUser(req), uuidRouteId(req))),
+);
+router.post(
   '/contracts/:id/move-in-invoice',
   authRequired,
   requireScopedAbility('create', 'Invoice'),
@@ -156,12 +184,18 @@ const auditPolicies = {
     action: 'create',
     resourceType: 'invoice',
   },
+  'POST /buildings/:buildingId/billing/:period/shares': {
+    action: 'update',
+    resourceType: 'invoice',
+  },
   'GET /invoices': { action: 'read', resourceType: 'invoice' },
   'POST /invoices/issue': { action: 'publish', resourceType: 'invoice' },
   'GET /invoices/:id': { action: 'read', resourceType: 'invoice' },
   'POST /invoices/:id/lines': { action: 'update', resourceType: 'invoice' },
   'DELETE /invoices/:id/lines/:lineId': { action: 'update', resourceType: 'invoice' },
   'POST /invoices/:id/void': { action: 'cancel', resourceType: 'invoice' },
+  'POST /invoices/:id/share': { action: 'update', resourceType: 'invoice' },
+  'DELETE /invoices/:id/share': { action: 'update', resourceType: 'invoice' },
   'POST /contracts/:id/move-in-invoice': { action: 'create', resourceType: 'invoice' },
 } satisfies RouteAuditPolicies;
 

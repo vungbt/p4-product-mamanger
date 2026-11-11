@@ -21,3 +21,4 @@ export * from './status.js';
 export * from './tenant.js';
 export * from './upload.js';
 export * from './vietqr.js';
+export * from './vietqr-banks.js';

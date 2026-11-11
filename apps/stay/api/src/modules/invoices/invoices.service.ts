@@ -81,9 +81,9 @@ export interface InvoiceListQuery extends ListQuery<InvoiceSortField> {
 }
 
 /** Statuses of an issued, non-void invoice (paid states are set by ST-15 payments). */
-const ISSUED_STATUSES: InvoiceStatus[] = ['issued', 'partially_paid', 'paid'];
+export const ISSUED_STATUSES: InvoiceStatus[] = ['issued', 'partially_paid', 'paid'];
 
-function conflict(code: string, extensions?: Record<string, string | number>): never {
+export function conflict(code: string, extensions?: Record<string, string | number>): never {
   throw new BaseError(code, 409, code, extensions);
 }
 
@@ -93,7 +93,7 @@ const today = () => isoDateInTimeZone(new Date());
 /* Access and DTOs                                                             */
 /* -------------------------------------------------------------------------- */
 
-async function findBuilding(
+export async function findBuilding(
   user: StayUser,
   buildingId: string,
   action: StayAction,
@@ -112,7 +112,7 @@ async function findBuilding(
 }
 
 /** Inaccessible invoices (and drafts for tenants) are 404, never 403. */
-async function findInvoice(
+export async function findInvoice(
   user: StayUser,
   id: string,
   action: StayAction,
@@ -152,9 +152,14 @@ async function summaries(
   const roomCodes = new Map(rooms.map((room) => [room.id, room.code]));
   const contractCodes = new Map(contracts.map((contract) => [contract.id, contract.code]));
   const now = today();
+  const instant = new Date();
 
   return rows.map((row) => {
     const remaining = row.total - row.paidTotal;
+    const shareExpiresAt =
+      row.shareTokenHash && row.shareExpiresAt && row.shareExpiresAt > instant
+        ? row.shareExpiresAt.toISOString()
+        : null;
 
     return {
       ...selectFields(row, [
@@ -178,6 +183,7 @@ async function summaries(
       roomCode: roomCodes.get(row.roomId) ?? '',
       remaining,
       overdue: isInvoiceOverdue(row.status, row.dueOn, now) && remaining > 0,
+      shareExpiresAt,
       createdAt: row.createdAt.toISOString(),
     };
   });

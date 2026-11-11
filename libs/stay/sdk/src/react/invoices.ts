@@ -17,6 +17,8 @@ export const invoiceKeys = {
   detail: (id: string) => ['stay', 'invoices', 'detail', id] as const,
   preview: (buildingId: string, period: string) =>
     ['stay', 'invoices', 'preview', buildingId, period] as const,
+  /** Public invoice of a share token (ST-16), cached apart from the signed-in user's data. */
+  public: (token: string) => ['stay', 'public-invoice', token] as const,
 };
 
 export function invoiceQueryOptions(sdk: StaySdk) {
@@ -41,6 +43,15 @@ export function invoiceQueryOptions(sdk: StaySdk) {
         queryFn: ({ signal }) => api.preview(buildingId, period, signal),
         enabled: Boolean(buildingId && period),
         staleTime: 0,
+      }),
+    publicInvoice: (token: string) =>
+      queryOptions({
+        queryKey: invoiceKeys.public(token),
+        queryFn: ({ signal }) => api.publicInvoice(token, signal),
+        enabled: Boolean(token),
+        staleTime: 30_000,
+        // Unknown/expired/revoked links are 404: retrying cannot help.
+        retry: false,
       }),
   };
 }
@@ -74,6 +85,11 @@ export function invoiceMutationOptions(sdk: StaySdk, client: QueryClient) {
         retry: false,
         onSuccess: refresh(['readings', 'contracts']),
       }),
+    share: () => mutationOptions({ mutationFn: api.share, retry: false, onSuccess: refresh([]) }),
+    revokeShare: () =>
+      mutationOptions({ mutationFn: api.revokeShare, retry: false, onSuccess: refresh([]) }),
+    sharePeriod: () =>
+      mutationOptions({ mutationFn: api.sharePeriod, retry: false, onSuccess: refresh([]) }),
     createMoveIn: () =>
       mutationOptions({
         mutationFn: api.createMoveIn,
@@ -117,4 +133,20 @@ export function useVoidInvoice() {
 
 export function useCreateMoveInInvoice() {
   return useMutation(invoiceMutationOptions(useStaySdk(), useQueryClient()).createMoveIn());
+}
+
+export function usePublicInvoice(token: string) {
+  return useQuery(invoiceQueryOptions(useStaySdk()).publicInvoice(token));
+}
+
+export function useShareInvoice() {
+  return useMutation(invoiceMutationOptions(useStaySdk(), useQueryClient()).share());
+}
+
+export function useRevokeInvoiceShare() {
+  return useMutation(invoiceMutationOptions(useStaySdk(), useQueryClient()).revokeShare());
+}
+
+export function useSharePeriodInvoices() {
+  return useMutation(invoiceMutationOptions(useStaySdk(), useQueryClient()).sharePeriod());
 }

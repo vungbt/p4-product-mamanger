@@ -714,6 +714,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/buildings/{buildingId}/billing/{period}/shares': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Chia sẻ hàng loạt hoá đơn của kỳ
+     * @description Bắt buộc `Idempotency-Key`. Tạo/làm mới link cho mọi hoá đơn đã phát hành (gồm thu một phần/đã thu) của toà và kỳ, trả `{ invoiceId, roomCode, code, total, remaining, url }` theo mã phòng. Gọi lại cùng key trả lại đúng các link đó (`replayed: true`, bỏ các link đã bị làm mới/thu hồi sau đó); key mới làm mới tất cả và link cũ hết hiệu lực. Ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `update:Invoice`.
+     */
+    post: operations['post_api_buildings_buildingId_billing_period_shares'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/buildings/{buildingId}/readings': {
     parameters: {
       query?: never;
@@ -1488,6 +1510,34 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/invoices/{id}/share': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Tạo/làm mới link chia sẻ hoá đơn
+     * @description Chỉ hoá đơn đã phát hành (`issued`, `partially_paid`, `paid`); nháp/void trả 409 `invoice_not_shareable`. Tạo token ngẫu nhiên (32 byte, base64url) hạn 60 ngày; chỉ lưu SHA-256 của token. Token và `url` (`/i/{token}` trên web) chỉ trả về một lần; gọi lại tạo token mới và link cũ hết hiệu lực. Quyền `update:Invoice` (người quản lý trong toà được gán). Audit không chứa token. Ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `update:Invoice`.
+     */
+    post: operations['post_api_invoices_id_share'];
+    /**
+     * Thu hồi link chia sẻ hoá đơn
+     * @description Xoá hash và hạn của link: trang công khai trả 404. Gọi lại khi không còn link trả `revoked: false`. Ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `update:Invoice`.
+     */
+    delete: operations['delete_api_invoices_id_share'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/invoices/{id}/void': {
     parameters: {
       query?: never;
@@ -1636,6 +1686,28 @@ export interface paths {
      *     **Quyền:** `void:Payment`.
      */
     post: operations['post_api_payments_id_reverse'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/public/invoices/{token}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Hoá đơn công khai qua link chia sẻ
+     * @description Không cần đăng nhập, giới hạn 60 yêu cầu/phút mỗi IP. Token không tồn tại, hết hạn, đã thu hồi/làm mới, hoặc hoá đơn void → 404. Dữ liệu tối giản: toà (tên, địa chỉ), phòng, kỳ, loại, mã, trạng thái, ngày phát hành/hạn, các dòng (mô tả i18n, số tiền, chỉ số), tổng, đã thu, còn lại, tên người đại diện viết tắt, tài khoản nhận tiền và `vietQrPayload` (VietQR NAPAS cho số còn lại, nội dung theo mẫu hệ thống với mã hoá đơn; `null` khi đã thu đủ hoặc toà chưa có tài khoản). Không có SĐT, CCCD, ghi chú hay id nội bộ.
+     *
+     *     **Công khai.**
+     */
+    get: operations['get_api_public_invoices_token'];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -2494,6 +2566,36 @@ export interface components {
       type: 'discount' | 'surcharge';
       version?: number;
     };
+    InvoicePeriodShare: {
+      code: string;
+      expiresAt: string;
+      invoiceId: string;
+      path: string;
+      remaining: number;
+      roomCode: string;
+      /** @enum {string} */
+      status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
+      total: number;
+      url: string;
+    };
+    InvoicePeriodShareResult: {
+      buildingId: string;
+      count: number;
+      links: components['schemas']['InvoicePeriodShare'][];
+      period: string;
+      replayed: boolean;
+    };
+    InvoiceShareLink: {
+      expiresAt: string;
+      invoiceId: string;
+      path: string;
+      token: string;
+      url: string;
+    };
+    InvoiceShareRevokeResult: {
+      invoiceId: string;
+      revoked: boolean;
+    };
     InvoiceVoidInput: {
       reason: string;
       version?: number;
@@ -2566,6 +2668,72 @@ export interface components {
     };
     PaymentReverseInput: {
       reason: string;
+    };
+    PublicInvoice: {
+      buildingAddress: string | null;
+      buildingName: string;
+      code: string;
+      dueOn: string;
+      expiresAt: string;
+      issuedOn: string | null;
+      /** @enum {string} */
+      kind: 'monthly' | 'move_in' | 'settlement';
+      lines: components['schemas']['PublicInvoiceLine'][];
+      overdue: boolean;
+      paidTotal: number;
+      payee: components['schemas']['PublicInvoicePayee'] | null;
+      period: string;
+      remaining: number;
+      representative: string | null;
+      roomCode: string;
+      rounding: number;
+      /** @enum {string} */
+      status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
+      subtotal: number;
+      total: number;
+      transferContent: string;
+      vietQrPayload: string | null;
+    };
+    PublicInvoiceLine: {
+      amount: number;
+      description: components['schemas']['StayInvoiceLineDescription'];
+      meta: components['schemas']['PublicInvoiceLineMeta'];
+      period: string | null;
+      quantity: number;
+      ratioDen: number | null;
+      ratioNum: number | null;
+      /** @enum {string} */
+      type:
+        | 'adjustment'
+        | 'deposit'
+        | 'discount'
+        | 'electricity'
+        | 'refund'
+        | 'rent'
+        | 'rounding'
+        | 'service'
+        | 'surcharge'
+        | 'water';
+      unit: string | null;
+      unitPrice: number | null;
+    };
+    PublicInvoiceLineMeta: {
+      coveredFrom?: string;
+      coveredTo?: string;
+      endReading?: number;
+      segments?: {
+        consumption: number;
+        endReading: number;
+        startReading: number;
+      }[];
+      startReading?: number;
+    };
+    PublicInvoicePayee: {
+      accountName: string;
+      accountNumber: string;
+      bankBin: string;
+      bankName: string | null;
+      bankShortName: string | null;
     };
     ReadingBulkResult: {
       results: components['schemas']['ReadingSaveResult'][];
@@ -2835,6 +3003,7 @@ export interface components {
       roomId: string;
       rounding: number;
       roundingUnit: number;
+      shareExpiresAt: string | null;
       /** @enum {string} */
       status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
       subtotal: number;
@@ -2913,6 +3082,7 @@ export interface components {
       roomCode: string;
       roomId: string;
       rounding: number;
+      shareExpiresAt: string | null;
       /** @enum {string} */
       status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
       subtotal: number;
@@ -6846,6 +7016,40 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  post_api_buildings_buildingId_billing_period_shares: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description Bắt buộc; gọi lại cùng key trả lại cùng các link, không làm mới lần nữa. */
+        'Idempotency-Key': string;
+      };
+      path: {
+        buildingId: string;
+        period: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['InvoicePeriodShareResult'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_buildings_buildingId_readings: {
     parameters: {
       query: {
@@ -8494,6 +8698,66 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  post_api_invoices_id_share: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['InvoiceShareLink'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  delete_api_invoices_id_share: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['InvoiceShareRevokeResult'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   post_api_invoices_id_void: {
     parameters: {
       query?: never;
@@ -8741,6 +9005,33 @@ export interface operations {
           'application/json': components['schemas']['ApiError'];
         };
       };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_public_invoices_token: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        token: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PublicInvoice'];
+            message?: string;
+          };
+        };
+      };
+      404: components['responses']['NotFound'];
       429: components['responses']['RateLimited'];
     };
   };

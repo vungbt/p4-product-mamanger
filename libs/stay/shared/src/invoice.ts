@@ -85,6 +85,8 @@ export interface StayInvoiceSummary {
   remaining: number;
   /** Derived: issued/partially paid, past `dueOn` (Asia/Ho_Chi_Minh) and `remaining > 0`. */
   overdue: boolean;
+  /** Expiry of the active share link (ST-16); `null` when none was created, revoked or expired. */
+  shareExpiresAt: string | null;
   version: number;
   createdAt: string;
 }
@@ -182,4 +184,132 @@ export interface InvoiceIssueResult {
 export interface InvoiceVoidInput {
   reason: string;
   version?: number;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Share links and the public invoice (ST-16)                                  */
+/* -------------------------------------------------------------------------- */
+
+/** Days a share link stays valid after it was created or refreshed. */
+export const INVOICE_SHARE_TTL_DAYS = 60;
+
+/** Path of the public invoice page of the web app for a share token. */
+export const publicInvoicePath = (token: string) => `/i/${token}`;
+
+/**
+ * `POST /api/invoices/:id/share`. The token is returned only here: the API stores its SHA-256
+ * hash, so refreshing creates a new token and invalidates the previous link.
+ */
+export interface InvoiceShareLink {
+  invoiceId: string;
+  token: string;
+  /** `/i/{token}` on the web app. */
+  path: string;
+  /** Absolute link on the web origin. */
+  url: string;
+  expiresAt: string;
+}
+
+/** `DELETE /api/invoices/:id/share`. */
+export interface InvoiceShareRevokeResult {
+  invoiceId: string;
+  /** `false` when the invoice had no active link (the call is idempotent). */
+  revoked: boolean;
+}
+
+/** One room of `POST /api/buildings/:buildingId/billing/:period/shares`. */
+export interface InvoicePeriodShare {
+  invoiceId: string;
+  roomCode: string;
+  code: string;
+  status: InvoiceStatus;
+  total: number;
+  remaining: number;
+  path: string;
+  url: string;
+  expiresAt: string;
+}
+
+export interface InvoicePeriodShareResult {
+  buildingId: string;
+  period: string;
+  /** Issued, partially paid and paid invoices of the period, by room code. */
+  links: InvoicePeriodShare[];
+  count: number;
+  /** Same `Idempotency-Key`: the links of the first call are returned again. */
+  replayed: boolean;
+}
+
+/** Calculation details a tenant may see (no internal ids, reasons or references). */
+export interface PublicInvoiceLineMeta {
+  coveredFrom?: string;
+  coveredTo?: string;
+  startReading?: number;
+  endReading?: number;
+  segments?: { startReading: number; endReading: number; consumption: number }[];
+}
+
+export interface PublicInvoiceLine {
+  type: InvoiceLineType;
+  description: StayInvoiceLineDescription;
+  period: string | null;
+  quantity: number;
+  unit: string | null;
+  unitPrice: number | null;
+  ratioNum: number | null;
+  ratioDen: number | null;
+  amount: number;
+  meta: PublicInvoiceLineMeta;
+}
+
+/** Bank account of the building that receives the transfer. */
+export interface PublicInvoicePayee {
+  bankBin: string;
+  /** Short name of the bank in the VietQR directory, `null` for an unknown BIN. */
+  bankShortName: string | null;
+  bankName: string | null;
+  accountNumber: string;
+  accountName: string;
+}
+
+/**
+ * `GET /api/public/invoices/:token` (no sign-in): the minimum a tenant needs to pay. Never
+ * contains phones, ID numbers, notes, full names or internal ids.
+ */
+export interface PublicInvoice {
+  buildingName: string;
+  buildingAddress: string | null;
+  roomCode: string;
+  kind: InvoiceKind;
+  period: string;
+  code: string;
+  status: InvoiceStatus;
+  issuedOn: string | null;
+  dueOn: string;
+  overdue: boolean;
+  lines: PublicInvoiceLine[];
+  subtotal: number;
+  rounding: number;
+  total: number;
+  paidTotal: number;
+  remaining: number;
+  /** Abbreviated name of the contract representative ("N. V. An"). */
+  representative: string | null;
+  /** `null` when the building has no complete bank account. */
+  payee: PublicInvoicePayee | null;
+  /** Transfer content (ASCII, as encoded in the QR), from the system template and the code. */
+  transferContent: string;
+  /** VietQR (NAPAS/EMVCo) payload for `remaining`; `null` when paid or without a payee. */
+  vietQrPayload: string | null;
+  /** When this link stops working. */
+  expiresAt: string;
+}
+
+/** "Nguyễn Văn An" → "N. V. An": initials of every word but the last (given name). */
+export function abbreviatePersonName(fullName: string): string | null {
+  const words = fullName.trim().split(/\s+/).filter(Boolean);
+  const given = words.at(-1);
+
+  if (!given) return null;
+  return [...words.slice(0, -1).map((word) => `${word.charAt(0).toUpperCase()}.`), given].join(' ');
 }

@@ -146,6 +146,22 @@ const OPERATIONS = {
     'Tạo hoá đơn nhận phòng',
     'Cho hợp đồng active/ending chưa có hoá đơn nhận phòng (409 `move_in_invoice_exists`) và chưa có hoá đơn kỳ của tháng bắt đầu (409 `period_already_invoiced`). Tạo bản nháp từ cùng cách tính với move-in-preview.',
   ],
+  'POST /api/invoices/{id}/share': [
+    'Tạo/làm mới link chia sẻ hoá đơn',
+    'Chỉ hoá đơn đã phát hành (`issued`, `partially_paid`, `paid`); nháp/void trả 409 `invoice_not_shareable`. Tạo token ngẫu nhiên (32 byte, base64url) hạn 60 ngày; chỉ lưu SHA-256 của token. Token và `url` (`/i/{token}` trên web) chỉ trả về một lần; gọi lại tạo token mới và link cũ hết hiệu lực. Quyền `update:Invoice` (người quản lý trong toà được gán). Audit không chứa token. Ngoài phạm vi trả 404.',
+  ],
+  'DELETE /api/invoices/{id}/share': [
+    'Thu hồi link chia sẻ hoá đơn',
+    'Xoá hash và hạn của link: trang công khai trả 404. Gọi lại khi không còn link trả `revoked: false`. Ngoài phạm vi trả 404.',
+  ],
+  'POST /api/buildings/{buildingId}/billing/{period}/shares': [
+    'Chia sẻ hàng loạt hoá đơn của kỳ',
+    'Bắt buộc `Idempotency-Key`. Tạo/làm mới link cho mọi hoá đơn đã phát hành (gồm thu một phần/đã thu) của toà và kỳ, trả `{ invoiceId, roomCode, code, total, remaining, url }` theo mã phòng. Gọi lại cùng key trả lại đúng các link đó (`replayed: true`, bỏ các link đã bị làm mới/thu hồi sau đó); key mới làm mới tất cả và link cũ hết hiệu lực. Ngoài phạm vi trả 404.',
+  ],
+  'GET /api/public/invoices/{token}': [
+    'Hoá đơn công khai qua link chia sẻ',
+    'Không cần đăng nhập, giới hạn 60 yêu cầu/phút mỗi IP. Token không tồn tại, hết hạn, đã thu hồi/làm mới, hoặc hoá đơn void → 404. Dữ liệu tối giản: toà (tên, địa chỉ), phòng, kỳ, loại, mã, trạng thái, ngày phát hành/hạn, các dòng (mô tả i18n, số tiền, chỉ số), tổng, đã thu, còn lại, tên người đại diện viết tắt, tài khoản nhận tiền và `vietQrPayload` (VietQR NAPAS cho số còn lại, nội dung theo mẫu hệ thống với mã hoá đơn; `null` khi đã thu đủ hoặc toà chưa có tài khoản). Không có SĐT, CCCD, ghi chú hay id nội bộ.',
+  ],
   'POST /api/invoices/{id}/payments': [
     'Thu tiền hoá đơn',
     'Bắt buộc `Idempotency-Key`: gọi lại cùng key và nội dung trả lại đúng khoản đã ghi, không ghi hai lần (khác nội dung trả 409 `idempotency_conflict`). Khoá dòng hoá đơn nên hai khoản thu song song không vượt tổng. Chỉ hoá đơn đã phát hành chưa thu đủ: nháp 409 `invoice_not_issued`, void 409 `invoice_void`, đã thu đủ 409 `invoice_already_paid`. `amount` > 0 và ≤ số còn lại (vượt trả 422 `payment_exceeds_remaining`, `extensions.remaining`; không tự ghi thừa). `paidOn` không sau hôm nay (Asia/Ho_Chi_Minh). Cập nhật `paidTotal` và trạng thái (`issued` → `partially_paid` → `paid`) trong cùng transaction. Ngoài phạm vi trả 404.',
@@ -450,6 +466,17 @@ const OVERRIDES = {
       required: true,
       content: { 'application/json': { schema: { ref: 'InvoiceVoidInput' } } },
     },
+  },
+  'POST /api/buildings/{buildingId}/billing/{period}/shares': {
+    parameters: [
+      {
+        name: 'Idempotency-Key',
+        in: 'header',
+        required: true,
+        description: 'Bắt buộc; gọi lại cùng key trả lại cùng các link, không làm mới lần nữa.',
+        schema: { type: 'string', minLength: 8, maxLength: 128 },
+      },
+    ],
   },
   'POST /api/invoices/{id}/payments': {
     requestBody: {

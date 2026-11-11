@@ -43,6 +43,7 @@
     "contractDetail": "Contract details",
     "deposits": "Deposits",
     "invoiceRun": "Billing run",
+    "invoiceShare": "Share period",
     "invoiceDetail": "Invoice detail"
   },
   "header": {

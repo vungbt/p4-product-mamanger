@@ -1,4 +1,4 @@
-import { Button, Tag, type TagTone, Tooltip } from '@itclabs/react-ui';
+import { Tag, type TagTone } from '@itclabs/react-ui';
 import { formatNumber } from '@itclabs/react-ui/format';
 import { ApiSdkError, getErrorMessage } from '@stay/sdk/shared';
 import {
@@ -7,7 +7,9 @@ import {
   type InvoiceKind,
   type InvoiceStatus,
   isIsoDate,
+  isoDateInTimeZone,
   isPeriod,
+  type PublicInvoiceLineMeta,
   type StayInvoiceLine,
   type StayInvoiceSummary,
 } from '@stay/shared';
@@ -37,6 +39,12 @@ export const INVOICE_KIND_LABELS: Record<InvoiceKind, string> = {
 };
 
 const METER_LABELS = { electricity: 'điện', water: 'nước' };
+
+/** What line helpers read: an invoice line or a public (shared) invoice line. */
+export type InvoiceLineView = Pick<
+  StayInvoiceLine,
+  'type' | 'description' | 'quantity' | 'unit' | 'unitPrice' | 'ratioNum' | 'ratioDen' | 'amount'
+> & { meta: PublicInvoiceLineMeta & { roomId?: string } };
 
 /** `YYYY-MM` → `MM/YYYY` (screens.md: kỳ `11/2026`). */
 export function displayPeriod(period: string): string {
@@ -98,6 +106,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   invoice_line_not_manual: 'Chỉ xoá được dòng thêm tay.',
   invoice_sequence_exhausted: 'Đã hết số hoá đơn của kỳ (tối đa 999).',
   invoice_already_void: 'Hoá đơn đã bị huỷ.',
+  invoice_not_shareable: 'Chỉ chia sẻ được hoá đơn đã phát hành (không nháp, không void).',
   invoice_has_payments: 'Hoá đơn đã có thanh toán, không thể void.',
   move_in_invoice_exists: 'Hợp đồng đã có hoá đơn nhận phòng.',
   period_already_invoiced: 'Tháng bắt đầu của hợp đồng đã có hoá đơn kỳ.',
@@ -147,7 +156,7 @@ function descriptionParams(params: Record<string, string | number>) {
 export function useLineDescription() {
   const { t } = useTranslation('invoices');
 
-  return (line: StayInvoiceLine) =>
+  return (line: InvoiceLineView) =>
     t(line.description.key, {
       ...descriptionParams(line.description.params),
       defaultValue: line.type,
@@ -155,7 +164,7 @@ export function useLineDescription() {
 }
 
 /** How a line was computed, e.g. "(1.250 − 1.130) kWh × 3.500 ₫" or "3.000.000 ₫ × 20/30 ngày". */
-export function lineFormula(line: StayInvoiceLine): string | null {
+export function lineFormula(line: InvoiceLineView): string | null {
   if (line.unitPrice === null) return null;
   const unit = line.unit ? ` ${line.unit}` : '';
 
@@ -194,23 +203,16 @@ export function lineFormula(line: StayInvoiceLine): string | null {
 }
 
 /** Start/end readings of a metered line ("Chỉ số đầu 1.130 · cuối 1.250"). */
-export function lineReadings(line: StayInvoiceLine): string | null {
+export function lineReadings(line: InvoiceLineView): string | null {
   const { startReading, endReading } = line.meta;
 
   if (startReading === undefined || endReading === undefined) return null;
   return `Chỉ số đầu ${number(startReading)} · cuối ${number(endReading)}${line.meta.roomId ? ' · phòng cũ' : ''}`;
 }
 
-/** ST-15/ST-16 actions: shown disabled with a "Sắp có" tooltip (focusable wrapper). */
-export function ComingSoonButton({ children }: { children: string }) {
-  return (
-    <Tooltip content="Sắp có">
-      {/* biome-ignore lint/a11y/noNoninteractiveTabindex: a disabled button cannot receive focus; the wrapper keeps the tooltip reachable by keyboard. */}
-      <span tabIndex={0} className="inline-flex rounded-control">
-        <Button variant="secondary" disabled>
-          {children}
-        </Button>
-      </span>
-    </Tooltip>
-  );
+/** Expiry of a share link (ISO instant) as a business date `dd/MM/yyyy`. */
+export function displayExpiry(iso: string): string {
+  return displayDate(isoDateInTimeZone(new Date(iso)));
 }
+
+export const periodSharePath = (period: string) => `/invoices/share?period=${period}`;

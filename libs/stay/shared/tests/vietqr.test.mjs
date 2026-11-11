@@ -96,3 +96,22 @@ describe('toTransferText', () => {
     assert.equal(toTransferText('Đặng Thị Ánh – phòng 101!'), 'DANG THI ANH PHONG 101');
   });
 });
+
+describe('ST-16 share helpers', async () => {
+  const { abbreviatePersonName, findVietQrBank, publicInvoicePath } = await import(
+    '../dist/index.js'
+  );
+
+  test('abbreviates the representative name to initials and the given name', () => {
+    assert.equal(abbreviatePersonName('Nguyễn Văn An'), 'N. V. An');
+    assert.equal(abbreviatePersonName('  đặng   thị  Bình '), 'Đ. T. Bình');
+    assert.equal(abbreviatePersonName('An'), 'An');
+    assert.equal(abbreviatePersonName('   '), null);
+  });
+
+  test('finds banks of the VietQR directory and builds public paths', () => {
+    assert.equal(findVietQrBank('970436')?.code, 'VCB');
+    assert.equal(findVietQrBank('000000'), undefined);
+    assert.equal(publicInvoicePath('abc'), '/i/abc');
+  });
+});

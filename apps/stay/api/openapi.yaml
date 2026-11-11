@@ -55,6 +55,47 @@ tags:
   - name: auth-native
     description: Better Auth native endpoints. Browser clients use @stay/sdk/auth and HttpOnly `stay.*` session cookies.
 paths:
+  /api/public/invoices/{token}:
+    get:
+      tags:
+        - invoices
+      operationId: get_api_public_invoices_token
+      summary: Hoá đơn công khai qua link chia sẻ
+      description: >-
+        Không cần đăng nhập, giới hạn 60 yêu cầu/phút mỗi IP. Token không tồn tại, hết hạn, đã thu hồi/làm mới, hoặc hoá
+        đơn void → 404. Dữ liệu tối giản: toà (tên, địa chỉ), phòng, kỳ, loại, mã, trạng thái, ngày phát hành/hạn, các
+        dòng (mô tả i18n, số tiền, chỉ số), tổng, đã thu, còn lại, tên người đại diện viết tắt, tài khoản nhận tiền và
+        `vietQrPayload` (VietQR NAPAS cho số còn lại, nội dung theo mẫu hệ thống với mã hoá đơn; `null` khi đã thu đủ
+        hoặc toà chưa có tài khoản). Không có SĐT, CCCD, ghi chú hay id nội bộ.
+
+
+        **Công khai.**
+      security: []
+      x-audit-action: read
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PublicInvoice"
+                  message:
+                    type: string
+                required:
+                  - data
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
   /api/audit-logs:
     get:
       tags:
@@ -302,6 +343,67 @@ paths:
                 properties:
                   data:
                     $ref: "#/components/schemas/BillingDraftResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{buildingId}/billing/{period}/shares:
+    post:
+      tags:
+        - invoices
+      operationId: post_api_buildings_buildingId_billing_period_shares
+      summary: Chia sẻ hàng loạt hoá đơn của kỳ
+      description: >-
+        Bắt buộc `Idempotency-Key`. Tạo/làm mới link cho mọi hoá đơn đã phát hành (gồm thu một phần/đã thu) của toà và
+        kỳ, trả `{ invoiceId, roomCode, code, total, remaining, url }` theo mã phòng. Gọi lại cùng key trả lại đúng các
+        link đó (`replayed: true`, bỏ các link đã bị làm mới/thu hồi sau đó); key mới làm mới tất cả và link cũ hết hiệu
+        lực. Ngoài phạm vi trả 404.
+
+
+        **Quyền:** `update:Invoice`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: period
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Bắt buộc; gọi lại cùng key trả lại cùng các link, không làm mới lần nữa.
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/InvoicePeriodShareResult"
                   message:
                     type: string
                 required:
@@ -681,6 +783,99 @@ paths:
                   - data
         "400":
           $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/invoices/{id}/share:
+    post:
+      tags:
+        - invoices
+      operationId: post_api_invoices_id_share
+      summary: Tạo/làm mới link chia sẻ hoá đơn
+      description: >-
+        Chỉ hoá đơn đã phát hành (`issued`, `partially_paid`, `paid`); nháp/void trả 409 `invoice_not_shareable`. Tạo
+        token ngẫu nhiên (32 byte, base64url) hạn 60 ngày; chỉ lưu SHA-256 của token. Token và `url` (`/i/{token}` trên
+        web) chỉ trả về một lần; gọi lại tạo token mới và link cũ hết hiệu lực. Quyền `update:Invoice` (người quản lý
+        trong toà được gán). Audit không chứa token. Ngoài phạm vi trả 404.
+
+
+        **Quyền:** `update:Invoice`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/InvoiceShareLink"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    delete:
+      tags:
+        - invoices
+      operationId: delete_api_invoices_id_share
+      summary: Thu hồi link chia sẻ hoá đơn
+      description: >-
+        Xoá hash và hạn của link: trang công khai trả 404. Gọi lại khi không còn link trả `revoked: false`. Ngoài phạm
+        vi trả 404.
+
+
+        **Quyền:** `update:Invoice`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/InvoiceShareRevokeResult"
+                  message:
+                    type: string
+                required:
+                  - data
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -9769,6 +9964,93 @@ components:
         - type
         - amount
         - reason
+    InvoicePeriodShare:
+      type: object
+      properties:
+        invoiceId:
+          type: string
+        roomCode:
+          type: string
+        code:
+          type: string
+        status:
+          type: string
+          enum:
+            - draft
+            - issued
+            - paid
+            - partially_paid
+            - void
+        total:
+          type: number
+        remaining:
+          type: number
+        path:
+          type: string
+        url:
+          type: string
+        expiresAt:
+          type: string
+      required:
+        - invoiceId
+        - roomCode
+        - code
+        - status
+        - total
+        - remaining
+        - path
+        - url
+        - expiresAt
+    InvoicePeriodShareResult:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        period:
+          type: string
+        links:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoicePeriodShare"
+        count:
+          type: number
+        replayed:
+          type: boolean
+      required:
+        - buildingId
+        - period
+        - links
+        - count
+        - replayed
+    InvoiceShareLink:
+      type: object
+      properties:
+        invoiceId:
+          type: string
+        token:
+          type: string
+        path:
+          type: string
+        url:
+          type: string
+        expiresAt:
+          type: string
+      required:
+        - invoiceId
+        - token
+        - path
+        - url
+        - expiresAt
+    InvoiceShareRevokeResult:
+      type: object
+      properties:
+        invoiceId:
+          type: string
+        revoked:
+          type: boolean
+      required:
+        - invoiceId
+        - revoked
     InvoiceVoidInput:
       type: object
       properties:
@@ -9982,6 +10264,199 @@ components:
           maxLength: 2000
       required:
         - reason
+    PublicInvoice:
+      type: object
+      properties:
+        buildingName:
+          type: string
+        buildingAddress:
+          type:
+            - string
+            - "null"
+        roomCode:
+          type: string
+        kind:
+          type: string
+          enum:
+            - monthly
+            - move_in
+            - settlement
+        period:
+          type: string
+        code:
+          type: string
+        status:
+          type: string
+          enum:
+            - draft
+            - issued
+            - paid
+            - partially_paid
+            - void
+        issuedOn:
+          type:
+            - string
+            - "null"
+        dueOn:
+          type: string
+        overdue:
+          type: boolean
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicInvoiceLine"
+        subtotal:
+          type: number
+        rounding:
+          type: number
+        total:
+          type: number
+        paidTotal:
+          type: number
+        remaining:
+          type: number
+        representative:
+          type:
+            - string
+            - "null"
+        payee:
+          anyOf:
+            - $ref: "#/components/schemas/PublicInvoicePayee"
+            - type: "null"
+        transferContent:
+          type: string
+        vietQrPayload:
+          type:
+            - string
+            - "null"
+        expiresAt:
+          type: string
+      required:
+        - buildingName
+        - buildingAddress
+        - roomCode
+        - kind
+        - period
+        - code
+        - status
+        - issuedOn
+        - dueOn
+        - overdue
+        - lines
+        - subtotal
+        - rounding
+        - total
+        - paidTotal
+        - remaining
+        - representative
+        - payee
+        - transferContent
+        - vietQrPayload
+        - expiresAt
+    PublicInvoiceLine:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - adjustment
+            - deposit
+            - discount
+            - electricity
+            - refund
+            - rent
+            - rounding
+            - service
+            - surcharge
+            - water
+        description:
+          $ref: "#/components/schemas/StayInvoiceLineDescription"
+        period:
+          type:
+            - string
+            - "null"
+        quantity:
+          type: number
+        unit:
+          type:
+            - string
+            - "null"
+        unitPrice:
+          type:
+            - number
+            - "null"
+        ratioNum:
+          type:
+            - number
+            - "null"
+        ratioDen:
+          type:
+            - number
+            - "null"
+        amount:
+          type: number
+        meta:
+          $ref: "#/components/schemas/PublicInvoiceLineMeta"
+      required:
+        - type
+        - description
+        - period
+        - quantity
+        - unit
+        - unitPrice
+        - ratioNum
+        - ratioDen
+        - amount
+        - meta
+    PublicInvoiceLineMeta:
+      type: object
+      properties:
+        coveredFrom:
+          type: string
+        coveredTo:
+          type: string
+        startReading:
+          type: number
+        endReading:
+          type: number
+        segments:
+          type: array
+          items:
+            type: object
+            properties:
+              startReading:
+                type: number
+              endReading:
+                type: number
+              consumption:
+                type: number
+            required:
+              - startReading
+              - endReading
+              - consumption
+    PublicInvoicePayee:
+      type: object
+      properties:
+        bankBin:
+          type: string
+        bankShortName:
+          type:
+            - string
+            - "null"
+        bankName:
+          type:
+            - string
+            - "null"
+        accountNumber:
+          type: string
+        accountName:
+          type: string
+      required:
+        - bankBin
+        - bankShortName
+        - bankName
+        - accountNumber
+        - accountName
     ReadingBulkResult:
       type: object
       properties:
@@ -10895,6 +11370,10 @@ components:
           type: number
         overdue:
           type: boolean
+        shareExpiresAt:
+          type:
+            - string
+            - "null"
         version:
           type: number
         createdAt:
@@ -10923,6 +11402,7 @@ components:
         - paidTotal
         - remaining
         - overdue
+        - shareExpiresAt
         - version
         - createdAt
     StayInvoiceLine:
@@ -11105,6 +11585,10 @@ components:
           type: number
         overdue:
           type: boolean
+        shareExpiresAt:
+          type:
+            - string
+            - "null"
         version:
           type: number
         createdAt:
@@ -11128,6 +11612,7 @@ components:
         - paidTotal
         - remaining
         - overdue
+        - shareExpiresAt
         - version
         - createdAt
     StayMe:

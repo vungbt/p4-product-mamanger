@@ -95,6 +95,8 @@ test.describe('ST-06/ST-07 owner settings and buildings (desktop)', () => {
 
       await expect(prompt).toBeVisible();
       await prompt.getByRole('button', { name: 'Ở lại' }).click();
+      // The page behind stays inert until the dialog has fully closed; typing earlier is lost.
+      await expect(prompt).toBeHidden();
       await expect(page).toHaveURL('/buildings/new');
       await expect(page.getByLabel('Tên toà')).toHaveValue(NAME_B);
     });
