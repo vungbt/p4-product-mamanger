@@ -102,7 +102,8 @@ export async function billingContext(
   };
 }
 
-function priceOn(context: BillingContext, service: ServiceDefinitionModel, date: string) {
+/** Price of `service` on `date` (building override or default). */
+export function priceOn(context: BillingContext, service: ServiceDefinitionModel, date: string) {
   return resolveBuildingPrice(
     service.defaultPrice,
     context.prices.filter((row) => row.serviceId === service.id),
@@ -111,7 +112,7 @@ function priceOn(context: BillingContext, service: ServiceDefinitionModel, date:
 }
 
 /** Rent, registered occupants/vehicles and fixed services of the contract on `date`. */
-async function fixedInputs(
+export async function fixedInputs(
   context: BillingContext,
   contract: ContractModel,
   date: string,

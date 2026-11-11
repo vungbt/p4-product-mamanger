@@ -71,7 +71,15 @@
     "reference": "Mã giao dịch",
     "dateFrom": "Từ ngày",
     "dateTo": "Đến ngày",
-    "invoiceId": "Hoá đơn"
+    "invoiceId": "Hoá đơn",
+    "expectedMoveOutDate": "Ngày dự kiến trả phòng",
+    "moveOutDate": "Ngày trả phòng",
+    "finalElectric": "Chỉ số điện cuối",
+    "finalWater": "Chỉ số nước cuối",
+    "electricPhotoFileId": "Ảnh đồng hồ điện",
+    "waterPhotoFileId": "Ảnh đồng hồ nước",
+    "surcharges": "Phụ thu thanh lý",
+    "refundMethod": "Phương thức hoàn cọc"
   },
   "message": {
     "required": "Trường :attribute là bắt buộc.",

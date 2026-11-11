@@ -1,16 +1,17 @@
-import { AlertDialog, Button, DropdownMenu, EmptyState, Skeleton } from '@itclabs/react-ui';
-import { useCancelContract, useContract } from '@stay/sdk/react';
+import { Alert, AlertDialog, Button, DropdownMenu, EmptyState, Skeleton } from '@itclabs/react-ui';
+import { useCancelContract, useCancelNotice, useContract } from '@stay/sdk/react';
 import type { ContractChangeKind } from '@stay/sdk/shared';
 import { ApiSdkError, getErrorMessage } from '@stay/sdk/shared';
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useCanOn } from '@/libraries/ability';
+import { useCanAccess, useCanOn } from '@/libraries/ability';
 import { displayDate, formatVnd } from '@/libraries/format';
 import { DepositLedger } from '@/modules/deposits/ledger';
 import { ContractInvoices } from '@/modules/invoices/contract-invoices';
 import { useRoomBuilding } from '@/modules/rooms/use-room-building';
 import { CHANGE_LABELS, ContractChangeDialog } from './change-dialog';
 import { CONTRACT_LABELS, LoadError } from './contract-ui';
+import { NoticeDialog } from './notice-dialog';
 
 const TABS = ['Tổng quan', 'Hoá đơn', 'Cọc', 'Yêu cầu', 'Lịch sử'];
 const EVENT_LABELS: Record<string, string> = {
@@ -19,19 +20,28 @@ const EVENT_LABELS: Record<string, string> = {
   updated: 'Cập nhật bản nháp',
   activated: 'Kích hoạt',
   cancelled: 'Huỷ bản nháp',
+  notice: 'Báo trả phòng',
+  notice_cancelled: 'Huỷ báo trả phòng',
+  ended: 'Thanh lý',
 };
+
+type MenuAction = ContractChangeKind | 'notice' | 'cancel-notice' | 'settle';
 
 export default function ContractDetailPage() {
   const { id = '' } = useParams();
   const query = useContract(id);
   const cancel = useCancelContract();
+  const cancelNotice = useCancelNotice();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [change, setChange] = useState<ContractChangeKind | null>(null);
   const [confirm, setConfirm] = useState(false);
+  const [noticeOpen, setNoticeOpen] = useState(false);
+  const [confirmCancelNotice, setConfirmCancelNotice] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const data = query.data;
   const canUpdate = useCanOn('update', 'Contract', { buildingId: data?.buildingId });
+  const canSettle = useCanAccess('settle', 'Contract');
   const tab = TABS.includes(params.get('tab') ?? '') ? params.get('tab') : 'Tổng quan';
 
   useRoomBuilding(data?.buildingId);
@@ -67,9 +77,34 @@ export default function ContractDetailPage() {
           <DropdownMenu
             trigger={<Button variant="secondary">Thay đổi</Button>}
             triggerAsChild
-            items={(Object.entries(CHANGE_LABELS) as [ContractChangeKind, string][]).map(
-              ([value, label]) => ({ id: value, label, onSelect: () => setChange(value) }),
-            )}
+            items={[
+              ...(Object.entries(CHANGE_LABELS) as [ContractChangeKind, string][]).map(
+                ([value, label]) => ({ id: value, label, onSelect: () => setChange(value) }),
+              ),
+              {
+                id: 'notice' satisfies MenuAction,
+                label: data.status === 'ending' ? 'Đổi ngày trả phòng' : 'Báo trả phòng',
+                onSelect: () => setNoticeOpen(true),
+              },
+              ...(data.status === 'ending'
+                ? [
+                    {
+                      id: 'cancel-notice' satisfies MenuAction,
+                      label: 'Huỷ báo trả phòng',
+                      onSelect: () => setConfirmCancelNotice(true),
+                    },
+                  ]
+                : []),
+              ...(canSettle
+                ? [
+                    {
+                      id: 'settle' satisfies MenuAction,
+                      label: 'Thanh lý',
+                      onSelect: () => navigate(`/contracts/${data.id}/settle`),
+                    },
+                  ]
+                : []),
+            ]}
           />
         )}
       </header>
@@ -78,6 +113,36 @@ export default function ContractDetailPage() {
           {error}
         </p>
       )}
+      {data.status === 'ending' && data.noticeDate ? (
+        <Alert tone="warning" data-testid="contract-notice">
+          Đã báo trả phòng, dự kiến trả ngày {displayDate(data.noticeDate)}.
+          {canSettle ? (
+            <>
+              {' '}
+              <Link className="font-semibold text-accent" to={`/contracts/${data.id}/settle`}>
+                Thanh lý
+              </Link>
+            </>
+          ) : null}
+        </Alert>
+      ) : null}
+      {data.status === 'ended' ? (
+        <Alert tone="info" data-testid="contract-ended">
+          Đã kết thúc
+          {data.movedOutAt ? `, trả phòng ngày ${displayDate(data.movedOutAt)}` : ''}.
+          {data.settlementInvoiceId ? (
+            <>
+              {' '}
+              <Link
+                className="font-semibold text-accent"
+                to={`/invoices/${data.settlementInvoiceId}`}
+              >
+                Xem hoá đơn thanh lý
+              </Link>
+            </>
+          ) : null}
+        </Alert>
+      ) : null}
       <div role="tablist" aria-label="Chi tiết hợp đồng" className="flex flex-wrap gap-2">
         {TABS.map((label) => (
           <Button
@@ -179,6 +244,9 @@ export default function ContractDetailPage() {
                     <> · Hiệu lực {displayDate(e.payload.effectiveDate)}</>
                   )}
                   {typeof e.payload.rent === 'number' && <> · {formatVnd(e.payload.rent)}</>}
+                  {typeof e.payload.expectedMoveOutDate === 'string' && (
+                    <> · Dự kiến trả {displayDate(e.payload.expectedMoveOutDate)}</>
+                  )}
                 </li>
               ))}
             </ol>
@@ -196,6 +264,29 @@ export default function ContractDetailPage() {
       {change && (
         <ContractChangeDialog contract={data} kind={change} onClose={() => setChange(null)} />
       )}
+      {noticeOpen && (
+        <NoticeDialog
+          contract={data}
+          onClose={() => setNoticeOpen(false)}
+          onReload={() => void query.refetch()}
+        />
+      )}
+      <AlertDialog
+        open={confirmCancelNotice}
+        onOpenChange={setConfirmCancelNotice}
+        title="Huỷ báo trả phòng?"
+        description="Hợp đồng trở lại trạng thái hiệu lực."
+        confirmLabel="Huỷ báo trả"
+        cancelLabel="Quay lại"
+        onConfirm={async () => {
+          setError(null);
+          try {
+            await cancelNotice.mutateAsync({ id: data.id, version: data.version });
+          } catch (e) {
+            setError(getErrorMessage(e, 'Không thể huỷ báo trả phòng.'));
+          }
+        }}
+      />
       <AlertDialog
         open={confirm}
         onOpenChange={setConfirm}

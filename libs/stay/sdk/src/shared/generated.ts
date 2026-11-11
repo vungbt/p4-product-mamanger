@@ -1052,6 +1052,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/contracts/{id}/cancel-notice': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Huỷ báo trả phòng
+     * @description ending → active, xoá `noticeDate`. Gia hạn (`/renew`) cũng huỷ báo trả. Chưa báo trả trả 409 `contract_not_ending`. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_cancel_notice'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/contracts/{id}/deposits': {
     parameters: {
       query?: never;
@@ -1116,6 +1138,28 @@ export interface paths {
     get: operations['get_api_contracts_id_move_in_preview'];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/notice': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Báo trả phòng
+     * @description active → ending (hoặc đổi ngày khi đang ending). `expectedMoveOutDate` ≥ hôm nay, ≥ ngày bắt đầu và ≤ ngày kết thúc (nếu có), lưu vào `noticeDate`; ghi `note` vào lịch sử hợp đồng (không vào audit). Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_notice'];
     delete?: never;
     options?: never;
     head?: never;
@@ -1248,6 +1292,50 @@ export interface paths {
      *     **Quyền:** `update:Contract`.
      */
     post: operations['post_api_contracts_id_services'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/settle': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Thanh lý hợp đồng
+     * @description Chỉ chủ trọ (`settle:Contract`). Một transaction: khoá hợp đồng, phòng, hoá đơn; từ chối khi còn hoá đơn nháp (409 `contract_has_draft_invoices` kèm danh sách); tạo và phát hành hoá đơn `settlement` (khoá chỉ số đã dùng); cọc ghi thành thanh toán phương thức `deposit` trên đúng hoá đơn được trả (nợ cũ trước, rồi hoá đơn thanh lý) kèm bút toán cọc `applied`; phần còn lại hoàn bằng bút toán `refunded` (`refundMethod`, ngày hôm nay); cọc không đủ thì phần thiếu còn nợ trên hoá đơn; hợp đồng → ended (`movedOutAt`), người ở/xe/dịch vụ kết thúc từ ngày sau ngày trả phòng, phòng về trống. Số liệu trùng với bản xem trước. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `settle:Contract`.
+     */
+    post: operations['post_api_contracts_id_settle'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/settlement-preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xem trước thanh lý
+     * @description Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu; nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    post: operations['post_api_contracts_id_settlement_preview'];
     delete?: never;
     options?: never;
     head?: never;
@@ -2496,6 +2584,11 @@ export interface components {
       startDate: string;
       vehicleIds: string[];
     };
+    ContractNoticeInput: {
+      expectedMoveOutDate: string;
+      note?: string | null;
+      version: number;
+    };
     ContractOccupant: {
       fromDate: string;
       fullName: string;
@@ -2511,11 +2604,71 @@ export interface components {
       serviceId: string;
       toDate: string | null;
     };
+    ContractSettleInput: {
+      electricPhotoFileId?: string | null;
+      finalElectric?: number | null;
+      finalWater?: number | null;
+      moveOutDate: string;
+      /** @enum {string} */
+      refundMethod?: 'bank_transfer' | 'cash' | 'other';
+      surcharges?: components['schemas']['SettlementSurchargeInput'][];
+      version: number;
+      waterPhotoFileId?: string | null;
+    };
+    ContractSettlementInput: {
+      electricPhotoFileId?: string | null;
+      finalElectric?: number | null;
+      finalWater?: number | null;
+      moveOutDate: string;
+      surcharges?: components['schemas']['SettlementSurchargeInput'][];
+      waterPhotoFileId?: string | null;
+    };
+    ContractSettlementPreview: {
+      amountDue: number;
+      buildingId: string;
+      contractId: string;
+      depositApplied: number;
+      depositHeld: number;
+      depositRefunded: number;
+      lines: components['schemas']['SettlementLine'][];
+      moveOutDate: string;
+      outstandingInvoices: components['schemas']['SettlementOutstandingInvoice'][];
+      outstandingTotal: number;
+      ownerRefunds: number;
+      period: string;
+      readings: components['schemas']['SettlementReading'][];
+      refundTotal: number;
+      refundUnusedRent: boolean;
+      remainingDue: number;
+      roomCode: string;
+      roomId: string;
+      rounding: number;
+      settlementDepositApplied: number;
+      subtotal: number;
+      surchargeTotal: number;
+      tenantPays: number;
+      total: number;
+      unbilledTotal: number;
+      utilitiesTotal: number;
+    };
+    ContractSettlementResult: {
+      contract: components['schemas']['StayContract'];
+      depositApplied: number;
+      depositRefunded: number;
+      invoice: components['schemas']['StayInvoice'];
+      ownerRefunds: number;
+      remainingDue: number;
+      replayed: boolean;
+      tenantPays: number;
+    };
     ContractVehicle: {
       fromDate: string;
       plate: string;
       toDate: string | null;
       vehicleId: string;
+    };
+    ContractVersionInput: {
+      version: number;
     };
     DepositBalance: {
       applied: number;
@@ -2874,6 +3027,52 @@ export interface components {
       floors: number[];
       total: number;
     };
+    SettlementLine: {
+      amount: number;
+      description: components['schemas']['StayInvoiceLineDescription'];
+      meta: components['schemas']['StayInvoiceLineMeta'];
+      period: string | null;
+      quantity: number;
+      ratioDen: number | null;
+      ratioNum: number | null;
+      serviceId: string | null;
+      /** @enum {string} */
+      type:
+        | 'adjustment'
+        | 'deposit'
+        | 'discount'
+        | 'electricity'
+        | 'refund'
+        | 'rent'
+        | 'rounding'
+        | 'service'
+        | 'surcharge'
+        | 'water';
+      unit: string | null;
+      unitPrice: number | null;
+    };
+    SettlementOutstandingInvoice: {
+      code: string | null;
+      depositApplied: number;
+      invoiceId: string;
+      /** @enum {string} */
+      kind: 'monthly' | 'move_in' | 'settlement';
+      paidTotal: number;
+      period: string;
+      remaining: number;
+      total: number;
+    };
+    SettlementReading: {
+      consumption: number;
+      endReading: number;
+      /** @enum {string} */
+      kind: 'electricity' | 'water';
+      startReading: number;
+    };
+    SettlementSurchargeInput: {
+      amount: number;
+      reason: string;
+    };
     StayAuditLog: {
       action: string;
       actorId: string | null;
@@ -2964,7 +3163,9 @@ export interface components {
       initialWater: number;
       initialWaterPhotoFileId: string | null;
       initialWaterPhotoUrl: string | null;
+      movedOutAt: string | null;
       note: string | null;
+      noticeDate: string | null;
       occupantIds: string[];
       occupants: components['schemas']['ContractOccupant'][];
       primaryTenantId: string | null;
@@ -2974,6 +3175,7 @@ export interface components {
       roomId: string;
       serviceIds: string[];
       services: components['schemas']['ContractService'][];
+      settlementInvoiceId: string | null;
       startDate: string;
       /** @enum {string} */
       status: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
@@ -3139,7 +3341,7 @@ export interface components {
       invoiceCode: string | null;
       invoiceId: string;
       /** @enum {string} */
-      method: 'bank_transfer' | 'cash' | 'other';
+      method: 'bank_transfer' | 'cash' | 'deposit' | 'other';
       note: string | null;
       paidOn: string;
       reference: string | null;
@@ -7813,6 +8015,41 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  post_api_contracts_id_cancel_notice: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractVersionInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayContract'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_contracts_id_deposits: {
     parameters: {
       query?: never;
@@ -7944,6 +8181,41 @@ export interface operations {
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_notice: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractNoticeInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayContract'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -8221,6 +8493,96 @@ export interface operations {
           'application/json': components['schemas']['ApiError'];
         };
       };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_settle: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description Bắt buộc; mỗi lần xác nhận thanh lý dùng một key, bấm lại dùng lại key (trả kết quả cũ, `replayed: true`). */
+        'Idempotency-Key': string;
+      };
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractSettleInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractSettlementResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description Hợp đồng không ở trạng thái active/ending (`contract_not_active`), còn hoá đơn nháp (`contract_has_draft_invoices`, `extensions.invoices`: `SettlementDraftInvoice[]`), đã có chỉ số sau ngày trả phòng (`reading_after_move_out`), đổi phòng sau ngày trả phòng (`contract_has_future_room_change`), `version_conflict` hoặc key đã dùng với nội dung khác (`idempotency_conflict`). */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      /** @description Ngày trả phòng sau hôm nay hoặc trước ngày bắt đầu, thiếu/nhỏ hơn chỉ số trước (`finalElectric`, `finalWater`), phụ thu thiếu lý do, ảnh không hợp lệ; `invalid_settlement` khi dữ liệu tính tiền không hợp lệ. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_settlement_preview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ContractSettlementInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractSettlementPreview'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -9028,7 +9390,7 @@ export interface operations {
         dateTo?: string;
         includeReversed?: 'false' | 'true';
         invoiceId?: string;
-        method?: 'bank_transfer' | 'cash' | 'other';
+        method?: 'bank_transfer' | 'cash' | 'deposit' | 'other';
         page?: number;
         pageSize?: number;
         q?: string;
@@ -9057,7 +9419,7 @@ export interface operations {
                 amount: number;
                 count: number;
                 /** @enum {string} */
-                method: 'cash' | 'bank_transfer' | 'other';
+                method: 'cash' | 'bank_transfer' | 'other' | 'deposit';
               }[];
             };
           };

@@ -23,8 +23,16 @@ export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
 export const PAYMENT_STATUSES = ['recorded', 'reversed'] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
-export const PAYMENT_METHODS = ['cash', 'bank_transfer', 'other'] as const;
+/**
+ * Methods of a payment row. `deposit` is written only by settlement (ST-17): the deposit offset
+ * against an invoice, recorded on that invoice (never entered by hand).
+ */
+export const PAYMENT_METHODS = ['cash', 'bank_transfer', 'other', 'deposit'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+/** Methods an owner/manager records by hand (`POST /api/invoices/:id/payments`). */
+export const MANUAL_PAYMENT_METHODS = ['cash', 'bank_transfer', 'other'] as const;
+export type ManualPaymentMethod = (typeof MANUAL_PAYMENT_METHODS)[number];
 
 /** Deposit lifecycle: `held` → `applied` / `refunded` / `forfeited` (partially or fully). */
 export const DEPOSIT_STATUSES = ['held', 'applied', 'refunded', 'forfeited'] as const;

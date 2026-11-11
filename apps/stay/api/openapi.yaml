@@ -24,7 +24,8 @@ tags:
   - name: buildings
     description: Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.
   - name: contracts
-    description: Hợp đồng thuê, kích hoạt (tạo hoá đơn nhận phòng nháp), huỷ bản nháp và xem trước tiền nhận phòng.
+    description: Hợp đồng thuê, kích hoạt (tạo hoá đơn nhận phòng nháp), huỷ bản nháp, xem trước tiền nhận phòng, báo trả
+      phòng và thanh lý (ST-17).
   - name: deposits
     description: Sổ cọc bất biến; thu thêm, hoàn, mất cọc và cấn trừ thanh lý.
   - name: expenses
@@ -1004,6 +1005,7 @@ paths:
             enum:
               - bank_transfer
               - cash
+              - deposit
               - other
         - name: dateFrom
           in: query
@@ -1060,6 +1062,7 @@ paths:
                                     - cash
                                     - bank_transfer
                                     - other
+                                    - deposit
                                 amount:
                                   type: integer
                                 count:
@@ -3253,6 +3256,255 @@ paths:
           $ref: "#/components/responses/Conflict"
         "422":
           description: "Thay đổi không hợp lệ: ngày, số người, dịch vụ hoặc chỉ số. Lỗi field trong extensions."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/notice:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_notice
+      summary: Báo trả phòng
+      description: >-
+        active → ending (hoặc đổi ngày khi đang ending). `expectedMoveOutDate` ≥ hôm nay, ≥ ngày bắt đầu và ≤ ngày kết
+        thúc (nếu có), lưu vào `noticeDate`; ghi `note` vào lịch sử hợp đồng (không vào audit). Gửi lại `version` đã
+        đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractNoticeInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayContract"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/cancel-notice:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_cancel_notice
+      summary: Huỷ báo trả phòng
+      description: >-
+        ending → active, xoá `noticeDate`. Gia hạn (`/renew`) cũng huỷ báo trả. Chưa báo trả trả 409
+        `contract_not_ending`. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractVersionInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayContract"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/settlement-preview:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_settlement_preview
+      summary: Xem trước thanh lý
+      description: >-
+        Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của
+        `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền
+        phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu; nợ
+        cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá
+        và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá
+        đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.
+
+
+        **Quyền:** `read:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractSettlementInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractSettlementPreview"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/settle:
+    post:
+      tags:
+        - contracts
+      operationId: post_api_contracts_id_settle
+      summary: Thanh lý hợp đồng
+      description: >-
+        Chỉ chủ trọ (`settle:Contract`). Một transaction: khoá hợp đồng, phòng, hoá đơn; từ chối khi còn hoá đơn nháp
+        (409 `contract_has_draft_invoices` kèm danh sách); tạo và phát hành hoá đơn `settlement` (khoá chỉ số đã dùng);
+        cọc ghi thành thanh toán phương thức `deposit` trên đúng hoá đơn được trả (nợ cũ trước, rồi hoá đơn thanh lý)
+        kèm bút toán cọc `applied`; phần còn lại hoàn bằng bút toán `refunded` (`refundMethod`, ngày hôm nay); cọc không
+        đủ thì phần thiếu còn nợ trên hoá đơn; hợp đồng → ended (`movedOutAt`), người ở/xe/dịch vụ kết thúc từ ngày sau
+        ngày trả phòng, phòng về trống. Số liệu trùng với bản xem trước. Gửi lại `version` đã đọc; dữ liệu đã bị người
+        khác sửa thì trả 409 `version_conflict`.
+
+
+        **Quyền:** `settle:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: "Bắt buộc; mỗi lần xác nhận thanh lý dùng một key, bấm lại dùng lại key (trả kết quả cũ, `replayed: true`)."
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractSettleInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractSettlementResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: "Hợp đồng không ở trạng thái active/ending (`contract_not_active`), còn hoá đơn nháp
+            (`contract_has_draft_invoices`, `extensions.invoices`: `SettlementDraftInvoice[]`), đã có chỉ số sau ngày
+            trả phòng (`reading_after_move_out`), đổi phòng sau ngày trả phòng (`contract_has_future_room_change`),
+            `version_conflict` hoặc key đã dùng với nội dung khác (`idempotency_conflict`)."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "422":
+          description: Ngày trả phòng sau hôm nay hoặc trước ngày bắt đầu, thiếu/nhỏ hơn chỉ số trước (`finalElectric`,
+            `finalWater`), phụ thu thiếu lý do, ảnh không hợp lệ; `invalid_settlement` khi dữ liệu tính tiền không hợp
+            lệ.
           content:
             application/json:
               schema:
@@ -9933,6 +10185,20 @@ components:
         - primaryTenantId
         - serviceIds
         - vehicleIds
+    ContractNoticeInput:
+      type: object
+      properties:
+        version:
+          type: number
+        expectedMoveOutDate:
+          type: string
+        note:
+          type:
+            - string
+            - "null"
+      required:
+        - version
+        - expectedMoveOutDate
     ContractOccupant:
       type: object
       properties:
@@ -9981,6 +10247,185 @@ components:
         - kind
         - fromDate
         - toDate
+    ContractSettleInput:
+      type: object
+      properties:
+        version:
+          type: number
+        refundMethod:
+          type: string
+          enum:
+            - bank_transfer
+            - cash
+            - other
+        moveOutDate:
+          type: string
+        finalElectric:
+          type:
+            - number
+            - "null"
+        finalWater:
+          type:
+            - number
+            - "null"
+        electricPhotoFileId:
+          type:
+            - string
+            - "null"
+        waterPhotoFileId:
+          type:
+            - string
+            - "null"
+        surcharges:
+          type: array
+          items:
+            $ref: "#/components/schemas/SettlementSurchargeInput"
+      required:
+        - version
+        - moveOutDate
+    ContractSettlementInput:
+      type: object
+      properties:
+        moveOutDate:
+          type: string
+        finalElectric:
+          type:
+            - number
+            - "null"
+        finalWater:
+          type:
+            - number
+            - "null"
+        electricPhotoFileId:
+          type:
+            - string
+            - "null"
+        waterPhotoFileId:
+          type:
+            - string
+            - "null"
+        surcharges:
+          type: array
+          items:
+            $ref: "#/components/schemas/SettlementSurchargeInput"
+      required:
+        - moveOutDate
+    ContractSettlementPreview:
+      type: object
+      properties:
+        contractId:
+          type: string
+        buildingId:
+          type: string
+        roomId:
+          type: string
+        roomCode:
+          type: string
+        moveOutDate:
+          type: string
+        period:
+          type: string
+        refundUnusedRent:
+          type: boolean
+        readings:
+          type: array
+          items:
+            $ref: "#/components/schemas/SettlementReading"
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/SettlementLine"
+        subtotal:
+          type: number
+        rounding:
+          type: number
+        total:
+          type: number
+        unbilledTotal:
+          type: number
+        utilitiesTotal:
+          type: number
+        refundTotal:
+          type: number
+        surchargeTotal:
+          type: number
+        outstandingInvoices:
+          type: array
+          items:
+            $ref: "#/components/schemas/SettlementOutstandingInvoice"
+        outstandingTotal:
+          type: number
+        amountDue:
+          type: number
+        depositHeld:
+          type: number
+        depositApplied:
+          type: number
+        settlementDepositApplied:
+          type: number
+        depositRefunded:
+          type: number
+        remainingDue:
+          type: number
+        ownerRefunds:
+          type: number
+        tenantPays:
+          type: number
+      required:
+        - contractId
+        - buildingId
+        - roomId
+        - roomCode
+        - moveOutDate
+        - period
+        - refundUnusedRent
+        - readings
+        - lines
+        - subtotal
+        - rounding
+        - total
+        - unbilledTotal
+        - utilitiesTotal
+        - refundTotal
+        - surchargeTotal
+        - outstandingInvoices
+        - outstandingTotal
+        - amountDue
+        - depositHeld
+        - depositApplied
+        - settlementDepositApplied
+        - depositRefunded
+        - remainingDue
+        - ownerRefunds
+        - tenantPays
+    ContractSettlementResult:
+      type: object
+      properties:
+        contract:
+          $ref: "#/components/schemas/StayContract"
+        invoice:
+          $ref: "#/components/schemas/StayInvoice"
+        depositApplied:
+          type: number
+        depositRefunded:
+          type: number
+        remainingDue:
+          type: number
+        ownerRefunds:
+          type: number
+        tenantPays:
+          type: number
+        replayed:
+          type: boolean
+      required:
+        - contract
+        - invoice
+        - depositApplied
+        - depositRefunded
+        - remainingDue
+        - ownerRefunds
+        - tenantPays
+        - replayed
     ContractVehicle:
       type: object
       properties:
@@ -9999,6 +10444,13 @@ components:
         - plate
         - fromDate
         - toDate
+    ContractVersionInput:
+      type: object
+      properties:
+        version:
+          type: number
+      required:
+        - version
     DepositBalance:
       type: object
       properties:
@@ -11077,6 +11529,129 @@ components:
         - total
         - counts
         - floors
+    SettlementLine:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - adjustment
+            - deposit
+            - discount
+            - electricity
+            - refund
+            - rent
+            - rounding
+            - service
+            - surcharge
+            - water
+        serviceId:
+          type:
+            - string
+            - "null"
+        description:
+          $ref: "#/components/schemas/StayInvoiceLineDescription"
+        period:
+          type:
+            - string
+            - "null"
+        quantity:
+          type: number
+        unit:
+          type:
+            - string
+            - "null"
+        unitPrice:
+          type:
+            - number
+            - "null"
+        ratioNum:
+          type:
+            - number
+            - "null"
+        ratioDen:
+          type:
+            - number
+            - "null"
+        amount:
+          type: number
+        meta:
+          $ref: "#/components/schemas/StayInvoiceLineMeta"
+      required:
+        - type
+        - serviceId
+        - description
+        - period
+        - quantity
+        - unit
+        - unitPrice
+        - ratioNum
+        - ratioDen
+        - amount
+        - meta
+    SettlementOutstandingInvoice:
+      type: object
+      properties:
+        invoiceId:
+          type: string
+        code:
+          type:
+            - string
+            - "null"
+        kind:
+          type: string
+          enum:
+            - monthly
+            - move_in
+            - settlement
+        period:
+          type: string
+        total:
+          type: number
+        paidTotal:
+          type: number
+        remaining:
+          type: number
+        depositApplied:
+          type: number
+      required:
+        - invoiceId
+        - code
+        - kind
+        - period
+        - total
+        - paidTotal
+        - remaining
+        - depositApplied
+    SettlementReading:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - electricity
+            - water
+        startReading:
+          type: number
+        endReading:
+          type: number
+        consumption:
+          type: number
+      required:
+        - kind
+        - startReading
+        - endReading
+        - consumption
+    SettlementSurchargeInput:
+      type: object
+      properties:
+        amount:
+          type: number
+        reason:
+          type: string
+      required:
+        - amount
+        - reason
     StayAuditLog:
       type: object
       properties:
@@ -11364,6 +11939,18 @@ components:
             - "null"
         depositHeld:
           type: number
+        noticeDate:
+          type:
+            - string
+            - "null"
+        movedOutAt:
+          type:
+            - string
+            - "null"
+        settlementInvoiceId:
+          type:
+            - string
+            - "null"
         version:
           type: number
         createdAt:
@@ -11456,6 +12043,9 @@ components:
         - status
         - primaryTenantName
         - depositHeld
+        - noticeDate
+        - movedOutAt
+        - settlementInvoiceId
         - version
         - createdAt
         - updatedAt
@@ -11945,6 +12535,7 @@ components:
           enum:
             - bank_transfer
             - cash
+            - deposit
             - other
         paidOn:
           type: string

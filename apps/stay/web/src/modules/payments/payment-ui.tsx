@@ -1,6 +1,11 @@
 import { Tag } from '@itclabs/react-ui';
 import { ApiSdkError } from '@stay/sdk/shared';
-import type { PaymentMethod, StayInvoiceSummary, StayPayment } from '@stay/shared';
+import type {
+  ManualPaymentMethod,
+  PaymentMethod,
+  StayInvoiceSummary,
+  StayPayment,
+} from '@stay/shared';
 import { formatVnd } from '@/libraries/format';
 import { invoiceErrorMessage } from '../invoices/invoice-ui';
 
@@ -8,11 +13,22 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cash: 'Tiền mặt',
   bank_transfer: 'Chuyển khoản',
   other: 'Khác',
+  // ST-17: deposit offset recorded by a settlement, never entered by hand.
+  deposit: 'Cấn trừ cọc',
 };
 
+/** Filter options of the ledger: every stored method. */
 export const PAYMENT_METHOD_OPTIONS = (Object.keys(PAYMENT_METHOD_LABELS) as PaymentMethod[]).map(
   (value) => ({ value, label: PAYMENT_METHOD_LABELS[value] }),
 );
+
+const MANUAL_METHODS: ManualPaymentMethod[] = ['cash', 'bank_transfer', 'other'];
+
+/** Methods of the "Thu tiền" dialog. */
+export const MANUAL_PAYMENT_METHOD_OPTIONS = MANUAL_METHODS.map((value) => ({
+  value,
+  label: PAYMENT_METHOD_LABELS[value],
+}));
 
 /** Issued invoices with something left to collect (the "Thu tiền" action). */
 export function isCollectable(invoice: Pick<StayInvoiceSummary, 'status' | 'remaining'>) {
@@ -26,6 +42,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   invoice_void: 'Hoá đơn đã void, không nhận thanh toán.',
   invoice_already_paid: 'Hoá đơn đã thu đủ. Tải lại để xem trạng thái mới.',
   payment_already_reversed: 'Bút toán thu đã được huỷ trước đó.',
+  deposit_payment_not_reversible: 'Khoản cấn trừ cọc của thanh lý không huỷ được.',
   idempotency_conflict: 'Yêu cầu thu tiền đã được gửi với nội dung khác. Đóng và mở lại hộp thoại.',
 };
 

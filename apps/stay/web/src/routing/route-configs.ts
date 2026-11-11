@@ -33,6 +33,7 @@ const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-p
 const ContractListPage = lazy(() => import('@/modules/contracts/list-page'));
 const ContractWizardPage = lazy(() => import('@/modules/contracts/wizard-page'));
 const ContractDetailPage = lazy(() => import('@/modules/contracts/detail-page'));
+const ContractSettlePage = lazy(() => import('@/modules/contracts/settle-page'));
 const AuditPage = lazy(() => import('@/modules/audit/page'));
 const OverviewPage = lazy(() => import('@/modules/overview/page'));
 const PlaceholderPage = lazy(() => import('@/modules/placeholder/page'));
@@ -201,6 +202,16 @@ export const appRoutes: StayRoute[] = [
     icon: 'clipboardText',
     component: ContractWizardPage,
     ability: { action: 'create', subject: 'Contract' },
+    hideInMenu: true,
+    parent: 'contracts',
+  },
+  {
+    path: '/contracts/:id/settle',
+    name: 'contractSettle',
+    icon: 'clipboardText',
+    component: ContractSettlePage,
+    // O-24: owner only (`settle` stays with the owner in the CASL kit).
+    ability: { action: 'settle', subject: 'Contract' },
     hideInMenu: true,
     parent: 'contracts',
   },

@@ -162,8 +162,8 @@ Extension points:
   now use recorded readings. Move-in readings/photos remain the contract baseline.
 - ST-14 is implemented: move-in drafts on activation, invoice usage guards and the
   `deposit_entries.invoice_id` foreign key (see "Period invoices (ST-14)").
-- ST-17: ending/ended transitions and settlement; room/tenant derivation already understands
-  holding and ended contracts.
+- ST-17 is implemented: notice (`ending`), cancel-notice/renew, settlement (`ended`), see
+  "Move-out and settlement (ST-17)".
 
 ### Meter closing (ST-13)
 
@@ -307,7 +307,7 @@ Extension points:
   corrected with an `adjustment` line on the next period (`manualLines` supports it with
   `referenceInvoiceId`).
 - ST-16 share link (done, see "Invoice sharing and VietQR (ST-16)").
-- ST-17 settlement: compute with `computeSettlement`, persist with
+- ST-17 settlement (done, see "Move-out and settlement (ST-17)"): compute with `computeSettlement`, persist with
   `saveInvoiceDraft(contract, { invoice, roomId, readings, schedule }, null, tx)` (kind
   `settlement`, unique per contract is up to ST-17) and issue through `issueInvoices` (codes use
   the issue-date period). Apply the deposit with `applyDepositForSettlement` (its
@@ -445,3 +445,79 @@ a row updates or disappears right after a payment.
 
 Integration coverage: `tests/receivables.integration.test.mjs` (CI Postgres/API only);
 browser coverage: `apps/stay/web/e2e/receivables.spec.ts`.
+
+### Move-out and settlement (ST-17)
+
+Run migration `20261125000100-settlement.cjs`: `payments.method` accepts `deposit` (written only
+by settlement) and `invoices_settlement_contract_key` allows one non-void settlement invoice per
+contract.
+
+| Method/path (prefix `/api`) | Quyền | Ghi chú |
+| --- | --- | --- |
+| POST `/contracts/:id/notice` | update `Contract` | `{ version, expectedMoveOutDate, note? }`; date ≥ today (Asia/Ho_Chi_Minh), ≥ start, ≤ end (when set). active → ending (or a new date while ending); stored in `contracts.notice_date` |
+| POST `/contracts/:id/cancel-notice` | update `Contract` | `{ version }`; ending → active, `noticeDate = null` (409 `contract_not_ending` otherwise). `POST /renew` also withdraws the notice |
+| POST `/contracts/:id/settlement-preview` | read `Contract` | `ContractSettlementInput` (`moveOutDate`, `finalElectric`, `finalWater`, optional photo ids, `surcharges: [{ amount, reason }]` ≤ 20). No write; returns `ContractSettlementPreview` |
+| POST `/contracts/:id/settle` | `settle` `Contract` (owner) | Required `Idempotency-Key`; body = preview input + `version` + `refundMethod` (`cash`/`bank_transfer`/`other`, default `cash`). Returns `ContractSettlementResult` (`contract`, issued `invoice`, deposit numbers, `replayed`) |
+
+`StayContract` now has `noticeDate`, `movedOutAt` and `settlementInvoiceId`. Managers preview
+and give notice in assigned buildings; `settle` stays with the owner (CASL kit), so managers get
+403 on `/settle` and inaccessible contracts are 404 on the other routes.
+
+Computation (`modules/contracts/contracts.settlement.ts`, `settlementPlan`, shared by preview and
+settle so both return the same numbers; all money from `@stay/billing`):
+
+- `moveOutDate` D: not after today, not before the start; the contract must be `active`/`ending`
+  (409 `contract_not_active`), without a room change after D (409
+  `contract_has_future_room_change`) and **without draft invoices** (409
+  `contract_has_draft_invoices`, `extensions.invoices: [{ invoiceId, kind, period }]`).
+- Final utilities per registered metered service: from the latest **locked** reading (used by an
+  issued invoice) of the room since the contract entered it, else the move-in/room-change reading
+  (ST-13 rule for meters installed later), to the final reading; a meter replaced after that adds
+  its closed segment. A reading recorded after D → 409 `reading_after_move_out`. Missing or lower
+  final readings → 400 with `finalElectric`/`finalWater`. Prices, rent, occupants, vehicles and
+  services are taken at D.
+- `computeSettlement` adds rent/services of stayed days in periods without an issued
+  monthly/move-in invoice, refunds prepaid days after D from issued invoices of D's month or later
+  when the building's `refundUnusedRent` (else the system setting) is on, surcharges (each with a
+  reason, stored as manual surcharge lines with `meta.reason`) and rounds the total with the
+  building `roundingUnit`. Earlier issued invoices with something left are listed only
+  (`outstandingInvoices`, oldest period first).
+- `allocateSettlementDeposit` (new in `@stay/billing`) splits the deposit: earlier invoices first,
+  then the settlement invoice; the rest is refunded. A negative settlement total (refunds larger
+  than the charges) is a credit paid out with the refund, never paid from the deposit. The net
+  always equals `computeSettlement`: `ownerRefunds − tenantPays = depositHeld − amountDue`.
+
+Settle runs in **one** audited transaction: lock the contract, its room (same serialization point
+as reading saves and invoice issue) and its invoices; recompute the plan; verify photos
+(`contract_meter` uploads of the building); `saveInvoiceDraft` (kind `settlement`, period of D,
+`invoice_meter_readings` = the locked baseline and the draft readings it supersedes) and
+`issueInvoices` (code from the issue-date period; those readings become `locked`); a total ≤ 0 is
+`paid` at once. For each allocation: `insertPayment` with method `deposit` and `paidOn` = today on
+the invoice it pays (earlier invoices keep their own payments) and `applyDepositForSettlement`
+(`applied` entry with that `invoice_id`; ledger method `other`). The remainder is a `refunded`
+entry (`refundMethod`, today); an insufficient deposit leaves the rest due on the invoices (the
+settlement invoice is `partially_paid`/`issued`). Occupants, services and vehicles get
+`toDate = D + 1` (present on D; later registrations collapse to `from = to`), the contract becomes
+`ended` with `moved_out_at = D`, so the room is vacant and tenants have no current room. Events:
+`notice`, `notice_cancelled` (payload: expected date, note) and `ended` (final readings, photo ids,
+invoice id and the settlement numbers). Audit rows `contract.notice`, `contract.notice_cancelled`,
+`contract.settled` (plus the invoice/payment/deposit rows) contain ids, dates, statuses and money
+only, never notes or reasons. The final readings are kept in the `ended` event and the invoice
+line snapshot (like room-change closings), not as `meter_readings`, so a next tenant moving in the
+same month keeps its own monthly closing.
+
+The idempotency record stores the invoice id and numbers; the same key and body replays them
+(`replayed: true`), another body is 409 `idempotency_conflict`, and settling an ended contract
+with a new key is 409 `contract_not_active`. A settlement invoice cannot be voided (409
+`settlement_invoice_not_voidable`) and `deposit` payments cannot be reversed (409
+`deposit_payment_not_reversible`); manual payments still use `cash`/`bank_transfer`/`other`
+(`MANUAL_PAYMENT_METHODS`), while `GET /payments` totals list every method including `deposit`.
+
+Web: "Báo trả phòng"/"Huỷ báo trả phòng"/"Thanh lý" in the contract "Thay đổi" menu, notice and
+ended banners on O-17, O-24 `/contracts/:id/settle` (readings + photos → surcharges → API summary
+"Chủ trọ hoàn X"/"Người thuê trả thêm Y" → confirmation → invoice link and ST-16 share), "Thanh lý"
+on occupied rooms (map menu and room detail, owner only) and the expected move-out date in the
+contract list status.
+
+Integration coverage: `tests/settlement.integration.test.mjs` (CI Postgres/API runner only);
+browser coverage: `apps/stay/web/e2e/settlement.spec.ts`.

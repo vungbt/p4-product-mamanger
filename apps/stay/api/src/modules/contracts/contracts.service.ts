@@ -29,6 +29,7 @@ import {
   ContractVehicleModel,
   DepositEntryModel,
   FileModel,
+  InvoiceModel,
   MeterModel,
   RoomModel,
   ServiceDefinitionModel,
@@ -81,7 +82,7 @@ export async function contractDto(
 ): Promise<StayContract> {
   const today = isoDateInTimeZone(new Date());
   const current = await contractFactsAt(row.id, today, transaction);
-  const [room, occupants, links, cars, events, deposits] = await Promise.all([
+  const [room, occupants, links, cars, events, deposits, settlement] = await Promise.all([
     RoomModel.findByPk(current.roomId, { transaction }),
     ContractOccupantModel.findAll({ where: { contractId: row.id }, transaction }),
     ContractServiceModel.findAll({ where: { contractId: row.id }, transaction }),
@@ -95,6 +96,11 @@ export async function contractDto(
       transaction,
     }),
     DepositEntryModel.findAll({ where: { contractId: row.id }, transaction }),
+    InvoiceModel.findOne({
+      where: { contractId: row.id, kind: 'settlement', status: { [Op.ne]: 'void' } },
+      attributes: ['id'],
+      transaction,
+    }),
   ]);
   const actors = await UserModel.findAll({
     where: { id: { [Op.in]: events.map((e) => e.actorId) } },
@@ -143,8 +149,11 @@ export async function contractDto(
       'initialElectric',
       'initialWater',
       'note',
+      'noticeDate',
+      'movedOutAt',
       'version',
     ]),
+    settlementInvoiceId: settlement?.id ?? null,
     roomId: current.roomId,
     rent: current.rent,
     initialElectric: current.initialElectric,

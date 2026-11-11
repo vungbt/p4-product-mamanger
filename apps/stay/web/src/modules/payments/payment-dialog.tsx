@@ -11,7 +11,7 @@ import {
 } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useInvoices, useRecordPayment } from '@stay/sdk/react';
-import { isIsoDate, type PaymentMethod, type StayInvoiceSummary } from '@stay/shared';
+import { isIsoDate, type ManualPaymentMethod, type StayInvoiceSummary } from '@stay/shared';
 import { useEffect, useRef, useState } from 'react';
 import * as v from 'valibot';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
@@ -24,8 +24,8 @@ import { displayPeriod } from '../invoices/invoice-ui';
 import {
   exceededRemaining,
   isCollectable,
+  MANUAL_PAYMENT_METHOD_OPTIONS,
   overpayMessage,
-  PAYMENT_METHOD_OPTIONS,
   paymentErrorMessage,
 } from './payment-ui';
 
@@ -166,7 +166,7 @@ function PaymentForm({
     defaultValues: {
       invoiceId: first?.id ?? '',
       amount: (first?.remaining ?? null) as number | null,
-      method: 'cash' as PaymentMethod,
+      method: 'cash' as ManualPaymentMethod,
       paidOn: todayIsoDate(),
       reference: '',
       note: '',
@@ -286,7 +286,7 @@ function PaymentForm({
         />
       </FormField>
       <FormField name="method" label="Phương thức" required>
-        <Select options={PAYMENT_METHOD_OPTIONS} />
+        <Select options={MANUAL_PAYMENT_METHOD_OPTIONS} />
       </FormField>
       <FormField name="paidOn" label="Ngày thu" required>
         <Input type="date" max={todayIsoDate()} />

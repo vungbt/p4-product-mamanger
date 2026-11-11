@@ -22,5 +22,5 @@ export {
   invoiceCodePeriod,
   invoiceSchedule,
 } from './schedule.js';
-export { computeSettlement, toPrepaidLines } from './settlement.js';
+export { allocateSettlementDeposit, computeSettlement, toPrepaidLines } from './settlement.js';
 export * from './types.js';

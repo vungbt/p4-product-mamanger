@@ -96,5 +96,14 @@
   "payment_exceeds_remaining": "Số tiền vượt số còn lại của hoá đơn ({{remaining}} đ).",
   "payment_already_reversed": "Bút toán thu đã được huỷ.",
   "invalid_payment": "Bút toán thu không hợp lệ.",
-  "payment_amount_overflow": "Tổng tiền thu vượt giới hạn an toàn."
+  "payment_amount_overflow": "Tổng tiền thu vượt giới hạn an toàn.",
+  "contract_not_active": "Chỉ thao tác được với hợp đồng đang hiệu lực hoặc đã báo trả.",
+  "contract_not_ending": "Hợp đồng chưa báo trả phòng.",
+  "contract_has_draft_invoices": "Hợp đồng còn hoá đơn nháp. Hãy phát hành hoặc void bản nháp trước khi thanh lý.",
+  "contract_has_future_room_change": "Hợp đồng có lần đổi phòng sau ngày trả phòng.",
+  "reading_after_move_out": "Đã có chỉ số ghi sau ngày trả phòng; chọn ngày trả phòng muộn hơn.",
+  "invalid_settlement": "Không tính được thanh lý từ dữ liệu hiện có (chỉ số, đơn giá hoặc hoá đơn).",
+  "settlement_invoice_not_voidable": "Không thể void hoá đơn thanh lý.",
+  "deposit_payment_not_reversible": "Không huỷ được khoản cấn trừ cọc của thanh lý.",
+  "missing_meter": "Phòng chưa có đồng hồ cho dịch vụ điện/nước đã đăng ký."
 }

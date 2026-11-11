@@ -29,7 +29,7 @@ const TAG_DESCRIPTIONS = {
     'Chốt chỉ số điện nước, lưu theo dòng và thay đồng hồ; tiêu thụ tính theo các đoạn đồng hồ.',
   expenses: 'Chi phí vận hành, danh mục chi phí và tổng theo kỳ. Ảnh hoá đơn lưu private.',
   contracts:
-    'Hợp đồng thuê, kích hoạt (tạo hoá đơn nhận phòng nháp), huỷ bản nháp và xem trước tiền nhận phòng.',
+    'Hợp đồng thuê, kích hoạt (tạo hoá đơn nhận phòng nháp), huỷ bản nháp, xem trước tiền nhận phòng, báo trả phòng và thanh lý (ST-17).',
   invoices:
     'Hoá đơn: xem trước và tạo bản nháp kỳ M (tiền phòng + dịch vụ M, điện nước M−1), phụ thu/giảm trừ, phát hành (cấp mã, khoá chỉ số), void. Mọi số tiền tính bằng `@stay/billing` tại server; dòng hoá đơn là snapshot.',
   payments:
@@ -108,6 +108,22 @@ const OPERATIONS = {
     'Khoá phòng, kiểm tra người ở và chỉ số, ghi nhận cọc đã thu và tạo hoá đơn nhận phòng nháp (cùng cách tính với move-in-preview).',
   ],
   'POST /api/contracts/{id}/cancel': ['Huỷ bản nháp'],
+  'POST /api/contracts/{id}/notice': [
+    'Báo trả phòng',
+    `active → ending (hoặc đổi ngày khi đang ending). \`expectedMoveOutDate\` ≥ hôm nay, ≥ ngày bắt đầu và ≤ ngày kết thúc (nếu có), lưu vào \`noticeDate\`; ghi \`note\` vào lịch sử hợp đồng (không vào audit). ${VERSION_NOTE}`,
+  ],
+  'POST /api/contracts/{id}/cancel-notice': [
+    'Huỷ báo trả phòng',
+    `ending → active, xoá \`noticeDate\`. Gia hạn (\`/renew\`) cũng huỷ báo trả. Chưa báo trả trả 409 \`contract_not_ending\`. ${VERSION_NOTE}`,
+  ],
+  'POST /api/contracts/{id}/settlement-preview': [
+    'Xem trước thanh lý',
+    'Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu; nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.',
+  ],
+  'POST /api/contracts/{id}/settle': [
+    'Thanh lý hợp đồng',
+    `Chỉ chủ trọ (\`settle:Contract\`). Một transaction: khoá hợp đồng, phòng, hoá đơn; từ chối khi còn hoá đơn nháp (409 \`contract_has_draft_invoices\` kèm danh sách); tạo và phát hành hoá đơn \`settlement\` (khoá chỉ số đã dùng); cọc ghi thành thanh toán phương thức \`deposit\` trên đúng hoá đơn được trả (nợ cũ trước, rồi hoá đơn thanh lý) kèm bút toán cọc \`applied\`; phần còn lại hoàn bằng bút toán \`refunded\` (\`refundMethod\`, ngày hôm nay); cọc không đủ thì phần thiếu còn nợ trên hoá đơn; hợp đồng → ended (\`movedOutAt\`), người ở/xe/dịch vụ kết thúc từ ngày sau ngày trả phòng, phòng về trống. Số liệu trùng với bản xem trước. ${VERSION_NOTE}`,
+  ],
   'GET /api/contracts/{id}/move-in-preview': [
     'Xem trước tiền nhận phòng',
     'Tính tại server theo ngày bắt đầu, giá toà, số người và xe đăng ký. Không gồm điện nước hay cọc.',
@@ -429,7 +445,26 @@ const contractBody = {
 const readingBody = (name) => ({
   requestBody: { required: true, content: { 'application/json': { schema: { ref: name } } } },
 });
+const settlementBody = (name) => ({
+  requestBody: { required: true, content: { 'application/json': { schema: { ref: name } } } },
+});
 const OVERRIDES = {
+  'POST /api/contracts/{id}/notice': settlementBody('ContractNoticeInput'),
+  'POST /api/contracts/{id}/cancel-notice': settlementBody('ContractVersionInput'),
+  'POST /api/contracts/{id}/settlement-preview': settlementBody('ContractSettlementInput'),
+  'POST /api/contracts/{id}/settle': {
+    ...settlementBody('ContractSettleInput'),
+    parameters: [
+      {
+        name: 'Idempotency-Key',
+        in: 'header',
+        required: true,
+        description:
+          'Bắt buộc; mỗi lần xác nhận thanh lý dùng một key, bấm lại dùng lại key (trả kết quả cũ, `replayed: true`).',
+        schema: { type: 'string', minLength: 8, maxLength: 128 },
+      },
+    ],
+  },
   'POST /api/contracts/{id}/deposits': {
     requestBody: {
       required: true,

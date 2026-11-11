@@ -12,6 +12,7 @@ import {
   type ContractChangeCommand,
   type ContractInput,
   type ContractListQuery,
+  type ContractSettlementInput,
   createContractApi,
 } from '../shared/contracts.js';
 import { useStaySdk } from './provider.js';
@@ -23,7 +24,21 @@ export const contractKeys = {
   list: (query?: ContractListQuery) => ['stay', 'contracts', 'list', query ?? {}] as const,
   detail: (id: string) => ['stay', 'contracts', 'detail', id] as const,
   preview: (id: string) => ['stay', 'contracts', 'preview', id] as const,
+  settlementPreview: (id: string, body: ContractSettlementInput) =>
+    ['stay', 'contracts', 'settlement-preview', id, body] as const,
 };
+
+/** Everything a settlement changes (ST-17): contract, room, tenants, invoices and ledgers. */
+const SETTLEMENT_AREAS = [
+  'contracts',
+  'rooms',
+  'tenants',
+  'buildings',
+  'invoices',
+  'payments',
+  'deposits',
+  'readings',
+];
 
 export function contractQueryOptions(sdk: StaySdk) {
   const api = createContractApi(sdk);
@@ -55,6 +70,15 @@ export function contractQueryOptions(sdk: StaySdk) {
         queryFn: ({ signal }) => api.preview(id, signal),
         enabled: Boolean(id),
       }),
+    /** Server-computed settlement for the entered move-out data (never cached as fresh). */
+    settlementPreview: (id: string, body: ContractSettlementInput, enabled = true) =>
+      queryOptions({
+        queryKey: contractKeys.settlementPreview(id, body),
+        queryFn: ({ signal }) => api.settlementPreview(id, body, signal),
+        enabled: Boolean(id) && enabled,
+        retry: false,
+        staleTime: 0,
+      }),
   };
 }
 
@@ -79,6 +103,18 @@ export function contractMutationOptions(sdk: StaySdk, client: QueryClient) {
     update: () => mutationOptions({ mutationFn: api.update, retry: false, onSuccess: refresh }),
     activate: () => mutationOptions({ mutationFn: api.activate, retry: false, onSuccess: refresh }),
     cancel: () => mutationOptions({ mutationFn: api.cancel, retry: false, onSuccess: refresh }),
+    notice: () => mutationOptions({ mutationFn: api.notice, retry: false, onSuccess: refresh }),
+    cancelNotice: () =>
+      mutationOptions({ mutationFn: api.cancelNotice, retry: false, onSuccess: refresh }),
+    settle: () =>
+      mutationOptions({
+        mutationFn: api.settle,
+        retry: false,
+        onSuccess: () =>
+          Promise.all(
+            SETTLEMENT_AREAS.map((area) => client.invalidateQueries({ queryKey: ['stay', area] })),
+          ),
+      }),
   };
 }
 
@@ -120,4 +156,20 @@ export function useContractChangePreview(command: ContractChangeCommand, enabled
 
 export function useChangeContract() {
   return useMutation(useContractMutations().change());
+}
+
+export function useGiveNotice() {
+  return useMutation(useContractMutations().notice());
+}
+
+export function useCancelNotice() {
+  return useMutation(useContractMutations().cancelNotice());
+}
+
+export function useSettlementPreview(id: string, body: ContractSettlementInput, enabled = true) {
+  return useQuery(contractQueryOptions(useStaySdk()).settlementPreview(id, body, enabled));
+}
+
+export function useSettleContract() {
+  return useMutation(useContractMutations().settle());
 }

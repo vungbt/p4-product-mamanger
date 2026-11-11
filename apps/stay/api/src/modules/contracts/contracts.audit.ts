@@ -15,4 +15,8 @@ export const auditPolicies = {
   'POST /contracts/:id/activate': { action: 'update', resourceType: 'contract' },
   'POST /contracts/:id/cancel': { action: 'cancel', resourceType: 'contract' },
   'GET /contracts/:id/move-in-preview': { action: 'read', resourceType: 'contract' },
+  'POST /contracts/:id/notice': { action: 'update', resourceType: 'contract' },
+  'POST /contracts/:id/cancel-notice': { action: 'update', resourceType: 'contract' },
+  'POST /contracts/:id/settlement-preview': { action: 'read', resourceType: 'contract' },
+  'POST /contracts/:id/settle': { action: 'update', resourceType: 'contract' },
 } satisfies RouteAuditPolicies;
