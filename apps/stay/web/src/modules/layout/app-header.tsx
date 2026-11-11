@@ -2,6 +2,7 @@ import { Breadcrumb, IconButton, WorkspaceHeader } from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { BRAND, BrandMark } from '@/brand';
+import { useCanAccessSome } from '@/libraries/ability';
 import { BuildingSelector } from '@/libraries/buildings/building-selector';
 import { appRoutes, ROUTES } from '@/routing/route-configs';
 import { routeTrail, useCurrentRoute } from '@/routing/use-routes';
@@ -18,6 +19,8 @@ function hasHistory() {
 export default function AppHeader() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  // Notifications are per building (API: read Building); tenants have none.
+  const canReadNotifications = useCanAccessSome('read', 'Building');
   const route = useCurrentRoute();
 
   const parent = route?.parent ? appRoutes.find(({ name }) => name === route.parent) : undefined;
@@ -74,7 +77,7 @@ export default function AppHeader() {
       actions={
         <>
           <BuildingSelector />
-          <NotificationsBell />
+          {canReadNotifications ? <NotificationsBell /> : null}
           <AccountMenu />
         </>
       }

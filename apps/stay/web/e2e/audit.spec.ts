@@ -59,6 +59,7 @@ async function mockApi(page: Page, role?: StayRole) {
         })),
         meta: { page: 1, pageSize: 100, total: 2, totalPages: 1 },
       };
+    else if (role && path === '/api/notifications') body = { data: { items: [], unreadCount: 0 } };
     else if (path === `/api/audit-logs/${entry.id}`) body = { data: entry };
     else if (path === '/api/audit-logs') {
       queries.push(url.searchParams);
