@@ -1,10 +1,10 @@
 import {
   Button,
+  DatePicker,
   Dialog,
   Form,
   FormField,
   FormSubmit,
-  Input,
   NumberInput,
   Select,
   Textarea,
@@ -18,6 +18,7 @@ import { useState } from 'react';
 import * as v from 'valibot';
 import { todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty, useFormValue } from '@/libraries/forms/use-form-value';
@@ -129,8 +130,8 @@ export function DepositEntryDialog({
             endAddon="₫"
           />
         </FormField>
-        <FormField name="occurredOn" label="Ngày" required>
-          <Input type="date" />
+        <FormField name="occurredOn" label="Ngày" required {...DATE_FIELD}>
+          <DatePicker clearable={false} />
         </FormField>
         <FormField name="method" label="Phương thức" required>
           <Select

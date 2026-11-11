@@ -17,6 +17,8 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCanOpen } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
 import { PageSpinner } from '@/routing/route-guards';
 import { ContactLinks, formatPhone, TenantStatusTag } from './tenant-ui';
@@ -168,31 +170,34 @@ export default function TenantListPage() {
 
   return (
     <div className="grid gap-5" data-testid="tenant-list-page">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-heading font-bold text-ink">{t('nav.tenants')}</h1>
-        <div className="flex flex-wrap gap-2">
-          {canImport ? (
-            <Button variant="secondary" onClick={() => navigate('/tenants/import')}>
-              {t('tenants.importAction')}
-            </Button>
-          ) : null}
-          {canCreate ? (
-            <Button onClick={() => navigate('/tenants/new')}>{t('tenants.add')}</Button>
-          ) : null}
-        </div>
-      </header>
+      <ScreenHeader
+        title={t('nav.tenants')}
+        action={
+          <>
+            {canImport ? (
+              <Button variant="secondary" onClick={() => navigate('/tenants/import')}>
+                {t('tenants.importAction')}
+              </Button>
+            ) : null}
+            {canCreate ? (
+              <Button onClick={() => navigate('/tenants/new')}>{t('tenants.add')}</Button>
+            ) : null}
+          </>
+        }
+      />
 
-      <div className="grid gap-3 sm:grid-cols-[1fr_14rem]">
+      <FilterBar>
         <Input
           type="search"
           icon="search"
+          label={t('tenants.list.search')}
+          rootClassName={FILTER_WIDE}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder={t('tenants.list.searchPlaceholder')}
-          aria-label={t('tenants.list.search')}
         />
         <Select
-          aria-label={t('tenants.fields.status')}
+          label={t('tenants.fields.status')}
           options={statusOptions}
           value={status}
           onValueChange={(value) =>
@@ -200,7 +205,7 @@ export default function TenantListPage() {
           }
           data-testid="tenant-status-filter"
         />
-      </div>
+      </FilterBar>
 
       {tenants.isError && !tenants.data ? (
         <Alert

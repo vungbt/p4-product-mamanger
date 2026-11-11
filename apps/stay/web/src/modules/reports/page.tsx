@@ -1,19 +1,14 @@
-import {
-  Button,
-  Input,
-  Skeleton,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@itclabs/react-ui';
+import { Button, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger } from '@itclabs/react-ui';
 import { useRevenueReport, useRoomsReport, useUtilitiesReport } from '@stay/sdk/react';
 import { isPeriod, type RevenueReport, type RoomsReport, type UtilitiesReport } from '@stay/shared';
 import { lazy, type ReactNode, Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FilterBar } from '@/libraries/filter-bar';
 import { formatVnd, todayIsoDate } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { PeriodPicker } from '@/libraries/forms/period-picker';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
 import { displayPeriod } from '@/modules/invoices/invoice-ui';
 import { ExportDialog } from './export-dialog';
@@ -51,33 +46,31 @@ export default function ReportsPage() {
 
   return (
     <div className="grid min-w-0 max-w-full gap-5">
-      <header className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-heading font-bold">Báo cáo</h1>
-          <p className="text-muted">{building?.name ?? 'Chọn toà nhà'}</p>
-        </div>
-        <Button disabled={!buildingId} onClick={() => setExportOpen(true)}>
-          Xuất Excel
-        </Button>
-      </header>
-      <div className="grid min-w-0 grid-cols-2 gap-3 sm:max-w-md">
-        <Input
-          type="month"
+      <ScreenHeader
+        title="Báo cáo"
+        description={building?.name ?? 'Chọn toà nhà'}
+        action={
+          <Button disabled={!buildingId} onClick={() => setExportOpen(true)}>
+            Xuất Excel
+          </Button>
+        }
+      />
+      <FilterBar>
+        <PeriodPicker
           label="Từ tháng"
           value={from}
-          onChange={(e) => {
-            if (isPeriod(e.target.value)) update('from', e.target.value);
+          onChange={(value) => {
+            if (isPeriod(value)) update('from', value);
           }}
         />
-        <Input
-          type="month"
+        <PeriodPicker
           label="Đến tháng"
           value={to}
-          onChange={(e) => {
-            if (isPeriod(e.target.value)) update('to', e.target.value);
+          onChange={(value) => {
+            if (isPeriod(value)) update('to', value);
           }}
         />
-      </div>
+      </FilterBar>
       <p className="text-ui-sm text-muted">
         Đã thu tính theo ngày thu; phải thu tính theo kỳ hoá đơn. Khoảng tối đa 24 tháng.
       </p>
@@ -90,7 +83,7 @@ export default function ReportsPage() {
           className="min-w-0"
           label="Loại báo cáo"
         >
-          <div className="min-w-0 max-w-full overflow-x-auto">
+          <div className="min-w-0 max-w-full relative overflow-x-auto">
             <TabsList className="w-max">
               <TabsTrigger value="revenue">Doanh thu – Chi phí – Lãi/lỗ</TabsTrigger>
               <TabsTrigger value="rooms">Theo phòng</TabsTrigger>
@@ -118,7 +111,7 @@ export default function ReportsPage() {
 function ScrollTable({ children, label }: { children: ReactNode; label: string }) {
   return (
     <section
-      className="min-w-0 max-w-full overflow-x-auto rounded-panel border border-line bg-surface"
+      className="min-w-0 max-w-full relative overflow-x-auto rounded-panel border border-line bg-surface"
       aria-label={label}
     >
       <table className="w-full whitespace-nowrap text-left text-ui-sm [&_th]:p-3 [&_td]:p-3 [&_tr]:border-b [&_tr]:border-line">

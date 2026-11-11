@@ -15,7 +15,9 @@
   /* Surfaces and content: cool greys */
   --color-canvas: #f3f5f8;
   --color-surface: #ffffff;
-  --color-sidebar: #ffffff;
+  /* Tinted sidebar (kit indicator items) on an inset shell: slightly darker than the canvas so
+     item hover and the active row stay visible and the page card stands out. */
+  --color-sidebar: #e9edf2;
   --color-ink: #1f2937;
   --color-muted: #556070;
   --color-line: #e2e6ec;

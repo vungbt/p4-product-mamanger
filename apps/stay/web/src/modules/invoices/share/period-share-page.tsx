@@ -1,4 +1,4 @@
-import { AlertDialog, Button, EmptyState, Input } from '@itclabs/react-ui';
+import { AlertDialog, Button, EmptyState } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useInvoices, useSharePeriodInvoices } from '@stay/sdk/react';
 import { type InvoicePeriodShareResult, type InvoiceStatus, isPeriod } from '@stay/shared';
@@ -7,6 +7,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { formatVnd, todayIsoDate } from '@/libraries/format';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
 import {
@@ -40,26 +41,26 @@ export default function PeriodSharePage() {
       <ScreenHeader
         title={`Chia sẻ kỳ ${displayPeriod(period)}`}
         description="Tạo link xem hoá đơn (có mã VietQR số tiền còn lại) cho từng phòng rồi gửi lần lượt qua Zalo hoặc tin nhắn."
-      />
-      <Input
-        label="Kỳ hoá đơn"
-        type="month"
-        value={period}
-        className="max-w-xs"
-        onChange={(event) => {
-          if (!isPeriod(event.target.value)) return;
-          const value = event.target.value;
+        action={
+          <PeriodPicker
+            label="Kỳ hoá đơn"
+            value={period}
+            className="w-full sm:w-48"
+            onChange={(value) => {
+              if (!isPeriod(value)) return;
 
-          setParams(
-            () => {
-              const next = latestSearchParams();
+              setParams(
+                () => {
+                  const next = latestSearchParams();
 
-              next.set('period', value);
-              return next;
-            },
-            { replace: true },
-          );
-        }}
+                  next.set('period', value);
+                  return next;
+                },
+                { replace: true },
+              );
+            }}
+          />
+        }
       />
       {!buildingId ? (
         <p>Chọn toà nhà để chia sẻ hoá đơn.</p>

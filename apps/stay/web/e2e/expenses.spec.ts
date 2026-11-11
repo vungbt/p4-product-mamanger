@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
-import { chooseOption, fillLogin, MANAGER, saveScreenshot, signIn } from './helpers';
+import { chooseOption, fillLogin, MANAGER, pickDate, saveScreenshot, signIn } from './helpers';
 
 const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',
@@ -20,7 +20,7 @@ for (const width of [1280, 375]) {
 
     await form.getByRole('spinbutton', { name: /Số tiền/ }).fill('123456');
     await chooseOption(page, form, 'Danh mục', 'Sửa chữa');
-    await form.getByLabel(/Ngày chi/).fill('2041-08-12');
+    await pickDate(page, form, /Ngày chi/, '2041-08-12');
     await chooseOption(page, form, 'Phòng', 'Cả toà');
     await form.getByRole('textbox', { name: 'Ghi chú', exact: true }).fill(note);
     await form

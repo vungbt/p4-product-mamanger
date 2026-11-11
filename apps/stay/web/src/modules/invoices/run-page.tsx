@@ -1,4 +1,4 @@
-import { AlertDialog, Button, Checkbox, cn, Input } from '@itclabs/react-ui';
+import { AlertDialog, Button, Checkbox, cn } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import {
   useBillingPreview,
@@ -13,6 +13,7 @@ import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { useIsDesktop } from '@/libraries/use-media-query';
 import {
@@ -41,16 +42,16 @@ export default function BillingRunPage() {
       <ScreenHeader
         title={`Lập hoá đơn kỳ ${displayPeriod(period)}`}
         description="Tiền phòng và dịch vụ tháng M, điện nước tháng M−1. Kiểm tra → tạo bản nháp → phát hành."
-      />
-      <Input
-        label="Kỳ hoá đơn"
-        type="month"
-        value={period}
-        className="max-w-xs"
-        onChange={(event) => {
-          if (isPeriod(event.target.value))
-            setParams({ period: event.target.value }, { replace: true });
-        }}
+        action={
+          <PeriodPicker
+            label="Kỳ hoá đơn"
+            value={period}
+            className="w-full sm:w-48"
+            onChange={(value) => {
+              if (isPeriod(value)) setParams({ period: value }, { replace: true });
+            }}
+          />
+        }
       />
       {!buildingId ? (
         <p>Chọn toà nhà để lập hoá đơn.</p>
@@ -237,7 +238,7 @@ function PreviewRows({ rows }: { rows: BillingPreviewRow[] }) {
     );
 
   return (
-    <div className="min-w-0 overflow-x-auto rounded-panel border border-line bg-surface">
+    <div className="min-w-0 relative overflow-x-auto rounded-panel border border-line bg-surface">
       <table className="w-full text-left" aria-label="Kiểm tra hợp đồng">
         <thead>
           <tr>

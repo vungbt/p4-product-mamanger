@@ -136,7 +136,7 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
   });
 
   return (
-    <Form form={form} schema={schema} className="grid gap-5" data-testid="billing-form">
+    <Form form={form} schema={schema} className="grid max-w-4xl gap-5" data-testid="billing-form">
       {prompt}
       {conflict ? <ConflictAlert onReload={onReload} /> : null}
       <FormError message={formError} />

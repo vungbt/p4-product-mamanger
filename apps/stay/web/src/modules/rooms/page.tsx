@@ -4,7 +4,6 @@ import {
   cn,
   EmptyState,
   Input,
-  PageHeader,
   Pagination,
   Select,
   Skeleton,
@@ -18,6 +17,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useCanAccess, useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { ROUTES } from '@/routing/route-configs';
 import { RoomPaymentDialog } from '../payments/payment-dialog';
 import { MaintenanceDialog } from './components/maintenance-dialog';
@@ -213,7 +214,7 @@ export default function RoomMapPage() {
 
   return (
     <div className="grid gap-5">
-      <PageHeader
+      <ScreenHeader
         title={t('nav.rooms')}
         description={building ? t('rooms.map.description', { building: building.name }) : undefined}
         action={actions}
@@ -252,20 +253,21 @@ export default function RoomMapPage() {
       ) : null}
 
       {!buildingEmpty ? (
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <FilterBar>
           <Input
-            rootClassName="sm:flex-1"
+            label={t('rooms.map.search')}
+            rootClassName={FILTER_WIDE}
             type="search"
             icon="search"
             value={search}
             onChange={(event) => changeSearch(event.target.value)}
             placeholder={t('rooms.map.searchPlaceholder')}
-            aria-label={t('rooms.map.search')}
             clearable
             onClear={() => changeSearch('')}
             data-testid="room-search"
           />
           <Select
+            label="Trạng thái"
             aria-label={t('rooms.map.statusFilter')}
             placeholder={t('rooms.map.allStatuses')}
             options={statusOptions}
@@ -276,20 +278,19 @@ export default function RoomMapPage() {
               })
             }
             clearable
-            rootClassName="sm:w-48"
             data-testid="room-status-filter"
           />
           <Select
+            label="Tầng"
             aria-label={t('rooms.map.floorFilter')}
             placeholder={t('rooms.map.allFloors')}
             options={floorOptions}
             value={filters.floor === null ? null : String(filters.floor)}
             onValueChange={(value) => setFilters({ floor: value === null ? null : Number(value) })}
             clearable
-            rootClassName="sm:w-48"
             data-testid="room-floor-filter"
           />
-        </div>
+        </FilterBar>
       ) : null}
 
       {content}

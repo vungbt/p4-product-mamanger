@@ -1,6 +1,6 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import { expect, type Page, test } from '@playwright/test';
-import { chooseOption, saveScreenshot, signIn } from './helpers';
+import { chooseOption, pickDate, saveScreenshot, signIn } from './helpers';
 
 type Grid = {
   rooms: {
@@ -118,8 +118,8 @@ for (const width of [1280, 375]) {
       page.getByRole('article', { name: `Phòng ${room.code}`, exact: true }),
     );
     for (const card of cards) await expect(card).toBeVisible();
-    const progress = page.getByRole('status').filter({ hasText: /^đã nhập / });
-    const baseline = (await progress.innerText()).match(/đã nhập (\d+)\/(\d+) phòng/);
+    const progress = page.getByRole('status').filter({ hasText: /^Đã nhập / });
+    const baseline = (await progress.innerText()).match(/Đã nhập (\d+)\/(\d+) phòng/);
     expect(baseline).not.toBeNull();
     const completedBefore = Number(baseline?.[1]);
     const totalRooms = Number(baseline?.[2]);
@@ -143,7 +143,7 @@ for (const width of [1280, 375]) {
     const dialog = page.getByRole('dialog', { name: 'Thay đồng hồ', exact: true });
     await dialog.getByRole('spinbutton', { name: /Số cuối đồng hồ cũ/ }).fill('35');
     await dialog.getByRole('spinbutton', { name: /Số đầu đồng hồ mới/ }).fill('5');
-    await dialog.getByLabel(/Ngày thay/).fill('2044-04-15');
+    await pickDate(page, dialog, /Ngày thay/, '2044-04-15');
     await dialog.getByRole('textbox', { name: /Seri mới/ }).fill('ST13-NEW');
     await dialog.getByRole('button', { name: 'Thay đồng hồ', exact: true }).click();
     await expect(dialog).not.toBeVisible();
@@ -151,7 +151,7 @@ for (const width of [1280, 375]) {
     await third.getByRole('spinbutton', { name: /Nước số mới/ }).fill('40');
     await expect(third.getByRole('status')).toHaveText('Đã lưu');
     await expect(third.getByText(/Tiêu thụ: 15 kWh/)).toBeVisible();
-    await expect(progress).toContainText(`đã nhập ${completedBefore + 3}/${totalRooms} phòng`);
+    await expect(progress).toContainText(`Đã nhập ${completedBefore + 3}/${totalRooms} phòng`);
     await expect(page.getByRole('button', { name: 'Lập hoá đơn kỳ 05/2044' })).toBeEnabled();
 
     await page.context().setOffline(true);

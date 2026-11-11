@@ -1,6 +1,7 @@
 import {
   Button,
   Checkbox,
+  DatePicker,
   Dialog,
   Form,
   FormField,
@@ -15,6 +16,7 @@ import { isIsoDate, METER_READING_MAX, type ReadingMeter } from '@stay/shared';
 import { useRef, useState } from 'react';
 import * as v from 'valibot';
 import { todayIsoDate } from '@/libraries/format';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
@@ -91,8 +93,8 @@ export function ReplacementDialog({
         <FormField name="initialReading" label="Số đầu đồng hồ mới" required>
           <NumberInput min={0} max={METER_READING_MAX} inputMode="numeric" />
         </FormField>
-        <FormField name="replacedOn" label="Ngày thay" required>
-          <Input type="date" />
+        <FormField name="replacedOn" label="Ngày thay" required {...DATE_FIELD}>
+          <DatePicker clearable={false} />
         </FormField>
         <FormField name="serial" label="Seri mới">
           <Input maxLength={40} />

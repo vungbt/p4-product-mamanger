@@ -1,6 +1,6 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import { expect, type Page, test } from '@playwright/test';
-import { chooseOption, saveScreenshot, signIn } from './helpers';
+import { chooseOption, pickDate, saveScreenshot, signIn } from './helpers';
 
 type Invoice = { id: string; code: string | null; status: string; total: number };
 type InboxItem = { id: string; kind: string };
@@ -42,7 +42,8 @@ async function rentedRoom(page: Page) {
     (candidate: { code: string }) => candidate.code === 'A',
   );
   expect(building, 'Seeded building A must exist').toBeTruthy();
-  const year = randomInt(2100, 2900);
+  // Within the kit DatePicker range (up to 2100) so the tenant can pick dates of the stay.
+  const year = randomInt(2030, 2100);
   const suffix = randomUUID().replaceAll('-', '').slice(0, 6).toUpperCase();
   const phone = `09${String(randomInt(0, 100_000_000)).padStart(8, '0')}`;
   const fullName = `Khách yêu cầu ${suffix}`;
@@ -146,7 +147,7 @@ for (const width of [1280, 375]) {
     await tenant
       .getByRole('textbox', { name: /Số điện thoại/ })
       .fill(`09${String(randomInt(0, 100_000_000)).padStart(8, '0')}`);
-    await tenant.getByLabel(/Ở từ ngày/).fill(`${rented.year}-03-01`);
+    await pickDate(tenant, tenant, /Ở từ ngày/, `${rented.year}-03-01`);
     await tenant.getByRole('button', { name: 'Gửi yêu cầu', exact: true }).click();
     await expect(tenant).toHaveURL(/\/p\/requests$/);
     await expect(tenant.getByTestId('portal-request-list')).toContainText(newcomer);

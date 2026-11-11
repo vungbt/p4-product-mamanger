@@ -2,6 +2,7 @@ import {
   Button,
   type ColumnDef,
   DataTable,
+  DatePicker,
   EmptyState,
   Input,
   Pagination,
@@ -16,8 +17,10 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
 import { displayDate, todayIsoDate } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
 import { RegistrationDialog } from './registration-dialog';
 
@@ -200,39 +203,45 @@ export default function ResidentsPage() {
 
   return (
     <div className="grid min-w-0 gap-5" data-testid="residents-page">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-heading font-bold text-ink">Tạm trú</h1>
-        <Button
-          variant="secondary"
-          disabled={!buildingId}
-          loading={exportFile.isPending}
-          onClick={() => void download()}
-        >
-          Xuất Excel
-        </Button>
-      </header>
-      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-        <Input
+      <ScreenHeader
+        title="Tạm trú"
+        description="Người đang ở theo ngày đã chọn và tình trạng khai báo tạm trú."
+        action={
+          <Button
+            variant="secondary"
+            disabled={!buildingId}
+            loading={exportFile.isPending}
+            onClick={() => void download()}
+          >
+            Xuất Excel
+          </Button>
+        }
+      />
+      <FilterBar>
+        <DatePicker
           label="Ngày đang ở"
-          type="date"
-          value={date}
-          onChange={(event) => update({ date: event.target.value || null, page: null })}
+          value={date || null}
+          clearable={false}
+          onValueChange={(value) => update({ date: value, page: null })}
         />
         <Input
           type="search"
+          label="Tìm"
           aria-label="Tìm người tạm trú"
+          rootClassName={FILTER_WIDE}
           placeholder="Tìm theo họ tên, phòng"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
         <Switch
           label="Chỉ người chưa khai báo"
+          classNames={{ root: 'min-h-control-md' }}
           checked={status === 'unregistered'}
           onCheckedChange={(checked) =>
             update({ status: checked ? 'unregistered' : null, page: null })
           }
         />
-      </div>
+      </FilterBar>
       {residents.isError ? (
         <LoadError error={residents.error} onRetry={() => void residents.refetch()} />
       ) : residents.isPending ? (
@@ -245,7 +254,7 @@ export default function ResidentsPage() {
         />
       ) : (
         <>
-          <div className="hidden min-w-0 overflow-x-auto lg:block">
+          <div className="hidden min-w-0 relative overflow-x-auto lg:block">
             <DataTable
               caption="Danh sách tạm trú"
               mode="server"

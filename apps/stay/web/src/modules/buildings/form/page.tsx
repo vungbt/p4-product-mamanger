@@ -336,7 +336,7 @@ function BuildingForm({
   };
 
   return (
-    <Form form={form} schema={schema} className="grid gap-5" data-testid="building-form">
+    <Form form={form} schema={schema} className="grid max-w-4xl gap-5" data-testid="building-form">
       {prompt}
       {archived ? <Alert tone="warning">{t('form.archivedNotice')}</Alert> : null}
       {conflict ? <ConflictAlert onReload={onReload} /> : null}

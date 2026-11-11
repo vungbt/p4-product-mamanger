@@ -21,13 +21,17 @@ export default function AppLayout() {
         >
           {t('app.skipToContent')}
         </a>
-        <WorkspaceShell className="stay-shell w-full max-w-none" sidebar={<AppSidebar />}>
+        <WorkspaceShell
+          variant="inset"
+          className="stay-shell w-full max-w-none"
+          sidebar={<AppSidebar />}
+        >
           <WorkspaceBody>
             <AppHeader />
             <WorkspaceMain
               id={MAIN_ID}
               tabIndex={-1}
-              className="w-full max-w-6xl px-4 py-5 pb-bottom-nav outline-none sm:px-6 lg:px-8 lg:py-8"
+              className="w-full max-w-none px-4 py-5 pb-bottom-nav outline-none sm:px-6 lg:px-8 lg:py-8"
             >
               <Outlet />
             </WorkspaceMain>

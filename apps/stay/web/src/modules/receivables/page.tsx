@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
 import { displayDate, formatVnd } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { ScreenHeader } from '@/libraries/screen-header';
@@ -188,10 +189,11 @@ export default function ReceivablesPage() {
             ))}
           </fieldset>
 
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+          <FilterBar>
             <Input
               label="Tìm"
               type="search"
+              rootClassName={FILTER_WIDE}
               placeholder="Phòng, mã hợp đồng, tên hoặc SĐT"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -202,7 +204,7 @@ export default function ReceivablesPage() {
               options={SORT_OPTIONS}
               onValueChange={(value) => filter('sort', value === 'remaining' ? null : value)}
             />
-          </div>
+          </FilterBar>
 
           {query.isPending ? (
             <LoadingRows />
@@ -325,7 +327,7 @@ function Representative({ row }: { row: StayReceivable }) {
 
 function ReceivableTable({ rows, expanded, onToggle, actions }: ListProps) {
   return (
-    <div className="min-w-0 overflow-x-auto rounded-panel border border-line bg-surface">
+    <div className="min-w-0 relative overflow-x-auto rounded-panel border border-line bg-surface">
       <table className="w-full text-left" aria-label="Công nợ">
         <thead>
           <tr>

@@ -1,4 +1,6 @@
 @import "@itclabs/react-ui/theme/styles.css";
+/* The kit defaults to system fonts; Stay keeps Be Vietnam Pro (weights 400–700). */
+@import "@itclabs/react-ui/theme/fonts.css";
 @import "./stay-theme.css";
 
 @layer base {
@@ -29,6 +31,15 @@
 /* Keep page content clear of the fixed bottom navigation and the iOS home indicator. */
 @utility pb-bottom-nav {
   padding-bottom: calc(var(--spacing) * 24 + env(safe-area-inset-bottom));
+}
+
+/* Filter bars (FilterBar): one column on phones, then as many 13rem+ columns as fit. */
+@utility grid-cols-filters {
+  grid-template-columns: minmax(0, 1fr);
+
+  @media (width >= 40rem) {
+    grid-template-columns: repeat(auto-fill, minmax(calc(var(--spacing) * 52), 1fr));
+  }
 }
 
 @utility pb-safe {

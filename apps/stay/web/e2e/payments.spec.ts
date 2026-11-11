@@ -1,6 +1,6 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import { expect, type Page, test } from '@playwright/test';
-import { chooseOption, saveScreenshot, signIn } from './helpers';
+import { chooseOption, pickDate, saveScreenshot, signIn } from './helpers';
 
 type Invoice = { id: string; code: string | null; status: string; total: number };
 
@@ -103,7 +103,7 @@ for (const width of [1280, 375]) {
     // Partial payment by bank transfer, dated in the past → "Thu một phần".
     await amount.fill(String(partial));
     await chooseOption(page, dialog, /Phương thức/, 'Chuyển khoản');
-    await dialog.getByLabel(/Ngày thu/).fill(paidOn);
+    await pickDate(page, dialog, /Ngày thu/, paidOn);
     await dialog.getByRole('textbox', { name: /Mã giao dịch/ }).fill(`FT${code}`);
     expect(await noHorizontalScroll(page)).toBe(true);
     await saveScreenshot(page, `payments-dialog-${width}`);
@@ -147,8 +147,8 @@ for (const width of [1280, 375]) {
     await page.goto('/payments');
     await expect(page.getByRole('heading', { level: 1, name: 'Sổ thu' })).toBeVisible();
     await page.getByRole('searchbox', { name: 'Tìm' }).fill(code);
-    await page.getByLabel('Từ ngày', { exact: true }).fill(paidOn);
-    await page.getByLabel('Đến ngày', { exact: true }).fill(paidOn);
+    await pickDate(page, page, 'Từ ngày', paidOn);
+    await pickDate(page, page, 'Đến ngày', paidOn);
     await expect(page).toHaveURL(new RegExp(`from=${paidOn}`));
     await expect(page).toHaveURL(new RegExp(`to=${paidOn}`));
     await expect(page).toHaveURL(/q=/);
@@ -164,8 +164,8 @@ for (const width of [1280, 375]) {
     await saveScreenshot(page, `payments-ledger-${width}`);
 
     // Today's range: only the reversed payment of our invoice (struck through, not counted).
-    await page.getByLabel('Đến ngày', { exact: true }).fill(today());
-    await page.getByLabel('Từ ngày', { exact: true }).fill(today());
+    await pickDate(page, page, 'Đến ngày', today());
+    await pickDate(page, page, 'Từ ngày', today());
     await expect(rows).toHaveCount(1);
     await expect(rows.first()).toHaveAttribute('data-payment-status', 'reversed');
     await expect(page.getByTestId('payment-total-all')).toContainText(/(^|\D)0\s₫/);

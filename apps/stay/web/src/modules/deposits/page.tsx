@@ -3,6 +3,7 @@ import { useDeposits } from '@stay/sdk/react';
 import { CONTRACT_STATUSES } from '@stay/shared';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FilterBar } from '@/libraries/filter-bar';
 import { formatVnd } from '@/libraries/format';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
@@ -39,14 +40,17 @@ export default function DepositsPage() {
         title="Sổ cọc"
         description="Theo dõi tiền cọc theo hợp đồng. Sửa sai bằng bút toán mới."
       />
-      <Select
-        aria-label="Trạng thái hợp đồng"
-        placeholder="Tất cả trạng thái"
-        clearable
-        options={CONTRACT_STATUSES.map((value) => ({ value, label: CONTRACT_LABELS[value] }))}
-        value={status ?? null}
-        onValueChange={(value) => setParams(value ? { status: value } : {}, { replace: true })}
-      />
+      <FilterBar>
+        <Select
+          label="Trạng thái"
+          aria-label="Trạng thái hợp đồng"
+          placeholder="Tất cả trạng thái"
+          clearable
+          options={CONTRACT_STATUSES.map((value) => ({ value, label: CONTRACT_LABELS[value] }))}
+          value={status ?? null}
+          onValueChange={(value) => setParams(value ? { status: value } : {}, { replace: true })}
+        />
+      </FilterBar>
       {query.isPending ? (
         <Skeleton className="h-64" />
       ) : query.isError ? (
@@ -54,17 +58,19 @@ export default function DepositsPage() {
       ) : (
         <>
           <section
-            className="rounded-panel border border-line bg-surface p-4"
+            className="grid gap-0.5 rounded-panel border border-line bg-surface p-3 sm:max-w-sm"
             aria-label="Tổng cọc đang giữ"
             data-testid="deposit-total"
           >
-            <p>Tổng cọc đang giữ {buildingId ? 'của toà' : 'tất cả toà'} (theo bộ lọc)</p>
-            <strong>{formatVnd(query.data.meta.totalHeld)}</strong>
+            <p className="text-ui-sm text-muted">
+              Tổng cọc đang giữ {buildingId ? 'của toà' : 'tất cả toà'} (theo bộ lọc)
+            </p>
+            <strong className="text-ink">{formatVnd(query.data.meta.totalHeld)}</strong>
           </section>
           {!query.data.data.length ? (
             <p>Chưa có hợp đồng phù hợp.</p>
           ) : (
-            <div className="overflow-x-auto rounded-panel border border-line bg-surface">
+            <div className="relative overflow-x-auto rounded-panel border border-line bg-surface">
               <table className="w-full text-left" aria-label="Sổ cọc">
                 <thead>
                   <tr>

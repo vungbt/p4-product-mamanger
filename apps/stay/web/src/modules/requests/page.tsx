@@ -4,6 +4,7 @@ import { INBOX_KINDS, INBOX_STATUSES, type InboxItem } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
@@ -125,10 +126,11 @@ export default function RequestsPage() {
             </Button>
           </fieldset>
 
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+          <FilterBar>
             <Input
               label="Tìm kiếm"
               type="search"
+              rootClassName={FILTER_WIDE}
               placeholder="Phòng, hợp đồng, người gửi, tiêu đề, mã hoá đơn"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -139,7 +141,7 @@ export default function RequestsPage() {
               options={KIND_OPTIONS}
               onValueChange={(value) => filter('kind', value === ALL ? null : value)}
             />
-          </div>
+          </FilterBar>
 
           {query.isPending ? (
             <LoadingRows />

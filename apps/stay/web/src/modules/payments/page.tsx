@@ -1,10 +1,11 @@
-import { Button, Checkbox, cn, EmptyState, IconButton, Input, Select } from '@itclabs/react-ui';
+import { Button, cn, DatePicker, EmptyState, IconButton, Input, Select } from '@itclabs/react-ui';
 import { usePayments } from '@stay/sdk/react';
 import { isIsoDate, PAYMENT_METHODS, type StayPayment } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FILTER_WIDE, FilterBar, FilterCheckbox } from '@/libraries/filter-bar';
 import { displayDate, formatVnd } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { ScreenHeader } from '@/libraries/screen-header';
@@ -96,20 +97,18 @@ export default function PaymentsPage() {
         <p>Chọn toà nhà để xem sổ thu.</p>
       ) : (
         <>
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Input
+          <FilterBar>
+            <DatePicker
               label="Từ ngày"
-              type="date"
-              value={from}
-              max={to || undefined}
-              onChange={(event) => filter('from', event.target.value)}
+              value={from || null}
+              {...(to ? { maxDate: to } : {})}
+              onValueChange={(value) => filter('from', value)}
             />
-            <Input
+            <DatePicker
               label="Đến ngày"
-              type="date"
-              value={to}
-              min={from || undefined}
-              onChange={(event) => filter('to', event.target.value)}
+              value={to || null}
+              {...(from ? { minDate: from } : {})}
+              onValueChange={(value) => filter('to', value)}
             />
             <Select
               label="Phương thức"
@@ -122,16 +121,17 @@ export default function PaymentsPage() {
             <Input
               label="Tìm"
               type="search"
+              rootClassName={FILTER_WIDE}
               placeholder="Mã hoá đơn, phòng, mã giao dịch"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
-            <Checkbox
+            <FilterCheckbox
               label="Ẩn bút toán đã huỷ"
               checked={hideReversed}
               onCheckedChange={(value) => filter('reversed', value === true ? 'hide' : null)}
             />
-          </div>
+          </FilterBar>
           {invalidRange ? (
             <p className="text-danger-700" role="alert">
               "Đến ngày" phải bằng hoặc sau "Từ ngày".
@@ -140,7 +140,7 @@ export default function PaymentsPage() {
 
           {meta ? (
             <dl
-              className="grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-4"
+              className="grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5"
               aria-label="Tổng theo phương thức"
               data-testid="payment-totals"
             >
@@ -258,7 +258,7 @@ function Amount({ payment }: { payment: StayPayment }) {
 
 function PaymentTable({ rows, onReverse }: RowsProps) {
   return (
-    <div className="min-w-0 overflow-x-auto rounded-panel border border-line bg-surface">
+    <div className="min-w-0 relative overflow-x-auto rounded-panel border border-line bg-surface">
       <table className="w-full text-left" aria-label="Sổ thu">
         <thead>
           <tr>

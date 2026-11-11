@@ -1,6 +1,7 @@
 import {
   AlertDialog,
   Button,
+  DatePicker,
   Dialog,
   Drawer,
   Form,
@@ -34,6 +35,7 @@ import {
   isVersionConflict,
   serverError,
 } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty, useFormValue } from '@/libraries/forms/use-form-value';
 import { useMediaQuery } from '@/libraries/use-media-query';
@@ -209,12 +211,16 @@ export function ContractChangeDialog({
         aria-label={CHANGE_LABELS[kind]}
       >
         {prompt}
-        <FormField name="effectiveDate" label="Ngày hiệu lực" required>
-          <Input type="date" min={contract.startDate} max={contract.endDate ?? undefined} />
+        <FormField name="effectiveDate" label="Ngày hiệu lực" required {...DATE_FIELD}>
+          <DatePicker
+            minDate={contract.startDate}
+            {...(contract.endDate ? { maxDate: contract.endDate } : {})}
+            clearable={false}
+          />
         </FormField>
         {kind === 'renew' && (
-          <FormField name="endDate" label="Ngày kết thúc mới" required>
-            <Input type="date" />
+          <FormField name="endDate" label="Ngày kết thúc mới" required {...DATE_FIELD}>
+            <DatePicker clearable={false} />
           </FormField>
         )}
         {['renew', 'rent-change', 'room-change'].includes(kind) && (

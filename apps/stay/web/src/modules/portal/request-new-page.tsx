@@ -1,5 +1,6 @@
 import {
   Button,
+  DatePicker,
   Form,
   FormField,
   FormSubmit,
@@ -27,6 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import * as v from 'valibot';
 import { todayIsoDate } from '@/libraries/format';
 import { clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
@@ -242,8 +244,11 @@ function RequestForm({ type }: { type: TenantRequestType }) {
         </FormField>
       ) : null}
       {config.fields.includes('date') ? (
-        <FormField name="date" label={label('date')} required>
-          <Input type="date" min={type === 'move_out' ? todayIsoDate() : undefined} />
+        <FormField name="date" label={label('date')} required {...DATE_FIELD}>
+          <DatePicker
+            {...(type === 'move_out' ? { minDate: todayIsoDate() } : {})}
+            clearable={false}
+          />
         </FormField>
       ) : null}
       {config.fields.includes('text') ? (

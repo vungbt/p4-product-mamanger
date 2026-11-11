@@ -270,7 +270,7 @@ export default function RoomBulkPage() {
   ];
 
   return (
-    <div className="grid gap-5">
+    <div className="grid max-w-5xl gap-5">
       <header>
         <h1 className="text-heading font-bold text-ink">{t('rooms.bulk.title')}</h1>
         {building ? (

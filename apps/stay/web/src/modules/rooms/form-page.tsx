@@ -218,7 +218,13 @@ function RoomForm({ room, buildingId, onReload }: RoomFormProps) {
   const cancel = () => navigate(room ? roomPath(room.id) : ROUTES.rooms);
 
   return (
-    <Form form={form} schema={schema} className="grid gap-5" noValidate data-testid="room-form">
+    <Form
+      form={form}
+      schema={schema}
+      className="grid max-w-4xl gap-5"
+      noValidate
+      data-testid="room-form"
+    >
       {formError ? (
         <Alert
           tone="danger"

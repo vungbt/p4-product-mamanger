@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, type Page, test } from '@playwright/test';
-import { saveScreenshot, signIn } from './helpers';
+import { displayIsoDate, pickDate, saveScreenshot, signIn } from './helpers';
 
 type Preview = { total: number; ownerRefunds: number; tenantPays: number; amountDue: number };
 
@@ -99,7 +99,7 @@ for (const width of [1280, 375]) {
     await page.getByRole('button', { name: 'Thay đổi', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Báo trả phòng', exact: true }).click();
     const notice = page.getByRole('dialog', { name: 'Báo trả phòng' });
-    await notice.getByLabel(/Ngày dự kiến trả phòng/).fill(moveOutDate);
+    await pickDate(page, notice, /Ngày dự kiến trả phòng/, moveOutDate);
     await notice.getByRole('textbox', { name: /Ghi chú/ }).fill('Chuyển công tác');
     expect(await noHorizontalScroll(page)).toBe(true);
     await notice.getByRole('button', { name: 'Báo trả phòng', exact: true }).click();
@@ -111,7 +111,9 @@ for (const width of [1280, 375]) {
     await page.getByTestId('contract-notice').getByRole('link', { name: 'Thanh lý' }).click();
     await expect(page).toHaveURL(`/contracts/${contract.id}/settle`);
     await expect(page.getByRole('heading', { level: 1, name: 'Thanh lý hợp đồng' })).toBeVisible();
-    await expect(page.getByLabel(/Ngày trả phòng/)).toHaveValue(moveOutDate);
+    await expect(page.getByRole('button', { name: /Ngày trả phòng/ })).toContainText(
+      displayIsoDate(moveOutDate),
+    );
     await page.getByRole('spinbutton', { name: /Chỉ số điện cuối/ }).fill('130');
     await page.getByRole('spinbutton', { name: /Chỉ số nước cuối/ }).fill('12');
     expect(await noHorizontalScroll(page)).toBe(true);

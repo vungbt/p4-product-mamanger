@@ -2,6 +2,7 @@ import {
   Alert,
   AlertDialog,
   Button,
+  DatePicker,
   Form,
   FormField,
   FormSubmit,
@@ -36,6 +37,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { PageSpinner } from '@/routing/route-guards';
 
 type TenantDetail = components['schemas']['StayTenantDetail'];
@@ -301,7 +303,7 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
   const uploading = Object.values(uploads).some((upload) => upload?.status === 'uploading');
 
   return (
-    <Form form={form} schema={schema} className="grid gap-5" data-testid="tenant-form">
+    <Form form={form} schema={schema} className="grid max-w-4xl gap-5" data-testid="tenant-form">
       {conflict ? (
         <Alert
           tone="warning"
@@ -355,11 +357,21 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
             onChange={clearError('idNumber')}
           />
         </FormField>
-        <FormField name="idIssuedAt" label={t('tenants.fields.idIssuedAt')} className="mb-0">
-          <Input type="date" error={error('idIssuedAt')} onChange={clearError('idIssuedAt')} />
+        <FormField
+          name="idIssuedAt"
+          label={t('tenants.fields.idIssuedAt')}
+          className="mb-0"
+          {...DATE_FIELD}
+        >
+          <DatePicker error={error('idIssuedAt')} onValueChange={clearError('idIssuedAt')} />
         </FormField>
-        <FormField name="birthDate" label={t('tenants.fields.birthDate')} className="mb-0">
-          <Input type="date" error={error('birthDate')} onChange={clearError('birthDate')} />
+        <FormField
+          name="birthDate"
+          label={t('tenants.fields.birthDate')}
+          className="mb-0"
+          {...DATE_FIELD}
+        >
+          <DatePicker error={error('birthDate')} onValueChange={clearError('birthDate')} />
         </FormField>
         <FormField name="gender" label={t('tenants.fields.gender')} className="mb-0">
           <Select options={genderOptions} clearable placeholder={t('tenants.form.choose')} />

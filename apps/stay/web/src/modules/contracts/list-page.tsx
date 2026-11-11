@@ -1,6 +1,5 @@
 import {
   Button,
-  Checkbox,
   type ColumnDef,
   DataTable,
   EmptyState,
@@ -14,7 +13,9 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FILTER_WIDE, FilterBar, FilterCheckbox } from '@/libraries/filter-bar';
 import { displayDate, formatVnd } from '@/libraries/format';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
 import { CONTRACT_LABELS, LoadError } from './contract-ui';
 
@@ -110,12 +111,24 @@ export default function ContractListPage() {
 
   return (
     <div className="grid min-w-0 gap-5">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-heading font-bold">Hợp đồng</h1>
-        {canCreate && <Button onClick={() => navigate('/contracts/new')}>Tạo hợp đồng</Button>}
-      </header>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Input label="Tìm hợp đồng" value={search} onChange={(e) => setSearch(e.target.value)} />
+      <ScreenHeader
+        title="Hợp đồng"
+        description="Hợp đồng thuê của toà đang chọn: lọc theo trạng thái, phòng, sắp hết hạn."
+        action={
+          canCreate ? (
+            <Button onClick={() => navigate('/contracts/new')}>Tạo hợp đồng</Button>
+          ) : undefined
+        }
+      />
+      <FilterBar>
+        <Input
+          label="Tìm hợp đồng"
+          type="search"
+          placeholder="Mã hợp đồng, phòng, người đại diện"
+          rootClassName={FILTER_WIDE}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <Select
           label="Trạng thái"
           value={status ?? ''}
@@ -134,12 +147,12 @@ export default function ContractListPage() {
           ]}
           onValueChange={(v) => filter('roomId', v)}
         />
-        <Checkbox
+        <FilterCheckbox
           label="Sắp hết hạn ≤ 30 ngày"
           checked={params.get('expiring') === 'true'}
           onCheckedChange={(v) => filter('expiring', v === true ? 'true' : null)}
         />
-      </div>
+      </FilterBar>
       {!buildingId || query.isPending ? (
         <Skeleton className="h-48" />
       ) : query.isError ? (
@@ -151,7 +164,7 @@ export default function ContractListPage() {
         />
       ) : (
         <>
-          <div className="min-w-0 overflow-x-auto">
+          <div className="min-w-0 relative overflow-x-auto">
             <DataTable<StayContract>
               caption="Hợp đồng"
               state={{ sorting: [], pagination: { pageIndex: page - 1, pageSize: 20 } }}
