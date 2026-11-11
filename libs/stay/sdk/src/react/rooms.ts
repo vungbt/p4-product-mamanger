@@ -55,11 +55,12 @@ export function roomQueryOptions(sdk: StaySdk) {
 
 export function roomMutationOptions(sdk: StaySdk, client: QueryClient) {
   const api = createRoomApi(sdk);
-  // Room counts appear on buildings too.
+  // Room counts appear on buildings and the overview too.
   const refresh = () =>
     Promise.all([
       client.invalidateQueries({ queryKey: roomKeys.all }),
       client.invalidateQueries({ queryKey: buildingKeys.all }),
+      client.invalidateQueries({ queryKey: ['stay', 'overview'] }),
     ]);
 
   return {

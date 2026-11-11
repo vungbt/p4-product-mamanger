@@ -34,6 +34,7 @@ export function readingMutationOptions(sdk: StaySdk, client: QueryClient) {
     await Promise.all([
       client.invalidateQueries({ queryKey: readingKeys.all }),
       client.invalidateQueries({ queryKey: ['stay', 'rooms'] }),
+      client.invalidateQueries({ queryKey: ['stay', 'overview'] }),
     ]);
   };
   return {

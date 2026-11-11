@@ -521,3 +521,61 @@ contract list status.
 
 Integration coverage: `tests/settlement.integration.test.mjs` (CI Postgres/API runner only);
 browser coverage: `apps/stay/web/e2e/settlement.spec.ts`.
+
+### Monthly overview (ST-19)
+
+No migration: the overview is read from `invoices`, `payments`, `rooms`, `contracts`, `meters`
+and `meter_readings`.
+
+| Method/path (prefix `/api`) | Quyền | Ghi chú |
+| --- | --- | --- |
+| GET `/buildings/:buildingId/overview?period=YYYY-MM` | read `Report` | `period` = billing period M; malformed → 400, outside 2000–2099 → 422 `period_out_of_range` |
+
+Without `period` the **current billing period** is the latest period whose issue date (the
+building's `issueDay`, else the system default) is on or before today (Asia/Ho_Chi_Minh):
+`currentBillingPeriod` in `@stay/shared` (with the default issue day 1, the current month).
+
+Figures (`StayOverview` in `@stay/shared`, `modules/overview/overview.service.ts`):
+
+- `current` / `previous` / `series` (the last 6 periods ending with M, oldest first, from one
+  `GROUP BY period` query): `billed` = sum of `total` of the period's **issued** invoices
+  (`issued`, `partially_paid`, `paid`) of **every kind** (`monthly`, `move_in`, `settlement`:
+  the period's invoices, as `GET /invoices?period=` lists them); drafts and void never count.
+  `collected` = the non-reversed payments of those same invoices, whenever they were paid (equal
+  to the sum of their `paidTotal`); `remaining = billed − collected`.
+- `collectedInMonth` (cash basis): non-reversed payments with `paidOn` in calendar month M, any
+  invoice period (equals `GET /payments?dateFrom&dateTo` `meta.totalAmount`).
+- `receivables`: `buildingReceivableTotals` from `modules/receivables/receivables.service.ts`,
+  the same SQL as the ST-18 list `meta` without filters, so the totals always match `/receivables`;
+  plus the overdue invoice count.
+- `rooms`: non-archived rooms by today's status (the room map derivation: holding contract
+  started → occupied, not started → reserved, else maintenance/vacant).
+- `occupancy` / `previousOccupancy`: rooms occupied on the period's last day (today while the
+  period runs) over the rooms that existed and were not archived then; `rate` from
+  `occupancyRate` (`@stay/shared`, 0–1, four decimals, `null` without rooms). Ended contracts
+  count until `moved_out_at` (else `end_date`).
+- `todos`: always the 7 kinds of `OVERVIEW_TODO_KINDS`, in monthly calendar order, with `count`
+  and a `link` `{ path, query }`; the web hides zero counts.
+
+| Kind | Count | Link |
+| --- | --- | --- |
+| `readings` | Rooms of the ST-13 grid for consumption month M−1 (active/ending contracts started by then) whose current electricity and water meters do not both have a reading; `total` = rooms in the grid | `/readings?period=M−1` |
+| `invoices_to_create` | Active/ending contracts overlapping M (the ST-14 preview selection) with no non-void `monthly` or `move_in` invoice of M | `/invoices/run?period=M` |
+| `draft_invoices` | Draft invoices of M | `/invoices?period=M&status=draft` |
+| `unshared_invoices` | `issued`/`partially_paid` invoices of M with something left and no active share link | `/invoices/share?period=M` |
+| `overdue_invoices` | Overdue invoices of every period (`amount` = overdue remaining) | `/receivables?bucket=` the most severe non-empty overdue bucket |
+| `expiring_contracts` | Active/ending contracts with `end_date` from today to today + 30 (the contract list `expiring=true`) | `/contracts?expiring=true` |
+| `ending_contracts` | Contracts in status `ending` (move-out notice, ST-17) | `/contracts?status=ending` |
+
+Everything is aggregated in SQL (seven statements including the building lookup, no per-row
+queries) in one REPEATABLE READ snapshot. Managers of other buildings and unknown buildings get 404; the route is read-only and
+records no audit changes. SDK: `useBuildingOverview(buildingId, period?)`, `overviewKeys`;
+invoice, payment, reading, contract and room mutations invalidate `['stay', 'overview']`.
+
+Web: `/` (O-01, `apps/stay/web/src/modules/overview`): period picker on `?period=`, stat cards
+with the change against M−1, the to-do list, a six-period bar chart (`@itclabs/react-ui/chart`,
+billed vs collected, with its screen-reader table), and the setup steps (first when the building
+has no rooms).
+
+Integration coverage: `tests/overview.integration.test.mjs` (CI Postgres/API only); browser
+coverage: `apps/stay/web/e2e/overview.spec.ts`.

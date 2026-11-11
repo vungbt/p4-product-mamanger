@@ -736,6 +736,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/buildings/{buildingId}/overview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Tổng quan tháng của toà
+     * @description Kỳ `period` = M (`YYYY-MM`, năm 2000–2099; ngoài khoảng trả 422 `period_out_of_range`), mặc định kỳ hiện tại: kỳ mới nhất có ngày phát hành (`issueDay` của toà, hoặc mặc định hệ thống) ≤ hôm nay theo Asia/Ho_Chi_Minh. `current`/`previous`/`series` (6 kỳ, cũ trước): `billed` = tổng `total` của hoá đơn kỳ đó đã phát hành (`issued`, `partially_paid`, `paid`; mọi loại `monthly`, `move_in`, `settlement`; nháp và void không tính), `collected` = các khoản thu chưa huỷ của chính các hoá đơn đó (bất kể ngày thu), `remaining` = `billed − collected`. `collectedInMonth` = tiền thu theo ngày `paidOn` trong tháng M (bằng `meta.totalAmount` của sổ thu cùng khoảng ngày). `receivables` bằng tổng của màn Công nợ (cùng truy vấn). `rooms` = phòng chưa lưu trữ theo trạng thái hôm nay; `occupancy` tính tại ngày cuối kỳ (hoặc hôm nay nếu kỳ chưa hết), `rate` = đang thuê / tổng phòng. `todos` luôn đủ 7 mục theo lịch tháng (kể cả 0): `readings` (phòng còn thiếu chỉ số điện hoặc nước tháng M−1, `total` = số phòng cần chốt), `invoices_to_create` (hợp đồng tính tiền được trong M chưa có hoá đơn kỳ/nhận phòng không void), `draft_invoices`, `unshared_invoices` (đã phát hành, còn nợ, không có link còn hạn), `overdue_invoices` (`amount` = tiền quá hạn; mở nhóm quá hạn nặng nhất), `expiring_contracts` (hết hạn trong 30 ngày), `ending_contracts` (đã báo trả phòng). Mỗi mục có `link` `{ path, query }` tới màn xử lý. Toà ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `read:Report`.
+     */
+    get: operations['get_api_buildings_buildingId_overview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/buildings/{buildingId}/readings': {
     parameters: {
       query?: never;
@@ -2811,6 +2833,40 @@ export interface components {
       type: string;
       unitPrice: number | null;
     };
+    OverviewLink: {
+      path: string;
+      query: {
+        [key: string]: string;
+      };
+    };
+    OverviewOccupancy: {
+      date: string;
+      occupied: number;
+      rate: number | null;
+      total: number;
+    };
+    OverviewPeriodAmounts: {
+      billed: number;
+      collected: number;
+      invoiceCount: number;
+      period: string;
+      remaining: number;
+    };
+    OverviewTodo: {
+      amount: number | null;
+      count: number;
+      /** @enum {string} */
+      kind:
+        | 'draft_invoices'
+        | 'ending_contracts'
+        | 'expiring_contracts'
+        | 'invoices_to_create'
+        | 'overdue_invoices'
+        | 'readings'
+        | 'unshared_invoices';
+      link: components['schemas']['OverviewLink'];
+      total: number | null;
+    };
     PaginationMeta: {
       page: number;
       pageSize: number;
@@ -3330,6 +3386,31 @@ export interface components {
       /** @enum {string} */
       status: 'draft' | 'locked';
       version: number;
+    };
+    StayOverview: {
+      buildingId: string;
+      collectedInMonth: number;
+      current: components['schemas']['OverviewPeriodAmounts'];
+      occupancy: components['schemas']['OverviewOccupancy'];
+      period: string;
+      previous: components['schemas']['OverviewPeriodAmounts'];
+      previousOccupancy: components['schemas']['OverviewOccupancy'];
+      previousPeriod: string;
+      receivables: {
+        overdueInvoiceCount: number;
+        overdueRemaining: number;
+        totalRemaining: number;
+      };
+      rooms: {
+        maintenance: number;
+        occupied: number;
+        reserved: number;
+        total: number;
+        vacant: number;
+      };
+      series: components['schemas']['OverviewPeriodAmounts'][];
+      today: string;
+      todos: components['schemas']['OverviewTodo'][];
     };
     StayPayment: {
       actorName: string | null;
@@ -7271,6 +7352,48 @@ export interface operations {
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_buildings_buildingId_overview: {
+    parameters: {
+      query?: {
+        /** @description Kỳ M; bỏ trống = kỳ hiện tại theo ngày phát hành của toà. */
+        period?: string;
+      };
+      header?: never;
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayOverview'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description Kỳ ngoài khoảng 2000–2099 (`period_out_of_range`). */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
       429: components['responses']['RateLimited'];
     };
   };

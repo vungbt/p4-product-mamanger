@@ -37,6 +37,9 @@ tags:
     description: Người dùng hiện tại và quyền CASL.
   - name: operations
     description: Kiểm tra trạng thái dịch vụ.
+  - name: overview
+    description: "Tổng quan tháng: phải thu/đã thu/còn lại của kỳ, công nợ, phòng theo trạng thái, tỷ lệ lấp đầy, 6 kỳ gần
+      nhất và việc cần làm. Tổng hợp ở server, chỉ đọc."
   - name: payments
     description: Thu tiền hoá đơn (một hoặc nhiều lần), sổ thu và huỷ bút toán thu. Thanh toán không sửa/xoá; `paidTotal` và
       trạng thái hoá đơn luôn tính lại từ tổng các khoản chưa huỷ trong cùng transaction.
@@ -1462,6 +1465,77 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{buildingId}/overview:
+    get:
+      tags:
+        - overview
+      operationId: get_api_buildings_buildingId_overview
+      summary: Tổng quan tháng của toà
+      description: >-
+        Kỳ `period` = M (`YYYY-MM`, năm 2000–2099; ngoài khoảng trả 422 `period_out_of_range`), mặc định kỳ hiện tại: kỳ
+        mới nhất có ngày phát hành (`issueDay` của toà, hoặc mặc định hệ thống) ≤ hôm nay theo Asia/Ho_Chi_Minh.
+        `current`/`previous`/`series` (6 kỳ, cũ trước): `billed` = tổng `total` của hoá đơn kỳ đó đã phát hành
+        (`issued`, `partially_paid`, `paid`; mọi loại `monthly`, `move_in`, `settlement`; nháp và void không tính),
+        `collected` = các khoản thu chưa huỷ của chính các hoá đơn đó (bất kể ngày thu), `remaining` = `billed −
+        collected`. `collectedInMonth` = tiền thu theo ngày `paidOn` trong tháng M (bằng `meta.totalAmount` của sổ thu
+        cùng khoảng ngày). `receivables` bằng tổng của màn Công nợ (cùng truy vấn). `rooms` = phòng chưa lưu trữ theo
+        trạng thái hôm nay; `occupancy` tính tại ngày cuối kỳ (hoặc hôm nay nếu kỳ chưa hết), `rate` = đang thuê / tổng
+        phòng. `todos` luôn đủ 7 mục theo lịch tháng (kể cả 0): `readings` (phòng còn thiếu chỉ số điện hoặc nước tháng
+        M−1, `total` = số phòng cần chốt), `invoices_to_create` (hợp đồng tính tiền được trong M chưa có hoá đơn kỳ/nhận
+        phòng không void), `draft_invoices`, `unshared_invoices` (đã phát hành, còn nợ, không có link còn hạn),
+        `overdue_invoices` (`amount` = tiền quá hạn; mở nhóm quá hạn nặng nhất), `expiring_contracts` (hết hạn trong 30
+        ngày), `ending_contracts` (đã báo trả phòng). Mỗi mục có `link` `{ path, query }` tới màn xử lý. Toà ngoài phạm
+        vi trả 404.
+
+
+        **Quyền:** `read:Report`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: period
+          in: query
+          required: false
+          description: Kỳ M; bỏ trống = kỳ hiện tại theo ngày phát hành của toà.
+          schema:
+            type: string
+            pattern: ^[0-9]{4}-(0[1-9]|1[0-2])$
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayOverview"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: Kỳ ngoài khoảng 2000–2099 (`period_out_of_range`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/buildings/{buildingId}/readings:
@@ -10875,6 +10949,86 @@ components:
         - ratioNum
         - ratioDen
         - amount
+    OverviewLink:
+      type: object
+      properties:
+        path:
+          type: string
+        query:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - path
+        - query
+    OverviewOccupancy:
+      type: object
+      properties:
+        date:
+          type: string
+        occupied:
+          type: number
+        total:
+          type: number
+        rate:
+          type:
+            - number
+            - "null"
+      required:
+        - date
+        - occupied
+        - total
+        - rate
+    OverviewPeriodAmounts:
+      type: object
+      properties:
+        period:
+          type: string
+        billed:
+          type: number
+        collected:
+          type: number
+        remaining:
+          type: number
+        invoiceCount:
+          type: number
+      required:
+        - period
+        - billed
+        - collected
+        - remaining
+        - invoiceCount
+    OverviewTodo:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - draft_invoices
+            - ending_contracts
+            - expiring_contracts
+            - invoices_to_create
+            - overdue_invoices
+            - readings
+            - unshared_invoices
+        count:
+          type: number
+        total:
+          type:
+            - number
+            - "null"
+        amount:
+          type:
+            - number
+            - "null"
+        link:
+          $ref: "#/components/schemas/OverviewLink"
+      required:
+        - kind
+        - count
+        - total
+        - amount
+        - link
     PaginationMeta:
       type: object
       properties:
@@ -12509,6 +12663,81 @@ components:
         - photo
         - status
         - version
+    StayOverview:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        period:
+          type: string
+        previousPeriod:
+          type: string
+        today:
+          type: string
+        current:
+          $ref: "#/components/schemas/OverviewPeriodAmounts"
+        previous:
+          $ref: "#/components/schemas/OverviewPeriodAmounts"
+        collectedInMonth:
+          type: number
+        receivables:
+          type: object
+          properties:
+            totalRemaining:
+              type: number
+            overdueRemaining:
+              type: number
+            overdueInvoiceCount:
+              type: number
+          required:
+            - totalRemaining
+            - overdueRemaining
+            - overdueInvoiceCount
+        rooms:
+          type: object
+          properties:
+            vacant:
+              type: number
+            reserved:
+              type: number
+            occupied:
+              type: number
+            maintenance:
+              type: number
+            total:
+              type: number
+          required:
+            - vacant
+            - reserved
+            - occupied
+            - maintenance
+            - total
+        occupancy:
+          $ref: "#/components/schemas/OverviewOccupancy"
+        previousOccupancy:
+          $ref: "#/components/schemas/OverviewOccupancy"
+        series:
+          type: array
+          items:
+            $ref: "#/components/schemas/OverviewPeriodAmounts"
+        todos:
+          type: array
+          items:
+            $ref: "#/components/schemas/OverviewTodo"
+      required:
+        - buildingId
+        - period
+        - previousPeriod
+        - today
+        - current
+        - previous
+        - collectedInMonth
+        - receivables
+        - rooms
+        - occupancy
+        - previousOccupancy
+        - series
+        - todos
     StayPayment:
       type: object
       properties:
