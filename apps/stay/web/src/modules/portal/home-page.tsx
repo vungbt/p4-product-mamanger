@@ -1,0 +1,147 @@
+import { Button } from '@itclabs/react-ui';
+import { usePortalInvoice, usePortalMe } from '@stay/sdk/react';
+import type { PortalInvoiceSummary } from '@stay/shared';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { displayDate, formatVnd } from '@/libraries/format';
+import { displayPeriod, INVOICE_KIND_LABELS } from '@/modules/invoices/invoice-ui';
+import { PaymentBlock } from '@/modules/invoices/share/invoice-card';
+import {
+  ComingSoonButton,
+  ContactLinks,
+  PortalInvoiceStatus,
+  PortalQuery,
+  PortalSection,
+  portalPaths,
+} from './portal-ui';
+
+/** VietQR and transfer details of the current invoice, loaded when "Thanh toán" is pressed. */
+function PaymentPanel({ id }: { id: string }) {
+  const invoice = usePortalInvoice(id);
+
+  return (
+    <PortalQuery query={invoice}>{(data) => <PaymentBlock invoice={data} copyable />}</PortalQuery>
+  );
+}
+
+function CurrentInvoice({ invoice }: { invoice: PortalInvoiceSummary }) {
+  const [paying, setPaying] = useState(false);
+
+  return (
+    <div className="grid gap-3" data-testid="portal-current-invoice">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="font-semibold">
+          {INVOICE_KIND_LABELS[invoice.kind]} · Kỳ {displayPeriod(invoice.period)}
+        </p>
+        <PortalInvoiceStatus invoice={invoice} />
+      </div>
+      <dl className="grid gap-1">
+        <div className="flex justify-between gap-3">
+          <dt className="text-muted">Mã hoá đơn</dt>
+          <dd className="break-all" data-testid="portal-current-code">
+            {invoice.code}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-3">
+          <dt className="text-muted">Tổng</dt>
+          <dd>{formatVnd(invoice.total)}</dd>
+        </div>
+        <div className="flex justify-between gap-3 font-bold">
+          <dt>Còn lại</dt>
+          <dd data-testid="portal-current-remaining">{formatVnd(invoice.remaining)}</dd>
+        </div>
+        <div className="flex justify-between gap-3">
+          <dt className="text-muted">Hạn thanh toán</dt>
+          <dd>{displayDate(invoice.dueOn)}</dd>
+        </div>
+      </dl>
+      <div className="flex flex-wrap gap-2">
+        {invoice.remaining > 0 ? (
+          <Button aria-expanded={paying} onClick={() => setPaying((value) => !value)}>
+            {paying ? 'Ẩn thông tin thanh toán' : 'Thanh toán'}
+          </Button>
+        ) : null}
+        <Link
+          to={portalPaths.invoice(invoice.id)}
+          className="inline-flex min-h-10 items-center px-2 font-semibold text-accent"
+        >
+          Xem chi tiết
+        </Link>
+      </div>
+      {paying ? <PaymentPanel id={invoice.id} /> : null}
+    </div>
+  );
+}
+
+/** T-03 `/p`: current invoice and payment, debt, notices, open requests (part B), contact. */
+export default function PortalHomePage() {
+  const me = usePortalMe();
+
+  return (
+    <PortalQuery query={me}>
+      {(data) => (
+        <>
+          <div className="grid gap-1">
+            <h1 className="text-heading font-bold">Phòng {data.roomCode}</h1>
+            <p className="text-muted">Xin chào {data.tenantName}</p>
+          </div>
+
+          <PortalSection title="Hoá đơn hiện tại">
+            {data.currentInvoice ? (
+              <CurrentInvoice invoice={data.currentInvoice} />
+            ) : (
+              <p className="text-muted">Chưa có hoá đơn nào được phát hành.</p>
+            )}
+          </PortalSection>
+
+          {data.totalDebt > 0 ? (
+            <PortalSection title="Công nợ" testId="portal-debt">
+              <p>
+                Tổng còn phải trả <strong>{formatVnd(data.totalDebt)}</strong> ·{' '}
+                {data.unpaidInvoiceCount} hoá đơn
+              </p>
+              {data.previousDebt > 0 ? (
+                <p className="text-ui-sm text-muted">
+                  Trong đó các hoá đơn trước còn {formatVnd(data.previousDebt)}.{' '}
+                  <Link className="font-semibold text-accent" to={portalPaths.invoices}>
+                    Xem hoá đơn
+                  </Link>
+                </p>
+              ) : null}
+            </PortalSection>
+          ) : null}
+
+          {data.pinnedNotices.length > 0 ? (
+            <PortalSection title="Thông báo từ chủ trọ">
+              <ul className="grid gap-3">
+                {data.pinnedNotices.map((notice) => (
+                  <li key={notice.id} className="grid gap-1">
+                    <p className="font-semibold break-words">{notice.title}</p>
+                    <p className="whitespace-pre-wrap break-words text-ui-sm">{notice.body}</p>
+                  </li>
+                ))}
+              </ul>
+              <Link className="font-semibold text-accent" to={portalPaths.notices}>
+                Tất cả thông báo và nội quy
+              </Link>
+            </PortalSection>
+          ) : null}
+
+          <PortalSection title="Báo hỏng và yêu cầu">
+            <p className="text-ui-sm text-muted">
+              Sắp có: báo hỏng, gửi yêu cầu cho chủ trọ và theo dõi trạng thái ngay tại đây.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <ComingSoonButton>Báo hỏng</ComingSoonButton>
+              <ComingSoonButton>Gửi yêu cầu</ComingSoonButton>
+            </div>
+          </PortalSection>
+
+          <PortalSection title="Liên hệ chủ trọ">
+            <ContactLinks phone={data.contactPhone} />
+          </PortalSection>
+        </>
+      )}
+    </PortalQuery>
+  );
+}

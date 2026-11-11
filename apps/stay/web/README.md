@@ -41,6 +41,12 @@ Mỗi route trong `src/routing/route-configs.ts` có `ability: { action, subject
 
 Danh sách ngân hàng VietQR (BIN, mã, tên) là JSON tĩnh `src/modules/buildings/vietqr-banks.json` (lấy từ `api.vietqr.io/v2/banks`, không gọi mạng lúc chạy). Mã QR thử 10.000 ₫ ở O-05 dựng payload EMVCo bằng `buildVietQrPayload` (`@stay/shared`, có test CRC16-CCITT) và vẽ bằng `qrcode.react` 4.2.0.
 
+## Cổng người thuê (ST-25, phần A)
+
+- Chủ trọ: tab **Cổng người thuê** ở O-17 (`src/modules/contracts/portal-links.tsx`): mỗi người ở hiện tại một link, tạo/tạo lại (link chỉ hiện một lần: sao chép, tin nhắn mẫu, Web Share, QR `qrcode.react`), trạng thái, lần mở gần nhất, thu hồi có xác nhận.
+- Người thuê: `src/modules/portal`, ngoài khung đăng nhập nhân viên, mobile-first, tiêu đề chung "Cổng người thuê" + `noindex`/`no-referrer` (`src/libraries/document-meta.ts`). `/p/:token` (T-02: lời chào phòng/toà → 4 số cuối SĐT; lỗi chung không nói sai link hay sai số) → `/p` (T-03), `/p/invoices`, `/p/invoices/:id` (T-05: `InvoiceCard` + VietQR + lịch sử thu), `/p/contract`, `/p/usage` (biểu đồ `@itclabs/react-ui/chart`, cần `recharts`), `/p/notices`, `/p/more` (đăng xuất → `/p/signed-out`); `/p/maintenance`, `/p/requests/new` và "Tôi đã chuyển khoản" là "Sắp có" (phần B). Không có phiên hợp lệ → T-11 "Link không còn hiệu lực" (kèm SĐT liên hệ đã nhớ trên máy, `localStorage` `stay_portal_contact`).
+- Client riêng `getPortalSdk()` (`@stay/sdk/portal`, hook `usePortal*` trong `PortalSdkProvider`): chỉ dùng cookie phiên cổng HttpOnly, 401 của cổng không đụng tới phiên nhân viên.
+
 ## Kiểm thử
 
 ```bash

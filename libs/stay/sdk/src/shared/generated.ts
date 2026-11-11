@@ -1232,6 +1232,34 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/contracts/{id}/portal-links': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Link cổng người thuê của hợp đồng
+     * @description Mọi link của hợp đồng (mới nhất trước): người ở, trạng thái `active`/`locked`/`revoked`/`expired`, lần xác minh gần nhất, số thiết bị đang đăng nhập. Không bao giờ trả token hay hash. Ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_contracts_id_portal_links'];
+    put?: never;
+    /**
+     * Tạo link cổng cho một người ở
+     * @description Hợp đồng active/ending (409 `contract_not_active`), `tenantId` là người ở hiện tại (422 `portal_tenant_not_occupant`). Token ngẫu nhiên 32 byte (base64url), chỉ lưu SHA-256; `token`, `path` (`/p/{token}`) và `url` chỉ trả một lần. Link đang hoạt động của cùng người ở bị thu hồi và các thiết bị của nó bị đăng xuất (`replacedLinkId`). Quyền `update:Contract`; audit chỉ ghi id. Ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_portal_links'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/contracts/{id}/renew': {
     parameters: {
       query?: never;
@@ -1818,6 +1846,210 @@ export interface paths {
      *     **Quyền:** `void:Payment`.
      */
     post: operations['post_api_payments_id_reverse'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal-links/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Thu hồi link cổng người thuê
+     * @description Idempotent (`revoked: false` khi đã thu hồi). Xoá mọi phiên cổng của link: mọi thiết bị đã vào bị đăng xuất. Quyền `update:Contract`; link ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    delete: operations['delete_api_portal_links_id'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/contract': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Hợp đồng của tôi (chỉ xem)
+     * @description Phòng, thời hạn, giá thuê hiện tại, dịch vụ và đơn giá đang áp dụng, người ở cùng (chỉ tên viết tắt), xe (biển số xe người khác bị che), cọc đang giữ, ngày phát hành/hạn thanh toán hằng tháng.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_contract'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/invoices': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Hoá đơn của tôi
+     * @description Hoá đơn đã phát hành (gồm thu một phần/đã thu) của hợp đồng, mới nhất trước. Không có nháp hay void.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_invoices'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/invoices/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chi tiết hoá đơn và thanh toán
+     * @description Như hoá đơn công khai (dòng, tổng, tài khoản nhận tiền, `vietQrPayload` cho số còn lại) kèm `id` và lịch sử thanh toán chưa huỷ (không có mã giao dịch, ghi chú hay người thu). Hoá đơn của hợp đồng khác, nháp hoặc void → 404.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_invoices_id'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/links/lookup': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xem link cổng trước khi xác minh
+     * @description Công khai, giới hạn theo IP. Trả phòng, tên toà và `signedIn` (thiết bị đã có phiên cổng của link này). Link không đúng, đã thu hồi, hết hạn (hợp đồng kết thúc quá 30 ngày, đã huỷ hoặc người ở đã rời) → 404 `portal_link_invalid`, không phân biệt lý do. Không ghi dữ liệu.
+     *
+     *     **Công khai.**
+     */
+    post: operations['post_api_portal_links_lookup'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/me': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Trang chủ người thuê
+     * @description Tên của chính người ở, phòng, toà, SĐT liên hệ, hoá đơn gần nhất đã phát hành, tổng nợ, nợ các hoá đơn khác và thông báo ghim còn hạn của toà/phòng.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_me'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/notices': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Thông báo và nội quy
+     * @description Thông báo còn hạn của toà (cả toà hoặc phòng của hợp đồng), ghim trước rồi mới nhất; nội quy và SĐT liên hệ của toà.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_notices'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/sessions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Vào cổng người thuê (4 số cuối SĐT)
+     * @description Công khai; giới hạn theo IP và theo token. So sánh 4 số cuối SĐT của chính người ở (constant-time). Link sai/thu hồi/hết hạn và sai số đều trả cùng 401 `portal_verification_failed`. Sai 5 lần liên tiếp → khoá link 15 phút (429 `portal_link_locked`, `Retry-After`, `extensions.retryAfterSeconds`). Thành công: đặt cookie HttpOnly `stay_portal_session` (SameSite=Lax, path `/api/portal`, Secure ở production, 90 ngày), chỉ lưu SHA-256 của giá trị cookie; ghi lần mở gần nhất.
+     *
+     *     **Công khai.**
+     */
+    post: operations['post_api_portal_sessions'];
+    /**
+     * Đăng xuất cổng người thuê
+     * @description Xoá phiên cổng của thiết bị này và xoá cookie. Không có phiên hợp lệ → 401 `portal_session_invalid`. Ghi qua cookie cần origin web được phép.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    delete: operations['delete_api_portal_sessions'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/usage': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Điện nước của tôi
+     * @description Tối đa 12 tháng tiêu thụ gần nhất (cũ trước) từ dòng điện/nước của hoá đơn đã phát hành: chỉ số đầu/cuối, tiêu thụ, đơn giá, thành tiền.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_usage'];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -2900,6 +3132,156 @@ export interface components {
     PaymentReverseInput: {
       reason: string;
     };
+    PortalContract: {
+      buildingName: string;
+      code: string;
+      depositHeld: number;
+      dueDay: number;
+      endDate: string | null;
+      issueDay: number;
+      movedOutAt: string | null;
+      noticeDate: string | null;
+      occupants: components['schemas']['PortalOccupant'][];
+      rent: number;
+      roomCode: string;
+      services: components['schemas']['PortalContractService'][];
+      startDate: string;
+      /** @enum {string} */
+      status: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
+      vehicles: components['schemas']['PortalVehicle'][];
+    };
+    PortalContractService: {
+      /** @enum {string} */
+      kind: 'electricity' | 'per_person' | 'per_room' | 'per_vehicle' | 'water';
+      name: string;
+      price: number;
+      unit: string;
+    };
+    PortalInvoice: {
+      buildingAddress: string | null;
+      buildingName: string;
+      code: string;
+      dueOn: string;
+      id: string;
+      issuedOn: string | null;
+      /** @enum {string} */
+      kind: 'monthly' | 'move_in' | 'settlement';
+      lines: components['schemas']['PublicInvoiceLine'][];
+      overdue: boolean;
+      paidTotal: number;
+      payee: components['schemas']['PublicInvoicePayee'] | null;
+      payments: components['schemas']['PortalPayment'][];
+      period: string;
+      remaining: number;
+      representative: string | null;
+      roomCode: string;
+      rounding: number;
+      /** @enum {string} */
+      status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
+      subtotal: number;
+      total: number;
+      transferContent: string;
+      vietQrPayload: string | null;
+    };
+    PortalInvoiceSummary: {
+      code: string;
+      dueOn: string;
+      id: string;
+      issuedOn: string | null;
+      /** @enum {string} */
+      kind: 'monthly' | 'move_in' | 'settlement';
+      overdue: boolean;
+      paidTotal: number;
+      period: string;
+      remaining: number;
+      /** @enum {string} */
+      status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
+      total: number;
+    };
+    PortalLinkLookup: {
+      buildingName: string;
+      roomCode: string;
+      signedIn: boolean;
+    };
+    PortalLinkLookupInput: {
+      token: string;
+    };
+    PortalMe: {
+      buildingAddress: string | null;
+      buildingName: string;
+      contactPhone: string | null;
+      contractCode: string;
+      /** @enum {string} */
+      contractStatus: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
+      currentInvoice: components['schemas']['PortalInvoiceSummary'] | null;
+      pinnedNotices: components['schemas']['PortalNotice'][];
+      previousDebt: number;
+      roomCode: string;
+      sessionExpiresAt: string;
+      tenantName: string;
+      totalDebt: number;
+      unpaidInvoiceCount: number;
+    };
+    PortalNotice: {
+      body: string;
+      createdAt: string;
+      expiresAt: string | null;
+      id: string;
+      pinned: boolean;
+      title: string;
+    };
+    PortalNotices: {
+      announcements: components['schemas']['PortalNotice'][];
+      buildingName: string;
+      contactPhone: string | null;
+      rulesText: string | null;
+    };
+    PortalOccupant: {
+      isPrimary: boolean;
+      isSelf: boolean;
+      name: string;
+    };
+    PortalPayment: {
+      amount: number;
+      id: string;
+      /** @enum {string} */
+      method: 'bank_transfer' | 'cash' | 'deposit' | 'other';
+      paidOn: string;
+    };
+    PortalSessionInput: {
+      phoneLast4: string;
+      token: string;
+    };
+    PortalSessionResult: {
+      expiresAt: string;
+    };
+    PortalSignOutResult: {
+      signedOut: boolean;
+    };
+    PortalUsage: {
+      periods: components['schemas']['PortalUsagePeriod'][];
+    };
+    PortalUsagePeriod: {
+      electricity: components['schemas']['PortalUsageReading'] | null;
+      period: string;
+      water: components['schemas']['PortalUsageReading'] | null;
+    };
+    PortalUsageReading: {
+      amount: number;
+      consumption: number;
+      endReading: number | null;
+      /** @enum {string} */
+      kind: 'electricity' | 'water';
+      startReading: number | null;
+      unit: string | null;
+      unitPrice: number | null;
+    };
+    PortalVehicle: {
+      isOwn: boolean;
+      plate: string;
+      /** @enum {string} */
+      type: 'bicycle' | 'car' | 'electric_bike' | 'motorbike' | 'other';
+    };
     PublicInvoice: {
       buildingAddress: string | null;
       buildingName: string;
@@ -3717,6 +4099,35 @@ export interface components {
       /** @enum {string} */
       status: 'duplicate' | 'error' | 'valid';
       values: unknown;
+    };
+    TenantPortalLink: {
+      activeSessions: number;
+      contractId: string;
+      createdAt: string;
+      createdByName: string | null;
+      id: string;
+      lastOpenedAt: string | null;
+      lockedUntil: string | null;
+      revokedAt: string | null;
+      /** @enum {string} */
+      status: 'active' | 'expired' | 'locked' | 'revoked';
+      tenantId: string;
+      tenantName: string;
+    };
+    TenantPortalLinkCreated: {
+      link: components['schemas']['TenantPortalLink'];
+      path: string;
+      replacedLinkId: string | null;
+      token: string;
+      url: string;
+    };
+    TenantPortalLinkInput: {
+      tenantId: string;
+    };
+    TenantPortalLinkRevokeResult: {
+      link: components['schemas']['TenantPortalLink'];
+      revoked: boolean;
+      sessionsRevoked: number;
     };
     TenantRoomRef: {
       code: string;
@@ -8435,6 +8846,79 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_contracts_id_portal_links: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TenantPortalLink'][];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_portal_links: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TenantPortalLinkInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TenantPortalLinkCreated'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      /** @description Người thuê không còn ở trong hợp đồng (`portal_tenant_not_occupant`). */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
   post_api_contracts_id_renew: {
     parameters: {
       query?: never;
@@ -9587,6 +10071,348 @@ export interface operations {
       404: components['responses']['NotFound'];
       /** @description Bút toán đã được huỷ (`payment_already_reversed`). */
       409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  delete_api_portal_links_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TenantPortalLinkRevokeResult'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_contract: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalContract'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_invoices: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalInvoiceSummary'][];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_invoices_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalInvoice'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_links_lookup: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PortalLinkLookupInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalLinkLookup'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_me: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalMe'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_notices: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalNotices'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_sessions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PortalSessionInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalSessionResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      /** @description Link không đúng/đã thu hồi/hết hạn hoặc sai 4 số cuối (`portal_verification_failed`, không phân biệt). */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      409: components['responses']['Conflict'];
+      /** @description Quá số lần thử theo IP/token (`rate_limit_exceeded`) hoặc link đang bị khoá sau 5 lần sai (`portal_link_locked`, `extensions.retryAfterSeconds`). */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+    };
+  };
+  delete_api_portal_sessions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalSignOutResult'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_usage: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalUsage'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
         headers: {
           [name: string]: unknown;
         };

@@ -20,6 +20,8 @@ export * from './invoices.js';
 export { meKeys, useCapabilities, useMe } from './me.js';
 export { overviewKeys, overviewQueryOptions, useBuildingOverview } from './overview.js';
 export * from './payments.js';
+export * from './portal.js';
+export * from './portal-links.js';
 export { StaySdkProvider, useStaySdk } from './provider.js';
 export * from './readings.js';
 export * from './receivables.js';

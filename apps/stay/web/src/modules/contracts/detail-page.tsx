@@ -12,8 +12,9 @@ import { useRoomBuilding } from '@/modules/rooms/use-room-building';
 import { CHANGE_LABELS, ContractChangeDialog } from './change-dialog';
 import { CONTRACT_LABELS, LoadError } from './contract-ui';
 import { NoticeDialog } from './notice-dialog';
+import { PortalLinksPanel } from './portal-links';
 
-const TABS = ['Tổng quan', 'Hoá đơn', 'Cọc', 'Yêu cầu', 'Lịch sử'];
+const TABS = ['Tổng quan', 'Hoá đơn', 'Cọc', 'Yêu cầu', 'Cổng người thuê', 'Lịch sử'];
 const EVENT_LABELS: Record<string, string> = {
   ...CHANGE_LABELS,
   created: 'Tạo bản nháp',
@@ -228,6 +229,8 @@ export default function ContractDetailPage() {
           <ContractInvoices contract={data} />
         ) : tab === 'Cọc' ? (
           <DepositLedger contractId={data.id} buildingId={data.buildingId} status={data.status} />
+        ) : tab === 'Cổng người thuê' ? (
+          <PortalLinksPanel contract={data} />
         ) : tab === 'Lịch sử' ? (
           <>
             <h2 className="text-section font-semibold">Lịch sử</h2>

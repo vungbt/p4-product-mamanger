@@ -17,6 +17,10 @@ export STAY_CORS_ORIGIN="${STAY_CORS_ORIGIN:-http://localhost:5174}"
 export STAY_API_PROXY_TARGET="http://127.0.0.1:$STAY_PORT"
 # Every spec signs in; the production limit of 30 per window is too low for the suite.
 export STAY_SIGN_IN_RATE_LIMIT="${STAY_SIGN_IN_RATE_LIMIT:-1000}"
+# Tenant portal (ST-25): session attempts per IP/token and link lookups per IP (per 15 minutes).
+export STAY_PORTAL_SESSION_RATE_LIMIT="${STAY_PORTAL_SESSION_RATE_LIMIT:-1000}"
+export STAY_PORTAL_TOKEN_RATE_LIMIT="${STAY_PORTAL_TOKEN_RATE_LIMIT:-1000}"
+export STAY_PORTAL_LOOKUP_RATE_LIMIT="${STAY_PORTAL_LOOKUP_RATE_LIMIT:-1000}"
 
 cd "$api_dir"
 pnpm build

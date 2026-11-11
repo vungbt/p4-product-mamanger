@@ -14,6 +14,7 @@ export * from './money.js';
 export * from './overview.js';
 export * from './payment.js';
 export * from './period.js';
+export * from './portal.js';
 export * from './reading.js';
 export * from './receivable.js';
 export * from './room.js';

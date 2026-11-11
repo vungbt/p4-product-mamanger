@@ -25,6 +25,13 @@ function parseOrigins(raw: string | undefined): boolean | string[] {
 const nodeEnv = process.env.NODE_ENV ?? 'development';
 const port = Number(process.env.STAY_PORT) || 3011;
 
+/** A positive limit from `name`, honoured outside production only (CI raises the limits). */
+function testableLimit(name: string, fallback: number): number {
+  const value = Number(process.env[name]);
+
+  return nodeEnv !== 'production' && Number.isSafeInteger(value) && value > 0 ? value : fallback;
+}
+
 export const env = {
   port,
   nodeEnv,
@@ -34,6 +41,15 @@ export const env = {
     nodeEnv !== 'production' && Number(process.env.STAY_SIGN_IN_RATE_LIMIT) > 0
       ? Number(process.env.STAY_SIGN_IN_RATE_LIMIT)
       : 30,
+  /**
+   * Tenant portal (ST-25), per 15 minutes: session attempts per client IP and per link token,
+   * and link lookups per IP. Only overridable outside production (CI opens many sessions).
+   */
+  portalRateLimits: {
+    sessionsPerIp: testableLimit('STAY_PORTAL_SESSION_RATE_LIMIT', 30),
+    sessionsPerToken: testableLimit('STAY_PORTAL_TOKEN_RATE_LIMIT', 5),
+    lookupsPerIp: testableLimit('STAY_PORTAL_LOOKUP_RATE_LIMIT', 120),
+  },
   corsOrigin: parseOrigins(process.env.STAY_CORS_ORIGIN ?? LOCAL_WEB_ORIGINS[0]),
   defaultLocale: process.env.LOCALE_DEFAULT || 'vi',
   database: {

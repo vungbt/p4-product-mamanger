@@ -1,5 +1,5 @@
 import { Alert, Button, cn, Tag } from '@itclabs/react-ui';
-import type { PublicInvoice } from '@stay/shared';
+import type { PublicInvoiceBase } from '@stay/shared';
 import { QRCodeSVG } from 'qrcode.react';
 import { type Ref, useId } from 'react';
 import { displayDate, formatVnd } from '@/libraries/format';
@@ -13,7 +13,7 @@ import {
 import { copyWithToast } from './share-tools';
 
 /** Status as the tenant reads it ("Đã thanh toán" when nothing is left). */
-function PublicStatusTag({ invoice }: { invoice: PublicInvoice }) {
+function PublicStatusTag({ invoice }: { invoice: PublicInvoiceBase }) {
   if (invoice.remaining === 0)
     return (
       <Tag tone="success" size="sm" data-status="paid">
@@ -98,8 +98,17 @@ function TotalRow({
   );
 }
 
-/** Payment block: "Đã thanh toán", or the VietQR code with the transfer details. */
-function PaymentBlock({ invoice, copyable }: { invoice: PublicInvoice; copyable: boolean }) {
+/**
+ * Payment block: "Đã thanh toán", or the VietQR code with the transfer details (also on the
+ * tenant portal, ST-25).
+ */
+export function PaymentBlock({
+  invoice,
+  copyable,
+}: {
+  invoice: PublicInvoiceBase;
+  copyable: boolean;
+}) {
   const { payee, remaining } = invoice;
 
   if (remaining === 0)
@@ -181,7 +190,7 @@ export function InvoiceCard({
   headingLevel = 1,
   ref,
 }: {
-  invoice: PublicInvoice;
+  invoice: PublicInvoiceBase;
   copyable?: boolean;
   /** `2` when the card is rendered off-screen inside another page. */
   headingLevel?: 1 | 2;

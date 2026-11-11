@@ -9,6 +9,8 @@ import invoicesRouter from './invoices/invoices.router.js';
 import meRouter from './me/me.router.js';
 import overviewRouter from './overview/overview.router.js';
 import paymentsRouter from './payments/payments.router.js';
+import portalRouter from './portal/portal.router.js';
+import portalLinksRouter from './portal/portal-links.router.js';
 import readingsRouter from './readings/readings.router.js';
 import receivablesRouter from './receivables/receivables.router.js';
 import roomsRouter from './rooms/rooms.router.js';
@@ -36,5 +38,8 @@ apiRouter.use(buildingsRouter);
 apiRouter.use(roomsRouter);
 apiRouter.use(uploadsRouter);
 apiRouter.use(tenantsRouter);
+apiRouter.use(portalLinksRouter);
+// ST-25 tenant portal: public + portal-cookie routes, outside the staff `authRequired`.
+apiRouter.use(portalRouter);
 
 export default apiRouter;
