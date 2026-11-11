@@ -2144,6 +2144,94 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/reports/exports': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xuất sổ Excel
+     * @description XLSX nhị phân, attachment. Tối đa 24 tháng; 5 lần/phút. Hoá đơn và công nợ theo kỳ hoá đơn (công nợ hiện tại của kỳ); sổ thu theo ngày thu; chi phí theo kỳ chi. Chỉ đọc, không ghi audit changes.
+     *
+     *     **Quyền:** `read:Report`.
+     */
+    post: operations['post_api_reports_exports'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/reports/revenue': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Doanh thu, chi phí và lãi/lỗ
+     * @description Phải thu theo kỳ hoá đơn; đã thu theo ngày thu thực tế (gồm deposit); bỏ nháp, void và thanh toán huỷ. Khoảng tối đa 24 tháng. Chỉ đọc; ngoài phạm vi quản lý trả 404.
+     *
+     *     **Quyền:** `read:Report`.
+     */
+    get: operations['get_api_reports_revenue'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/reports/rooms': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Báo cáo theo phòng
+     * @description Cả năm; số ngày ở tính cả ngày nhận và trả phòng, theo lịch sử chuyển phòng.
+     *
+     *     **Quyền:** `read:Report`.
+     */
+    get: operations['get_api_reports_rooms'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/reports/utilities': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Báo cáo điện nước
+     * @description Theo kỳ tiêu thụ của dòng hoá đơn. Danh mục Điện tổng / Nước tổng khớp tên sau trim, không phân biệt hoa thường; Điện nước tổng được báo riêng. Hao hụt tiền = (chi − phải thu) / chi × 100; null khi không có chi.
+     *
+     *     **Quyền:** `read:Report`.
+     */
+    get: operations['get_api_reports_utilities'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/resident-stays/{id}/registration': {
     parameters: {
       query?: never;
@@ -3455,12 +3543,38 @@ export interface components {
       } | null;
       meterId: string;
     };
+    ReportAmounts: {
+      billed: number;
+      collected: number;
+      expenses: number;
+      profit: number;
+    };
+    ReportExportInput: {
+      buildingId: string;
+      from: string;
+      sheets: ('expenses' | 'invoices' | 'payments' | 'receivables')[];
+      to: string;
+    };
     ResidentExportInput: {
       date: string;
     };
     ResidentRegistrationInput: {
       note?: string;
       registeredOn: string;
+    };
+    RevenueMonth: {
+      billed: number;
+      collected: number;
+      expenses: number;
+      period: string;
+      profit: number;
+    };
+    RevenueReport: {
+      buildingId: string;
+      from: string;
+      months: components['schemas']['RevenueMonth'][];
+      to: string;
+      totals: components['schemas']['ReportAmounts'];
     };
     RoomBulkPreview: {
       createCount: number;
@@ -3523,6 +3637,16 @@ export interface components {
       phone: string | null;
       tenantId: string;
     };
+    RoomReportRow: {
+      availableDays: number;
+      billed: number;
+      collected: number;
+      occupancyRate: number | null;
+      occupiedDays: number;
+      occupiedMonths: number;
+      roomCode: string;
+      roomId: string;
+    };
     RoomService: {
       active: boolean;
       code: string;
@@ -3531,6 +3655,11 @@ export interface components {
       kind: 'electricity' | 'per_person' | 'per_room' | 'per_vehicle' | 'water';
       name: string;
       unit: string;
+    };
+    RoomsReport: {
+      buildingId: string;
+      rooms: components['schemas']['RoomReportRow'][];
+      year: number;
     };
     RoomStatusCounts: {
       maintenance: number;
@@ -4234,6 +4363,24 @@ export interface components {
       tenantId: string;
       /** @enum {string} */
       type: 'bicycle' | 'car' | 'electric_bike' | 'motorbike' | 'other';
+    };
+    UtilitiesReport: {
+      buildingId: string;
+      from: string;
+      months: components['schemas']['UtilityReportMonth'][];
+      to: string;
+    };
+    UtilityReportMonth: {
+      combinedExpenses: number;
+      electricityBilled: number;
+      electricityExpenses: number;
+      electricityLossPercent: number | null;
+      electricityQuantity: number;
+      period: string;
+      waterBilled: number;
+      waterExpenses: number;
+      waterLossPercent: number | null;
+      waterQuantity: number;
     };
   };
   responses: {
@@ -10646,6 +10793,159 @@ export interface operations {
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_reports_exports: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReportExportInput'];
+      };
+    };
+    responses: {
+      /** @description Sổ Excel; Content-Disposition: attachment; Cache-Control: no-store. */
+      200: {
+        headers: {
+          'Content-Disposition'?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': string;
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      /** @description Khoảng kỳ không hợp lệ: đảo thứ tự, quá 24 tháng hoặc ngoài năm 2000–2099. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_reports_revenue: {
+    parameters: {
+      query: {
+        buildingId: string;
+        from: string;
+        to: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['RevenueReport'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description Khoảng kỳ không hợp lệ: đảo thứ tự, quá 24 tháng hoặc ngoài năm 2000–2099. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_reports_rooms: {
+    parameters: {
+      query: {
+        buildingId: string;
+        year: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['RoomsReport'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_reports_utilities: {
+    parameters: {
+      query: {
+        buildingId: string;
+        from: string;
+        to: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['UtilitiesReport'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description Khoảng kỳ không hợp lệ: đảo thứ tự, quá 24 tháng hoặc ngoài năm 2000–2099. */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
       429: components['responses']['RateLimited'];
     };
   };

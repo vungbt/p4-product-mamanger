@@ -54,6 +54,8 @@ tags:
   - name: receivables
     description: "Công nợ theo hợp đồng: hoá đơn đã phát hành chưa thu đủ, tổng còn lại, quá hạn theo `dueOn` và ngày hiện
       tại Asia/Ho_Chi_Minh (nhóm chưa tới hạn, 1–7, 8–30, > 30 ngày). Chỉ đọc."
+  - name: reports
+    description: Báo cáo tổng hợp SQL theo tháng, theo phòng, điện nước và xuất sổ Excel. Chỉ đọc, có phân quyền theo toà.
   - name: residents
     description: Tạm trú theo ngày, khai báo theo lần ở và xuất Excel có audit.
   - name: rooms
@@ -1540,6 +1542,240 @@ paths:
           $ref: "#/components/responses/NotFound"
         "422":
           description: Kỳ ngoài khoảng 2000–2099 (`period_out_of_range`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/reports/revenue:
+    get:
+      tags:
+        - reports
+      operationId: get_api_reports_revenue
+      summary: Doanh thu, chi phí và lãi/lỗ
+      description: >-
+        Phải thu theo kỳ hoá đơn; đã thu theo ngày thu thực tế (gồm deposit); bỏ nháp, void và thanh toán huỷ. Khoảng
+        tối đa 24 tháng. Chỉ đọc; ngoài phạm vi quản lý trả 404.
+
+
+        **Quyền:** `read:Report`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: ^[0-9]{4}-(0[1-9]|1[0-2])$
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: ^[0-9]{4}-(0[1-9]|1[0-2])$
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RevenueReport"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: "Khoảng kỳ không hợp lệ: đảo thứ tự, quá 24 tháng hoặc ngoài năm 2000–2099."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/reports/rooms:
+    get:
+      tags:
+        - reports
+      operationId: get_api_reports_rooms
+      summary: Báo cáo theo phòng
+      description: |-
+        Cả năm; số ngày ở tính cả ngày nhận và trả phòng, theo lịch sử chuyển phòng.
+
+        **Quyền:** `read:Report`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 2000
+            maximum: 2099
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RoomsReport"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/reports/utilities:
+    get:
+      tags:
+        - reports
+      operationId: get_api_reports_utilities
+      summary: Báo cáo điện nước
+      description: >-
+        Theo kỳ tiêu thụ của dòng hoá đơn. Danh mục Điện tổng / Nước tổng khớp tên sau trim, không phân biệt hoa thường;
+        Điện nước tổng được báo riêng. Hao hụt tiền = (chi − phải thu) / chi × 100; null khi không có chi.
+
+
+        **Quyền:** `read:Report`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: ^[0-9]{4}-(0[1-9]|1[0-2])$
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: ^[0-9]{4}-(0[1-9]|1[0-2])$
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/UtilitiesReport"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: "Khoảng kỳ không hợp lệ: đảo thứ tự, quá 24 tháng hoặc ngoài năm 2000–2099."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/reports/exports:
+    post:
+      tags:
+        - reports
+      operationId: post_api_reports_exports
+      summary: Xuất sổ Excel
+      description: >-
+        XLSX nhị phân, attachment. Tối đa 24 tháng; 5 lần/phút. Hoá đơn và công nợ theo kỳ hoá đơn (công nợ hiện tại của
+        kỳ); sổ thu theo ngày thu; chi phí theo kỳ chi. Chỉ đọc, không ghi audit changes.
+
+
+        **Quyền:** `read:Report`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportExportInput"
+      responses:
+        "200":
+          description: "Sổ Excel; Content-Disposition: attachment; Cache-Control: no-store."
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          description: "Khoảng kỳ không hợp lệ: đảo thứ tự, quá 24 tháng hoặc ngoài năm 2000–2099."
           content:
             application/json:
               schema:
@@ -12718,6 +12954,45 @@ components:
         - meterId
         - data
         - error
+    ReportAmounts:
+      type: object
+      properties:
+        billed:
+          type: number
+        collected:
+          type: number
+        expenses:
+          type: number
+        profit:
+          type: number
+      required:
+        - billed
+        - collected
+        - expenses
+        - profit
+    ReportExportInput:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        from:
+          type: string
+        to:
+          type: string
+        sheets:
+          type: array
+          items:
+            type: string
+            enum:
+              - expenses
+              - invoices
+              - payments
+              - receivables
+      required:
+        - buildingId
+        - from
+        - to
+        - sheets
     ResidentExportInput:
       type: object
       properties:
@@ -12734,6 +13009,46 @@ components:
           type: string
       required:
         - registeredOn
+    RevenueMonth:
+      type: object
+      properties:
+        period:
+          type: string
+        billed:
+          type: number
+        collected:
+          type: number
+        expenses:
+          type: number
+        profit:
+          type: number
+      required:
+        - period
+        - billed
+        - collected
+        - expenses
+        - profit
+    RevenueReport:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        from:
+          type: string
+        to:
+          type: string
+        months:
+          type: array
+          items:
+            $ref: "#/components/schemas/RevenueMonth"
+        totals:
+          $ref: "#/components/schemas/ReportAmounts"
+      required:
+        - buildingId
+        - from
+        - to
+        - months
+        - totals
     RoomBulkPreview:
       type: object
       properties:
@@ -12929,6 +13244,36 @@ components:
         - phone
         - isPrimary
         - fromDate
+    RoomReportRow:
+      type: object
+      properties:
+        roomId:
+          type: string
+        roomCode:
+          type: string
+        billed:
+          type: number
+        collected:
+          type: number
+        occupiedMonths:
+          type: number
+        occupiedDays:
+          type: number
+        availableDays:
+          type: number
+        occupancyRate:
+          type:
+            - number
+            - "null"
+      required:
+        - roomId
+        - roomCode
+        - billed
+        - collected
+        - occupiedMonths
+        - occupiedDays
+        - availableDays
+        - occupancyRate
     RoomService:
       type: object
       properties:
@@ -12957,6 +13302,21 @@ components:
         - kind
         - unit
         - active
+    RoomsReport:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        year:
+          type: number
+        rooms:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoomReportRow"
+      required:
+        - buildingId
+        - year
+        - rooms
     RoomStatusCounts:
       type: object
       properties:
@@ -15168,6 +15528,62 @@ components:
         - type
         - note
         - createdAt
+    UtilitiesReport:
+      type: object
+      properties:
+        buildingId:
+          type: string
+        from:
+          type: string
+        to:
+          type: string
+        months:
+          type: array
+          items:
+            $ref: "#/components/schemas/UtilityReportMonth"
+      required:
+        - buildingId
+        - from
+        - to
+        - months
+    UtilityReportMonth:
+      type: object
+      properties:
+        period:
+          type: string
+        electricityQuantity:
+          type: number
+        waterQuantity:
+          type: number
+        electricityBilled:
+          type: number
+        waterBilled:
+          type: number
+        electricityExpenses:
+          type: number
+        waterExpenses:
+          type: number
+        combinedExpenses:
+          type: number
+        electricityLossPercent:
+          type:
+            - number
+            - "null"
+        waterLossPercent:
+          type:
+            - number
+            - "null"
+      required:
+        - period
+        - electricityQuantity
+        - waterQuantity
+        - electricityBilled
+        - waterBilled
+        - electricityExpenses
+        - waterExpenses
+        - combinedExpenses
+        - electricityLossPercent
+        - waterLossPercent
     Auth_User:
       type: object
       properties:
