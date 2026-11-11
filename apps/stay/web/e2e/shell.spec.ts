@@ -76,7 +76,7 @@ test.describe('C-02/C-03 shell on desktop', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Phòng' })).toBeVisible();
   });
 
-  test('shows 404 for unknown pages and keeps the menu in route order', async ({ page }) => {
+  test('shows 404 for unknown pages and keeps the menu in its groups', async ({ page }) => {
     await signIn(page);
 
     const sidebar = page.getByTestId('app-sidebar');
@@ -84,17 +84,17 @@ test.describe('C-02/C-03 shell on desktop', () => {
       sidebar.getByRole('navigation', { name: 'Điều hướng chính' }).getByRole('link'),
     ).toHaveText([
       'Tổng quan',
-      'Phòng',
       'Chốt số',
       'Hoá đơn',
-      'Công nợ',
       'Sổ thu',
+      'Công nợ',
+      // The badge of new tenant requests (ST-25) may follow the label.
+      /^Yêu cầu/,
+      'Phòng',
       'Hợp đồng',
       'Sổ cọc',
       'Người thuê',
       'Tạm trú',
-      // The badge of new tenant requests (ST-25) may follow the label.
-      /^Yêu cầu/,
       'Chi phí',
       'Báo cáo',
       'Lịch sử thay đổi',

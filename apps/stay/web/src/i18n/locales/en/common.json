@@ -47,7 +47,12 @@
     "invoiceRun": "Billing run",
     "invoiceShare": "Share period",
     "invoiceDetail": "Invoice detail",
-    "announcements": "Tenant announcements"
+    "announcements": "Tenant announcements",
+    "group": {
+      "monthly": "Monthly",
+      "rental": "Rentals",
+      "management": "Management"
+    }
   },
   "header": {
     "back": "Back",

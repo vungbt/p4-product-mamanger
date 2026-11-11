@@ -47,7 +47,12 @@
     "invoiceRun": "Lập hoá đơn kỳ",
     "invoiceShare": "Chia sẻ kỳ",
     "invoiceDetail": "Chi tiết hoá đơn",
-    "announcements": "Thông báo cho người thuê"
+    "announcements": "Thông báo cho người thuê",
+    "group": {
+      "monthly": "Hằng tháng",
+      "rental": "Cho thuê",
+      "management": "Quản lý"
+    }
   },
   "header": {
     "back": "Quay lại",
