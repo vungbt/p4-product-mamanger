@@ -50,7 +50,13 @@ const schema = {
   note: v.pipe(v.string(), v.maxLength(2000, 'Ghi chú tối đa 2000 ký tự.')),
 };
 
-const invoiceLabel = (invoice: StayInvoiceSummary) =>
+/** What the form needs of an invoice (a list summary or a Công nợ invoice with its room). */
+export type PayableInvoice = Pick<
+  StayInvoiceSummary,
+  'id' | 'code' | 'roomCode' | 'period' | 'dueOn' | 'remaining'
+>;
+
+const invoiceLabel = (invoice: PayableInvoice) =>
   `${invoice.code ?? 'Nháp'} · Kỳ ${displayPeriod(invoice.period)} · còn ${formatVnd(invoice.remaining)}`;
 
 /** "Thu tiền" for one invoice (O-22 detail, O-21 list row). */
@@ -66,6 +72,35 @@ export function PaymentDialog({
   return (
     <Overlay title={TITLE} description={DESCRIPTION} onClose={() => !busy && onClose()}>
       <PaymentForm invoices={[invoice]} onBusyChange={setBusy} onClose={onClose} />
+    </Overlay>
+  );
+}
+
+/**
+ * "Thu tiền" from Công nợ: the contract's unpaid invoices (oldest due first, as the receivables
+ * row lists them), `invoiceId` preselected (default: the oldest).
+ */
+export function InvoicesPaymentDialog({
+  title,
+  invoices,
+  invoiceId,
+  onClose,
+}: {
+  title: string;
+  invoices: PayableInvoice[];
+  invoiceId?: string;
+  onClose: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+
+  return (
+    <Overlay title={title} description={DESCRIPTION} onClose={() => !busy && onClose()}>
+      <PaymentForm
+        invoices={invoices}
+        initialInvoiceId={invoiceId}
+        onBusyChange={setBusy}
+        onClose={onClose}
+      />
     </Overlay>
   );
 }
@@ -111,10 +146,12 @@ export function RoomPaymentDialog({
 
 function PaymentForm({
   invoices,
+  initialInvoiceId,
   onBusyChange,
   onClose,
 }: {
-  invoices: StayInvoiceSummary[];
+  invoices: PayableInvoice[];
+  initialInvoiceId?: string;
   onBusyChange: (busy: boolean) => void;
   onClose: () => void;
 }) {
@@ -123,7 +160,7 @@ function PaymentForm({
   // One key per dialog: a double tap or a retry of the same submit never records twice.
   const [key] = useState(() => crypto.randomUUID());
 
-  const first = invoices[0];
+  const first = invoices.find((invoice) => invoice.id === initialInvoiceId) ?? invoices[0];
 
   const form = useAppForm({
     defaultValues: {

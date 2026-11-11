@@ -41,6 +41,9 @@ tags:
       trạng thái hoá đơn luôn tính lại từ tổng các khoản chưa huỷ trong cùng transaction.
   - name: readings
     description: Chốt chỉ số điện nước, lưu theo dòng và thay đồng hồ; tiêu thụ tính theo các đoạn đồng hồ.
+  - name: receivables
+    description: "Công nợ theo hợp đồng: hoá đơn đã phát hành chưa thu đủ, tổng còn lại, quá hạn theo `dueOn` và ngày hiện
+      tại Asia/Ho_Chi_Minh (nhóm chưa tới hạn, 1–7, 8–30, > 30 ngày). Chỉ đọc."
   - name: rooms
     description: Phòng theo toà, sơ đồ phòng, tạo nhanh nhiều phòng, đồng hồ điện/nước và bảo trì. Trạng thái phòng suy ra
       từ hợp đồng.
@@ -1208,6 +1211,254 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{buildingId}/receivables:
+    get:
+      tags:
+        - receivables
+      operationId: get_api_buildings_buildingId_receivables
+      summary: Công nợ của toà
+      description: >-
+        Mỗi dòng là một hợp đồng có hoá đơn chưa thu đủ (`issued`/`partially_paid`, `total − paidTotal > 0`; nháp và
+        void không tính): mã hợp đồng, phòng hiện tại, người đại diện (`representativePhone` chỉ khi được xem người thuê
+        của toà), số hoá đơn, tổng còn lại, phần quá hạn, hạn cũ nhất, số ngày quá hạn lâu nhất (`dueOn` so với hôm nay
+        theo Asia/Ho_Chi_Minh) và nhóm `bucket` (`not_due`, `1_7`, `8_30`, `over_30`), kèm các hoá đơn đó (hạn cũ nhất
+        trước, có `shareExpiresAt`). `q` tìm theo mã phòng, mã hợp đồng, tên hoặc SĐT người ở; lọc `bucket`; `sortBy`
+        `remaining` (mặc định, giảm dần), `overdueDays`, `roomCode`. `meta.totalRemaining`, `meta.overdueRemaining`,
+        `meta.invoiceCount` tính trên toàn bộ bộ lọc trước phân trang và luôn bằng tổng `total − paidTotal` của các hoá
+        đơn được tính; `meta.buckets` đếm theo `q` nhưng không theo `bucket` (cho các chip). Toà ngoài phạm vi trả 404.
+
+
+        **Quyền:** `read:Invoice`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - remaining
+              - overdueDays
+              - roomCode
+            default: remaining
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: bucket
+          in: query
+          schema:
+            type: string
+            enum:
+              - 1_7
+              - 8_30
+              - not_due
+              - over_30
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        contractId:
+                          type: string
+                        contractCode:
+                          type: string
+                        contractStatus:
+                          type: string
+                          enum:
+                            - active
+                            - cancelled
+                            - draft
+                            - ended
+                            - ending
+                        roomId:
+                          type: string
+                        roomCode:
+                          type: string
+                        representativeName:
+                          type:
+                            - string
+                            - "null"
+                        representativePhone:
+                          type:
+                            - string
+                            - "null"
+                        invoiceCount:
+                          type: number
+                        remaining:
+                          type: number
+                        overdueRemaining:
+                          type: number
+                        oldestDueOn:
+                          type: string
+                        overdueDays:
+                          type: number
+                        bucket:
+                          type: string
+                          enum:
+                            - 1_7
+                            - 8_30
+                            - not_due
+                            - over_30
+                        invoices:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                              code:
+                                type:
+                                  - string
+                                  - "null"
+                              kind:
+                                type: string
+                                enum:
+                                  - monthly
+                                  - move_in
+                                  - settlement
+                              period:
+                                type: string
+                              status:
+                                type: string
+                                enum:
+                                  - draft
+                                  - issued
+                                  - paid
+                                  - partially_paid
+                                  - void
+                              total:
+                                type: number
+                              paidTotal:
+                                type: number
+                              remaining:
+                                type: number
+                              dueOn:
+                                type: string
+                              overdueDays:
+                                type: number
+                              shareExpiresAt:
+                                type:
+                                  - string
+                                  - "null"
+                            required:
+                              - id
+                              - code
+                              - kind
+                              - period
+                              - status
+                              - total
+                              - paidTotal
+                              - remaining
+                              - dueOn
+                              - overdueDays
+                              - shareExpiresAt
+                      required:
+                        - contractId
+                        - contractCode
+                        - contractStatus
+                        - roomId
+                        - roomCode
+                        - representativeName
+                        - representativePhone
+                        - invoiceCount
+                        - remaining
+                        - overdueRemaining
+                        - oldestDueOn
+                        - overdueDays
+                        - bucket
+                        - invoices
+                  message:
+                    type: string
+                  meta:
+                    allOf:
+                      - $ref: "#/components/schemas/PaginationMeta"
+                      - type: object
+                        required:
+                          - totalRemaining
+                          - overdueRemaining
+                          - invoiceCount
+                          - buckets
+                        properties:
+                          totalRemaining:
+                            type: integer
+                            description: Tổng `total − paidTotal` của mọi hoá đơn chưa thu đủ trong bộ lọc.
+                          overdueRemaining:
+                            type: integer
+                            description: Phần đã quá hạn.
+                          invoiceCount:
+                            type: integer
+                          buckets:
+                            type: array
+                            description: Một dòng cho mỗi nhóm (kể cả 0), theo `q`, không theo `bucket`.
+                            items:
+                              type: object
+                              required:
+                                - bucket
+                                - count
+                                - remaining
+                              properties:
+                                bucket:
+                                  type: string
+                                  enum:
+                                    - not_due
+                                    - 1_7
+                                    - 8_30
+                                    - over_30
+                                count:
+                                  type: integer
+                                remaining:
+                                  type: integer
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/buildings/{buildingId}/readings:

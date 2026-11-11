@@ -31,10 +31,10 @@ export function paymentQueryOptions(sdk: StaySdk) {
 
 export function paymentMutationOptions(sdk: StaySdk, client: QueryClient) {
   const api = createPaymentApi(sdk);
-  /** A payment changes the invoice (paid total, status), room debts and contract invoices. */
+  /** A payment changes the invoice (paid total, status), receivables, room debts, contracts. */
   const refresh = () =>
     Promise.all(
-      ['payments', 'invoices', 'rooms', 'contracts'].map((area) =>
+      ['payments', 'invoices', 'receivables', 'rooms', 'contracts'].map((area) =>
         client.invalidateQueries({ queryKey: ['stay', area] }),
       ),
     );
