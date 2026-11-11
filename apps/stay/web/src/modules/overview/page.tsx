@@ -1,4 +1,4 @@
-import { Avatar, cn, Input, Skeleton } from '@itclabs/react-ui';
+import { cn, Skeleton } from '@itclabs/react-ui';
 import { useBuildingOverview } from '@stay/sdk/react';
 import { isPeriod, type StayOverview } from '@stay/shared';
 import { lazy, Suspense } from 'react';
@@ -7,6 +7,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { formatVnd } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { PeriodPicker } from '@/libraries/forms/period-picker';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
 import { useAuth } from '@/libraries/session/auth-provider';
 import { displayPeriod } from '@/modules/invoices/invoice-ui';
@@ -23,7 +25,7 @@ const PeriodChart = lazy(() => import('./period-chart'));
 export default function OverviewPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { buildingId } = useActiveBuilding();
+  const { building, buildingId } = useActiveBuilding();
   const [params, setParams] = useSearchParams();
 
   const raw = params.get('period');
@@ -56,32 +58,26 @@ export default function OverviewPage() {
 
   return (
     <div className="grid min-w-0 grid-cols-1 gap-6">
-      <header className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <Avatar
-            src={user.avatarUrl ?? undefined}
-            alt=""
-            fallback={name.charAt(0).toUpperCase()}
-            size="lg"
-          />
-          <div className="min-w-0">
-            <h1 className="text-heading font-bold text-ink">{t('overview.greeting', { name })}</h1>
-            <p className="truncate text-ui-sm text-muted" data-testid="signed-in-user">
-              {t('overview.signedInAs', { email: user.email, role: t(`roles.${user.role}`) })}
-            </p>
-          </div>
-        </div>
-        {buildingId ? (
-          <Input
-            label="Kỳ"
-            type="month"
-            value={requested ?? data?.period ?? ''}
-            className="w-full sm:max-w-48"
-            data-testid="overview-period"
-            onChange={(event) => choosePeriod(event.target.value)}
-          />
-        ) : null}
-      </header>
+      <ScreenHeader
+        title={t('overview.greeting', { name })}
+        description={
+          <span className="block truncate" data-testid="signed-in-user">
+            {building ? `${building.name} · ` : ''}
+            {t('overview.signedInAs', { email: user.email, role: t(`roles.${user.role}`) })}
+          </span>
+        }
+        action={
+          buildingId ? (
+            <PeriodPicker
+              label="Kỳ"
+              value={requested ?? data?.period ?? ''}
+              className="w-full sm:w-48"
+              data-testid="overview-period"
+              onChange={choosePeriod}
+            />
+          ) : undefined
+        }
+      />
 
       {empty ? <OnboardingSteps empty /> : null}
 

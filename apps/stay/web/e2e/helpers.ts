@@ -21,6 +21,114 @@ export async function chooseOption(
     .click();
 }
 
+/**
+ * Picks `isoDate` (`YYYY-MM-DD`) in a kit `DatePicker`: opens it from its label, jumps to the
+ * year with the calendar's searchable "Năm" select, steps to the month with its month buttons,
+ * then clicks the day (react-day-picker marks each day cell `data-day="YYYY-MM-DD"`). Required
+ * fields append "*" to the label, so pass a RegExp for them.
+ */
+export async function pickDate(
+  page: Page,
+  scope: Page | Locator,
+  label: string | RegExp,
+  isoDate: string,
+) {
+  await scope
+    .getByRole('button', typeof label === 'string' ? { name: label, exact: true } : { name: label })
+    .click();
+
+  // The open calendar renders in a portal; only one is open at a time.
+  const shownDay = page.locator('td[data-day]:not([data-outside])').first();
+  const target = page.locator(`td[data-day="${isoDate}"]:not([data-outside]) button`);
+  const month = isoDate.slice(0, 7);
+
+  await expect(shownDay).toBeVisible();
+  if ((await shownDay.getAttribute('data-day'))?.slice(0, 4) !== isoDate.slice(0, 4)) {
+    await page.getByRole('combobox', { name: 'Năm', exact: true }).focus();
+    await page.keyboard.type(isoDate.slice(0, 4));
+    await page.keyboard.press('Enter');
+    await expect(shownDay).toHaveAttribute('data-day', new RegExp(`^${isoDate.slice(0, 4)}-`));
+  }
+  for (let step = 0; step < 24 && !(await target.count()); step += 1) {
+    const shown = (await shownDay.getAttribute('data-day')) ?? isoDate;
+
+    await page
+      .getByRole('button', {
+        name: shown.slice(0, 7) < month ? 'Tháng sau' : 'Tháng trước',
+        exact: true,
+      })
+      .click();
+    await expect(shownDay).not.toHaveAttribute('data-day', shown);
+  }
+  await target.click();
+  await expect(target).toBeHidden();
+}
+
+/**
+ * Picks `period` (`YYYY-MM`) in a kit `MonthPicker` (`PeriodPicker`): opens it from its label,
+ * steps years with "Năm trước"/"Năm sau" until the month grid shows the year, then clicks the
+ * month (grid cells run January → December). Far years (fixtures use 2100–2900) are reached with
+ * the grid's PageUp/PageDown keys (one year each) before the buttons finish the walk. Pass a
+ * RegExp label for required fields ("*").
+ */
+export async function pickMonth(
+  page: Page,
+  scope: Page | Locator,
+  label: string | RegExp,
+  period: string,
+) {
+  const trigger = scope.getByRole(
+    'button',
+    typeof label === 'string' ? { name: label, exact: true } : { name: label },
+  );
+
+  await trigger.click();
+
+  // The open panel renders in a portal; only one is open at a time.
+  const grid = page.getByRole('grid', { name: /^Các tháng năm \d{4}$/ });
+  const year = Number(period.slice(0, 4));
+  const shownYear = async () => Number((await grid.getAttribute('aria-label'))?.slice(-4));
+
+  await expect(grid).toBeVisible();
+  const distance = year - (await shownYear());
+
+  if (Math.abs(distance) > 3) {
+    await grid.locator('button[tabindex="0"]').focus();
+    for (let step = 0; step < Math.abs(distance) - 1; step += 1)
+      await page.keyboard.press(distance > 0 ? 'PageDown' : 'PageUp');
+    await expect(grid).not.toHaveAttribute('aria-label', `Các tháng năm ${year - distance}`);
+  }
+  for (let step = 0; step < 12; step += 1) {
+    const shown = await shownYear();
+
+    if (shown === year) break;
+    await page
+      .getByRole('button', { name: shown < year ? 'Năm sau' : 'Năm trước', exact: true })
+      .click();
+    await expect(grid).not.toHaveAttribute('aria-label', `Các tháng năm ${shown}`);
+  }
+  await expect(grid).toHaveAttribute('aria-label', `Các tháng năm ${year}`);
+  await grid
+    .getByRole('gridcell')
+    .nth(Number(period.slice(5)) - 1)
+    .getByRole('button')
+    .click();
+  await expect(grid).toBeHidden();
+  await expect(trigger).toHaveText(displayPeriod(period));
+}
+
+/** Picker text of a kit `MonthPicker` value (`MM/yyyy`). */
+export function displayPeriod(period: string) {
+  return `${period.slice(5)}/${period.slice(0, 4)}`;
+}
+
+/** Picker text of a kit `DatePicker` value (`dd/MM/yyyy`). */
+export function displayIsoDate(isoDate: string) {
+  const [year, month, day] = isoDate.split('-');
+
+  return `${day}/${month}/${year}`;
+}
+
 /** Today in Asia/Ho_Chi_Minh as the UI shows dates (`dd/MM/yyyy`). */
 export function todayDisplay() {
   return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date());

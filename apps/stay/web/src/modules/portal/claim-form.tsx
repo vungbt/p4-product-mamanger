@@ -1,5 +1,6 @@
 import {
   Button,
+  DatePicker,
   Form,
   FormField,
   FormSubmit,
@@ -16,6 +17,7 @@ import { useState } from 'react';
 import * as v from 'valibot';
 import { formatVnd, todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
@@ -144,8 +146,8 @@ export function ClaimForm({
       <FormField name="amount" label="Số tiền đã chuyển" required>
         <NumberInput min={1} max={remaining} step={1} inputMode="numeric" endAddon="₫" />
       </FormField>
-      <FormField name="paidOn" label="Ngày chuyển" required>
-        <Input type="date" max={todayIsoDate()} />
+      <FormField name="paidOn" label="Ngày chuyển" required {...DATE_FIELD}>
+        <DatePicker maxDate={todayIsoDate()} clearable={false} />
       </FormField>
       <div className="grid gap-1">
         <label htmlFor="portal-claim-receipt" className="font-medium">

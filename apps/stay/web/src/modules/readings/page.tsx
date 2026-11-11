@@ -1,12 +1,14 @@
-import { Button, Input, Select } from '@itclabs/react-ui';
+import { Button, Progress, Select } from '@itclabs/react-ui';
 import { useReadings } from '@stay/sdk/react';
 import { isPeriod, nextPeriod } from '@stay/shared';
 import { useCallback, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FilterBar } from '@/libraries/filter-bar';
 import { todayIsoDate } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
 import { useAuth } from '@/libraries/session/auth-provider';
@@ -82,17 +84,16 @@ function BuildingReadings({
         <p>Chọn toà nhà để chốt số.</p>
       ) : (
         <>
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-            <Input
+          <FilterBar>
+            <PeriodPicker
               label="Kỳ chốt số"
-              aria-label="Kỳ chốt số"
-              type="month"
               value={period}
-              onChange={(event) => {
-                if (isPeriod(event.target.value)) filter('period', event.target.value);
+              onChange={(value) => {
+                if (isPeriod(value)) filter('period', value);
               }}
             />
             <Select
+              label="Tầng"
               aria-label="Lọc tầng"
               placeholder="Tất cả tầng"
               clearable
@@ -102,25 +103,40 @@ function BuildingReadings({
                 .map((value) => ({ value: String(value), label: `Tầng ${value}` }))}
               onValueChange={(value) => filter('floor', value ?? '')}
             />
-          </div>
-          <p role="status">
-            đã nhập {complete}/{rooms.length} phòng · kỳ {displayPeriod(period)}
-          </p>
-          {unsynced ? (
-            <p role="status">{unsynced} phòng chưa đồng bộ. Bản nhập được giữ trên máy.</p>
-          ) : null}
-          {canBill ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <Button onClick={() => navigate(billingRunPath(invoicePeriod))}>
-                Lập hoá đơn kỳ {displayPeriod(invoicePeriod)}
-              </Button>
-              {rooms.length && complete < rooms.length ? (
+          </FilterBar>
+          <section
+            aria-label="Tiến độ chốt số"
+            className="flex min-w-0 flex-col gap-3 rounded-panel border border-line bg-surface p-4 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="grid min-w-0 flex-1 gap-2">
+              <p role="status" className="font-semibold text-ink">
+                Đã nhập {complete}/{rooms.length} phòng · kỳ {displayPeriod(period)}
+              </p>
+              <Progress
+                value={complete}
+                max={Math.max(rooms.length, 1)}
+                size="sm"
+                tone={rooms.length && complete === rooms.length ? 'success' : 'brand'}
+                aria-label="Số phòng đã nhập đủ chỉ số"
+                className="sm:max-w-sm"
+              />
+              {unsynced ? (
+                <p role="status" className="text-ui-sm text-warning-700">
+                  {unsynced} phòng chưa đồng bộ. Bản nhập được giữ trên máy.
+                </p>
+              ) : null}
+              {canBill && rooms.length && complete < rooms.length ? (
                 <p className="text-ui-sm text-muted">
                   Phòng chưa đủ chỉ số sẽ bị loại khỏi kỳ hoá đơn.
                 </p>
               ) : null}
             </div>
-          ) : null}
+            {canBill ? (
+              <Button className="shrink-0" onClick={() => navigate(billingRunPath(invoicePeriod))}>
+                Lập hoá đơn kỳ {displayPeriod(invoicePeriod)}
+              </Button>
+            ) : null}
+          </section>
           {query.isLoading ? (
             <LoadingRows />
           ) : query.isError ? (

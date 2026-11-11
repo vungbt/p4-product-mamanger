@@ -1,5 +1,6 @@
 import {
   Button,
+  DatePicker,
   Form,
   FormField,
   FormSubmit,
@@ -28,6 +29,7 @@ import {
   isVersionConflict,
   serverError,
 } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { ConflictAlert, FormError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
@@ -169,8 +171,8 @@ export function ExpenseForm({
               .map((category) => ({ value: category.id, label: category.name }))}
           />
         </FormField>
-        <FormField name="spentOn" label="Ngày chi" required>
-          <Input type="date" />
+        <FormField name="spentOn" label="Ngày chi" required {...DATE_FIELD}>
+          <DatePicker clearable={false} />
         </FormField>
         <FormField name="roomId" label="Phòng" mapOnChange={(value) => value ?? ''}>
           <Select

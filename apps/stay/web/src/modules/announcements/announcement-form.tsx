@@ -1,6 +1,7 @@
 import {
   Button,
   Checkbox,
+  DatePicker,
   Form,
   FormField,
   FormSubmit,
@@ -16,6 +17,7 @@ import { useState } from 'react';
 import * as v from 'valibot';
 import { todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError, LoadingRows } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
@@ -184,8 +186,8 @@ export function AnnouncementDialog({
           checked={pinned}
           onCheckedChange={(value) => setPinned(value === true)}
         />
-        <FormField name="expiresOn" label="Hết hạn hiển thị (ngày cuối còn hiện)">
-          <Input type="date" min={todayIsoDate()} />
+        <FormField name="expiresOn" label="Hết hạn hiển thị (ngày cuối còn hiện)" {...DATE_FIELD}>
+          <DatePicker minDate={todayIsoDate()} />
         </FormField>
         <div className="flex flex-wrap justify-end gap-2">
           <Button variant="secondary" disabled={busy} onClick={close}>

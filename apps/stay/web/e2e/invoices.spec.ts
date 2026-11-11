@@ -1,6 +1,6 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import { expect, type Page, test } from '@playwright/test';
-import { chooseOption, saveScreenshot, signIn } from './helpers';
+import { chooseOption, pickMonth, saveScreenshot, signIn } from './helpers';
 
 type Service = { id: string; kind: string; active: boolean };
 type ReadingGrid = { rooms: { roomId: string; meters: { meterId: string; kind: string }[] }[] };
@@ -225,7 +225,7 @@ for (const width of [1280, 375]) {
 
     // List: the period filter (URL) shows our voided invoice and not the move-in drafts of M−1.
     await page.goto('/invoices');
-    await page.getByLabel('Kỳ', { exact: true }).fill(period);
+    await pickMonth(page, page, 'Kỳ', period);
     await expect(page).toHaveURL(new RegExp(`period=${period}`));
     const listRow = (code: string) => page.getByTestId('invoice-row').filter({ hasText: code });
     // The previous (unfiltered) page stays visible until the filtered result arrives.

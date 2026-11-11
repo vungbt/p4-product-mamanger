@@ -5,8 +5,10 @@ import { isPeriod, type StayExpense } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FilterBar } from '@/libraries/filter-bar';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
 import { ExpenseForm } from './expense-form';
@@ -94,27 +96,33 @@ function BuildingExpenses({ buildingId }: { buildingId: string | null }) {
       <ScreenHeader
         title="Chi phí vận hành"
         description="Theo dõi khoản chi theo kỳ và danh mục."
+        action={
+          <>
+            <Link
+              to="/settings/expense-categories"
+              className="self-center px-2 font-semibold text-accent underline"
+            >
+              Quản lý danh mục
+            </Link>
+            <Button disabled={!buildingId} onClick={() => setEditing('new')}>
+              Thêm chi phí
+            </Button>
+          </>
+        }
       />
-      <div className="flex flex-wrap gap-3">
-        <Button disabled={!buildingId} onClick={() => setEditing('new')}>
-          Thêm chi phí
-        </Button>
-        <Link to="/settings/expense-categories" className="self-center text-accent underline">
-          Quản lý danh mục
-        </Link>
-      </div>
       {!buildingId ? (
         <p>Chọn hoặc tạo toà nhà để ghi chi phí.</p>
       ) : (
         <>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Input
-              aria-label="Kỳ"
-              type="month"
+          <FilterBar>
+            <PeriodPicker
+              label="Kỳ"
               value={period}
-              onChange={(event) => filter('period', event.target.value)}
+              clearable
+              onChange={(value) => filter('period', value)}
             />
             <Select
+              label="Danh mục"
               aria-label="Lọc danh mục"
               placeholder="Tất cả danh mục"
               clearable
@@ -128,6 +136,7 @@ function BuildingExpenses({ buildingId }: { buildingId: string | null }) {
               onValueChange={(value) => filter('categoryId', value ?? '')}
             />
             <Select
+              label="Phòng"
               aria-label="Lọc phòng"
               placeholder="Tất cả phòng"
               clearable
@@ -136,12 +145,14 @@ function BuildingExpenses({ buildingId }: { buildingId: string | null }) {
               onValueChange={(value) => filter('roomId', value ?? '')}
             />
             <Input
+              label="Tìm"
               aria-label="Tìm chi phí"
+              type="search"
               placeholder="Tìm ghi chú"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
-          </div>
+          </FilterBar>
           {categories.isError ? (
             <LoadError error={categories.error} onRetry={() => void categories.refetch()} />
           ) : null}
@@ -168,20 +179,22 @@ function BuildingExpenses({ buildingId }: { buildingId: string | null }) {
             <>
               <section
                 aria-label="Tổng theo danh mục"
-                className="grid gap-3 sm:grid-cols-3"
+                className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
                 data-testid="expense-totals"
               >
-                <div className="rounded-panel border border-line bg-surface p-4">
-                  <p>Tổng chi phí</p>
-                  <strong>{formatVnd(total)}</strong>
+                <div className="grid gap-0.5 rounded-panel border border-line bg-surface p-3">
+                  <p className="text-ui-sm text-muted">Tổng chi phí</p>
+                  <strong className="text-ink">{formatVnd(total)}</strong>
                 </div>
                 {expenses.data?.meta.totalsByCategory.map((category) => (
                   <div
                     key={category.categoryId}
-                    className="rounded-panel border border-line bg-surface p-4"
+                    className="grid gap-0.5 rounded-panel border border-line bg-surface p-3"
                   >
-                    <p>{names.get(category.categoryId) ?? 'Danh mục'}</p>
-                    <strong>{formatVnd(category.amount)}</strong>
+                    <p className="text-ui-sm text-muted">
+                      {names.get(category.categoryId) ?? 'Danh mục'}
+                    </p>
+                    <strong className="text-ink">{formatVnd(category.amount)}</strong>
                   </div>
                 ))}
               </section>

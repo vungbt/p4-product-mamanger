@@ -1,5 +1,6 @@
 import {
   Button,
+  DatePicker,
   Form,
   FormField,
   FormSubmit,
@@ -25,6 +26,7 @@ import { Link } from 'react-router-dom';
 import * as v from 'valibot';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError } from '@/libraries/forms/page-states';
 import { Overlay } from '../invoices/invoice-dialogs';
 import { displayPeriod } from '../invoices/invoice-ui';
@@ -374,8 +376,12 @@ function AcceptForm({ item, onDone, onCancel }: FormProps) {
         </FormField>
       ) : null}
       {type && type !== 'other' ? (
-        <FormField name="effectiveDate" label="Ngày hiệu lực (để trống = theo yêu cầu)">
-          <Input type="date" />
+        <FormField
+          name="effectiveDate"
+          label="Ngày hiệu lực (để trống = theo yêu cầu)"
+          {...DATE_FIELD}
+        >
+          <DatePicker />
         </FormField>
       ) : null}
       <FormField name="reply" label="Trả lời người thuê">
@@ -476,8 +482,8 @@ function ClaimForm({ item, onDone, onCancel }: FormProps) {
           endAddon="₫"
         />
       </FormField>
-      <FormField name="paidOn" label="Ngày nhận tiền" required>
-        <Input type="date" max={todayIsoDate()} />
+      <FormField name="paidOn" label="Ngày nhận tiền" required {...DATE_FIELD}>
+        <DatePicker maxDate={todayIsoDate()} clearable={false} />
       </FormField>
       <FormField name="reference" label="Mã giao dịch">
         <Input maxLength={120} autoComplete="off" />

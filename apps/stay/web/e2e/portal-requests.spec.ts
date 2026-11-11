@@ -1,6 +1,6 @@
 import { randomInt, randomUUID } from 'node:crypto';
 import { expect, type Page, test } from '@playwright/test';
-import { chooseOption, saveScreenshot, signIn } from './helpers';
+import { chooseOption, pickDate, saveScreenshot, signIn } from './helpers';
 
 type Invoice = { id: string; code: string | null; status: string; total: number };
 type InboxItem = { id: string; kind: string };
@@ -146,7 +146,7 @@ for (const width of [1280, 375]) {
     await tenant
       .getByRole('textbox', { name: /Số điện thoại/ })
       .fill(`09${String(randomInt(0, 100_000_000)).padStart(8, '0')}`);
-    await tenant.getByLabel(/Ở từ ngày/).fill(`${rented.year}-03-01`);
+    await pickDate(page, tenant, /Ở từ ngày/, `${rented.year}-03-01`);
     await tenant.getByRole('button', { name: 'Gửi yêu cầu', exact: true }).click();
     await expect(tenant).toHaveURL(/\/p\/requests$/);
     await expect(tenant.getByTestId('portal-request-list')).toContainText(newcomer);

@@ -41,7 +41,7 @@ export function DepositLedger({
       {!query.data.entries.length ? (
         <p className="text-muted">Chưa có bút toán cọc.</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full text-left" aria-label="Lịch sử bút toán cọc">
             <thead>
               <tr>

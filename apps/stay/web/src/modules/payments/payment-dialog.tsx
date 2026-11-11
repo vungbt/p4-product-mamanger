@@ -1,5 +1,6 @@
 import {
   Button,
+  DatePicker,
   Form,
   FormField,
   FormSubmit,
@@ -16,6 +17,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as v from 'valibot';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty, useFormValue } from '@/libraries/forms/use-form-value';
@@ -288,8 +290,8 @@ function PaymentForm({
       <FormField name="method" label="Phương thức" required>
         <Select options={MANUAL_PAYMENT_METHOD_OPTIONS} />
       </FormField>
-      <FormField name="paidOn" label="Ngày thu" required>
-        <Input type="date" max={todayIsoDate()} />
+      <FormField name="paidOn" label="Ngày thu" required {...DATE_FIELD}>
+        <DatePicker maxDate={todayIsoDate()} clearable={false} />
       </FormField>
       <FormField name="reference" label="Mã giao dịch">
         <Input maxLength={120} autoComplete="off" />

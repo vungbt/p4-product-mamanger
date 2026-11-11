@@ -2,6 +2,7 @@ import {
   Alert,
   AlertDialog,
   Button,
+  DatePicker,
   EmptyState,
   Form,
   FormField,
@@ -29,6 +30,7 @@ import { Link, useParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty, useFormValue } from '@/libraries/forms/use-form-value';
 import { displayPeriod, lineFormula, useLineDescription } from '@/modules/invoices/invoice-ui';
@@ -291,14 +293,14 @@ function SettlementForm({
   const summary = preview.data;
 
   return (
-    <div className="grid min-w-0 gap-5">
+    <div className="grid min-w-0 max-w-4xl gap-5">
       <header className="grid gap-1">
         <h1 className="text-heading font-bold">Thanh lý hợp đồng</h1>
         <p className="text-muted">
           {contract.code} · Phòng {contract.roomCode} · {contract.primaryTenantName ?? '—'}
         </p>
       </header>
-      <div className="min-w-0 overflow-x-auto">
+      <div className="min-w-0 relative overflow-x-auto">
         <Stepper
           aria-label="Các bước thanh lý"
           steps={STEPS}
@@ -325,8 +327,8 @@ function SettlementForm({
               Ngày dự kiến đã báo: {displayDate(contract.noticeDate)}
             </p>
           ) : null}
-          <FormField name="moveOutDate" label="Ngày trả phòng" required>
-            <Input type="date" min={contract.startDate} max={today} />
+          <FormField name="moveOutDate" label="Ngày trả phòng" required {...DATE_FIELD}>
+            <DatePicker minDate={contract.startDate} maxDate={today} clearable={false} />
           </FormField>
           <div className="grid min-w-0 gap-4 sm:grid-cols-2">
             {kinds.includes('electricity') ? (
@@ -622,7 +624,7 @@ function SettlementDone({ result }: { result: ContractSettlementResult }) {
   const { invoice, contract } = result;
 
   return (
-    <div className="grid min-w-0 gap-5" data-testid="settle-done">
+    <div className="grid min-w-0 max-w-4xl gap-5" data-testid="settle-done">
       <h1 className="text-heading font-bold">Đã thanh lý {contract.code}</h1>
       <Alert tone="success" title={resultText(result)}>
         Hợp đồng đã kết thúc, phòng {contract.roomCode} về trống. Cọc cấn trừ{' '}

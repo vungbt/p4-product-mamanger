@@ -3,6 +3,7 @@ import {
   AlertDialog,
   Button,
   Checkbox,
+  DatePicker,
   Form,
   FormField,
   Input,
@@ -39,6 +40,7 @@ import * as v from 'valibot';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, serverError } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormValue } from '@/libraries/forms/use-form-value';
 import { latestSearchParams } from '@/libraries/search-params';
@@ -343,7 +345,7 @@ function Wizard({
   };
 
   return (
-    <div className="grid min-w-0 gap-5">
+    <div className="grid min-w-0 max-w-4xl gap-5">
       <h1 className="text-heading font-bold">Tạo hợp đồng</h1>
       <ol className="flex flex-wrap gap-2" aria-label="Các bước">
         {STEPS.map((label, i) => (
@@ -386,10 +388,11 @@ function Wizard({
         </h2>
         {step === 0 && (
           <>
-            <FormField name="roomId" label="Phòng" required>
+            <FormField name="roomId">
               {(field) => (
                 <Select
                   label="Phòng"
+                  required
                   value={value.roomId}
                   options={[
                     ...(rooms.data?.data ?? []).map((r) => ({ value: r.id, label: r.code })),
@@ -412,8 +415,8 @@ function Wizard({
                 />
               )}
             </FormField>
-            <FormField name="startDate" label="Ngày nhận phòng" required>
-              <Input type="date" />
+            <FormField name="startDate" label="Ngày nhận phòng" required {...DATE_FIELD}>
+              <DatePicker clearable={false} />
             </FormField>
             <Select
               label="Thời hạn"
@@ -434,8 +437,8 @@ function Wizard({
                 }
               }}
             />
-            <FormField name="endDate" label="Ngày kết thúc">
-              <Input type="date" min={value.startDate} />
+            <FormField name="endDate" label="Ngày kết thúc" {...DATE_FIELD}>
+              <DatePicker {...(value.startDate ? { minDate: value.startDate } : {})} />
             </FormField>
             <FormField name="rent" label="Giá thuê chốt" required>
               <NumberInput min={0} controls={false} endAddon="₫" />
@@ -561,8 +564,8 @@ function Wizard({
                     ]}
                   />
                 </FormField>
-                <FormField name="depositDate" label="Ngày thu cọc" required>
-                  <Input type="date" />
+                <FormField name="depositDate" label="Ngày thu cọc" required {...DATE_FIELD}>
+                  <DatePicker clearable={false} />
                 </FormField>
                 <FormField name="depositNote" label="Ghi chú thu cọc">
                   <Textarea rows={2} />

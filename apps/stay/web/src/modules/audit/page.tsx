@@ -1,4 +1,13 @@
-import { Alert, Button, Form, FormField, Input, Select, useAppForm } from '@itclabs/react-ui';
+import {
+  Alert,
+  Button,
+  DatePicker,
+  Form,
+  FormField,
+  Input,
+  Select,
+  useAppForm,
+} from '@itclabs/react-ui';
 import { useAuditLog, useAuditLogs } from '@stay/sdk/react';
 import type { AuditListQuery } from '@stay/sdk/shared';
 import { useEffect, useRef, useState } from 'react';
@@ -6,6 +15,8 @@ import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
+import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
 
 const filterFields = ['actorId', 'action', 'resourceType', 'resourceId', 'from', 'to'] as const;
@@ -82,12 +93,24 @@ function Filters({
   const schema = Object.fromEntries(filterFields.map((field) => [field, v.string()]));
 
   return (
-    <Form form={form} schema={schema} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      {filterFields.map((field) => (
-        <FormField key={field} name={field} label={t(`audit.${field}`)} className="mb-0">
-          <Input type={field === 'from' || field === 'to' ? 'date' : 'text'} />
-        </FormField>
-      ))}
+    <Form form={form} schema={schema} className="grid min-w-0 grid-cols-filters items-end gap-3">
+      {filterFields.map((field) =>
+        field === 'from' || field === 'to' ? (
+          <FormField
+            key={field}
+            name={field}
+            label={t(`audit.${field}`)}
+            className="mb-0"
+            {...DATE_FIELD}
+          >
+            <DatePicker />
+          </FormField>
+        ) : (
+          <FormField key={field} name={field} label={t(`audit.${field}`)} className="mb-0">
+            <Input />
+          </FormField>
+        ),
+      )}
       <div className="flex items-end gap-2">
         <Button type="submit">{t('audit.apply')}</Button>
         <Button
@@ -183,8 +206,8 @@ export default function AuditPage() {
   }, [buildingId, buildings, params, selectBuilding, setParams]);
 
   return (
-    <section className="mx-auto w-full max-w-6xl space-y-5 p-4 lg:p-6">
-      <h1 className="text-heading font-bold text-ink">{t('nav.audit')}</h1>
+    <section className="grid min-w-0 gap-5">
+      <ScreenHeader title={t('nav.audit')} />
       <div className="space-y-4 rounded-panel border border-line bg-surface p-4">
         <Search value={params.get('q') ?? ''} onChange={(q) => update({ q })} />
         <Filters
@@ -192,7 +215,7 @@ export default function AuditPage() {
           params={params}
           apply={update}
         />
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-end gap-3">
           <Select
             label={t('audit.sortBy')}
             value={sortBy}

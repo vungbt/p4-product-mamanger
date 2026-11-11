@@ -1,9 +1,9 @@
 import {
   Button,
+  DatePicker,
   Form,
   FormField,
   FormSubmit,
-  Input,
   Textarea,
   useAppForm,
 } from '@itclabs/react-ui';
@@ -14,6 +14,7 @@ import { useState } from 'react';
 import * as v from 'valibot';
 import { todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
@@ -81,8 +82,8 @@ export function RegistrationDialog({
         aria-label="Khai báo tạm trú"
       >
         <FormError message={error} />
-        <FormField name="registeredOn" label="Ngày khai báo" required>
-          <Input type="date" min={resident.arrivalDate} max={today} />
+        <FormField name="registeredOn" label="Ngày khai báo" required {...DATE_FIELD}>
+          <DatePicker minDate={resident.arrivalDate} maxDate={today} clearable={false} />
         </FormField>
         <FormField name="note" label="Ghi chú">
           <Textarea maxLength={2000} />

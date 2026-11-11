@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import { signIn } from './helpers';
+import { pickMonth, signIn } from './helpers';
 
 const money = (value: number) =>
   new Intl.NumberFormat('vi-VN', {
@@ -53,7 +53,7 @@ for (const width of [1280, 375]) {
         await page.goto('/reports?from=2020-01&to=2020-01');
         await expect(page.getByRole('heading', { name: 'Báo cáo', exact: true })).toBeVisible();
         await expect(page.getByTestId('revenue-report')).toHaveAttribute('data-to', '2020-01');
-        await page.getByLabel('Đến tháng', { exact: true }).fill('2020-02');
+        await pickMonth(page, page, 'Đến tháng', '2020-02');
         await expect(page).toHaveURL(/to=2020-02/);
         await expect(page.getByTestId('revenue-report')).toHaveAttribute('data-to', '2020-02');
         const report = (

@@ -1,4 +1,13 @@
-import { Button, Checkbox, Form, FormField, Input, useAppForm } from '@itclabs/react-ui';
+import {
+  Button,
+  Checkbox,
+  Form,
+  IconButton,
+  Input,
+  Tag,
+  type TagTone,
+  useAppForm,
+} from '@itclabs/react-ui';
 import { useSaveReadings, useStaySdk } from '@stay/sdk/react';
 import { createUploadApi, getErrorMessage } from '@stay/sdk/shared';
 import { METER_READING_MAX, type ReadingMeter, type ReadingRoom } from '@stay/shared';
@@ -181,6 +190,39 @@ export function ReadingRoomCard({
   const hasError = room.meters.some(
     (meter) => draftFor(meter).error || (draftFor(meter).dirty && problem(draftFor(meter), meter)),
   );
+  const status: { label: string; tone: TagTone } =
+    saving || uploading
+      ? { label: 'Đang lưu', tone: 'info' }
+      : hasError
+        ? { label: 'Lỗi', tone: 'danger' }
+        : dirty
+          ? { label: 'Chưa đồng bộ', tone: 'warning' }
+          : room.meters.every((meter) => meter.current)
+            ? { label: 'Đã lưu', tone: 'success' }
+            : { label: 'Chưa nhập đủ', tone: 'neutral' };
+
+  const upload = async (meter: ReadingMeter, file: File) => {
+    setUploading(true);
+    try {
+      const photoFileId = await uploader.uploadImage({
+        purpose: 'contract_meter',
+        buildingId,
+        file,
+      });
+      change(meter, { photoFileId });
+    } catch (cause) {
+      commit({
+        ...latest.current,
+        [meter.meterId]: {
+          ...draftFor(meter),
+          dirty: true,
+          error: getErrorMessage(cause, 'Không thể tải ảnh.'),
+        },
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <article
@@ -188,27 +230,23 @@ export function ReadingRoomCard({
       data-testid="reading-room"
       aria-label={`Phòng ${room.code}`}
     >
-      <div className="flex flex-wrap justify-between gap-2">
-        <h2 className="font-semibold">Phòng {room.code}</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-semibold text-ink">Phòng {room.code}</h2>
         <span role="status">
-          {saving || uploading
-            ? 'Đang lưu'
-            : hasError
-              ? 'Lỗi'
-              : dirty
-                ? 'Chưa đồng bộ'
-                : room.meters.every((meter) => meter.current)
-                  ? 'Đã lưu'
-                  : 'Chưa nhập đủ'}
+          <Tag size="sm" tone={status.tone}>
+            {status.label}
+          </Tag>
         </span>
       </div>
       {storageError ? (
-        <p role="alert">Không thể giữ bản nháp trên máy. Giữ trang mở để tránh mất dữ liệu.</p>
+        <p role="alert" className="text-ui-sm text-danger-700">
+          Không thể giữ bản nháp trên máy. Giữ trang mở để tránh mất dữ liệu.
+        </p>
       ) : null}
       <Form
         form={form}
         schema={schema}
-        className="grid min-w-0 gap-4"
+        className="grid min-w-0 gap-3"
         onKeyDown={(event) => {
           if (
             event.key !== 'Enter' ||
@@ -223,107 +261,18 @@ export function ReadingRoomCard({
           inputs[inputs.indexOf(event.target) + 1]?.focus();
         }}
       >
-        {room.meters.map((meter) => {
-          const draft = draftFor(meter);
-          const label = meter.kind === 'electricity' ? 'Điện' : 'Nước';
-          const error = draft.dirty ? problem(draft, meter) : null;
-          const consumption =
-            draft.value && !error
-              ? Number(draft.value) - meter.previous + meter.carriedConsumption
-              : null;
-          const high =
-            consumption !== null && meter.average !== null && consumption > 2 * meter.average;
-          const locked = meter.current?.status === 'locked';
-          return (
-            <div key={meter.meterId} className="grid min-w-0 gap-2">
-              <p>
-                {label}: {meter.previous} → {locked ? 'Đã khoá' : 'Số mới'}
-              </p>
-              <FormField name={meter.kind} label={`${label} số mới`} required>
-                {() => (
-                  <Input
-                    type="number"
-                    inputMode="numeric"
-                    min={meter.previous}
-                    max={METER_READING_MAX}
-                    step={1}
-                    value={draft.value}
-                    disabled={locked || uploading}
-                    data-reading-input
-                    aria-label={`${label} số mới phòng ${room.code}`}
-                    error={error || draft.error}
-                    onChange={(event) =>
-                      change(meter, { value: event.target.value, confirmed: false })
-                    }
-                  />
-                )}
-              </FormField>
-              <p>
-                Tiêu thụ: {consumption ?? '—'} {meter.kind === 'electricity' ? 'kWh' : 'm³'} · TB 3
-                kỳ: {meter.average === null ? '—' : Math.round(meter.average * 10) / 10}
-              </p>
-              {consumption === 0 ? (
-                <p className="text-muted">Không phát sinh tiêu thụ; kiểm tra lại.</p>
-              ) : null}
-              {high ? (
-                <Checkbox
-                  checked={draft.confirmed}
-                  disabled={locked}
-                  onCheckedChange={(checked) => change(meter, { confirmed: checked === true })}
-                  label={`Tiêu thụ hơn 2 lần trung bình. Xác nhận chỉ số ${label.toLowerCase()}.`}
-                />
-              ) : null}
-              <Input
-                label={`Ảnh ${label.toLowerCase()} (tuỳ chọn)`}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                disabled={locked || !online || saving || uploading}
-                onChange={async (event) => {
-                  const file = event.target.files?.[0];
-                  if (!file) return;
-                  setUploading(true);
-                  try {
-                    const photoFileId = await uploader.uploadImage({
-                      purpose: 'contract_meter',
-                      buildingId,
-                      file,
-                    });
-                    change(meter, { photoFileId });
-                  } catch (cause) {
-                    commit({
-                      ...latest.current,
-                      [meter.meterId]: {
-                        ...draftFor(meter),
-                        dirty: true,
-                        error: getErrorMessage(cause, 'Không thể tải ảnh.'),
-                      },
-                    });
-                  } finally {
-                    setUploading(false);
-                  }
-                }}
-              />
-              {meter.current?.photo ? (
-                <a
-                  href={meter.current.photo.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-accent underline"
-                >
-                  Xem ảnh {label.toLowerCase()}
-                </a>
-              ) : null}
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={locked || saving || uploading || !online}
-                onClick={() => setReplacing(meter)}
-              >
-                Thay đồng hồ {label.toLowerCase()}
-              </Button>
-            </div>
-          );
-        })}
+        {room.meters.map((meter) => (
+          <MeterRow
+            key={meter.meterId}
+            meter={meter}
+            roomCode={room.code}
+            draft={draftFor(meter)}
+            busy={{ saving, uploading, online }}
+            onChange={(patch) => change(meter, patch)}
+            onPhoto={(file) => void upload(meter, file)}
+            onReplace={() => setReplacing(meter)}
+          />
+        ))}
       </Form>
       {hasError ? (
         <Button
@@ -365,5 +314,124 @@ export function ReadingRoomCard({
         />
       ) : null}
     </article>
+  );
+}
+
+function MeterRow({
+  meter,
+  roomCode,
+  draft,
+  busy,
+  onChange,
+  onPhoto,
+  onReplace,
+}: {
+  meter: ReadingMeter;
+  roomCode: string;
+  draft: Draft;
+  busy: { saving: boolean; uploading: boolean; online: boolean };
+  onChange: (patch: Partial<Draft>) => void;
+  onPhoto: (file: File) => void;
+  onReplace: () => void;
+}) {
+  const photoInput = useRef<HTMLInputElement>(null);
+
+  const label = meter.kind === 'electricity' ? 'Điện' : 'Nước';
+  const name = label.toLowerCase();
+  const unit = meter.kind === 'electricity' ? 'kWh' : 'm³';
+  const error = draft.dirty ? problem(draft, meter) : null;
+  const consumption =
+    draft.value && !error ? Number(draft.value) - meter.previous + meter.carriedConsumption : null;
+  const high = consumption !== null && meter.average !== null && consumption > 2 * meter.average;
+  const locked = meter.current?.status === 'locked';
+  const hasPhoto = Boolean(draft.photoFileId);
+
+  return (
+    <div className="grid min-w-0 gap-1.5 border-t border-line pt-3 first:border-t-0 first:pt-0">
+      <div className="flex min-w-0 items-start gap-2">
+        <div className="flex h-control-md w-20 shrink-0 flex-col justify-center">
+          <p className="text-ui-sm font-semibold text-ink">{label}</p>
+          <p className="text-ui-sm text-muted">Cũ {meter.previous}</p>
+        </div>
+        <Input
+          type="number"
+          inputMode="numeric"
+          min={meter.previous}
+          max={METER_READING_MAX}
+          step={1}
+          value={draft.value}
+          placeholder={locked ? 'Đã khoá' : 'Số mới'}
+          disabled={locked || busy.uploading}
+          data-reading-input
+          aria-label={`${label} số mới phòng ${roomCode}`}
+          endAddon={unit}
+          rootClassName="min-w-0 flex-1"
+          error={error || draft.error}
+          onChange={(event) => onChange({ value: event.target.value, confirmed: false })}
+        />
+        <IconButton
+          icon="camera"
+          variant={hasPhoto ? 'secondary' : 'ghost'}
+          label={`${hasPhoto ? 'Đổi' : 'Thêm'} ảnh đồng hồ ${name} (tuỳ chọn)`}
+          disabled={locked || !busy.online || busy.saving || busy.uploading}
+          onClick={() => photoInput.current?.click()}
+        />
+        <input
+          ref={photoInput}
+          type="file"
+          hidden
+          tabIndex={-1}
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+
+            event.target.value = '';
+            if (file) onPhoto(file);
+          }}
+        />
+        <IconButton
+          icon="wrench"
+          variant="ghost"
+          label={`Thay đồng hồ ${name}`}
+          disabled={locked || busy.saving || busy.uploading || !busy.online}
+          onClick={onReplace}
+        />
+      </div>
+      <p className="text-ui-sm text-muted pl-22">
+        <span>
+          Tiêu thụ: {consumption ?? '—'} {unit}
+        </span>
+        {' · '}
+        <span>TB 3 kỳ: {meter.average === null ? '—' : Math.round(meter.average * 10) / 10}</span>
+        {locked ? ' · Đã khoá' : null}
+        {meter.current?.photo ? (
+          <>
+            {' · '}
+            <a
+              href={meter.current.photo.url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-accent underline"
+            >
+              Xem ảnh {name}
+            </a>
+          </>
+        ) : hasPhoto ? (
+          ' · Đã đính ảnh'
+        ) : null}
+      </p>
+      {consumption === 0 ? (
+        <p className="text-ui-sm text-warning-700 pl-22">Không phát sinh tiêu thụ; kiểm tra lại.</p>
+      ) : null}
+      {high ? (
+        <Checkbox
+          className="pl-22"
+          checked={draft.confirmed}
+          disabled={locked}
+          onCheckedChange={(checked) => onChange({ confirmed: checked === true })}
+          label={`Tiêu thụ hơn 2 lần trung bình. Xác nhận chỉ số ${name}.`}
+        />
+      ) : null}
+    </div>
   );
 }

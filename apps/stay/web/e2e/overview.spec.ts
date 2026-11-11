@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import { saveScreenshot, signIn } from './helpers';
+import { displayPeriod, pickMonth, saveScreenshot, signIn } from './helpers';
 
 type Link = { path: string; query: Record<string, string> };
 type Todo = { kind: string; count: number; link: Link };
@@ -76,7 +76,9 @@ for (const viewport of [
       const data = await reader.overview();
 
       await shown(page, data.period);
-      await expect(page.getByLabel('Kỳ', { exact: true })).toHaveValue(data.period);
+      await expect(page.getByRole('button', { name: 'Kỳ', exact: true })).toHaveText(
+        displayPeriod(data.period),
+      );
       for (const id of ['billed', 'collected', 'remaining', 'overdue', 'rooms'])
         await expect(page.getByTestId(`overview-card-${id}`)).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Việc cần làm' })).toBeVisible();
@@ -107,7 +109,7 @@ for (const viewport of [
       // The period picker keeps the period on the URL and loads its figures.
       const previous = shiftMonth(data.period, -1);
 
-      await page.getByLabel('Kỳ', { exact: true }).fill(previous);
+      await pickMonth(page, page, 'Kỳ', previous);
       await expect(page).toHaveURL(`/?period=${previous}`);
       await shown(page, previous);
       await expect(
@@ -116,7 +118,9 @@ for (const viewport of [
       expect(await noHorizontalScroll(page)).toBe(true);
       await page.reload();
       await shown(page, previous);
-      await expect(page.getByLabel('Kỳ', { exact: true })).toHaveValue(previous);
+      await expect(page.getByRole('button', { name: 'Kỳ', exact: true })).toHaveText(
+        displayPeriod(previous),
+      );
     });
 
     test('every to-do link opens its screen', async ({ page }) => {

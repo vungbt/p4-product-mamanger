@@ -1,9 +1,9 @@
 import {
   Button,
+  DatePicker,
   Form,
   FormField,
   FormSubmit,
-  Input,
   Textarea,
   useAppForm,
 } from '@itclabs/react-ui';
@@ -19,6 +19,7 @@ import {
   isVersionConflict,
   serverError,
 } from '@/libraries/forms/api-errors';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { ConflictAlert, FormError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
@@ -119,8 +120,13 @@ export function NoticeDialog({
             }}
           />
         ) : null}
-        <FormField name="expectedMoveOutDate" label="Ngày dự kiến trả phòng" required>
-          <Input type="date" min={min} max={max} />
+        <FormField
+          name="expectedMoveOutDate"
+          label="Ngày dự kiến trả phòng"
+          required
+          {...DATE_FIELD}
+        >
+          <DatePicker minDate={min} maxDate={max} clearable={false} />
         </FormField>
         <FormField name="note" label="Ghi chú">
           <Textarea maxLength={2000} />

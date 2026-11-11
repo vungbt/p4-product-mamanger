@@ -1,12 +1,14 @@
-import { Button, Checkbox, cn, EmptyState, IconButton, Input, Select } from '@itclabs/react-ui';
+import { Button, cn, EmptyState, IconButton, Input, Select } from '@itclabs/react-ui';
 import { useInvoices, useRooms } from '@stay/sdk/react';
 import { INVOICE_KINDS, INVOICE_STATUSES, isPeriod, type StayInvoiceSummary } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FILTER_WIDE, FilterBar, FilterCheckbox } from '@/libraries/filter-bar';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
 import { useIsDesktop } from '@/libraries/use-media-query';
@@ -117,16 +119,17 @@ export default function InvoiceListPage() {
         <p>Chọn toà nhà để xem hoá đơn.</p>
       ) : (
         <>
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <Input
+          <FilterBar>
+            <PeriodPicker
               label="Kỳ"
-              type="month"
               value={period}
-              onChange={(event) => filter('period', event.target.value)}
+              clearable
+              onChange={(value) => filter('period', value)}
             />
             <Input
               label="Tìm"
               type="search"
+              rootClassName={FILTER_WIDE}
               placeholder="Mã hoá đơn hoặc phòng"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -166,13 +169,12 @@ export default function InvoiceListPage() {
               }))}
               onValueChange={(value) => filter('roomId', value)}
             />
-            <Checkbox
-              className="self-end"
+            <FilterCheckbox
               label="Chỉ hoá đơn quá hạn"
               checked={overdue}
               onCheckedChange={(value) => filter('overdue', value === true ? 'true' : null)}
             />
-          </div>
+          </FilterBar>
           {canShare && period ? (
             <Link className="font-semibold text-accent underline" to={periodSharePath(period)}>
               Chia sẻ hoá đơn kỳ {displayPeriod(period)}
@@ -273,7 +275,7 @@ function CodeLink({ invoice }: { invoice: StayInvoiceSummary }) {
 
 function InvoiceTable({ rows, onCollect }: RowsProps) {
   return (
-    <div className="min-w-0 overflow-x-auto rounded-panel border border-line bg-surface">
+    <div className="min-w-0 relative overflow-x-auto rounded-panel border border-line bg-surface">
       <table className="w-full text-left" aria-label="Danh sách hoá đơn">
         <thead>
           <tr>
