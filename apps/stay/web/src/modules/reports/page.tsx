@@ -139,8 +139,8 @@ function Revenue({ range }: { range: { buildingId: string; from: string; to: str
 
 function RevenueContent({ data }: { data: RevenueReport }) {
   const series = [
-    { id: 'billed', label: 'Phải thu theo kỳ hoá đơn' },
-    { id: 'collected', label: 'Đã thu theo ngày thu' },
+    { id: 'billed', label: 'Phải thu' },
+    { id: 'collected', label: 'Đã thu' },
     { id: 'expenses', label: 'Chi phí' },
     { id: 'profit', label: 'Lãi/lỗ' },
   ];
@@ -154,7 +154,7 @@ function RevenueContent({ data }: { data: RevenueReport }) {
       data-to={data.to}
     >
       {empty ? <p>Chưa có hoá đơn, khoản thu hoặc chi phí trong khoảng này.</p> : null}
-      <div className="min-w-0 rounded-panel border border-line bg-surface p-3">
+      <div className="min-w-0 overflow-hidden rounded-panel border border-line bg-surface p-3">
         <Suspense fallback={<Skeleton className="h-64" />}>
           <PeriodChart
             data-testid="reports-chart"
