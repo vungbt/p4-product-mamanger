@@ -742,3 +742,75 @@ scroll-contained tables on mobile and sheet-selection export dialog. SDK provide
 `reportQueryOptions`, `useRevenueReport`, `useRoomsReport`, `useUtilitiesReport`, `downloadReport`.
 Invoice/payment/expense/room/contract mutations invalidate reports.
 CI coverage: `tests/reports.integration.test.mjs`; browser coverage: `apps/stay/web/e2e/reports.spec.ts`.
+
+### Billing automation and reminders (ST-26)
+
+Migration `20261202000100-automation.cjs` adds `building_automations` (five per-building
+flags and its own optimistic `version`), `automation_runs` (unique building/period/kind),
+`job_leases`, `notifications`, and per-staff `notification_reads`. It reuses the existing
+Stay `domain_events` outbox. No portal/payment-claim/request/announcement tables change.
+
+- GET/PUT `/api/buildings/:id/automation`: scoped read Building / manage Building.
+  PUT requires `readingReminder`, `createDrafts`, `beforeDue`, `afterDue`,
+  `tenantRemindersDisabled`, and `version`; stale writes return 409. Writes are audited.
+  Defaults: all automations off, tenant reminders disabled. Owners opt in in the building
+  edit page's “Tự động hoá kỳ thu” section. Archived buildings never run.
+- GET `/api/notifications`: staff's 50 most recent notifications across accessible buildings,
+  plus `unreadCount` across all unread records. POST `/api/notifications/:id/read` marks read
+  for that staff member only (idempotent, audited). The header bell polls every 30 seconds.
+- Calendar: Asia/Ho_Chi_Minh; reading day in consumption month M−1 reminds for billing M;
+  issue day in M calls **the ST-14 `createDrafts` service**, never issues invoices. Its preview
+  exclusions identify missing readings/meters and create an owner notification naming rooms.
+  Rent/services M and utilities M−1 remain entirely in the existing billing service/library.
+  Before/after jobs run exactly due−1/due+3, including adjacent-month boundaries, for unpaid
+  issued/partially paid invoices. The current primary occupant receives the email; if missing
+  an email (or representative), staff get a notification listing unreached people/invoices.
+  ST-16 `shareInvoice` creates a fresh public link in the same transaction as each queued mail;
+  refreshing a link invalidates its predecessor, as manual ST-16 sharing does.
+
+Run in production as a **separate process/container command** after migration/build, with
+exactly the API's `STAY_DATABASE_*`, auth/web URL and production configuration:
+
+```sh
+pnpm --filter @stay/api build
+pnpm --filter @stay/api worker
+# Container command (image working directory /app/apps/stay/api): node dist/worker.js
+```
+
+No HTTP server is started by the worker. It sweeps every 30 seconds and drains only
+`stay.automation.mail` outbox events. SIGTERM/SIGINT finish current work and close DB access.
+For a worker container, override the image command with `node dist/worker.js` and disable/replace
+the image’s API HTTP healthcheck (the worker has no HTTP port). Server-core supplies the outbox
+and audited-command helpers; its lease claiming logic lives in P4’s app, so Stay implements that
+locally without modifying server-core.
+Multiple processes are safe: a committed pending run acquires a 90-second lease with a random
+fencing token. The lease row remains locked while drafts, notifications, outbox events and
+`done` commit atomically. A crash rolls these effects back; the pending run resumes after
+lease expiry, including on a later date. Completed runs never repeat. Disabled/archived pending
+runs are completed without effects. Schedules are evaluated for the current Vietnam day;
+there is no automatic backfill of days when the worker never ran. Previously pending work
+is always retried. Automation audit uses a system actor (`actorId: null`, `source: worker`),
+with identifiers/period/kind only. The internal CASL system principal is never an HTTP user.
+
+Mailer abstraction: `AutomationMailer.send(eventId, payload)`. There is no SMTP library in the
+repository, so the default **log transport does not send email** (including production); it logs
+only the event ID, never recipients, bodies or share tokens. In-app notifications still work.
+An eventual provider transport must use the stable event ID as an idempotency key: external
+provider calls can repeat after a process dies between delivery and acknowledgement.
+Delivery re-checks automation switches, archived buildings and the unpaid invoice state before
+calling the transport, so queued reminders are suppressed after opt-out or payment.
+Mail delivery has a 90-second lease, delayed retries, and dead-letter after five failed attempts
+(`domain_events.status = 'dead_letter'`; inspect/requeue operationally after fixing transport).
+Outbox payloads contain recipient and invoice links; restrict database access accordingly.
+
+Testing: `tests/automation.integration.test.mjs` runs only with CI and `STAY_TEST_API_URL`,
+using a NEW isolated building, lowercase emails, direct calls to `runAutomations(now)` and an
+injected fake mailer for `deliverAutomationMail(now, mailer)`. No worker process is needed in
+`scripts/test-stay-api-integration.sh`. Internal modules in `dist/modules/automation` expose
+these functions for deterministic tests; there is no public trigger endpoint. An operator can
+invoke `runAutomations(new Date('...+07:00'))` in an authenticated deployment shell for replay
+of a date; treat this as a privileged maintenance action, not a client capability. This can
+create drafts and queue reminders; normal opt-in and deduplication still apply.
+
+Browser coverage: `apps/stay/web/e2e/automation.spec.ts`, building A only, restores settings
+in `finally`, tests desktop/375px, bell opening and horizontal overflow.

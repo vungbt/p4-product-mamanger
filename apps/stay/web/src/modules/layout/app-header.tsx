@@ -1,13 +1,13 @@
 import { Breadcrumb, IconButton, WorkspaceHeader } from '@itclabs/react-ui';
-import { toast } from '@itclabs/react-ui/toast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { BRAND, BrandMark } from '@/brand';
-import { useCanOpen } from '@/libraries/ability';
+import { useCanAccessSome } from '@/libraries/ability';
 import { BuildingSelector } from '@/libraries/buildings/building-selector';
 import { appRoutes, ROUTES } from '@/routing/route-configs';
 import { routeTrail, useCurrentRoute } from '@/routing/use-routes';
 import AccountMenu from './account-menu';
+import NotificationsBell from './notifications-bell';
 
 function hasHistory() {
   const state: unknown = window.history.state;
@@ -19,8 +19,9 @@ function hasHistory() {
 export default function AppHeader() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  // Notifications are per building (API: read Building); tenants have none.
+  const canReadNotifications = useCanAccessSome('read', 'Building');
   const route = useCurrentRoute();
-  const canSeeRequests = useCanOpen({ action: 'update', subject: 'Maintenance' });
 
   const parent = route?.parent ? appRoutes.find(({ name }) => name === route.parent) : undefined;
 
@@ -76,14 +77,7 @@ export default function AppHeader() {
       actions={
         <>
           <BuildingSelector />
-          {canSeeRequests ? (
-            <IconButton
-              icon="bell"
-              variant="ghost"
-              label={t('header.requests')}
-              onClick={() => toast.info(t('header.requestsSoon'))}
-            />
-          ) : null}
+          {canReadNotifications ? <NotificationsBell /> : null}
           <AccountMenu />
         </>
       }
