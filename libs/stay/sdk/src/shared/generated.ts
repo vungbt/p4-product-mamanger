@@ -996,6 +996,34 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/buildings/{id}/automation': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Cấu hình tự động hoá
+     * @description Chỉ toà được phép đọc. Mặc định tắt các job và tắt toàn bộ nhắc người thuê.
+     *
+     *     **Quyền:** `read:Building`.
+     */
+    get: operations['get_api_buildings_id_automation'];
+    /**
+     * Lưu tự động hoá
+     * @description manage Building; gửi đủ năm cờ và version; stale version trả 409, có audit.
+     *
+     *     **Quyền:** `manage:Building`.
+     */
+    put: operations['put_api_buildings_id_automation'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/buildings/{id}/prices': {
     parameters: {
       query?: never;
@@ -1846,6 +1874,50 @@ export interface paths {
      *     **Quyền:** `update:MeterReading`.
      */
     post: operations['post_api_meters_id_replace'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/notifications': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Thông báo nhân viên
+     * @description 50 thông báo mới nhất trong các toà được phép đọc; unreadCount tính tất cả. Đã đọc riêng từng người.
+     *
+     *     **Quyền:** `read:Building`.
+     */
+    get: operations['get_api_notifications'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/notifications/{id}/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Đánh dấu đã đọc
+     * @description Idempotent, chỉ trong toà được phép đọc; có audit.
+     *
+     *     **Quyền:** `read:Building`.
+     */
+    post: operations['post_api_notifications_id_read'];
     delete?: never;
     options?: never;
     head?: never;
@@ -3741,6 +3813,14 @@ export interface components {
       resourceId: string;
       resourceType: string;
     };
+    StayAutomationSettings: {
+      afterDue: boolean;
+      beforeDue: boolean;
+      createDrafts: boolean;
+      readingReminder: boolean;
+      tenantRemindersDisabled: boolean;
+      version: number;
+    };
     StayBuilding: {
       address: string | null;
       archivedAt: string | null;
@@ -3976,6 +4056,19 @@ export interface components {
       /** @enum {string} */
       status: 'draft' | 'locked';
       version: number;
+    };
+    StayNotification: {
+      body: string;
+      buildingId: string;
+      createdAt: string;
+      id: string;
+      path: string;
+      readAt: string | null;
+      title: string;
+    };
+    StayNotifications: {
+      items: components['schemas']['StayNotification'][];
+      unreadCount: number;
     };
     StayOverview: {
       buildingId: string;
@@ -8588,6 +8681,70 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_buildings_id_automation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayAutomationSettings'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_buildings_id_automation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['StayAutomationSettings'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayAutomationSettings'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_buildings_id_prices: {
     parameters: {
       query?: {
@@ -10293,6 +10450,64 @@ export interface operations {
         };
       };
       400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_notifications: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayNotifications'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_notifications_id_read: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              id: string;
+            };
+            message?: string;
+          };
+        };
+      };
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];

@@ -24,6 +24,8 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 - Mọi dữ liệu nghiệp vụ gắn \`buildingId\`; quyền kiểm tra theo toà.`;
 
 const TAG_DESCRIPTIONS = {
+  automation: 'Tự động hoá theo toà, chỉ tạo bản nháp; nhắc qua email và thông báo.',
+  notifications: 'Thông báo nhân viên theo toà; trạng thái đã đọc riêng từng người.',
   residents: 'Tạm trú theo ngày, khai báo theo lần ở và xuất Excel có audit.',
   reports:
     'Báo cáo tổng hợp SQL theo tháng, theo phòng, điện nước và xuất sổ Excel. Chỉ đọc, có phân quyền theo toà.',
@@ -76,6 +78,22 @@ export const FILE_RESPONSES = {
 };
 
 const OPERATIONS = {
+  'GET /api/buildings/{id}/automation': [
+    'Cấu hình tự động hoá',
+    'Chỉ toà được phép đọc. Mặc định tắt các job và tắt toàn bộ nhắc người thuê.',
+  ],
+  'PUT /api/buildings/{id}/automation': [
+    'Lưu tự động hoá',
+    'manage Building; gửi đủ năm cờ và version; stale version trả 409, có audit.',
+  ],
+  'GET /api/notifications': [
+    'Thông báo nhân viên',
+    '50 thông báo mới nhất trong các toà được phép đọc; unreadCount tính tất cả. Đã đọc riêng từng người.',
+  ],
+  'POST /api/notifications/{id}/read': [
+    'Đánh dấu đã đọc',
+    'Idempotent, chỉ trong toà được phép đọc; có audit.',
+  ],
   'GET /api/buildings/{buildingId}/residents': [
     'Danh sách tạm trú',
     'Người ở của hợp đồng active/ending tại date; fromDate bao gồm, toDate không bao gồm. CCCD đầy đủ chỉ dành cho nhân viên có read Tenant trong toà. Không ghi audit dữ liệu cá nhân.',
@@ -551,6 +569,15 @@ const settlementBody = (name) => ({
   requestBody: { required: true, content: { 'application/json': { schema: { ref: name } } } },
 });
 const OVERRIDES = {
+  'GET /api/buildings/{id}/automation': { response: { ref: 'StayAutomationSettings' } },
+  'PUT /api/buildings/{id}/automation': {
+    response: { ref: 'StayAutomationSettings' },
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'StayAutomationSettings' } } },
+    },
+  },
+  'GET /api/notifications': { response: { ref: 'StayNotifications' } },
   'POST /api/contracts/{id}/portal-links': {
     requestBody: {
       required: true,
@@ -978,6 +1005,7 @@ export default {
     { file: 'libs/shared/src/index.ts', names: ['ApiError', 'PaginationMeta'] },
     'libs/stay/shared/src/ability.ts',
     'libs/stay/shared/src/account.ts',
+    'libs/stay/shared/src/automation.ts',
     'libs/stay/shared/src/audit.ts',
     'libs/stay/shared/src/building.ts',
     'libs/stay/shared/src/constants.ts',

@@ -46,6 +46,7 @@ import NotFoundPage from '@/modules/errors/not-found-page';
 import { billingDayLabel, billingDayOptions } from '@/modules/settings/billing/options';
 import { buildingPricesPath, ROUTES } from '@/routing/route-configs';
 import { BANK_OPTIONS } from '../banks';
+import { AutomationSettings } from './automation-settings';
 import { VietQrPreview } from './vietqr-preview';
 
 /** Select value meaning "use the system setting" (`null` in the API). */
@@ -526,6 +527,7 @@ export default function BuildingFormPage() {
           onReload={() => void reload()}
         />
       ) : null}
+      {building && !building.archivedAt ? <AutomationSettings id={building.id} /> : null}
     </div>
   );
 }

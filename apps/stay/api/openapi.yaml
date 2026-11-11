@@ -21,6 +21,8 @@ servers:
 tags:
   - name: audit
     description: Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.
+  - name: automation
+    description: Tự động hoá theo toà, chỉ tạo bản nháp; nhắc qua email và thông báo.
   - name: buildings
     description: Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.
   - name: contracts
@@ -261,6 +263,182 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{id}/automation:
+    get:
+      tags:
+        - automation
+      operationId: get_api_buildings_id_automation
+      summary: Cấu hình tự động hoá
+      description: |-
+        Chỉ toà được phép đọc. Mặc định tắt các job và tắt toàn bộ nhắc người thuê.
+
+        **Quyền:** `read:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayAutomationSettings"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - automation
+      operationId: put_api_buildings_id_automation
+      summary: Lưu tự động hoá
+      description: |-
+        manage Building; gửi đủ năm cờ và version; stale version trả 409, có audit.
+
+        **Quyền:** `manage:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StayAutomationSettings"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayAutomationSettings"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/notifications:
+    get:
+      tags:
+        - automation
+      operationId: get_api_notifications
+      summary: Thông báo nhân viên
+      description: |-
+        50 thông báo mới nhất trong các toà được phép đọc; unreadCount tính tất cả. Đã đọc riêng từng người.
+
+        **Quyền:** `read:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayNotifications"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/notifications/{id}/read:
+    post:
+      tags:
+        - automation
+      operationId: post_api_notifications_id_read
+      summary: Đánh dấu đã đọc
+      description: |-
+        Idempotent, chỉ trong toà được phép đọc; có audit.
+
+        **Quyền:** `read:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                    required:
+                      - id
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/buildings/{buildingId}/billing/{period}/preview:
@@ -13522,6 +13700,28 @@ components:
         - outcome
         - changes
         - createdAt
+    StayAutomationSettings:
+      type: object
+      properties:
+        readingReminder:
+          type: boolean
+        createDrafts:
+          type: boolean
+        beforeDue:
+          type: boolean
+        afterDue:
+          type: boolean
+        tenantRemindersDisabled:
+          type: boolean
+        version:
+          type: number
+      required:
+        - readingReminder
+        - createDrafts
+        - beforeDue
+        - afterDue
+        - tenantRemindersDisabled
+        - version
     StayBuilding:
       type: object
       properties:
@@ -14331,6 +14531,45 @@ components:
         - photo
         - status
         - version
+    StayNotification:
+      type: object
+      properties:
+        id:
+          type: string
+        buildingId:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        path:
+          type: string
+        createdAt:
+          type: string
+        readAt:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - buildingId
+        - title
+        - body
+        - path
+        - createdAt
+        - readAt
+    StayNotifications:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/StayNotification"
+        unreadCount:
+          type: number
+      required:
+        - items
+        - unreadCount
     StayOverview:
       type: object
       properties:
