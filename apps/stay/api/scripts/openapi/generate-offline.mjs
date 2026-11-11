@@ -140,7 +140,7 @@ try {
               type: 'object',
               required: ['method', 'amount', 'count'],
               properties: {
-                method: { type: 'string', enum: ['cash', 'bank_transfer', 'other'] },
+                method: { type: 'string', enum: ['cash', 'bank_transfer', 'other', 'deposit'] },
                 amount: { type: 'integer' },
                 count: { type: 'integer' },
               },
@@ -246,6 +246,16 @@ try {
   }
   spec.paths['/api/contracts/{id}/deposits'].post.responses['422'] = {
     description: 'Số dư cọc không đủ hoặc số tiền vượt giới hạn an toàn.',
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+  };
+  spec.paths['/api/contracts/{id}/settle'].post.responses['409'] = {
+    description:
+      'Hợp đồng không ở trạng thái active/ending (`contract_not_active`), còn hoá đơn nháp (`contract_has_draft_invoices`, `extensions.invoices`: `SettlementDraftInvoice[]`), đã có chỉ số sau ngày trả phòng (`reading_after_move_out`), đổi phòng sau ngày trả phòng (`contract_has_future_room_change`), `version_conflict` hoặc key đã dùng với nội dung khác (`idempotency_conflict`).',
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+  };
+  spec.paths['/api/contracts/{id}/settle'].post.responses['422'] = {
+    description:
+      'Ngày trả phòng sau hôm nay hoặc trước ngày bắt đầu, thiếu/nhỏ hơn chỉ số trước (`finalElectric`, `finalWater`), phụ thu thiếu lý do, ảnh không hợp lệ; `invalid_settlement` khi dữ liệu tính tiền không hợp lệ.',
     content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
   };
   const output = YAML.stringify(spec, { lineWidth: 120, aliasDuplicateObjects: false });

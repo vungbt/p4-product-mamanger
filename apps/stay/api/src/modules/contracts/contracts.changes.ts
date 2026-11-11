@@ -132,7 +132,8 @@ export async function changeContract(
       if (!input.endDate || input.endDate <= (row.endDate ?? row.startDate))
         invalid('endDate', 'Ngày kết thúc mới phải sau ngày kết thúc cũ.');
       payload.endDate = input.endDate;
-      if (!input.preview) row.set({ endDate: input.endDate, status: 'active' });
+      // Renewing also withdraws a move-out notice (ending → active).
+      if (!input.preview) row.set({ endDate: input.endDate, status: 'active', noticeDate: null });
     }
     if (kind === 'occupants') {
       const tenant = input.tenantId

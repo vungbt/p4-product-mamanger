@@ -230,7 +230,8 @@ function ReverseButton({
   payment,
   onReverse,
 }: { payment: StayPayment } & Pick<RowsProps, 'onReverse'>) {
-  if (!onReverse || payment.status === 'reversed') return null;
+  // Deposit offsets belong to a settlement (ST-17) and are final.
+  if (!onReverse || payment.status === 'reversed' || payment.method === 'deposit') return null;
   return (
     <IconButton
       icon="rotateLeft"

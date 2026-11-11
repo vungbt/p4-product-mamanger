@@ -746,10 +746,14 @@ export async function listInvoices(
   };
 }
 
-export async function getInvoice(user: StayUser, id: string): Promise<StayInvoice> {
-  const row = await findInvoice(user, id, 'read');
+export async function getInvoice(
+  user: StayUser,
+  id: string,
+  transaction?: Transaction,
+): Promise<StayInvoice> {
+  const row = await findInvoice(user, id, 'read', transaction);
 
-  return invoiceDto(row);
+  return invoiceDto(row, transaction);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1049,6 +1053,8 @@ export async function voidInvoice(
 
     if (input.version !== undefined) assertVersion(row.version, input.version);
     if (row.status === 'void') conflict('invoice_already_void');
+    // The contract is ended and the deposit applied against it (ST-17): never re-opened.
+    if (row.kind === 'settlement') conflict('settlement_invoice_not_voidable');
     if (row.paidTotal !== 0 || (row.status !== 'draft' && row.status !== 'issued'))
       conflict('invoice_has_payments');
     await row.update(

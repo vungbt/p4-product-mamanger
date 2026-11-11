@@ -10,6 +10,7 @@ Pure billing formulas of [rules.md](../../../documents/stay/rules.md): no DB, no
 | `computeMoveInInvoice(input)` | Rent + services from the start date to month end (or contract end), prorated; no utilities, no deposit |
 | `computeSettlement(input)` | Rent + services for stayed days in periods not in `invoicedPeriods` (nor in `prepaidLines`), prorated like a monthly invoice from `charges`; utilities to the move-out reading, optional refund of prepaid days after D (`refundUnusedRent`), surcharges; plus outstanding invoices, deposit offset and `ownerRefunds` / `tenantPays` |
 | `toPrepaidLines(lines, invoiceId?)` | Rent/service lines of an issued invoice as `prepaidLines` for a settlement |
+| `allocateSettlementDeposit(input)` | Splits the deposit over earlier unpaid invoices (oldest first) then the settlement invoice; the rest is refunded. A negative settlement total is a credit, never paid from the deposit. Same net as `computeSettlement` |
 | `meterConsumption(segments)` | Total consumption over one or two meter segments (meter replacement) |
 | `dayRatio(term, period)` | `days stayed in M / days in M`, counting both start and end day |
 | `resolvePrice({ defaultPrice, overrides, on })` | Override with the latest `effectiveFrom ≤ on`, else the default |

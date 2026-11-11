@@ -58,7 +58,9 @@ export function DepositLedger({
                   <td className="whitespace-nowrap p-2">{displayDate(entry.occurredOn)}</td>
                   <td className="p-2">{LABELS[entry.type]}</td>
                   <td className="whitespace-nowrap p-2">{formatVnd(entry.amount)}</td>
-                  <td className="p-2">{METHODS[entry.method]}</td>
+                  <td className="p-2">
+                    {entry.type === 'applied' ? 'Cấn trừ' : METHODS[entry.method]}
+                  </td>
                   <td className="max-w-64 whitespace-pre-wrap break-words p-2">
                     {entry.note ?? '—'}
                   </td>

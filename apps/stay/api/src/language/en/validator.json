@@ -71,7 +71,15 @@
     "reference": "Reference",
     "dateFrom": "From",
     "dateTo": "To",
-    "invoiceId": "Invoice"
+    "invoiceId": "Invoice",
+    "expectedMoveOutDate": "Expected move-out date",
+    "moveOutDate": "Move-out date",
+    "finalElectric": "Final electricity reading",
+    "finalWater": "Final water reading",
+    "electricPhotoFileId": "Electricity meter photo",
+    "waterPhotoFileId": "Water meter photo",
+    "surcharges": "Settlement surcharges",
+    "refundMethod": "Deposit refund method"
   },
   "message": {
     "query_string": "Query parameters must contain a single string value."

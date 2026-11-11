@@ -98,7 +98,14 @@ export default function ContractListPage() {
       header: 'Cọc đang giữ',
       cell: ({ row }) => formatVnd(row.original.depositHeld),
     },
-    { id: 'status', header: 'Trạng thái', cell: ({ row }) => CONTRACT_LABELS[row.original.status] },
+    {
+      id: 'status',
+      header: 'Trạng thái',
+      cell: ({ row }) =>
+        row.original.status === 'ending' && row.original.noticeDate
+          ? `${CONTRACT_LABELS.ending} · trả ${displayDate(row.original.noticeDate)}`
+          : CONTRACT_LABELS[row.original.status],
+    },
   ];
 
   return (

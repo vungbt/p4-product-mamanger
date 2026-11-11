@@ -25,6 +25,9 @@ import { paymentDtos } from './payments.dto.js';
 
 export type PaymentSortField = 'paidOn' | 'amount' | 'createdAt';
 
+/** A payment to record: manual input, or `deposit` written by settlement (ST-17). */
+export type PaymentRecordInput = Omit<PaymentInput, 'method'> & { method: PaymentMethod };
+
 export interface PaymentListQuery extends ListQuery<PaymentSortField> {
   buildingId?: string;
   invoiceId?: string;
@@ -137,7 +140,7 @@ async function auditPayment(
 export async function insertPayment(
   user: StayUser,
   invoiceId: string,
-  input: PaymentInput,
+  input: PaymentRecordInput,
   transaction: Transaction,
 ): Promise<PaymentModel> {
   const invoice = await findInvoice(user, invoiceId, 'create', transaction);
@@ -228,6 +231,8 @@ export async function reversePayment(
     const payment = await found.reload({ transaction, lock: transaction.LOCK.UPDATE });
 
     if (payment.reversedAt) conflict('payment_already_reversed');
+    // The deposit ledger holds the matching `applied` entry; a settlement is final (ST-17).
+    if (payment.method === 'deposit') conflict('deposit_payment_not_reversible');
     if (!input.reason.trim()) throw new BaseError('invalid_payment', 422, 'invalid_payment');
     const before = { paidTotal: invoice.paidTotal, status: invoice.status };
 

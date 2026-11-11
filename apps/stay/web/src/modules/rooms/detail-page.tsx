@@ -71,6 +71,7 @@ export default function RoomDetailPage() {
   const query = useRoom(id);
   const archive = useArchiveRoom();
   const canManage = useCanAccess('manage', 'Room');
+  const canSettle = useCanAccess('settle', 'Contract');
   const { formatCurrency, formatDate, formatNumber } = useFormatters();
   const [maintenanceOpen, setMaintenanceOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -222,25 +223,35 @@ export default function RoomDetailPage() {
 
         <Section title={t('rooms.detail.contract')} testId="room-contract">
           {room.contract ? (
-            <Facts
-              items={[
-                {
-                  label: t('rooms.detail.contractCode'),
-                  value: (
-                    <Link className="text-accent" to={`/contracts/${room.contract.id}`}>
-                      {room.contract.code}
-                    </Link>
-                  ),
-                },
-                {
-                  label: t('rooms.detail.primaryTenant'),
-                  value: room.contract.primaryTenantName ?? '—',
-                },
-                { label: t('rooms.detail.startDate'), value: date(room.contract.startDate) },
-                { label: t('rooms.detail.rent'), value: money(room.contract.rent) },
-                { label: t('rooms.detail.depositHeld'), value: money(room.contract.depositHeld) },
-              ]}
-            />
+            <div className="grid gap-3">
+              <Facts
+                items={[
+                  {
+                    label: t('rooms.detail.contractCode'),
+                    value: (
+                      <Link className="text-accent" to={`/contracts/${room.contract.id}`}>
+                        {room.contract.code}
+                      </Link>
+                    ),
+                  },
+                  {
+                    label: t('rooms.detail.primaryTenant'),
+                    value: room.contract.primaryTenantName ?? '—',
+                  },
+                  { label: t('rooms.detail.startDate'), value: date(room.contract.startDate) },
+                  { label: t('rooms.detail.rent'), value: money(room.contract.rent) },
+                  { label: t('rooms.detail.depositHeld'), value: money(room.contract.depositHeld) },
+                ]}
+              />
+              {canSettle && room.status === 'occupied' ? (
+                <Link
+                  className="font-semibold text-accent"
+                  to={`/contracts/${room.contract.id}/settle`}
+                >
+                  Thanh lý hợp đồng
+                </Link>
+              ) : null}
+            </div>
           ) : (
             <div className="grid gap-2">
               <Empty>{t('rooms.detail.noContract')}</Empty>

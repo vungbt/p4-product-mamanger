@@ -15,6 +15,9 @@ import { BillingError, withBillingErrors } from './errors.js';
 import { finalizeInvoice, manualLines, rentLine, serviceLines, utilityLines } from './lines.js';
 import { dayRatio } from './ratio.js';
 import {
+  type DepositAllocation,
+  type DepositAllocationInput,
+  type DepositAllocationLine,
   type InvoiceLine,
   LINE_DESCRIPTION_KEYS,
   type OutstandingInvoice,
@@ -288,6 +291,70 @@ export function computeSettlement(input: SettlementInput): SettlementResult {
       depositHeld,
       depositApplied,
       depositRefunded: depositHeld - depositApplied,
+      ownerRefunds: Math.max(0, balance),
+      tenantPays: Math.max(0, -balance),
+    };
+  });
+}
+
+/**
+ * Splits the deposit of a settlement over the invoices it pays (rules.md "Trả phòng và thanh
+ * lý"): earlier unpaid invoices first, in the given order (oldest first), then the settlement
+ * invoice, so payments land on the original invoices and anything still owed stays on the
+ * settlement invoice. The rest of the deposit is refunded.
+ *
+ * A negative settlement total (refunds larger than the charges) is a credit the owner pays out
+ * with the deposit refund; it is never paid from the deposit. The net result always equals
+ * `computeSettlement`: `ownerRefunds − tenantPays = depositHeld − amountDue`.
+ */
+export function allocateSettlementDeposit(input: DepositAllocationInput): DepositAllocation {
+  return withBillingErrors(() => {
+    const depositHeld = requireVnd(input.depositHeld, 'depositHeld', { min: 0 });
+    const settlementTotal = requireVnd(input.settlementTotal, 'settlementTotal');
+    const outstanding = input.outstandingInvoices.map((invoice, index) => {
+      if (typeof invoice.invoiceId !== 'string' || invoice.invoiceId === '') {
+        throw new BillingError('INVALID_OUTSTANDING_INVOICE', `outstandingInvoices[${index}]`, {
+          index,
+        });
+      }
+
+      return {
+        invoiceId: invoice.invoiceId,
+        remaining: requireVnd(invoice.remaining, `outstandingInvoices[${index}].remaining`, {
+          min: 1,
+        }),
+      };
+    });
+    const targets = [
+      ...outstanding,
+      ...(settlementTotal > 0 ? [{ invoiceId: null, remaining: settlementTotal }] : []),
+    ];
+    let left = depositHeld;
+    const allocations: DepositAllocationLine[] = [];
+
+    for (const target of targets) {
+      const amount = Math.min(left, target.remaining);
+
+      left -= amount;
+      allocations.push({
+        invoiceId: target.invoiceId,
+        amount,
+        remaining: target.remaining - amount,
+      });
+    }
+
+    const depositApplied = depositHeld - left;
+    const settlementCredit = Math.max(0, -settlementTotal);
+    const remainingDue = sumVnd(allocations.map((line) => line.remaining));
+    const balance = left + settlementCredit - remainingDue;
+
+    return {
+      allocations,
+      depositApplied,
+      settlementDepositApplied: allocations.find((line) => line.invoiceId === null)?.amount ?? 0,
+      depositRefunded: left,
+      settlementCredit,
+      remainingDue,
       ownerRefunds: Math.max(0, balance),
       tenantPays: Math.max(0, -balance),
     };

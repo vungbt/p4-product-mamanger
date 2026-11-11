@@ -96,5 +96,14 @@
   "payment_exceeds_remaining": "The amount exceeds the invoice's remaining amount ({{remaining}} VND).",
   "payment_already_reversed": "The payment was already reversed.",
   "invalid_payment": "Invalid payment.",
-  "payment_amount_overflow": "Payment totals exceed the safe limit."
+  "payment_amount_overflow": "Payment totals exceed the safe limit.",
+  "contract_not_active": "Only active or ending contracts can be changed.",
+  "contract_not_ending": "The contract has no move-out notice.",
+  "contract_has_draft_invoices": "The contract still has draft invoices. Issue or void them before settling.",
+  "contract_has_future_room_change": "The contract has a room change after the move-out date.",
+  "reading_after_move_out": "A meter reading was recorded after the move-out date; choose a later date.",
+  "invalid_settlement": "The settlement cannot be computed from the current data (readings, prices or invoices).",
+  "settlement_invoice_not_voidable": "A settlement invoice cannot be voided.",
+  "deposit_payment_not_reversible": "A deposit offset of a settlement cannot be reversed.",
+  "missing_meter": "The room has no meter for a registered electricity/water service."
 }

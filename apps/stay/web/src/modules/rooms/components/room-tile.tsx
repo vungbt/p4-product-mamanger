@@ -9,6 +9,7 @@ import {
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { useCanAccess } from '@/libraries/ability';
 import { roomEditPath, roomPath } from '@/routing/route-configs';
 import { ROOM_STATUS_STYLES, type Room, RoomStatusBadge } from '../room-status';
 
@@ -20,6 +21,8 @@ type QuickActionOptions = {
   onMaintenance: (room: Room) => void;
   /** Set when the user may record payments: "Thu tiền" for a room with debt (ST-15). */
   onCollect?: (room: Room) => void;
+  /** The user may settle contracts (owner): "Thanh lý" for an occupied room (ST-17). */
+  canSettle?: boolean;
 };
 
 /**
@@ -33,6 +36,7 @@ export function roomQuickActions({
   open,
   onMaintenance,
   onCollect,
+  canSettle = false,
 }: QuickActionOptions): DropdownMenuEntry[] {
   const entries: DropdownMenuEntry[] = [
     { id: 'view', label: t('rooms.actions.view'), onSelect: () => open(roomPath(room.id)) },
@@ -49,6 +53,12 @@ export function roomQuickActions({
       id: 'collect',
       label: t('rooms.actions.collect'),
       onSelect: () => onCollect(room),
+    });
+  if (canSettle && room.status === 'occupied' && room.contract)
+    entries.push({
+      id: 'settle',
+      label: 'Thanh lý',
+      onSelect: () => open(`/contracts/${room.contract?.id}/settle`),
     });
 
   if (!canManage) return entries;
@@ -82,6 +92,7 @@ export function RoomTile({ room, canManage, onMaintenance, onCollect }: RoomTile
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { formatCurrency } = useFormatters();
+  const canSettle = useCanAccess('settle', 'Contract');
 
   const style = ROOM_STATUS_STYLES[room.status];
   const tenant =
@@ -97,6 +108,7 @@ export function RoomTile({ room, canManage, onMaintenance, onCollect }: RoomTile
     open: navigate,
     onMaintenance,
     onCollect,
+    canSettle,
   });
 
   return (

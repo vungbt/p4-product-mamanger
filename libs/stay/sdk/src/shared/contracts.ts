@@ -7,6 +7,17 @@ export type ContractInput = components['schemas']['ContractInput'];
 export type ContractUpdateInput = ContractInput & { version: number };
 
 export type ContractChangeInput = components['schemas']['ContractChangeInput'];
+export type ContractNoticeInput = components['schemas']['ContractNoticeInput'];
+export type ContractSettlementInput = components['schemas']['ContractSettlementInput'];
+export type ContractSettleInput = components['schemas']['ContractSettleInput'];
+export type ContractSettlementPreview = components['schemas']['ContractSettlementPreview'];
+export type ContractSettlementResult = components['schemas']['ContractSettlementResult'];
+export interface ContractSettleCommand {
+  id: string;
+  body: ContractSettleInput;
+  /** One key per confirmation; retrying the same confirmation reuses it. */
+  idempotencyKey: string;
+}
 export type ContractChangeKind =
   | 'renew'
   | 'rent-change'
@@ -67,5 +78,29 @@ export function createContractApi(sdk: StaySdk) {
       unwrap(await sdk.POST('/api/contracts/{id}/activate', { params: { path: { id } } })).data,
     cancel: async (id: string) =>
       unwrap(await sdk.POST('/api/contracts/{id}/cancel', { params: { path: { id } } })).data,
+    notice: async ({ id, body }: { id: string; body: ContractNoticeInput }) =>
+      unwrap(await sdk.POST('/api/contracts/{id}/notice', { params: { path: { id } }, body })).data,
+    cancelNotice: async ({ id, version }: { id: string; version: number }) =>
+      unwrap(
+        await sdk.POST('/api/contracts/{id}/cancel-notice', {
+          params: { path: { id } },
+          body: { version },
+        }),
+      ).data,
+    settlementPreview: async (id: string, body: ContractSettlementInput, signal?: AbortSignal) =>
+      unwrap(
+        await sdk.POST('/api/contracts/{id}/settlement-preview', {
+          params: { path: { id } },
+          body,
+          signal,
+        }),
+      ).data,
+    settle: async ({ id, body, idempotencyKey }: ContractSettleCommand) =>
+      unwrap(
+        await sdk.POST('/api/contracts/{id}/settle', {
+          params: { path: { id }, header: { 'Idempotency-Key': idempotencyKey } },
+          body,
+        }),
+      ).data,
   };
 }

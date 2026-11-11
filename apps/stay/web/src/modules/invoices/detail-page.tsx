@@ -237,7 +237,7 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
                 key={payment.id}
                 payment={payment}
                 onReverse={
-                  canReverse && payment.status === 'recorded'
+                  canReverse && payment.status === 'recorded' && payment.method !== 'deposit'
                     ? () => setReversing(payment)
                     : undefined
                 }

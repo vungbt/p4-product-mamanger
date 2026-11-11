@@ -26,6 +26,19 @@ import {
   moveInPreview,
   updateContract,
 } from './contracts.service.js';
+import {
+  readNoticeInput,
+  readSettleInput,
+  readSettlementPreviewInput,
+  readVersionInput,
+  settleIdempotencyKey,
+} from './contracts.settlement.input.js';
+import {
+  cancelNotice,
+  giveNotice,
+  settleContract,
+  settlementPreview,
+} from './contracts.settlement.js';
 
 const router = Router();
 const sortFields: ContractSortField[] = ['code', 'startDate', 'endDate', 'createdAt'];
@@ -210,6 +223,49 @@ router.post(
       readChangeInput(formBody(req), 'leave'),
       req.get('Idempotency-Key'),
       uuidRouteId(req, 'occupantId'),
+    ),
+  ),
+);
+
+// ST-17: notice (update Contract), preview (read Contract), settle (`settle`: owner only).
+router.post(
+  '/contracts/:id/notice',
+  authRequired,
+  requireScopedAbility('update', 'Contract'),
+  apiHandler((req) =>
+    giveNotice(currentUser(req), uuidRouteId(req), readNoticeInput(formBody(req))),
+  ),
+);
+router.post(
+  '/contracts/:id/cancel-notice',
+  authRequired,
+  requireScopedAbility('update', 'Contract'),
+  apiHandler((req) =>
+    cancelNotice(currentUser(req), uuidRouteId(req), readVersionInput(formBody(req))),
+  ),
+);
+router.post(
+  '/contracts/:id/settlement-preview',
+  authRequired,
+  requireScopedAbility('read', 'Contract'),
+  apiHandler((req) =>
+    settlementPreview(
+      currentUser(req),
+      uuidRouteId(req),
+      readSettlementPreviewInput(formBody(req)),
+    ),
+  ),
+);
+router.post(
+  '/contracts/:id/settle',
+  authRequired,
+  requireScopedAbility('settle', 'Contract'),
+  apiHandler((req) =>
+    settleContract(
+      currentUser(req),
+      uuidRouteId(req),
+      readSettleInput(formBody(req)),
+      settleIdempotencyKey(req),
     ),
   ),
 );

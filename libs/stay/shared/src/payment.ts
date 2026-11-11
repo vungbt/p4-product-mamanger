@@ -1,10 +1,16 @@
-import type { InvoiceStatus, PaymentMethod, PaymentStatus } from './constants.js';
+import type {
+  InvoiceStatus,
+  ManualPaymentMethod,
+  PaymentMethod,
+  PaymentStatus,
+} from './constants.js';
 
 /** `POST /api/invoices/:id/payments` (with an `Idempotency-Key` header). */
 export interface PaymentInput {
   /** Integer VND, 1 … the invoice's remaining amount (`payment_exceeds_remaining` otherwise). */
   amount: number;
-  method: PaymentMethod;
+  /** `deposit` is reserved for settlement (ST-17) and refused here. */
+  method: ManualPaymentMethod;
   /** `YYYY-MM-DD` (Asia/Ho_Chi_Minh), not after today. */
   paidOn: string;
   /** Bank transaction id or receipt number, for reconciliation. */

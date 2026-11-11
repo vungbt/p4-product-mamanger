@@ -235,3 +235,38 @@ export interface SettlementResult extends ComputedInvoice {
   /** Tenant pays Y (`amountDue − depositHeld` when positive). */
   tenantPays: Vnd;
 }
+
+export interface DepositAllocationInput {
+  depositHeld: Vnd;
+  /** Settlement invoice total (may be ≤ 0). */
+  settlementTotal: Vnd;
+  /** Earlier invoices with something left to collect, oldest first. */
+  outstandingInvoices: { invoiceId: string; remaining: Vnd }[];
+}
+
+export interface DepositAllocationLine {
+  /** `null`: the settlement invoice (not created yet in a preview). */
+  invoiceId: string | null;
+  /** Deposit recorded on this invoice (may be 0 when the deposit ran out). */
+  amount: Vnd;
+  /** Still owed on this invoice after the deposit. */
+  remaining: Vnd;
+}
+
+export interface DepositAllocation {
+  allocations: DepositAllocationLine[];
+  /** Sum of `allocations` (`applied` entries). */
+  depositApplied: Vnd;
+  /** Part of `depositApplied` on the settlement invoice. */
+  settlementDepositApplied: Vnd;
+  /** Deposit returned (`refunded` entry). */
+  depositRefunded: Vnd;
+  /** −total of a negative settlement invoice: owed to the tenant, paid with the refund. */
+  settlementCredit: Vnd;
+  /** Still owed on the invoices after the deposit. */
+  remainingDue: Vnd;
+  /** Net: owner pays the tenant X. */
+  ownerRefunds: Vnd;
+  /** Net: tenant pays Y. */
+  tenantPays: Vnd;
+}
