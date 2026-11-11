@@ -50,7 +50,11 @@ jobs:
         with:
           node-version: 22
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @stay/web exec playwright install --with-deps chromium
+      # apt mirrors on hosted runners are sometimes unreachable; the runner image already ships the
+      # Chromium system libraries, so fall back to installing only the browser.
+      - run: >-
+          pnpm --filter @stay/web exec playwright install --with-deps chromium
+          || pnpm --filter @stay/web exec playwright install chromium
       - run: bash scripts/test-stay-web-e2e.sh
       - uses: actions/upload-artifact@v4
         if: always()
