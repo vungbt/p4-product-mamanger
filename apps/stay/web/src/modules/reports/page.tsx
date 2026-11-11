@@ -154,7 +154,7 @@ function RevenueContent({ data }: { data: RevenueReport }) {
       data-to={data.to}
     >
       {empty ? <p>Chưa có hoá đơn, khoản thu hoặc chi phí trong khoảng này.</p> : null}
-      <div className="min-w-0 overflow-hidden rounded-panel border border-line bg-surface p-3">
+      <div className="relative min-w-0 overflow-hidden rounded-panel border border-line bg-surface p-3">
         <Suspense fallback={<Skeleton className="h-64" />}>
           <PeriodChart
             data-testid="reports-chart"

@@ -187,7 +187,7 @@ function OverviewContent({
         <h2 id="overview-chart-title" className="text-section font-semibold text-ink">
           6 kỳ gần nhất
         </h2>
-        <div className="min-w-0 rounded-panel border border-line bg-surface p-3 sm:p-5">
+        <div className="relative min-w-0 overflow-hidden rounded-panel border border-line bg-surface p-3 sm:p-5">
           <Suspense fallback={<Skeleton className="h-64" />}>
             <PeriodChart
               type="bar"
