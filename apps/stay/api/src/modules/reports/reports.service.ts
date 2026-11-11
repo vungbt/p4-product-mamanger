@@ -129,7 +129,7 @@ export async function roomsReport(
       occupancyRate: number | null;
     }>(
       `
-      WITH days AS (SELECT d::date day FROM generate_series(CAST(:start AS date), CAST(:end AS date), interval '1 day') d),
+      WITH days AS (SELECT d::date AS day FROM generate_series(CAST(:start AS date), CAST(:end AS date), interval '1 day') d),
       occupied AS (
         SELECT DISTINCT stay_contract_room_at(c.id, d.day) room_id, d.day
         FROM contracts c JOIN days d ON c.start_date <= d.day
