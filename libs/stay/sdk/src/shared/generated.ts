@@ -808,6 +808,50 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/buildings/{buildingId}/residents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh sách tạm trú
+     * @description Người ở của hợp đồng active/ending tại date; fromDate bao gồm, toDate không bao gồm. CCCD đầy đủ chỉ dành cho nhân viên có read Tenant trong toà. Không ghi audit dữ liệu cá nhân.
+     *
+     *     **Quyền:** `read:Tenant`.
+     */
+    get: operations['get_api_buildings_buildingId_residents'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/buildings/{buildingId}/residents/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xuất danh sách tạm trú Excel
+     * @description read Tenant; 10 lần/phút; ngoài phạm vi trả 404. Audit người xuất, thời điểm, toà, ngày và số dòng; không chứa dữ liệu cá nhân.
+     *
+     *     **Quyền:** `read:Tenant`.
+     */
+    post: operations['post_api_buildings_buildingId_residents_export'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/buildings/{buildingId}/rooms': {
     parameters: {
       query?: never;
@@ -2100,6 +2144,34 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/resident-stays/{id}/registration': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Đánh dấu đã khai báo
+     * @description manage Tenant; id là contract_occupants.id. Ngày từ ngày đến tới hôm nay; audit chỉ chứa id, toà và trạng thái.
+     *
+     *     **Quyền:** `manage:Tenant`.
+     */
+    post: operations['post_api_resident_stays_id_registration'];
+    /**
+     * Bỏ đánh dấu khai báo
+     * @description manage Tenant; chỉ cập nhật lần ở này.
+     *
+     *     **Quyền:** `manage:Tenant`.
+     */
+    delete: operations['delete_api_resident_stays_id_registration'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/rooms/{id}': {
     parameters: {
       query?: never;
@@ -3383,6 +3455,13 @@ export interface components {
       } | null;
       meterId: string;
     };
+    ResidentExportInput: {
+      date: string;
+    };
+    ResidentRegistrationInput: {
+      note?: string;
+      registeredOn: string;
+    };
     RoomBulkPreview: {
       createCount: number;
       items: components['schemas']['RoomBulkPreviewItem'][];
@@ -3815,6 +3894,20 @@ export interface components {
       roomId: string;
       /** @enum {string} */
       status: 'recorded' | 'reversed';
+    };
+    StayResident: {
+      arrivalDate: string;
+      birthDate: string | null;
+      contractId: string;
+      fullName: string;
+      hometown: string | null;
+      idNumber: string | null;
+      occupantId: string;
+      permanentAddress: string | null;
+      registeredOn: string | null;
+      roomCode: string;
+      roomId: string;
+      tenantId: string;
     };
     StayRoom: {
       archivedAt: string | null;
@@ -7959,6 +8052,77 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_buildings_buildingId_residents: {
+    parameters: {
+      query: {
+        date: string;
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'fullName';
+        sortOrder?: 'asc' | 'desc';
+        status?: 'all' | 'unregistered';
+      };
+      header?: never;
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayResident'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_buildings_buildingId_residents_export: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResidentExportInput'];
+      };
+    };
+    responses: {
+      /** @description Danh sách tạm trú XLSX; audit trước khi trả dữ liệu cá nhân. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': string;
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_buildings_buildingId_rooms: {
     parameters: {
       query?: {
@@ -10478,6 +10642,77 @@ export interface operations {
         };
       };
       400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_resident_stays_id_registration: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResidentRegistrationInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              occupantId: string;
+              registeredOn: string | null;
+            };
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  delete_api_resident_stays_id_registration: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              occupantId: string;
+              registeredOn: string | null;
+            };
+            message?: string;
+          };
+        };
+      };
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];

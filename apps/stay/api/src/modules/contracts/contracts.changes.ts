@@ -224,7 +224,16 @@ export async function changeContract(
           else {
             await replacement.update({ toDate: date }, { transaction });
             await ContractOccupantModel.create(
-              { contractId: id, tenantId: replacement.tenantId, fromDate: date, isPrimary: true },
+              {
+                contractId: id,
+                tenantId: replacement.tenantId,
+                fromDate: date,
+                isPrimary: true,
+                // A representative change continues the same physical stay.
+                registeredOn: replacement.registeredOn,
+                registrationNote: replacement.registrationNote,
+                registeredBy: replacement.registeredBy,
+              },
               { transaction },
             );
           }

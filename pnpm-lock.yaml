@@ -451,7 +451,7 @@ importers:
         specifier: 'catalog:'
         version: 17.4.2
       exceljs:
-        specifier: 'catalog:'
+        specifier: 4.4.0
         version: 4.4.0
       express:
         specifier: 'catalog:'

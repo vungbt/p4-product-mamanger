@@ -25,6 +25,7 @@ export * from './portal-links.js';
 export { StaySdkProvider, useStaySdk } from './provider.js';
 export * from './readings.js';
 export * from './receivables.js';
+export * from './residents.js';
 export {
   roomKeys,
   roomMutationOptions,

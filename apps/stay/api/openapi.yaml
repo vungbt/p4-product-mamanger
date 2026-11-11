@@ -54,6 +54,8 @@ tags:
   - name: receivables
     description: "Công nợ theo hợp đồng: hoá đơn đã phát hành chưa thu đủ, tổng còn lại, quá hạn theo `dueOn` và ngày hiện
       tại Asia/Ho_Chi_Minh (nhóm chưa tới hạn, 1–7, 8–30, > 30 ngày). Chỉ đọc."
+  - name: residents
+    description: Tạm trú theo ngày, khai báo theo lần ở và xuất Excel có audit.
   - name: rooms
     description: Phòng theo toà, sơ đồ phòng, tạo nhanh nhiều phòng, đồng hồ điện/nước và bảo trì. Trạng thái phòng suy ra
       từ hợp đồng.
@@ -5214,6 +5216,266 @@ paths:
                     type: string
                 required:
                   - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{buildingId}/residents:
+    get:
+      tags:
+        - residents
+      operationId: get_api_buildings_buildingId_residents
+      summary: Danh sách tạm trú
+      description: >-
+        Người ở của hợp đồng active/ending tại date; fromDate bao gồm, toDate không bao gồm. CCCD đầy đủ chỉ dành cho
+        nhân viên có read Tenant trong toà. Không ghi audit dữ liệu cá nhân.
+
+
+        **Quyền:** `read:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - fullName
+            default: fullName
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - all
+              - unregistered
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayResident"
+                  message:
+                    type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/resident-stays/{id}/registration:
+    post:
+      tags:
+        - residents
+      operationId: post_api_resident_stays_id_registration
+      summary: Đánh dấu đã khai báo
+      description: |-
+        manage Tenant; id là contract_occupants.id. Ngày từ ngày đến tới hôm nay; audit chỉ chứa id, toà và trạng thái.
+
+        **Quyền:** `manage:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResidentRegistrationInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      occupantId:
+                        type: string
+                      registeredOn:
+                        type:
+                          - string
+                          - "null"
+                    required:
+                      - occupantId
+                      - registeredOn
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    delete:
+      tags:
+        - residents
+      operationId: delete_api_resident_stays_id_registration
+      summary: Bỏ đánh dấu khai báo
+      description: |-
+        manage Tenant; chỉ cập nhật lần ở này.
+
+        **Quyền:** `manage:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      occupantId:
+                        type: string
+                      registeredOn:
+                        type:
+                          - string
+                          - "null"
+                    required:
+                      - occupantId
+                      - registeredOn
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/buildings/{buildingId}/residents/export:
+    post:
+      tags:
+        - residents
+      operationId: post_api_buildings_buildingId_residents_export
+      summary: Xuất danh sách tạm trú Excel
+      description: >-
+        read Tenant; 10 lần/phút; ngoài phạm vi trả 404. Audit người xuất, thời điểm, toà, ngày và số dòng; không chứa
+        dữ liệu cá nhân.
+
+
+        **Quyền:** `read:Tenant`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: export
+      parameters:
+        - name: buildingId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResidentExportInput"
+      responses:
+        "200":
+          description: Danh sách tạm trú XLSX; audit trước khi trả dữ liệu cá nhân.
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/ValidationError"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -12456,6 +12718,22 @@ components:
         - meterId
         - data
         - error
+    ResidentExportInput:
+      type: object
+      properties:
+        date:
+          type: string
+      required:
+        - date
+    ResidentRegistrationInput:
+      type: object
+      properties:
+        registeredOn:
+          type: string
+        note:
+          type: string
+      required:
+        - registeredOn
     RoomBulkPreview:
       type: object
       properties:
@@ -13848,6 +14126,56 @@ components:
         - reversedByName
         - actorName
         - createdAt
+    StayResident:
+      type: object
+      properties:
+        occupantId:
+          type: string
+        tenantId:
+          type: string
+        contractId:
+          type: string
+        fullName:
+          type: string
+        birthDate:
+          type:
+            - string
+            - "null"
+        idNumber:
+          type:
+            - string
+            - "null"
+        hometown:
+          type:
+            - string
+            - "null"
+        permanentAddress:
+          type:
+            - string
+            - "null"
+        roomId:
+          type: string
+        roomCode:
+          type: string
+        arrivalDate:
+          type: string
+        registeredOn:
+          type:
+            - string
+            - "null"
+      required:
+        - occupantId
+        - tenantId
+        - contractId
+        - fullName
+        - birthDate
+        - idNumber
+        - hometown
+        - permanentAddress
+        - roomId
+        - roomCode
+        - arrivalDate
+        - registeredOn
     StayRoom:
       type: object
       properties:

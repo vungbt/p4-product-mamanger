@@ -34,7 +34,7 @@
     "cors": "catalog:",
     "csv-parse": "catalog:",
     "dotenv": "catalog:",
-    "exceljs": "catalog:",
+    "exceljs": "4.4.0",
     "express": "catalog:",
     "helmet": "catalog:",
     "i18next": "catalog:",
