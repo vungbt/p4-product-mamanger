@@ -1,7 +1,7 @@
-import { Avatar, cn, Input } from '@itclabs/react-ui';
-import { Chart } from '@itclabs/react-ui/chart';
+import { Avatar, cn, Input, Skeleton } from '@itclabs/react-ui';
 import { useBuildingOverview } from '@stay/sdk/react';
 import { isPeriod, type StayOverview } from '@stay/shared';
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
@@ -13,6 +13,8 @@ import { displayPeriod } from '@/modules/invoices/invoice-ui';
 import { OnboardingSteps } from './onboarding';
 import { OccupancyCard, StatCard } from './stat-cards';
 import { TodoList } from './todo-list';
+
+const PeriodChart = lazy(() => import('./period-chart'));
 
 /**
  * O-01 Tổng quan tháng (ST-19): figures of billing period M aggregated by the API, the to-do
@@ -186,21 +188,23 @@ function OverviewContent({
           6 kỳ gần nhất
         </h2>
         <div className="min-w-0 rounded-panel border border-line bg-surface p-3 sm:p-5">
-          <Chart
-            type="bar"
-            label={`Phải thu và đã thu từ kỳ ${displayPeriod(data.series[0]?.period ?? data.period)} đến kỳ ${period}`}
-            description="Mỗi kỳ: tổng hoá đơn đã phát hành (phải thu) và số đã thu của chính các hoá đơn đó."
-            data={hasSeries ? chartData : []}
-            series={[
-              { id: 'billed', label: 'Phải thu' },
-              { id: 'collected', label: 'Đã thu' },
-            ]}
-            valueFormatter={formatVnd}
-            emptyMessage="Chưa có hoá đơn phát hành trong 6 kỳ này."
-            loadingLabel="Đang tải biểu đồ"
-            loading={loading}
-            data-testid="overview-chart"
-          />
+          <Suspense fallback={<Skeleton className="h-64" />}>
+            <PeriodChart
+              type="bar"
+              label={`Phải thu và đã thu từ kỳ ${displayPeriod(data.series[0]?.period ?? data.period)} đến kỳ ${period}`}
+              description="Mỗi kỳ: tổng hoá đơn đã phát hành (phải thu) và số đã thu của chính các hoá đơn đó."
+              data={hasSeries ? chartData : []}
+              series={[
+                { id: 'billed', label: 'Phải thu' },
+                { id: 'collected', label: 'Đã thu' },
+              ]}
+              valueFormatter={formatVnd}
+              emptyMessage="Chưa có hoá đơn phát hành trong 6 kỳ này."
+              loadingLabel="Đang tải biểu đồ"
+              loading={loading}
+              data-testid="overview-chart"
+            />
+          </Suspense>
         </div>
       </section>
     </div>
