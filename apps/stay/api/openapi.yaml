@@ -43,6 +43,12 @@ tags:
   - name: payments
     description: Thu tiền hoá đơn (một hoặc nhiều lần), sổ thu và huỷ bút toán thu. Thanh toán không sửa/xoá; `paidTotal` và
       trạng thái hoá đơn luôn tính lại từ tổng các khoản chưa huỷ trong cùng transaction.
+  - name: portal
+    description: "Cổng người thuê (ST-25): link riêng cho từng người ở (chủ trọ tạo/thu hồi) và các route `/api/portal/*`
+      cho người thuê không cần tài khoản. Vào cổng bằng token của link + 4 số cuối SĐT → cookie phiên cổng HttpOnly
+      `stay_portal_session` (production `__Secure-stay_portal_session`, path `/api/portal`, 90 ngày). Cookie phiên nhân
+      viên (`stay.session_token`) không dùng được ở cổng và cookie cổng không dùng được ở route nhân viên. Mọi dữ liệu
+      chỉ thuộc hợp đồng của link; người ở cùng chỉ hiện tên viết tắt."
   - name: readings
     description: Chốt chỉ số điện nước, lưu theo dòng và thay đồng hồ; tiêu thụ tính theo các đoạn đồng hồ.
   - name: receivables
@@ -6337,6 +6343,530 @@ paths:
           $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/portal-links:
+    get:
+      tags:
+        - portal
+      operationId: get_api_contracts_id_portal_links
+      summary: Link cổng người thuê của hợp đồng
+      description: >-
+        Mọi link của hợp đồng (mới nhất trước): người ở, trạng thái `active`/`locked`/`revoked`/`expired`, lần xác minh
+        gần nhất, số thiết bị đang đăng nhập. Không bao giờ trả token hay hash. Ngoài phạm vi trả 404.
+
+
+        **Quyền:** `read:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TenantPortalLink"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - portal
+      operationId: post_api_contracts_id_portal_links
+      summary: Tạo link cổng cho một người ở
+      description: >-
+        Hợp đồng active/ending (409 `contract_not_active`), `tenantId` là người ở hiện tại (422
+        `portal_tenant_not_occupant`). Token ngẫu nhiên 32 byte (base64url), chỉ lưu SHA-256; `token`, `path`
+        (`/p/{token}`) và `url` chỉ trả một lần. Link đang hoạt động của cùng người ở bị thu hồi và các thiết bị của nó
+        bị đăng xuất (`replacedLinkId`). Quyền `update:Contract`; audit chỉ ghi id. Ngoài phạm vi trả 404.
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TenantPortalLinkInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/TenantPortalLinkCreated"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          description: Người thuê không còn ở trong hợp đồng (`portal_tenant_not_occupant`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal-links/{id}:
+    delete:
+      tags:
+        - portal
+      operationId: delete_api_portal_links_id
+      summary: Thu hồi link cổng người thuê
+      description: >-
+        Idempotent (`revoked: false` khi đã thu hồi). Xoá mọi phiên cổng của link: mọi thiết bị đã vào bị đăng xuất.
+        Quyền `update:Contract`; link ngoài phạm vi trả 404.
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: delete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/TenantPortalLinkRevokeResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/links/lookup:
+    post:
+      tags:
+        - portal
+      operationId: post_api_portal_links_lookup
+      summary: Xem link cổng trước khi xác minh
+      description: >-
+        Công khai, giới hạn theo IP. Trả phòng, tên toà và `signedIn` (thiết bị đã có phiên cổng của link này). Link
+        không đúng, đã thu hồi, hết hạn (hợp đồng kết thúc quá 30 ngày, đã huỷ hoặc người ở đã rời) → 404
+        `portal_link_invalid`, không phân biệt lý do. Không ghi dữ liệu.
+
+
+        **Công khai.**
+      security: []
+      x-audit-action: read
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortalLinkLookupInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalLinkLookup"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/sessions:
+    post:
+      tags:
+        - portal
+      operationId: post_api_portal_sessions
+      summary: Vào cổng người thuê (4 số cuối SĐT)
+      description: >-
+        Công khai; giới hạn theo IP và theo token. So sánh 4 số cuối SĐT của chính người ở (constant-time). Link sai/thu
+        hồi/hết hạn và sai số đều trả cùng 401 `portal_verification_failed`. Sai 5 lần liên tiếp → khoá link 15 phút
+        (429 `portal_link_locked`, `Retry-After`, `extensions.retryAfterSeconds`). Thành công: đặt cookie HttpOnly
+        `stay_portal_session` (SameSite=Lax, path `/api/portal`, Secure ở production, 90 ngày), chỉ lưu SHA-256 của giá
+        trị cookie; ghi lần mở gần nhất.
+
+
+        **Công khai.**
+      security: []
+      x-audit-action: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortalSessionInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalSessionResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Link không đúng/đã thu hồi/hết hạn hoặc sai 4 số cuối (`portal_verification_failed`, không phân biệt).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          description: Quá số lần thử theo IP/token (`rate_limit_exceeded`) hoặc link đang bị khoá sau 5 lần sai
+            (`portal_link_locked`, `extensions.retryAfterSeconds`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      tags:
+        - portal
+      operationId: delete_api_portal_sessions
+      summary: Đăng xuất cổng người thuê
+      description: >-
+        Xoá phiên cổng của thiết bị này và xoá cookie. Không có phiên hợp lệ → 401 `portal_session_invalid`. Ghi qua
+        cookie cần origin web được phép.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: logout
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalSignOutResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/me:
+    get:
+      tags:
+        - portal
+      operationId: get_api_portal_me
+      summary: Trang chủ người thuê
+      description: >-
+        Tên của chính người ở, phòng, toà, SĐT liên hệ, hoá đơn gần nhất đã phát hành, tổng nợ, nợ các hoá đơn khác và
+        thông báo ghim còn hạn của toà/phòng.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalMe"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/invoices:
+    get:
+      tags:
+        - portal
+      operationId: get_api_portal_invoices
+      summary: Hoá đơn của tôi
+      description: |-
+        Hoá đơn đã phát hành (gồm thu một phần/đã thu) của hợp đồng, mới nhất trước. Không có nháp hay void.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PortalInvoiceSummary"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/invoices/{id}:
+    get:
+      tags:
+        - portal
+      operationId: get_api_portal_invoices_id
+      summary: Chi tiết hoá đơn và thanh toán
+      description: >-
+        Như hoá đơn công khai (dòng, tổng, tài khoản nhận tiền, `vietQrPayload` cho số còn lại) kèm `id` và lịch sử
+        thanh toán chưa huỷ (không có mã giao dịch, ghi chú hay người thu). Hoá đơn của hợp đồng khác, nháp hoặc void →
+        404.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalInvoice"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/contract:
+    get:
+      tags:
+        - portal
+      operationId: get_api_portal_contract
+      summary: Hợp đồng của tôi (chỉ xem)
+      description: >-
+        Phòng, thời hạn, giá thuê hiện tại, dịch vụ và đơn giá đang áp dụng, người ở cùng (chỉ tên viết tắt), xe (biển
+        số xe người khác bị che), cọc đang giữ, ngày phát hành/hạn thanh toán hằng tháng.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalContract"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/usage:
+    get:
+      tags:
+        - portal
+      operationId: get_api_portal_usage
+      summary: Điện nước của tôi
+      description: >-
+        Tối đa 12 tháng tiêu thụ gần nhất (cũ trước) từ dòng điện/nước của hoá đơn đã phát hành: chỉ số đầu/cuối, tiêu
+        thụ, đơn giá, thành tiền.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalUsage"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/notices:
+    get:
+      tags:
+        - portal
+      operationId: get_api_portal_notices
+      summary: Thông báo và nội quy
+      description: >-
+        Thông báo còn hạn của toà (cả toà hoặc phòng của hợp đồng), ghim trước rồi mới nhất; nội quy và SĐT liên hệ của
+        toà.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalNotices"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
   /health/live:
     get:
       tags:
@@ -9740,6 +10270,12 @@ components:
       type: http
       scheme: bearer
       description: Bearer token authentication
+    portalSession:
+      type: apiKey
+      in: cookie
+      name: stay_portal_session
+      description: "Phiên cổng người thuê (ST-25) từ `POST /api/portal/sessions`: HttpOnly, SameSite=Lax, path `/api/portal`,
+        90 ngày; production dùng tên `__Secure-stay_portal_session`. Không phải phiên Better Auth."
   responses:
     ValidationError:
       description: Dữ liệu không hợp lệ; `extensions` map từng field với thông báo lỗi.
@@ -11121,9 +11657,104 @@ components:
           maxLength: 2000
       required:
         - reason
-    PublicInvoice:
+    PortalContract:
       type: object
       properties:
+        code:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - cancelled
+            - draft
+            - ended
+            - ending
+        roomCode:
+          type: string
+        buildingName:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type:
+            - string
+            - "null"
+        noticeDate:
+          type:
+            - string
+            - "null"
+        movedOutAt:
+          type:
+            - string
+            - "null"
+        rent:
+          type: number
+        depositHeld:
+          type: number
+        issueDay:
+          type: number
+        dueDay:
+          type: number
+        services:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalContractService"
+        occupants:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalOccupant"
+        vehicles:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalVehicle"
+      required:
+        - code
+        - status
+        - roomCode
+        - buildingName
+        - startDate
+        - endDate
+        - noticeDate
+        - movedOutAt
+        - rent
+        - depositHeld
+        - issueDay
+        - dueDay
+        - services
+        - occupants
+        - vehicles
+    PortalContractService:
+      type: object
+      properties:
+        name:
+          type: string
+        kind:
+          type: string
+          enum:
+            - electricity
+            - per_person
+            - per_room
+            - per_vehicle
+            - water
+        unit:
+          type: string
+        price:
+          type: number
+      required:
+        - name
+        - kind
+        - unit
+        - price
+    PortalInvoice:
+      type: object
+      properties:
+        id:
+          type: string
+        payments:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalPayment"
         buildingName:
           type: string
         buildingAddress:
@@ -11186,9 +11817,9 @@ components:
           type:
             - string
             - "null"
-        expiresAt:
-          type: string
       required:
+        - id
+        - payments
         - buildingName
         - buildingAddress
         - roomCode
@@ -11209,7 +11840,406 @@ components:
         - payee
         - transferContent
         - vietQrPayload
+    PortalInvoiceSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+            - monthly
+            - move_in
+            - settlement
+        period:
+          type: string
+        code:
+          type: string
+        status:
+          type: string
+          enum:
+            - draft
+            - issued
+            - paid
+            - partially_paid
+            - void
+        issuedOn:
+          type:
+            - string
+            - "null"
+        dueOn:
+          type: string
+        total:
+          type: number
+        paidTotal:
+          type: number
+        remaining:
+          type: number
+        overdue:
+          type: boolean
+      required:
+        - id
+        - kind
+        - period
+        - code
+        - status
+        - issuedOn
+        - dueOn
+        - total
+        - paidTotal
+        - remaining
+        - overdue
+    PortalLinkLookup:
+      type: object
+      properties:
+        roomCode:
+          type: string
+        buildingName:
+          type: string
+        signedIn:
+          type: boolean
+      required:
+        - roomCode
+        - buildingName
+        - signedIn
+    PortalLinkLookupInput:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
+    PortalMe:
+      type: object
+      properties:
+        tenantName:
+          type: string
+        contractCode:
+          type: string
+        contractStatus:
+          type: string
+          enum:
+            - active
+            - cancelled
+            - draft
+            - ended
+            - ending
+        roomCode:
+          type: string
+        buildingName:
+          type: string
+        buildingAddress:
+          type:
+            - string
+            - "null"
+        contactPhone:
+          type:
+            - string
+            - "null"
+        currentInvoice:
+          anyOf:
+            - $ref: "#/components/schemas/PortalInvoiceSummary"
+            - type: "null"
+        totalDebt:
+          type: number
+        previousDebt:
+          type: number
+        unpaidInvoiceCount:
+          type: number
+        pinnedNotices:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalNotice"
+        sessionExpiresAt:
+          type: string
+      required:
+        - tenantName
+        - contractCode
+        - contractStatus
+        - roomCode
+        - buildingName
+        - buildingAddress
+        - contactPhone
+        - currentInvoice
+        - totalDebt
+        - previousDebt
+        - unpaidInvoiceCount
+        - pinnedNotices
+        - sessionExpiresAt
+    PortalNotice:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        pinned:
+          type: boolean
+        createdAt:
+          type: string
+        expiresAt:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - title
+        - body
+        - pinned
+        - createdAt
         - expiresAt
+    PortalNotices:
+      type: object
+      properties:
+        announcements:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalNotice"
+        buildingName:
+          type: string
+        rulesText:
+          type:
+            - string
+            - "null"
+        contactPhone:
+          type:
+            - string
+            - "null"
+      required:
+        - announcements
+        - buildingName
+        - rulesText
+        - contactPhone
+    PortalOccupant:
+      type: object
+      properties:
+        name:
+          type: string
+        isPrimary:
+          type: boolean
+        isSelf:
+          type: boolean
+      required:
+        - name
+        - isPrimary
+        - isSelf
+    PortalPayment:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: number
+        method:
+          type: string
+          enum:
+            - bank_transfer
+            - cash
+            - deposit
+            - other
+        paidOn:
+          type: string
+      required:
+        - id
+        - amount
+        - method
+        - paidOn
+    PortalSessionInput:
+      type: object
+      properties:
+        token:
+          type: string
+        phoneLast4:
+          type: string
+      required:
+        - token
+        - phoneLast4
+    PortalSessionResult:
+      type: object
+      properties:
+        expiresAt:
+          type: string
+      required:
+        - expiresAt
+    PortalSignOutResult:
+      type: object
+      properties:
+        signedOut:
+          type: boolean
+      required:
+        - signedOut
+    PortalUsage:
+      type: object
+      properties:
+        periods:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalUsagePeriod"
+      required:
+        - periods
+    PortalUsagePeriod:
+      type: object
+      properties:
+        period:
+          type: string
+        electricity:
+          anyOf:
+            - $ref: "#/components/schemas/PortalUsageReading"
+            - type: "null"
+        water:
+          anyOf:
+            - $ref: "#/components/schemas/PortalUsageReading"
+            - type: "null"
+      required:
+        - period
+        - electricity
+        - water
+    PortalUsageReading:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - electricity
+            - water
+        startReading:
+          type:
+            - number
+            - "null"
+        endReading:
+          type:
+            - number
+            - "null"
+        consumption:
+          type: number
+        unit:
+          type:
+            - string
+            - "null"
+        unitPrice:
+          type:
+            - number
+            - "null"
+        amount:
+          type: number
+      required:
+        - kind
+        - startReading
+        - endReading
+        - consumption
+        - unit
+        - unitPrice
+        - amount
+    PortalVehicle:
+      type: object
+      properties:
+        plate:
+          type: string
+        type:
+          type: string
+          enum:
+            - bicycle
+            - car
+            - electric_bike
+            - motorbike
+            - other
+        isOwn:
+          type: boolean
+      required:
+        - plate
+        - type
+        - isOwn
+    PublicInvoice:
+      type: object
+      properties:
+        expiresAt:
+          type: string
+        buildingName:
+          type: string
+        buildingAddress:
+          type:
+            - string
+            - "null"
+        roomCode:
+          type: string
+        kind:
+          type: string
+          enum:
+            - monthly
+            - move_in
+            - settlement
+        period:
+          type: string
+        code:
+          type: string
+        status:
+          type: string
+          enum:
+            - draft
+            - issued
+            - paid
+            - partially_paid
+            - void
+        issuedOn:
+          type:
+            - string
+            - "null"
+        dueOn:
+          type: string
+        overdue:
+          type: boolean
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicInvoiceLine"
+        subtotal:
+          type: number
+        rounding:
+          type: number
+        total:
+          type: number
+        paidTotal:
+          type: number
+        remaining:
+          type: number
+        representative:
+          type:
+            - string
+            - "null"
+        payee:
+          anyOf:
+            - $ref: "#/components/schemas/PublicInvoicePayee"
+            - type: "null"
+        transferContent:
+          type: string
+        vietQrPayload:
+          type:
+            - string
+            - "null"
+      required:
+        - expiresAt
+        - buildingName
+        - buildingAddress
+        - roomCode
+        - kind
+        - period
+        - code
+        - status
+        - issuedOn
+        - dueOn
+        - overdue
+        - lines
+        - subtotal
+        - rounding
+        - total
+        - paidTotal
+        - remaining
+        - representative
+        - payee
+        - transferContent
+        - vietQrPayload
     PublicInvoiceLine:
       type: object
       properties:
@@ -13679,6 +14709,97 @@ components:
         - values
         - errors
         - duplicate
+    TenantPortalLink:
+      type: object
+      properties:
+        id:
+          type: string
+        contractId:
+          type: string
+        tenantId:
+          type: string
+        tenantName:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - expired
+            - locked
+            - revoked
+        lastOpenedAt:
+          type:
+            - string
+            - "null"
+        lockedUntil:
+          type:
+            - string
+            - "null"
+        revokedAt:
+          type:
+            - string
+            - "null"
+        activeSessions:
+          type: number
+        createdByName:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+      required:
+        - id
+        - contractId
+        - tenantId
+        - tenantName
+        - status
+        - lastOpenedAt
+        - lockedUntil
+        - revokedAt
+        - activeSessions
+        - createdByName
+        - createdAt
+    TenantPortalLinkCreated:
+      type: object
+      properties:
+        link:
+          $ref: "#/components/schemas/TenantPortalLink"
+        token:
+          type: string
+        path:
+          type: string
+        url:
+          type: string
+        replacedLinkId:
+          type:
+            - string
+            - "null"
+      required:
+        - link
+        - token
+        - path
+        - url
+        - replacedLinkId
+    TenantPortalLinkInput:
+      type: object
+      properties:
+        tenantId:
+          type: string
+      required:
+        - tenantId
+    TenantPortalLinkRevokeResult:
+      type: object
+      properties:
+        link:
+          $ref: "#/components/schemas/TenantPortalLink"
+        revoked:
+          type: boolean
+        sessionsRevoked:
+          type: number
+      required:
+        - link
+        - revoked
+        - sessionsRevoked
     TenantRoomRef:
       type: object
       properties:

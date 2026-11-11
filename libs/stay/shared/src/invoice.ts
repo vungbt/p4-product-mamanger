@@ -273,10 +273,11 @@ export interface PublicInvoicePayee {
 }
 
 /**
- * `GET /api/public/invoices/:token` (no sign-in): the minimum a tenant needs to pay. Never
- * contains phones, ID numbers, notes, full names or internal ids.
+ * What a tenant sees of an invoice: the minimum needed to pay. Never contains phones, ID
+ * numbers, notes, full names or internal ids. Shared by the public link (ST-16) and the tenant
+ * portal (ST-25).
  */
-export interface PublicInvoice {
+export interface PublicInvoiceBase {
   buildingName: string;
   buildingAddress: string | null;
   roomCode: string;
@@ -301,6 +302,10 @@ export interface PublicInvoice {
   transferContent: string;
   /** VietQR (NAPAS/EMVCo) payload for `remaining`; `null` when paid or without a payee. */
   vietQrPayload: string | null;
+}
+
+/** `GET /api/public/invoices/:token` (no sign-in). */
+export interface PublicInvoice extends PublicInvoiceBase {
   /** When this link stops working. */
   expiresAt: string;
 }

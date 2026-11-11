@@ -1,4 +1,5 @@
 import { sequelize } from '@/sequelize/index.js';
+import { AnnouncementModel, initAnnouncementModel } from './announcement.model.js';
 import { AuditLogModel, initAuditLogModel } from './audit-log.model.js';
 import { BuildingModel, initBuildingModel } from './building.model.js';
 import { BuildingMemberModel, initBuildingMemberModel } from './building-member.model.js';
@@ -36,6 +37,11 @@ import { initServiceDefinitionModel, ServiceDefinitionModel } from './service-de
 import { initSystemSettingModel, SystemSettingModel } from './system-setting.model.js';
 import { initTenantModel, TenantModel } from './tenant.model.js';
 import { initTenantDocumentModel, TenantDocumentModel } from './tenant-document.model.js';
+import { initTenantPortalLinkModel, TenantPortalLinkModel } from './tenant-portal-link.model.js';
+import {
+  initTenantPortalSessionModel,
+  TenantPortalSessionModel,
+} from './tenant-portal-session.model.js';
 import { initUploadTicketModel, UploadTicketModel } from './upload-ticket.model.js';
 import { initUserModel, UserModel } from './user.model.js';
 import { initVehicleModel, VehicleModel } from './vehicle.model.js';
@@ -71,6 +77,9 @@ initInvoiceLineModel(sequelize);
 initInvoiceSequenceModel(sequelize);
 initInvoiceMeterReadingModel(sequelize);
 initPaymentModel(sequelize);
+initTenantPortalLinkModel(sequelize);
+initTenantPortalSessionModel(sequelize);
+initAnnouncementModel(sequelize);
 
 BuildingMemberModel.belongsTo(BuildingModel, { foreignKey: 'buildingId', as: 'building' });
 BuildingMemberModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user' });
@@ -89,6 +98,7 @@ RoomDefaultServiceModel.belongsTo(ServiceDefinitionModel, {
 MeterModel.belongsTo(RoomModel, { foreignKey: 'roomId', as: 'room' });
 
 export {
+  AnnouncementModel,
   AuditLogModel,
   BuildingMemberModel,
   BuildingModel,
@@ -118,6 +128,8 @@ export {
   sequelize,
   TenantDocumentModel,
   TenantModel,
+  TenantPortalLinkModel,
+  TenantPortalSessionModel,
   UploadTicketModel,
   UserModel,
   VehicleModel,

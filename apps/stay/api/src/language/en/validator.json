@@ -79,7 +79,10 @@
     "electricPhotoFileId": "Electricity meter photo",
     "waterPhotoFileId": "Water meter photo",
     "surcharges": "Settlement surcharges",
-    "refundMethod": "Deposit refund method"
+    "refundMethod": "Deposit refund method",
+    "tenantId": "Tenant",
+    "token": "Link",
+    "phoneLast4": "Last 4 phone digits"
   },
   "message": {
     "query_string": "Query parameters must contain a single string value."

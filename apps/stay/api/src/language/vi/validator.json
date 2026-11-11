@@ -79,7 +79,10 @@
     "electricPhotoFileId": "Ảnh đồng hồ điện",
     "waterPhotoFileId": "Ảnh đồng hồ nước",
     "surcharges": "Phụ thu thanh lý",
-    "refundMethod": "Phương thức hoàn cọc"
+    "refundMethod": "Phương thức hoàn cọc",
+    "tenantId": "Người thuê",
+    "token": "Link",
+    "phoneLast4": "4 số cuối điện thoại"
   },
   "message": {
     "required": "Trường :attribute là bắt buộc.",

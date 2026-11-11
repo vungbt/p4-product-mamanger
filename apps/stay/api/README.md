@@ -121,6 +121,7 @@ Script build, migrate, seed hai lần (kiểm tra idempotent), chạy API rồi 
 | `STAY_CLOUDINARY_CLOUD_NAME`, `STAY_CLOUDINARY_API_KEY`, `STAY_CLOUDINARY_API_SECRET` | trống | Ảnh private (CCCD). Thiếu một giá trị: ngoài production dùng kho stub, production từ chối upload |
 | `STAY_CLOUDINARY_FOLDER` | `stay` | Thư mục gốc trên Cloudinary |
 | `STAY_UPLOAD_STUB_DIR` | thư mục tạm của hệ điều hành | Nơi kho stub lưu file (dev/test/CI) |
+| `STAY_PORTAL_SESSION_RATE_LIMIT`, `STAY_PORTAL_TOKEN_RATE_LIMIT`, `STAY_PORTAL_LOOKUP_RATE_LIMIT` | `30`, `5`, `120` / 15 phút | Cổng người thuê (ST-25): vào cổng theo IP, theo token, tra link theo IP. Chỉ đổi được ngoài production (CI nâng lên) |
 
 Gửi email (đặt lại mật khẩu, xác minh) chưa có: ngoài production link được ghi log, production trả `mail_unavailable`.
 
@@ -579,3 +580,78 @@ has no rooms).
 
 Integration coverage: `tests/overview.integration.test.mjs` (CI Postgres/API only); browser
 coverage: `apps/stay/web/e2e/overview.spec.ts`.
+
+### Tenant portal (ST-25, part A)
+
+Run migration `20261126000100-tenant-portal.cjs`: `tenant_portal_links` (`building_id`,
+`contract_id`, `tenant_id`, `token_hash` = SHA-256 of the token, `created_by`, `revoked_at`,
+`revoked_by`, `failed_attempts`, `locked_until`, `last_opened_at`; one non-revoked link per
+`(contract_id, tenant_id)`), `tenant_portal_sessions` (`link_id` ON DELETE CASCADE,
+`session_hash` = SHA-256 of the cookie value, `expires_at`, `user_agent`) and `announcements`
+(`building_id`, `title`, `body`, `room_ids` null = whole building, `pinned`, `expires_at`,
+`created_by`, `version`; read by the portal only, staff writes are part B).
+
+Tenants never get Better Auth accounts. A link token (32 random bytes, base64url) plus the last 4
+digits of the occupant's own phone opens a **portal session**: a random 32-byte id in the HttpOnly
+cookie `stay_portal_session` (production `__Secure-stay_portal_session` + `Secure`), `SameSite=Lax`,
+`Path=/api/portal` (never sent to staff routes), 90 days (`PORTAL_SESSION_TTL_DAYS`).
+
+| Method/path (prefix `/api`) | Auth | Notes |
+| --- | --- | --- |
+| GET `/contracts/:id/portal-links` | read `Contract` | Every link of the contract, newest first: occupant, `status` (`active`, `locked`, `revoked`, `expired`), `lastOpenedAt`, `lockedUntil`, `activeSessions`. Never the token or its hash |
+| POST `/contracts/:id/portal-links` | update `Contract` | `{ tenantId }` of a current occupant (422 `portal_tenant_not_occupant`) of an active/ending contract (409 `contract_not_active`). Returns `{ link, token, path: '/p/{token}', url, replacedLinkId }` once (201); the occupant's previous active link is revoked and its sessions deleted |
+| DELETE `/portal-links/:id` | update `Contract` | Revokes (idempotent, `revoked: false` the second time) and deletes every session of the link: all devices are signed out |
+| POST `/portal/links/lookup` | public | `{ token }` → `{ roomCode, buildingName, signedIn }` for the T-02 greeting; any invalid link → 404 `portal_link_invalid`. Read-only |
+| POST `/portal/sessions` | public | `{ token, phoneLast4 }` → 201 `{ expiresAt }` + cookie. Unknown/revoked/expired link and wrong digits → the same 401 `portal_verification_failed`. The 5th wrong attempt in a row locks the link 15 minutes: 429 `portal_link_locked` (`Retry-After`, `extensions.retryAfterSeconds`) |
+| DELETE `/portal/sessions` | portal | Signs this device out (`Max-Age=0` cookie) |
+| GET `/portal/me` | portal | T-03: own name, room, building, contact phone, latest issued invoice, `totalDebt`/`previousDebt`/`unpaidInvoiceCount`, pinned unexpired announcements of the building/room |
+| GET `/portal/invoices` | portal | Issued/partially paid/paid invoices of the contract, newest first (never drafts or void) |
+| GET `/portal/invoices/:id` | portal | `PortalInvoice` = the ST-16 public view (`publicInvoiceView`: lines, totals, payee, `vietQrPayload` for the **remaining** amount) + `id` + non-reversed payments (`id`, `amount`, `method`, `paidOn` only). Another contract's invoice → 404 |
+| GET `/portal/contract` | portal | Read-only: rent and services (price in force), deposit held, issue/due day, occupants (own name; others `abbreviatePersonName` only), vehicles (other occupants' plates masked) |
+| GET `/portal/usage` | portal | Up to 12 consumption months (oldest first) from issued invoices' electricity/water snapshot lines |
+| GET `/portal/notices` | portal | Unexpired announcements (pinned first, then newest), building `rulesText` and `contactPhone` |
+
+Rules (`modules/portal`):
+
+- **Validity** (`portal.access.ts`, `portalOpen`): the link is not revoked; the contract is
+  active/ending and the occupant still lives there (`to_date` null or after today/the start date),
+  or the contract ended (move-out, else end date) at most 30 days ago (`PORTAL_ENDED_GRACE_DAYS`);
+  drafts and cancelled contracts never. Checked on every portal request
+  (`portalSessionRequired`), so a revoked link, an expired contract or a removed occupant ends the
+  sessions immediately; revoking also deletes the session rows.
+- **Scope**: every portal query starts from the session's contract, checked with the CASL `tenant`
+  ability `{ id: tenantId, role: 'tenant', contractIds: [contractId] }` (`canAccessRecord` on
+  `Contract`/`Invoice`); ids from the URL are always combined with that contract. Staff cookies
+  are never read by the portal guard and the portal cookie is not a Better Auth session, so each
+  side gets 401 with the other's cookie. Portal writes go through `assertCookieOrigin` (CSRF).
+- **Verification**: digits compared in constant time (`timingSafeEqual` over SHA-256). A wrong
+  attempt is counted in its own transaction (atomic `UPDATE … RETURNING`) so it survives the failed
+  request; the lock resets the counter. Success resets the counter, sets `last_opened_at` and drops
+  the link's expired sessions.
+- **Rate limits** (`env.portalRateLimits`, window 15 minutes, existing `rateLimit` table):
+  sessions 30/IP (`STAY_PORTAL_SESSION_RATE_LIMIT`), 5/token whatever the IP
+  (`STAY_PORTAL_TOKEN_RATE_LIMIT`; the limiter is keyed by the token hash), lookups 120/IP
+  (`STAY_PORTAL_LOOKUP_RATE_LIMIT`). The variables are honoured outside production only; the CI
+  scripts raise them.
+- **Audit** (ids, dates and flags only — never tokens, session ids, hashes, digits or names):
+  `tenant_portal_link.created` (with `replacedLinkId`, `sessionsRevoked`),
+  `tenant_portal_link.revoked`, `tenant_portal.session_created`, `tenant_portal.session_deleted`,
+  `tenant_portal.verification_failed` (outcome `failure`, `locked`). Portal reads record nothing.
+- Links use `STAY_WEB_URL`, else the trusted caller origin, else the first web origin (as ST-16).
+
+Extension points for part B:
+
+- New tenant routes go in `portal.router.ts` behind `portalSessionRequired` and read
+  `portalOf(req)` (`PortalPrincipal`: session, link, building, contract, tenant and the `tenant`
+  ability); add their policies to `portalAuditPolicies`. Writes run in `apiHandler`'s audited
+  transaction; record rows with `actorId: null` and the link/tenant ids. Per-contract daily limits
+  (maintenance/requests 10/day) can reuse `rateLimit` keyed like `portalSessionTokenLimit`.
+- Payment claims (`payment_claims`): confirm with `insertPayment` (ST-15) using the claim id for
+  idempotency; the T-05 page already shows "Tôi đã chuyển khoản" as "Sắp có".
+- `tenant_requests`, `maintenance_requests` (private photos through upload tickets) and the owner
+  inbox `/requests` are not created yet; `PortalMe` can then add open request counts.
+- Announcements: staff CRUD (`GET/POST/PUT /announcements`, manage Building) writes the existing
+  table; the portal already filters by building, room, pin and expiry.
+
+Integration coverage: `tests/portal.integration.test.mjs` (CI Postgres/API only); browser
+coverage: `apps/stay/web/e2e/portal.spec.ts`.

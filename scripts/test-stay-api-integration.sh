@@ -14,6 +14,10 @@ export STAY_CORS_ORIGIN="${STAY_CORS_ORIGIN:-http://localhost:5174}"
 export STAY_TEST_API_URL="http://127.0.0.1:$STAY_PORT"
 # The suites sign in far more than the production limit of 30 per window allows.
 export STAY_SIGN_IN_RATE_LIMIT="${STAY_SIGN_IN_RATE_LIMIT:-1000}"
+# Tenant portal (ST-25): session attempts per IP/token and link lookups per IP (per 15 minutes).
+export STAY_PORTAL_SESSION_RATE_LIMIT="${STAY_PORTAL_SESSION_RATE_LIMIT:-1000}"
+export STAY_PORTAL_TOKEN_RATE_LIMIT="${STAY_PORTAL_TOKEN_RATE_LIMIT:-1000}"
+export STAY_PORTAL_LOOKUP_RATE_LIMIT="${STAY_PORTAL_LOOKUP_RATE_LIMIT:-1000}"
 
 pnpm build
 pnpm db:migrate

@@ -105,5 +105,12 @@
   "invalid_settlement": "Không tính được thanh lý từ dữ liệu hiện có (chỉ số, đơn giá hoặc hoá đơn).",
   "settlement_invoice_not_voidable": "Không thể void hoá đơn thanh lý.",
   "deposit_payment_not_reversible": "Không huỷ được khoản cấn trừ cọc của thanh lý.",
-  "missing_meter": "Phòng chưa có đồng hồ cho dịch vụ điện/nước đã đăng ký."
+  "missing_meter": "Phòng chưa có đồng hồ cho dịch vụ điện/nước đã đăng ký.",
+  "portal_verification_failed": "Link không còn hiệu lực hoặc 4 số cuối điện thoại không đúng.",
+  "portal_link_locked": "Nhập sai quá nhiều lần. Link tạm khoá, vui lòng thử lại sau 15 phút.",
+  "portal_session_invalid": "Phiên cổng người thuê không còn hiệu lực. Vui lòng mở lại link từ chủ trọ.",
+  "portal_link_invalid": "Link không còn hiệu lực. Vui lòng liên hệ chủ trọ.",
+  "portal_link_not_found": "Không tìm thấy link cổng người thuê.",
+  "portal_tenant_not_occupant": "Người thuê này không còn ở trong hợp đồng.",
+  "portal_phone_last4": "{{attribute}} phải gồm đúng 4 chữ số."
 }

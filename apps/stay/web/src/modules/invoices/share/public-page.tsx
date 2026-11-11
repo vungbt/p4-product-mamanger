@@ -1,8 +1,9 @@
 import { Button, EmptyState } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { usePublicInvoice } from '@stay/sdk/react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useGenericDocumentMeta } from '@/libraries/document-meta';
 import { isNotFound } from '@/libraries/forms/api-errors';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { InvoiceCard } from './invoice-card';
@@ -10,41 +11,6 @@ import { downloadNodeImage, invoiceImageName } from './share-tools';
 
 /** Generic on purpose: link previews (Zalo, Messenger) must not reveal invoice data. */
 const PUBLIC_TITLE = 'Hoá đơn tiền phòng';
-
-const PUBLIC_META: [attribute: 'name' | 'property', key: string, content: string][] = [
-  ['name', 'robots', 'noindex, nofollow'],
-  // The token is in the URL: never send it to other origins.
-  ['name', 'referrer', 'no-referrer'],
-  ['name', 'description', PUBLIC_TITLE],
-  ['property', 'og:title', PUBLIC_TITLE],
-  ['property', 'og:description', PUBLIC_TITLE],
-];
-
-/** Sets the generic title and meta tags while the public page is open. */
-function usePublicDocumentMeta() {
-  useEffect(() => {
-    const previousTitle = document.title;
-    const restore = PUBLIC_META.map(([attribute, key, content]) => {
-      const existing = document.head.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`);
-      const element = existing ?? document.createElement('meta');
-      const previous = existing?.getAttribute('content') ?? null;
-
-      element.setAttribute(attribute, key);
-      element.setAttribute('content', content);
-      if (!existing) document.head.append(element);
-      return () => {
-        if (!existing) element.remove();
-        else if (previous !== null) element.setAttribute('content', previous);
-      };
-    });
-
-    document.title = PUBLIC_TITLE;
-    return () => {
-      document.title = previousTitle;
-      for (const undo of restore) undo();
-    };
-  }, []);
-}
 
 /**
  * T-01 `/i/:token`: the shared invoice, outside the signed-in shell (no sidebar, no sign-in),
@@ -55,7 +21,7 @@ export default function PublicInvoicePage() {
   const query = usePublicInvoice(token);
   const cardRef = useRef<HTMLElement>(null);
   const [downloading, setDownloading] = useState(false);
-  usePublicDocumentMeta();
+  useGenericDocumentMeta(PUBLIC_TITLE);
 
   const invoice = query.data;
 

@@ -39,6 +39,8 @@ const TAG_DESCRIPTIONS = {
   overview:
     'Tổng quan tháng: phải thu/đã thu/còn lại của kỳ, công nợ, phòng theo trạng thái, tỷ lệ lấp đầy, 6 kỳ gần nhất và việc cần làm. Tổng hợp ở server, chỉ đọc.',
   audit: 'Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.',
+  portal:
+    'Cổng người thuê (ST-25): link riêng cho từng người ở (chủ trọ tạo/thu hồi) và các route `/api/portal/*` cho người thuê không cần tài khoản. Vào cổng bằng token của link + 4 số cuối SĐT → cookie phiên cổng HttpOnly `stay_portal_session` (production `__Secure-stay_portal_session`, path `/api/portal`, 90 ngày). Cookie phiên nhân viên (`stay.session_token`) không dùng được ở cổng và cookie cổng không dùng được ở route nhân viên. Mọi dữ liệu chỉ thuộc hợp đồng của link; người ở cùng chỉ hiện tên viết tắt.',
   buildings: 'Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.',
   me: 'Người dùng hiện tại và quyền CASL.',
   operations: 'Kiểm tra trạng thái dịch vụ.',
@@ -181,6 +183,54 @@ const OPERATIONS = {
   'GET /api/public/invoices/{token}': [
     'Hoá đơn công khai qua link chia sẻ',
     'Không cần đăng nhập, giới hạn 60 yêu cầu/phút mỗi IP. Token không tồn tại, hết hạn, đã thu hồi/làm mới, hoặc hoá đơn void → 404. Dữ liệu tối giản: toà (tên, địa chỉ), phòng, kỳ, loại, mã, trạng thái, ngày phát hành/hạn, các dòng (mô tả i18n, số tiền, chỉ số), tổng, đã thu, còn lại, tên người đại diện viết tắt, tài khoản nhận tiền và `vietQrPayload` (VietQR NAPAS cho số còn lại, nội dung theo mẫu hệ thống với mã hoá đơn; `null` khi đã thu đủ hoặc toà chưa có tài khoản). Không có SĐT, CCCD, ghi chú hay id nội bộ.',
+  ],
+  'GET /api/contracts/{id}/portal-links': [
+    'Link cổng người thuê của hợp đồng',
+    'Mọi link của hợp đồng (mới nhất trước): người ở, trạng thái `active`/`locked`/`revoked`/`expired`, lần xác minh gần nhất, số thiết bị đang đăng nhập. Không bao giờ trả token hay hash. Ngoài phạm vi trả 404.',
+  ],
+  'POST /api/contracts/{id}/portal-links': [
+    'Tạo link cổng cho một người ở',
+    'Hợp đồng active/ending (409 `contract_not_active`), `tenantId` là người ở hiện tại (422 `portal_tenant_not_occupant`). Token ngẫu nhiên 32 byte (base64url), chỉ lưu SHA-256; `token`, `path` (`/p/{token}`) và `url` chỉ trả một lần. Link đang hoạt động của cùng người ở bị thu hồi và các thiết bị của nó bị đăng xuất (`replacedLinkId`). Quyền `update:Contract`; audit chỉ ghi id. Ngoài phạm vi trả 404.',
+  ],
+  'DELETE /api/portal-links/{id}': [
+    'Thu hồi link cổng người thuê',
+    'Idempotent (`revoked: false` khi đã thu hồi). Xoá mọi phiên cổng của link: mọi thiết bị đã vào bị đăng xuất. Quyền `update:Contract`; link ngoài phạm vi trả 404.',
+  ],
+  'POST /api/portal/links/lookup': [
+    'Xem link cổng trước khi xác minh',
+    'Công khai, giới hạn theo IP. Trả phòng, tên toà và `signedIn` (thiết bị đã có phiên cổng của link này). Link không đúng, đã thu hồi, hết hạn (hợp đồng kết thúc quá 30 ngày, đã huỷ hoặc người ở đã rời) → 404 `portal_link_invalid`, không phân biệt lý do. Không ghi dữ liệu.',
+  ],
+  'POST /api/portal/sessions': [
+    'Vào cổng người thuê (4 số cuối SĐT)',
+    'Công khai; giới hạn theo IP và theo token. So sánh 4 số cuối SĐT của chính người ở (constant-time). Link sai/thu hồi/hết hạn và sai số đều trả cùng 401 `portal_verification_failed`. Sai 5 lần liên tiếp → khoá link 15 phút (429 `portal_link_locked`, `Retry-After`, `extensions.retryAfterSeconds`). Thành công: đặt cookie HttpOnly `stay_portal_session` (SameSite=Lax, path `/api/portal`, Secure ở production, 90 ngày), chỉ lưu SHA-256 của giá trị cookie; ghi lần mở gần nhất.',
+  ],
+  'DELETE /api/portal/sessions': [
+    'Đăng xuất cổng người thuê',
+    'Xoá phiên cổng của thiết bị này và xoá cookie. Không có phiên hợp lệ → 401 `portal_session_invalid`. Ghi qua cookie cần origin web được phép.',
+  ],
+  'GET /api/portal/me': [
+    'Trang chủ người thuê',
+    'Tên của chính người ở, phòng, toà, SĐT liên hệ, hoá đơn gần nhất đã phát hành, tổng nợ, nợ các hoá đơn khác và thông báo ghim còn hạn của toà/phòng.',
+  ],
+  'GET /api/portal/invoices': [
+    'Hoá đơn của tôi',
+    'Hoá đơn đã phát hành (gồm thu một phần/đã thu) của hợp đồng, mới nhất trước. Không có nháp hay void.',
+  ],
+  'GET /api/portal/invoices/{id}': [
+    'Chi tiết hoá đơn và thanh toán',
+    'Như hoá đơn công khai (dòng, tổng, tài khoản nhận tiền, `vietQrPayload` cho số còn lại) kèm `id` và lịch sử thanh toán chưa huỷ (không có mã giao dịch, ghi chú hay người thu). Hoá đơn của hợp đồng khác, nháp hoặc void → 404.',
+  ],
+  'GET /api/portal/contract': [
+    'Hợp đồng của tôi (chỉ xem)',
+    'Phòng, thời hạn, giá thuê hiện tại, dịch vụ và đơn giá đang áp dụng, người ở cùng (chỉ tên viết tắt), xe (biển số xe người khác bị che), cọc đang giữ, ngày phát hành/hạn thanh toán hằng tháng.',
+  ],
+  'GET /api/portal/usage': [
+    'Điện nước của tôi',
+    'Tối đa 12 tháng tiêu thụ gần nhất (cũ trước) từ dòng điện/nước của hoá đơn đã phát hành: chỉ số đầu/cuối, tiêu thụ, đơn giá, thành tiền.',
+  ],
+  'GET /api/portal/notices': [
+    'Thông báo và nội quy',
+    'Thông báo còn hạn của toà (cả toà hoặc phòng của hợp đồng), ghim trước rồi mới nhất; nội quy và SĐT liên hệ của toà.',
   ],
   'POST /api/invoices/{id}/payments': [
     'Thu tiền hoá đơn',
@@ -455,6 +505,24 @@ const settlementBody = (name) => ({
   requestBody: { required: true, content: { 'application/json': { schema: { ref: name } } } },
 });
 const OVERRIDES = {
+  'POST /api/contracts/{id}/portal-links': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'TenantPortalLinkInput' } } },
+    },
+  },
+  'POST /api/portal/links/lookup': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'PortalLinkLookupInput' } } },
+    },
+  },
+  'POST /api/portal/sessions': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'PortalSessionInput' } } },
+    },
+  },
   'POST /api/contracts/{id}/notice': settlementBody('ContractNoticeInput'),
   'POST /api/contracts/{id}/cancel-notice': settlementBody('ContractVersionInput'),
   'POST /api/contracts/{id}/settlement-preview': settlementBody('ContractSettlementInput'),
@@ -800,6 +868,7 @@ export default {
     'libs/stay/shared/src/invoice.ts',
     'libs/stay/shared/src/payment.ts',
     'libs/stay/shared/src/overview.ts',
+    'libs/stay/shared/src/portal.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },
   sessionCookie: 'stay.session_token',

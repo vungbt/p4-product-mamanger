@@ -265,6 +265,46 @@ try {
       'Ngày trả phòng sau hôm nay hoặc trước ngày bắt đầu, thiếu/nhỏ hơn chỉ số trước (`finalElectric`, `finalWater`), phụ thu thiếu lý do, ảnh không hợp lệ; `invalid_settlement` khi dữ liệu tính tiền không hợp lệ.',
     content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
   };
+  // ST-25: tenant portal routes use the portal session cookie, never the staff session. The
+  // shared generator only knows `authRequired`, so the portal security is declared here.
+  spec.components.securitySchemes.portalSession = {
+    type: 'apiKey',
+    in: 'cookie',
+    name: 'stay_portal_session',
+    description:
+      'Phiên cổng người thuê (ST-25) từ `POST /api/portal/sessions`: HttpOnly, SameSite=Lax, path `/api/portal`, 90 ngày; production dùng tên `__Secure-stay_portal_session`. Không phải phiên Better Auth.',
+  };
+  const portalPublic = new Set(['/api/portal/links/lookup', 'post /api/portal/sessions']);
+  for (const [url, item] of Object.entries(spec.paths)) {
+    if (!url.startsWith('/api/portal/') || portalPublic.has(url)) continue;
+    for (const [method, operation] of Object.entries(item)) {
+      if (portalPublic.has(`${method} ${url}`)) continue;
+      operation.security = [{ portalSession: [] }];
+      operation.description = operation.description.replace(
+        '**Công khai.**',
+        '**Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).',
+      );
+      operation.responses['401'] = {
+        description:
+          'Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+      };
+    }
+  }
+  spec.paths['/api/portal/sessions'].post.responses['401'] = {
+    description:
+      'Link không đúng/đã thu hồi/hết hạn hoặc sai 4 số cuối (`portal_verification_failed`, không phân biệt).',
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+  };
+  spec.paths['/api/portal/sessions'].post.responses['429'] = {
+    description:
+      'Quá số lần thử theo IP/token (`rate_limit_exceeded`) hoặc link đang bị khoá sau 5 lần sai (`portal_link_locked`, `extensions.retryAfterSeconds`).',
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+  };
+  spec.paths['/api/contracts/{id}/portal-links'].post.responses['422'] = {
+    description: 'Người thuê không còn ở trong hợp đồng (`portal_tenant_not_occupant`).',
+    content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+  };
   const output = YAML.stringify(spec, { lineWidth: 120, aliasDuplicateObjects: false });
 
   if (process.argv.includes('--check')) {

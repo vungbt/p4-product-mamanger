@@ -13,6 +13,7 @@ import {
   isoDateInTimeZone,
   type Period,
   type PublicInvoice,
+  type PublicInvoiceBase,
   type PublicInvoiceLine,
   type PublicInvoicePayee,
   publicInvoicePath,
@@ -61,8 +62,11 @@ function shareExpiry(): Date {
   return new Date(Date.now() + INVOICE_SHARE_TTL_DAYS * 86_400_000);
 }
 
-/** The caller's web origin when it is trusted, else `STAY_WEB_URL` or the first web origin. */
-function webOrigin(requestOrigin: string | undefined): string {
+/**
+ * The caller's web origin when it is trusted, else `STAY_WEB_URL` or the first web origin. Also
+ * used for tenant portal links (ST-25).
+ */
+export function webOrigin(requestOrigin: string | undefined): string {
   const allowed = allowedWebOrigins();
 
   if (requestOrigin && allowed.includes(requestOrigin)) return requestOrigin;
@@ -373,20 +377,12 @@ async function representative(contractId: string): Promise<string | null> {
 }
 
 /**
- * `GET /api/public/invoices/:token` (no session). Unknown, expired, revoked, draft or void →
- * 404. Read-only: no audit changes are recorded for this route.
+ * The tenant view of an issued invoice (`PublicInvoiceBase`): shared by the public link and the
+ * tenant portal (ST-25). The caller has already checked the invoice may be shown.
  */
-export async function publicInvoice(token: string): Promise<PublicInvoice> {
-  if (!TOKEN_PATTERN.test(token)) throw new NotFound();
-  const row = await InvoiceModel.findOne({ where: { shareTokenHash: hashShareToken(token) } });
-
-  if (
-    !row?.code ||
-    !row.shareExpiresAt ||
-    row.shareExpiresAt <= new Date() ||
-    !ISSUED_STATUSES.includes(row.status)
-  )
-    throw new NotFound();
+export async function publicInvoiceView(
+  row: InvoiceModel & { code: string },
+): Promise<PublicInvoiceBase> {
   const [building, room, lines, name, settings] = await Promise.all([
     BuildingModel.findByPk(row.buildingId),
     RoomModel.findByPk(row.roomId, { attributes: ['id', 'code'] }),
@@ -428,6 +424,23 @@ export async function publicInvoice(token: string): Promise<PublicInvoice> {
     payee,
     transferContent: content,
     vietQrPayload: vietQr(payee, remaining, content),
-    expiresAt: row.shareExpiresAt.toISOString(),
   };
+}
+
+/** Issued invoices with a code: the only ones a tenant may see. */
+export function isTenantVisible(row: InvoiceModel | null): row is InvoiceModel & { code: string } {
+  return Boolean(row?.code && ISSUED_STATUSES.includes(row.status));
+}
+
+/**
+ * `GET /api/public/invoices/:token` (no session). Unknown, expired, revoked, draft or void →
+ * 404. Read-only: no audit changes are recorded for this route.
+ */
+export async function publicInvoice(token: string): Promise<PublicInvoice> {
+  if (!TOKEN_PATTERN.test(token)) throw new NotFound();
+  const row = await InvoiceModel.findOne({ where: { shareTokenHash: hashShareToken(token) } });
+
+  if (!isTenantVisible(row) || !row.shareExpiresAt || row.shareExpiresAt <= new Date())
+    throw new NotFound();
+  return { ...(await publicInvoiceView(row)), expiresAt: row.shareExpiresAt.toISOString() };
 }

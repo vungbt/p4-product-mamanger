@@ -105,5 +105,12 @@
   "invalid_settlement": "The settlement cannot be computed from the current data (readings, prices or invoices).",
   "settlement_invoice_not_voidable": "A settlement invoice cannot be voided.",
   "deposit_payment_not_reversible": "A deposit offset of a settlement cannot be reversed.",
-  "missing_meter": "The room has no meter for a registered electricity/water service."
+  "missing_meter": "The room has no meter for a registered electricity/water service.",
+  "portal_verification_failed": "The link is no longer valid or the last 4 phone digits are wrong.",
+  "portal_link_locked": "Too many wrong attempts. The link is locked; try again in 15 minutes.",
+  "portal_session_invalid": "The tenant portal session is no longer valid. Open the link from your landlord again.",
+  "portal_link_invalid": "The link is no longer valid. Please contact your landlord.",
+  "portal_link_not_found": "Tenant portal link not found.",
+  "portal_tenant_not_occupant": "This tenant no longer lives under the contract.",
+  "portal_phone_last4": "{{attribute}} must be exactly 4 digits."
 }

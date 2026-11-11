@@ -56,6 +56,10 @@ export const ROUTES = {
   login: '/login',
   /** Public shared invoice (ST-16), outside the signed-in shell. */
   publicInvoice: '/i/:token',
+  /** Tenant portal (ST-25): entry by link token, then `/p/*` with the portal session. */
+  portal: '/p',
+  portalEntry: '/p/:token',
+  portalSignedOut: '/p/signed-out',
   overview: '/',
   rooms: '/rooms',
   roomNew: '/rooms/new',
