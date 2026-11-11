@@ -58,10 +58,10 @@ export function invoiceQueryOptions(sdk: StaySdk) {
 
 export function invoiceMutationOptions(sdk: StaySdk, client: QueryClient) {
   const api = createInvoiceApi(sdk);
-  /** Invoices change room debts/recent invoices; issue and void lock/unlock readings. */
+  /** Invoices change receivables, room debts/recent invoices; issue and void lock/unlock readings. */
   const refresh = (areas: string[]) => () =>
     Promise.all(
-      ['invoices', 'rooms', ...areas].map((area) =>
+      ['invoices', 'receivables', 'rooms', ...areas].map((area) =>
         client.invalidateQueries({ queryKey: ['stay', area] }),
       ),
     );

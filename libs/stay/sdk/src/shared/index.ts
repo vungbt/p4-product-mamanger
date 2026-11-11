@@ -15,6 +15,7 @@ export type { components, operations, paths } from './generated.js';
 export * from './invoices.js';
 export * from './payments.js';
 export * from './readings.js';
+export * from './receivables.js';
 export {
   createRoomApi,
   type RoomBulkInput,

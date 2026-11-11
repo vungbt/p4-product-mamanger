@@ -27,6 +27,7 @@ const BillingRunPage = lazy(() => import('@/modules/invoices/run-page'));
 const InvoiceDetailPage = lazy(() => import('@/modules/invoices/detail-page'));
 const PeriodSharePage = lazy(() => import('@/modules/invoices/share/period-share-page'));
 const PaymentsPage = lazy(() => import('@/modules/payments/page'));
+const ReceivablesPage = lazy(() => import('@/modules/receivables/page'));
 const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
 const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
 const ContractListPage = lazy(() => import('@/modules/contracts/list-page'));
@@ -177,7 +178,7 @@ export const appRoutes: StayRoute[] = [
     path: '/receivables',
     name: 'receivables',
     icon: 'moneyTime',
-    component: PlaceholderPage,
+    component: ReceivablesPage,
     ability: { action: 'read', subject: 'Invoice' },
   },
   {

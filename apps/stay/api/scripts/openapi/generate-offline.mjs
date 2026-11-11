@@ -151,6 +151,40 @@ try {
       },
     ],
   };
+  // ST-18: totals over the whole filter and bucket counts (matching `q`, not `bucket`).
+  const receivableBuckets = ['not_due', '1_7', '8_30', 'over_30'];
+  spec.paths['/api/buildings/{buildingId}/receivables'].get.responses['200'].content[
+    'application/json'
+  ].schema.properties.meta = {
+    allOf: [
+      { $ref: '#/components/schemas/PaginationMeta' },
+      {
+        type: 'object',
+        required: ['totalRemaining', 'overdueRemaining', 'invoiceCount', 'buckets'],
+        properties: {
+          totalRemaining: {
+            type: 'integer',
+            description: 'Tổng `total − paidTotal` của mọi hoá đơn chưa thu đủ trong bộ lọc.',
+          },
+          overdueRemaining: { type: 'integer', description: 'Phần đã quá hạn.' },
+          invoiceCount: { type: 'integer' },
+          buckets: {
+            type: 'array',
+            description: 'Một dòng cho mỗi nhóm (kể cả 0), theo `q`, không theo `bucket`.',
+            items: {
+              type: 'object',
+              required: ['bucket', 'count', 'remaining'],
+              properties: {
+                bucket: { type: 'string', enum: receivableBuckets },
+                count: { type: 'integer' },
+                remaining: { type: 'integer' },
+              },
+            },
+          },
+        },
+      },
+    ],
+  };
   const paymentInput = spec.components.schemas.PaymentInput;
   paymentInput.properties.amount = {
     type: 'integer',

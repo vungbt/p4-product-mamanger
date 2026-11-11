@@ -407,3 +407,41 @@ public page `/i/:token` outside the signed-in shell (`share/public-page.tsx`: Vi
 
 Integration coverage: `tests/invoice-share.integration.test.mjs` (CI Postgres/API only);
 browser coverage: `apps/stay/web/e2e/invoice-share.spec.ts`.
+
+### Receivables (ST-18)
+
+No migration: receivables are read from `invoices` (`total`, `paid_total`, `status`, `due_on`),
+which ST-15 keeps current after every payment or reversal.
+
+| Method/path (prefix `/api`) | Quyền | Ghi chú |
+| --- | --- | --- |
+| GET `/buildings/:buildingId/receivables` | read `Invoice` | Standard list (`page/pageSize/q/sortBy=remaining\|overdueDays\|roomCode/sortOrder`, default `remaining desc`), `bucket=not_due\|1_7\|8_30\|over_30`; `q` = room code, contract code, occupant name or phone |
+
+Each row is a **contract** with unpaid invoices (`issued`/`partially_paid` with
+`total − paid_total > 0`; drafts and void never count): `contractId/contractCode/contractStatus`,
+the contract's room today (`stay_contract_room_at`), the current representative's full name,
+`representativePhone` (only when the user may read the building's tenants: owner, its managers),
+`invoiceCount`, `remaining`, `overdueRemaining`, `oldestDueOn`, `overdueDays` (max over its
+invoices: `today − dueOn` in Asia/Ho_Chi_Minh, 0 when not due) and `bucket` (`not_due` = 0,
+`1_7`, `8_30`, `over_30` > 30 days; `receivableBucket` in `@stay/shared`), plus those invoices
+(oldest due first: id, code, kind, period, status, total, paid total, remaining, due date,
+overdue days, `shareExpiresAt`).
+
+`meta` (besides pagination): `totalRemaining`, `overdueRemaining` and `invoiceCount` over the
+whole filter (`q` + `bucket`), always equal to `sum(total − paid_total)` of the included invoices;
+`buckets` (`{ bucket, count, remaining }` for every bucket, zeros included) matches `q` but not
+`bucket`, for the chips. Rows, totals and bucket counts come from SQL aggregation (one CTE grouped
+by contract, `GROUP BY bucket` for meta, one `IN` query for the page's invoices — no N+1) in one
+REPEATABLE READ snapshot, so `meta` matches the rows. Filtering uses the ST-14 `(status, due_on)`
+and `(building_id, period)` indexes. Inaccessible or unknown buildings are 404; the route is
+read-only and records no audit changes.
+
+Web: `/receivables` (O-25, menu "Công nợ", `modules/receivables`): building total and overdue
+total, bucket chips with counts, search and sort on the URL, table (desktop) / cards (mobile),
+"Thu tiền" (`InvoicesPaymentDialog`: the row's invoices, oldest preselected; per invoice from the
+expanded row), "Gọi" (`tel:`), "Gửi lại link" (the ST-16 share dialog). SDK: `useReceivables`,
+`receivableKeys`; invoice, payment and share mutations invalidate `['stay', 'receivables']`, so
+a row updates or disappears right after a payment.
+
+Integration coverage: `tests/receivables.integration.test.mjs` (CI Postgres/API only);
+browser coverage: `apps/stay/web/e2e/receivables.spec.ts`.

@@ -764,6 +764,28 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/buildings/{buildingId}/receivables': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Công nợ của toà
+     * @description Mỗi dòng là một hợp đồng có hoá đơn chưa thu đủ (`issued`/`partially_paid`, `total − paidTotal > 0`; nháp và void không tính): mã hợp đồng, phòng hiện tại, người đại diện (`representativePhone` chỉ khi được xem người thuê của toà), số hoá đơn, tổng còn lại, phần quá hạn, hạn cũ nhất, số ngày quá hạn lâu nhất (`dueOn` so với hôm nay theo Asia/Ho_Chi_Minh) và nhóm `bucket` (`not_due`, `1_7`, `8_30`, `over_30`), kèm các hoá đơn đó (hạn cũ nhất trước, có `shareExpiresAt`). `q` tìm theo mã phòng, mã hợp đồng, tên hoặc SĐT người ở; lọc `bucket`; `sortBy` `remaining` (mặc định, giảm dần), `overdueDays`, `roomCode`. `meta.totalRemaining`, `meta.overdueRemaining`, `meta.invoiceCount` tính trên toàn bộ bộ lọc trước phân trang và luôn bằng tổng `total − paidTotal` của các hoá đơn được tính; `meta.buckets` đếm theo `q` nhưng không theo `bucket` (cho các chip). Toà ngoài phạm vi trả 404.
+     *
+     *     **Quyền:** `read:Invoice`.
+     */
+    get: operations['get_api_buildings_buildingId_receivables'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/buildings/{buildingId}/rooms': {
     parameters: {
       query?: never;
@@ -7116,6 +7138,88 @@ export interface operations {
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_buildings_buildingId_receivables: {
+    parameters: {
+      query?: {
+        bucket?: '1_7' | '8_30' | 'not_due' | 'over_30';
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'remaining' | 'overdueDays' | 'roomCode';
+        sortOrder?: 'asc' | 'desc';
+      };
+      header?: never;
+      path: {
+        buildingId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              /** @enum {string} */
+              bucket: '1_7' | '8_30' | 'not_due' | 'over_30';
+              contractCode: string;
+              contractId: string;
+              /** @enum {string} */
+              contractStatus: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
+              invoiceCount: number;
+              invoices: {
+                code: string | null;
+                dueOn: string;
+                id: string;
+                /** @enum {string} */
+                kind: 'monthly' | 'move_in' | 'settlement';
+                overdueDays: number;
+                paidTotal: number;
+                period: string;
+                remaining: number;
+                shareExpiresAt: string | null;
+                /** @enum {string} */
+                status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'void';
+                total: number;
+              }[];
+              oldestDueOn: string;
+              overdueDays: number;
+              overdueRemaining: number;
+              remaining: number;
+              representativeName: string | null;
+              representativePhone: string | null;
+              roomCode: string;
+              roomId: string;
+            }[];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'] & {
+              /** @description Một dòng cho mỗi nhóm (kể cả 0), theo `q`, không theo `bucket`. */
+              buckets: {
+                /** @enum {string} */
+                bucket: 'not_due' | '1_7' | '8_30' | 'over_30';
+                count: number;
+                remaining: number;
+              }[];
+              invoiceCount: number;
+              /** @description Phần đã quá hạn. */
+              overdueRemaining: number;
+              /** @description Tổng `total − paidTotal` của mọi hoá đơn chưa thu đủ trong bộ lọc. */
+              totalRemaining: number;
+            };
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
       429: components['responses']['RateLimited'];
     };
   };

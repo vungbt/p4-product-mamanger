@@ -14,6 +14,7 @@ export * from './money.js';
 export * from './payment.js';
 export * from './period.js';
 export * from './reading.js';
+export * from './receivable.js';
 export * from './room.js';
 export * from './schemas.js';
 export * from './settings.js';
