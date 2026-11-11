@@ -27,7 +27,7 @@ export default function AppLayout() {
             <WorkspaceMain
               id={MAIN_ID}
               tabIndex={-1}
-              className="w-full max-w-workspace px-4 py-5 pb-bottom-nav outline-none sm:px-6 lg:px-8 lg:py-8"
+              className="w-full max-w-none px-4 py-5 pb-bottom-nav outline-none sm:px-6 lg:px-8 lg:py-8"
             >
               <Outlet />
             </WorkspaceMain>

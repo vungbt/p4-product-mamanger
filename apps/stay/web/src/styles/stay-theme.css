@@ -15,7 +15,9 @@
   /* Surfaces and content: cool greys */
   --color-canvas: #f3f5f8;
   --color-surface: #ffffff;
-  --color-sidebar: #ffffff;
+  /* Slightly darker than the canvas so the kit item hover (surface 60%) and the raised
+     active item stay visible, as in the kit stories. */
+  --color-sidebar: #e9edf2;
   --color-ink: #1f2937;
   --color-muted: #556070;
   --color-line: #e2e6ec;

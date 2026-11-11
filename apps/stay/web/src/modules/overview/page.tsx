@@ -138,7 +138,7 @@ function OverviewContent({
         <h2 id="overview-stats-title" className="text-section font-semibold text-ink">
           Kỳ {period}
         </h2>
-        <ul className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
           <StatCard
             id="billed"
             label="Phải thu kỳ này"
@@ -184,23 +184,30 @@ function OverviewContent({
           6 kỳ gần nhất
         </h2>
         <div className="relative min-w-0 overflow-hidden rounded-panel border border-line bg-surface p-3 sm:p-5">
-          <Suspense fallback={<Skeleton className="h-64" />}>
-            <PeriodChart
-              type="bar"
-              label={`Phải thu và đã thu từ kỳ ${displayPeriod(data.series[0]?.period ?? data.period)} đến kỳ ${period}`}
-              description="Mỗi kỳ: tổng hoá đơn đã phát hành (phải thu) và số đã thu của chính các hoá đơn đó."
-              data={hasSeries ? chartData : []}
-              series={[
-                { id: 'billed', label: 'Phải thu' },
-                { id: 'collected', label: 'Đã thu' },
-              ]}
-              valueFormatter={formatVnd}
-              emptyMessage="Chưa có hoá đơn phát hành trong 6 kỳ này."
-              loadingLabel="Đang tải biểu đồ"
-              loading={loading}
-              data-testid="overview-chart"
-            />
-          </Suspense>
+          {!loading && !hasSeries ? (
+            // A full-height empty chart is mostly blank space; a one-line state says the same.
+            <p data-testid="overview-chart" className="py-6 text-center text-muted">
+              Chưa có hoá đơn phát hành trong 6 kỳ này.
+            </p>
+          ) : (
+            <Suspense fallback={<Skeleton className="h-64" />}>
+              <PeriodChart
+                type="bar"
+                label={`Phải thu và đã thu từ kỳ ${displayPeriod(data.series[0]?.period ?? data.period)} đến kỳ ${period}`}
+                description="Mỗi kỳ: tổng hoá đơn đã phát hành (phải thu) và số đã thu của chính các hoá đơn đó."
+                data={hasSeries ? chartData : []}
+                series={[
+                  { id: 'billed', label: 'Phải thu' },
+                  { id: 'collected', label: 'Đã thu' },
+                ]}
+                valueFormatter={formatVnd}
+                emptyMessage="Chưa có hoá đơn phát hành trong 6 kỳ này."
+                loadingLabel="Đang tải biểu đồ"
+                loading={loading}
+                data-testid="overview-chart"
+              />
+            </Suspense>
+          )}
         </div>
       </section>
     </div>
