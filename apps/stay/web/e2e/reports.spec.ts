@@ -71,6 +71,28 @@ for (const width of [1280, 375]) {
           page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
 
         await expect(page.getByTestId('reports-chart')).toBeVisible();
+        // TEMP diagnostics: which elements stick out past the viewport.
+        console.log(
+          'OVERFLOW',
+          await page.evaluate(() =>
+            JSON.stringify({
+              scrollWidth: document.documentElement.scrollWidth,
+              innerWidth: window.innerWidth,
+              wide: [...document.querySelectorAll('body *')]
+                .map((el) => ({ el, r: el.getBoundingClientRect() }))
+                .filter(({ r }) => r.right > window.innerWidth + 1 && r.width > 0)
+                .slice(0, 12)
+                .map(({ el, r }) => ({
+                  tag: el.tagName,
+                  cls: String(el.getAttribute('class') ?? '').slice(0, 90),
+                  testid: el.getAttribute('data-testid'),
+                  left: Math.round(r.left),
+                  right: Math.round(r.right),
+                  width: Math.round(r.width),
+                })),
+            }),
+          ),
+        );
         expect(await noScroll()).toBe(true);
         await page.getByRole('tab', { name: 'Theo phòng', exact: true }).click();
         await expect(page.getByText('Cả năm 2020', { exact: false })).toBeVisible();
