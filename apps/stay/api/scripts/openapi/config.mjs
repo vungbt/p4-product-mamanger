@@ -25,6 +25,8 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 
 const TAG_DESCRIPTIONS = {
   residents: 'Tạm trú theo ngày, khai báo theo lần ở và xuất Excel có audit.',
+  reports:
+    'Báo cáo tổng hợp SQL theo tháng, theo phòng, điện nước và xuất sổ Excel. Chỉ đọc, có phân quyền theo toà.',
   deposits: 'Sổ cọc bất biến; thu thêm, hoàn, mất cọc và cấn trừ thanh lý.',
   readings:
     'Chốt chỉ số điện nước, lưu theo dòng và thay đồng hồ; tiêu thụ tính theo các đoạn đồng hồ.',
@@ -89,6 +91,22 @@ const OPERATIONS = {
   'POST /api/buildings/{buildingId}/residents/export': [
     'Xuất danh sách tạm trú Excel',
     'read Tenant; 10 lần/phút; ngoài phạm vi trả 404. Audit người xuất, thời điểm, toà, ngày và số dòng; không chứa dữ liệu cá nhân.',
+  ],
+  'GET /api/reports/revenue': [
+    'Doanh thu, chi phí và lãi/lỗ',
+    'Phải thu theo kỳ hoá đơn; đã thu theo ngày thu thực tế (gồm deposit); bỏ nháp, void và thanh toán huỷ. Khoảng tối đa 24 tháng. Chỉ đọc; ngoài phạm vi quản lý trả 404.',
+  ],
+  'GET /api/reports/rooms': [
+    'Báo cáo theo phòng',
+    'Cả năm; số ngày ở tính cả ngày nhận và trả phòng, theo lịch sử chuyển phòng.',
+  ],
+  'GET /api/reports/utilities': [
+    'Báo cáo điện nước',
+    'Theo kỳ tiêu thụ của dòng hoá đơn. Danh mục Điện tổng / Nước tổng khớp tên sau trim, không phân biệt hoa thường; Điện nước tổng được báo riêng. Hao hụt tiền = (chi − phải thu) / chi × 100; null khi không có chi.',
+  ],
+  'POST /api/reports/exports': [
+    'Xuất sổ Excel',
+    'XLSX nhị phân, attachment. Tối đa 24 tháng; 5 lần/phút. Hoá đơn và công nợ theo kỳ hoá đơn (công nợ hiện tại của kỳ); sổ thu theo ngày thu; chi phí theo kỳ chi. Chỉ đọc, không ghi audit changes.',
   ],
   'GET /api/deposits': ['Sổ cọc', 'Tổng theo toàn bộ bộ lọc trước phân trang.'],
   'GET /api/contracts/{id}/deposits': ['Lịch sử bút toán cọc'],
@@ -571,6 +589,64 @@ const OVERRIDES = {
       content: { 'application/json': { schema: { ref: 'ResidentExportInput' } } },
     },
   },
+  'GET /api/reports/revenue': {
+    response: { ref: 'RevenueReport' },
+    parameters: [
+      {
+        name: 'buildingId',
+        in: 'query',
+        required: true,
+        schema: { type: 'string', format: 'uuid' },
+      },
+      ...['from', 'to'].map((name) => ({
+        name,
+        in: 'query',
+        required: true,
+        schema: { type: 'string', pattern: '^[0-9]{4}-(0[1-9]|1[0-2])$' },
+      })),
+    ],
+  },
+  'GET /api/reports/rooms': {
+    response: { ref: 'RoomsReport' },
+    parameters: [
+      {
+        name: 'buildingId',
+        in: 'query',
+        required: true,
+        schema: { type: 'string', format: 'uuid' },
+      },
+      {
+        name: 'year',
+        in: 'query',
+        required: true,
+        schema: { type: 'integer', minimum: 2000, maximum: 2099 },
+      },
+    ],
+  },
+  'GET /api/reports/utilities': {
+    response: { ref: 'UtilitiesReport' },
+    parameters: [
+      {
+        name: 'buildingId',
+        in: 'query',
+        required: true,
+        schema: { type: 'string', format: 'uuid' },
+      },
+      ...['from', 'to'].map((name) => ({
+        name,
+        in: 'query',
+        required: true,
+        schema: { type: 'string', pattern: '^[0-9]{4}-(0[1-9]|1[0-2])$' },
+      })),
+    ],
+  },
+  'POST /api/reports/exports': {
+    response: null,
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'ReportExportInput' } } },
+    },
+  },
   'POST /api/contracts/{id}/notice': settlementBody('ContractNoticeInput'),
   'POST /api/contracts/{id}/cancel-notice': settlementBody('ContractVersionInput'),
   'POST /api/contracts/{id}/settlement-preview': settlementBody('ContractSettlementInput'),
@@ -918,6 +994,7 @@ export default {
     'libs/stay/shared/src/overview.ts',
     'libs/stay/shared/src/portal.ts',
     'libs/stay/shared/src/resident.ts',
+    'libs/stay/shared/src/report.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },
   sessionCookie: 'stay.session_token',

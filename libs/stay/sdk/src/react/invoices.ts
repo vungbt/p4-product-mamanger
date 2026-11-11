@@ -64,7 +64,7 @@ export function invoiceMutationOptions(sdk: StaySdk, client: QueryClient) {
    */
   const refresh = (areas: string[]) => () =>
     Promise.all(
-      ['invoices', 'receivables', 'rooms', 'overview', ...areas].map((area) =>
+      ['invoices', 'receivables', 'rooms', 'overview', 'reports', ...areas].map((area) =>
         client.invalidateQueries({ queryKey: ['stay', area] }),
       ),
     );

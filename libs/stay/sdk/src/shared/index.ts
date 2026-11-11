@@ -18,6 +18,7 @@ export * from './payments.js';
 export * from './portal-links.js';
 export * from './readings.js';
 export * from './receivables.js';
+export * from './reports.js';
 export * from './residents.js';
 export {
   createRoomApi,

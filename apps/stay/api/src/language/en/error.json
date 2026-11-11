@@ -1,4 +1,5 @@
 {
+  "report_range_invalid": "Choose 1–24 months between 2000 and 2099; the end month must not precede the start month.",
   "unauthorized": "Unauthorized",
   "forbidden": "Forbidden",
   "not_found": "Not found",

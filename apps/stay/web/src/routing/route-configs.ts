@@ -28,6 +28,7 @@ const InvoiceDetailPage = lazy(() => import('@/modules/invoices/detail-page'));
 const PeriodSharePage = lazy(() => import('@/modules/invoices/share/period-share-page'));
 const PaymentsPage = lazy(() => import('@/modules/payments/page'));
 const ReceivablesPage = lazy(() => import('@/modules/receivables/page'));
+const ReportsPage = lazy(() => import('@/modules/reports/page'));
 const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
 const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
 const ContractListPage = lazy(() => import('@/modules/contracts/list-page'));
@@ -301,7 +302,7 @@ export const appRoutes: StayRoute[] = [
     path: '/reports',
     name: 'reports',
     icon: 'chart',
-    component: PlaceholderPage,
+    component: ReportsPage,
     ability: { action: 'read', subject: 'Report' },
   },
   {

@@ -309,6 +309,25 @@ try {
   for (const [url, response] of Object.entries(FILE_RESPONSES)) {
     spec.paths[url].post.responses['200'] = response;
   }
+  for (const name of ['revenue', 'rooms', 'utilities', 'exports']) {
+    const operation = spec.paths[`/api/reports/${name}`][name === 'exports' ? 'post' : 'get'];
+
+    operation.responses['404'] = { $ref: '#/components/responses/NotFound' };
+    if (name !== 'rooms')
+      operation.responses['422'] = {
+        description: 'Khoảng kỳ không hợp lệ: đảo thứ tự, quá 24 tháng hoặc ngoài năm 2000–2099.',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+      };
+  }
+  spec.paths['/api/reports/exports'].post.responses['200'] = {
+    description: 'Sổ Excel; Content-Disposition: attachment; Cache-Control: no-store.',
+    headers: { 'Content-Disposition': { schema: { type: 'string' } } },
+    content: {
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+        schema: { type: 'string', format: 'binary' },
+      },
+    },
+  };
   const output = YAML.stringify(spec, { lineWidth: 120, aliasDuplicateObjects: false });
 
   if (process.argv.includes('--check')) {
