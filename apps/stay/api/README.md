@@ -655,3 +655,39 @@ Extension points for part B:
 
 Integration coverage: `tests/portal.integration.test.mjs` (CI Postgres/API only); browser
 coverage: `apps/stay/web/e2e/portal.spec.ts`.
+
+### Temporary residence / Khai báo tạm trú (ST-28)
+
+Run migration `20261201000100-resident-registration.cjs`. Registration is stored on
+`contract_occupants` (`registered_on`, `registration_note`, `registered_by`), per occupant
+stay rather than on the tenant: leaving and returning requires a new registration.
+A representative-role interval split carries the existing registration forward.
+Room changes retain the occupant stay and use `stay_contract_room_at` for the selected date.
+
+| Method/path (prefix `/api`) | Permission | Behavior |
+| --- | --- | --- |
+| GET `/buildings/:buildingId/residents` | read Tenant | Required `date=YYYY-MM-DD`, `status=all\|unregistered`, `q` (name/room), standard pagination and name sorting |
+| POST `/resident-stays/:id/registration` | manage Tenant | `id` = `contract_occupants.id`, `{ registeredOn, note? }`; valid date between arrival and today; note ≤ 2,000 characters |
+| DELETE `/resident-stays/:id/registration` | manage Tenant | Clear this stay's registration |
+| POST `/buildings/:buildingId/residents/export` | read Tenant | `{ date }`; XLSX attachment; rate limited to 10 requests/minute |
+
+The list uses SQL joins/counts, never per-resident queries. Contracts must be active/ending,
+with inclusive start/end dates, occupant `from_date <= date` and exclusive `to_date > date`.
+One row per tenant, latest eligible stay wins if legacy data overlaps. Historical ended
+contracts are excluded, consistent with the requested active/ending scope. An assigned
+manager can read/export; other buildings return 404. `manage Tenant` marking is owner-only
+under the existing ability policy. Full CCCD is restricted to staff with building-scoped
+read Tenant; the web masks it and uses the existing audited reveal command.
+
+GET is read-only and never calls `setAuditChanges`. Registration audits contain only stay ID,
+building ID and marked/unmarked state. Export commits `residents.export` with actor/time,
+building, selected date and row count before sending the file; no names, identity numbers,
+addresses or free text enter either audit payload. Excel columns: STT, Họ tên, Ngày sinh,
+Số CCCD (text, preserving leading zeros), Quê quán/Địa chỉ thường trú, Phòng, Ngày đến,
+Đã khai báo (registration date or Chưa khai báo). Export includes the whole selected date,
+regardless of the web search/unregistered filter. ExcelJS is pinned to `4.4.0` in @stay/api.
+
+Web `/residents` is beside Người thuê in the menu, with Vietnam-today default date,
+URL filters, desktop table/mobile cards, registration dialog, and Excel download.
+CI Postgres coverage: `tests/residents.integration.test.mjs`; browser coverage:
+`apps/stay/web/e2e/residents.spec.ts` (building A only, desktop and 375px).

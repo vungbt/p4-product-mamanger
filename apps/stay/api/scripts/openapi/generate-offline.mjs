@@ -6,6 +6,7 @@ import { readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
+import { FILE_RESPONSES } from './config.mjs';
 
 const directory = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(directory, '../../../../..');
@@ -305,6 +306,9 @@ try {
     description: 'Người thuê không còn ở trong hợp đồng (`portal_tenant_not_occupant`).',
     content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
   };
+  for (const [url, response] of Object.entries(FILE_RESPONSES)) {
+    spec.paths[url].post.responses['200'] = response;
+  }
   const output = YAML.stringify(spec, { lineWidth: 120, aliasDuplicateObjects: false });
 
   if (process.argv.includes('--check')) {

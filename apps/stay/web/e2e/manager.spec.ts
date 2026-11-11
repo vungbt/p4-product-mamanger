@@ -21,6 +21,7 @@ test.describe('building manager (conditional rules)', () => {
       'Sổ thu',
       'Hợp đồng',
       'Người thuê',
+      'Tạm trú',
       'Yêu cầu',
       'Báo cáo',
     ]) {

@@ -24,6 +24,7 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 - Mọi dữ liệu nghiệp vụ gắn \`buildingId\`; quyền kiểm tra theo toà.`;
 
 const TAG_DESCRIPTIONS = {
+  residents: 'Tạm trú theo ngày, khai báo theo lần ở và xuất Excel có audit.',
   deposits: 'Sổ cọc bất biến; thu thêm, hoàn, mất cọc và cấn trừ thanh lý.',
   readings:
     'Chốt chỉ số điện nước, lưu theo dòng và thay đồng hồ; tiêu thụ tính theo các đoạn đồng hồ.',
@@ -61,7 +62,34 @@ const VERSION_NOTE =
 const TENANT_FIELDS_NOTE =
   'Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu chấm và tự chuẩn hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và `extensions.duplicateTenant` (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc `dd/MM/yyyy`), không sau hôm nay. Không tự điền giá trị nào.';
 
+export const FILE_RESPONSES = {
+  '/api/buildings/{buildingId}/residents/export': {
+    description: 'Danh sách tạm trú XLSX; audit trước khi trả dữ liệu cá nhân.',
+    content: {
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+        schema: { type: 'string', format: 'binary' },
+      },
+    },
+  },
+};
+
 const OPERATIONS = {
+  'GET /api/buildings/{buildingId}/residents': [
+    'Danh sách tạm trú',
+    'Người ở của hợp đồng active/ending tại date; fromDate bao gồm, toDate không bao gồm. CCCD đầy đủ chỉ dành cho nhân viên có read Tenant trong toà. Không ghi audit dữ liệu cá nhân.',
+  ],
+  'POST /api/resident-stays/{id}/registration': [
+    'Đánh dấu đã khai báo',
+    'manage Tenant; id là contract_occupants.id. Ngày từ ngày đến tới hôm nay; audit chỉ chứa id, toà và trạng thái.',
+  ],
+  'DELETE /api/resident-stays/{id}/registration': [
+    'Bỏ đánh dấu khai báo',
+    'manage Tenant; chỉ cập nhật lần ở này.',
+  ],
+  'POST /api/buildings/{buildingId}/residents/export': [
+    'Xuất danh sách tạm trú Excel',
+    'read Tenant; 10 lần/phút; ngoài phạm vi trả 404. Audit người xuất, thời điểm, toà, ngày và số dòng; không chứa dữ liệu cá nhân.',
+  ],
   'GET /api/deposits': ['Sổ cọc', 'Tổng theo toàn bộ bộ lọc trước phân trang.'],
   'GET /api/contracts/{id}/deposits': ['Lịch sử bút toán cọc'],
   'POST /api/contracts/{id}/deposits': [
@@ -523,6 +551,26 @@ const OVERRIDES = {
       content: { 'application/json': { schema: { ref: 'PortalSessionInput' } } },
     },
   },
+  'GET /api/buildings/{buildingId}/residents': {
+    list: true,
+    response: { type: 'array', items: { ref: 'StayResident' } },
+    parameters: [
+      { name: 'date', in: 'query', required: true, schema: { type: 'string', format: 'date' } },
+      { name: 'status', in: 'query', schema: { type: 'string', enum: ['all', 'unregistered'] } },
+    ],
+  },
+  'POST /api/resident-stays/{id}/registration': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'ResidentRegistrationInput' } } },
+    },
+  },
+  'POST /api/buildings/{buildingId}/residents/export': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'ResidentExportInput' } } },
+    },
+  },
   'POST /api/contracts/{id}/notice': settlementBody('ContractNoticeInput'),
   'POST /api/contracts/{id}/cancel-notice': settlementBody('ContractVersionInput'),
   'POST /api/contracts/{id}/settlement-preview': settlementBody('ContractSettlementInput'),
@@ -869,6 +917,7 @@ export default {
     'libs/stay/shared/src/payment.ts',
     'libs/stay/shared/src/overview.ts',
     'libs/stay/shared/src/portal.ts',
+    'libs/stay/shared/src/resident.ts',
   ],
   metadata: { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS },
   sessionCookie: 'stay.session_token',

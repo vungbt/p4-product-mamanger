@@ -41,6 +41,7 @@ const RoomMapPage = lazy(() => import('@/modules/rooms/page'));
 const RoomDetailPage = lazy(() => import('@/modules/rooms/detail-page'));
 const RoomFormPage = lazy(() => import('@/modules/rooms/form-page'));
 const RoomBulkPage = lazy(() => import('@/modules/rooms/bulk-page'));
+const ResidentsPage = lazy(() => import('@/modules/tenants/residents-page'));
 const TenantListPage = lazy(() => import('@/modules/tenants/list-page'));
 const TenantProfilePage = lazy(() => import('@/modules/tenants/profile-page'));
 const TenantFormPage = lazy(() => import('@/modules/tenants/form-page'));
@@ -240,6 +241,13 @@ export const appRoutes: StayRoute[] = [
     name: 'tenants',
     icon: 'users',
     component: TenantListPage,
+    ability: { action: 'read', subject: 'Tenant' },
+  },
+  {
+    path: '/residents',
+    name: 'residents',
+    icon: 'users',
+    component: ResidentsPage,
     ability: { action: 'read', subject: 'Tenant' },
   },
   // Static tenant paths come before `/tenants/:id` (`useCurrentRoute` takes the first match).
