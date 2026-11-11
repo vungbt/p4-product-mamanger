@@ -21,7 +21,11 @@ export default function AppLayout() {
         >
           {t('app.skipToContent')}
         </a>
-        <WorkspaceShell className="stay-shell w-full max-w-none" sidebar={<AppSidebar />}>
+        <WorkspaceShell
+          variant="floating"
+          className="stay-shell w-full max-w-none"
+          sidebar={<AppSidebar />}
+        >
           <WorkspaceBody>
             <AppHeader />
             <WorkspaceMain
