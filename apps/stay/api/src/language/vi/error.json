@@ -1,4 +1,5 @@
 {
+  "report_range_invalid": "Chọn khoảng từ 1 đến 24 tháng, từ năm 2000 đến 2099; tháng kết thúc không trước tháng bắt đầu.",
   "unauthorized": "Chưa xác thực",
   "forbidden": "Không có quyền truy cập",
   "not_found": "Không tìm thấy",

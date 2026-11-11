@@ -86,8 +86,8 @@ export function contractMutationOptions(sdk: StaySdk, client: QueryClient) {
   const api = createContractApi(sdk);
   const refresh = () =>
     Promise.all(
-      ['contracts', 'rooms', 'tenants', 'buildings', 'invoices', 'overview'].map((area) =>
-        client.invalidateQueries({ queryKey: ['stay', area] }),
+      ['contracts', 'rooms', 'tenants', 'buildings', 'invoices', 'overview', 'reports'].map(
+        (area) => client.invalidateQueries({ queryKey: ['stay', area] }),
       ),
     );
 

@@ -61,6 +61,7 @@ export function roomMutationOptions(sdk: StaySdk, client: QueryClient) {
       client.invalidateQueries({ queryKey: roomKeys.all }),
       client.invalidateQueries({ queryKey: buildingKeys.all }),
       client.invalidateQueries({ queryKey: ['stay', 'overview'] }),
+      client.invalidateQueries({ queryKey: ['stay', 'reports'] }),
     ]);
 
   return {

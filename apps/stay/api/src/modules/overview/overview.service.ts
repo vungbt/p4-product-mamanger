@@ -24,7 +24,7 @@ import { buildingReceivableTotals } from '../receivables/receivables.service.js'
 import { billingDefaults } from '../settings/settings.service.js';
 
 /** Invoices that count as billed: issued, never drafts or void (every kind). */
-const BILLED_STATUSES = ['issued', 'partially_paid', 'paid'];
+export const BILLED_STATUSES = ['issued', 'partially_paid', 'paid'];
 
 /** Contracts that hold a room (room map derivation). */
 const HOLDING_STATUSES = ['active', 'ending'];
@@ -35,7 +35,7 @@ const OVERDUE_BUCKETS: ReceivableBucket[] = ['over_30', '8_30', '1_7'];
 type Amount = string | number | null;
 
 /** BIGINT sums arrive as strings; amounts beyond the safe integer range are refused. */
-function vnd(value: Amount): number {
+export function vnd(value: Amount): number {
   const amount = Number(value ?? 0);
 
   if (!Number.isSafeInteger(amount))
@@ -249,7 +249,11 @@ const occupancyDate = (period: Period, today: string) => {
 };
 
 /** Accessible building or 404 (managers of other buildings, unknown ids). */
-async function overviewBuilding(user: StayUser, buildingId: string, transaction: Transaction) {
+export async function overviewBuilding(
+  user: StayUser,
+  buildingId: string,
+  transaction: Transaction,
+) {
   if (!canAccessRecord(user, 'read', 'Report', { buildingId })) throw new NotFound();
   const building = await BuildingModel.findByPk(buildingId, { transaction });
 

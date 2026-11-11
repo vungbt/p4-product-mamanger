@@ -691,3 +691,54 @@ Web `/residents` is beside Người thuê in the menu, with Vietnam-today defaul
 URL filters, desktop table/mobile cards, registration dialog, and Excel download.
 CI Postgres coverage: `tests/residents.integration.test.mjs`; browser coverage:
 `apps/stay/web/e2e/residents.spec.ts` (building A only, desktop and 375px).
+
+### Reports and Excel (ST-21)
+
+All routes require a staff session and scoped `read Report` (owner or the building's manager).
+Unknown/inaccessible buildings return 404. Reports are read-only: no `setAuditChanges`.
+Each response/export uses a REPEATABLE READ snapshot; aggregation runs in SQL without N+1.
+
+| Method/path (prefix `/api`) | Input | Result |
+| --- | --- | --- |
+| GET `/reports/revenue` | `buildingId`, `from`, `to` | `months` (zero months included) and `totals`: billed, collected, expenses, profit |
+| GET `/reports/rooms` | `buildingId`, `year` (2000–2099) | Every room: billed, collected, occupiedMonths, occupiedDays, availableDays, occupancyRate (0–1 or null) |
+| GET `/reports/utilities` | `buildingId`, `from`, `to` | Monthly billed kWh/m³, billed VND, utility expenses VND and loss percentages |
+| POST `/reports/exports` | `{buildingId, from, to, sheets: ['invoices','payments','expenses','receivables']}` | XLSX attachment (`stay-from-to.xlsx`); 5 requests/minute |
+
+`from`/`to` are required `YYYY-MM`, inclusive, 2000–2099; reversed ranges and more than
+24 months return 422, malformed months 400. Sheets must be nonempty, unique and supported.
+Billed = issued/partially_paid/paid invoices by **invoice period**, every invoice kind;
+collected = non-reversed payments by **actual paidOn**, including `deposit`. Drafts/void excluded.
+Expenses use their expense period; profit = collected − expenses. These match the invoice,
+payment and expense list endpoints with equivalent filters (sum their months for a range).
+
+Room amounts use the entire selected calendar year. Occupancy counts distinct occupied days,
+including move-in and move-out dates, following `stay_contract_room_at` room-change history;
+occupiedMonths counts distinct months with any occupied day. Available days start at the room's
+creation date (Asia/Ho_Chi_Minh), end before its archive date, clipped to the selected year.
+Future days of a holding contract count as scheduled occupancy; this is a full-year report,
+not a year-to-date forecast. Cancelled/draft contracts never count. Rate is occupied/available,
+rounded to four decimals, null when no available days. Archived rooms remain in the report.
+
+Utilities use **invoice-line consumption period** (usually M−1), not the invoice's period M.
+Quantities and billed VND come from electricity/water line snapshots of issued invoices.
+Expense categories are matched by `lower(trim(name))`: `điện tổng` and `nước tổng` respectively.
+Create these categories in expense settings to track separate costs. The seeded `Điện nước tổng`
+is shown as `combinedExpenses` and is never guessed or split. Renaming a category changes matching;
+inactive categories still count. Other categories are excluded. Each loss percentage is
+`(expenses − billed) / expenses × 100`, rounded to two decimals; null when expenses = 0.
+It measures money shortfall, **not physical consumption loss** (expenses have no kWh/m³ field).
+Negative loss means tenant billing exceeds expense. Shared expense is displayed separately.
+
+ExcelJS **4.4.0** writes Vietnamese sheets `Hoá đơn`, `Sổ thu`, `Chi phí`, `Công nợ` with
+bold frozen headers, column widths, numeric VND cells and real date cells (`dd/mm/yyyy`).
+Invoices use invoice period, payments use paidOn, expenses use expense period. Receivables are
+**current** unpaid balances of invoices in the selected periods, not a historical balance as of
+`to`. Only issued unpaid invoices count. Export has no pagination/truncation; all selected rows
+are read in the same snapshot. No tenant contact details, notes, or formula objects are exported.
+
+Web `/reports`: active building, URL `from`/`to` and `tab`, three tabs, lazy bar chart,
+scroll-contained tables on mobile and sheet-selection export dialog. SDK provides `reportKeys`,
+`reportQueryOptions`, `useRevenueReport`, `useRoomsReport`, `useUtilitiesReport`, `downloadReport`.
+Invoice/payment/expense/room/contract mutations invalidate reports.
+CI coverage: `tests/reports.integration.test.mjs`; browser coverage: `apps/stay/web/e2e/reports.spec.ts`.

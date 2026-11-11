@@ -38,7 +38,11 @@ export function expenseQueryOptions(sdk: StaySdk) {
 
 export function expenseMutationOptions(sdk: StaySdk, client: QueryClient) {
   const api = createExpenseApi(sdk);
-  const refresh = () => client.invalidateQueries({ queryKey: expenseKeys.all });
+  const refresh = () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: expenseKeys.all }),
+      client.invalidateQueries({ queryKey: ['stay', 'reports'] }),
+    ]);
 
   return {
     create: () => mutationOptions({ mutationFn: api.create, retry: false, onSuccess: refresh }),
