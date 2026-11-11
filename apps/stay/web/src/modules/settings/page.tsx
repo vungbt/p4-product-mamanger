@@ -6,7 +6,7 @@ import { ScreenHeader } from '@/libraries/screen-header';
 import { ROUTES } from '@/routing/route-configs';
 
 type SettingsLink = {
-  key: 'services' | 'billing' | 'buildings' | 'members' | 'expenseCategories';
+  key: 'services' | 'billing' | 'buildings' | 'members' | 'expenseCategories' | 'announcements';
   icon: IconName;
   href: string;
   ability: AbilityCheck;
@@ -36,6 +36,12 @@ const LINKS: SettingsLink[] = [
     icon: 'buildings',
     href: ROUTES.buildings,
     ability: { action: 'manage', subject: 'Building' },
+  },
+  {
+    key: 'announcements',
+    icon: 'megaphone',
+    href: '/announcements',
+    ability: { action: 'update', subject: 'Building' },
   },
   {
     key: 'members',

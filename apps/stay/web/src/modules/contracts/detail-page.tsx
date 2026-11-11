@@ -8,6 +8,7 @@ import { useCanAccess, useCanOn } from '@/libraries/ability';
 import { displayDate, formatVnd } from '@/libraries/format';
 import { DepositLedger } from '@/modules/deposits/ledger';
 import { ContractInvoices } from '@/modules/invoices/contract-invoices';
+import { ContractRequests } from '@/modules/requests/contract-requests';
 import { useRoomBuilding } from '@/modules/rooms/use-room-building';
 import { CHANGE_LABELS, ContractChangeDialog } from './change-dialog';
 import { CONTRACT_LABELS, LoadError } from './contract-ui';
@@ -229,6 +230,8 @@ export default function ContractDetailPage() {
           <ContractInvoices contract={data} />
         ) : tab === 'Cọc' ? (
           <DepositLedger contractId={data.id} buildingId={data.buildingId} status={data.status} />
+        ) : tab === 'Yêu cầu' ? (
+          <ContractRequests contractId={data.id} />
         ) : tab === 'Cổng người thuê' ? (
           <PortalLinksPanel contract={data} />
         ) : tab === 'Lịch sử' ? (

@@ -46,7 +46,8 @@
     "deposits": "Sổ cọc",
     "invoiceRun": "Lập hoá đơn kỳ",
     "invoiceShare": "Chia sẻ kỳ",
-    "invoiceDetail": "Chi tiết hoá đơn"
+    "invoiceDetail": "Chi tiết hoá đơn",
+    "announcements": "Thông báo cho người thuê"
   },
   "header": {
     "back": "Quay lại",

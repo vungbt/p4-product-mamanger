@@ -7,6 +7,7 @@ import type {
   ServiceKind,
 } from './constants.js';
 import type { PublicInvoiceBase } from './invoice.js';
+import type { PortalOpenRequests, PortalPaymentClaim } from './requests.js';
 import type { VehicleType } from './tenant.js';
 
 /* -------------------------------------------------------------------------- */
@@ -145,9 +146,11 @@ export interface PortalInvoice extends PublicInvoiceBase {
   id: string;
   /** Newest first. */
   payments: PortalPayment[];
+  /** "Tôi đã chuyển khoản" claims of the invoice, newest first (a pending one blocks a new one). */
+  claims: PortalPaymentClaim[];
 }
 
-/** An announcement of the building (ST-25 `announcements`; staff writes come later). */
+/** An announcement of the building (ST-25 `announcements`, written by staff on O-32). */
 export interface PortalNotice {
   id: string;
   title: string;
@@ -177,6 +180,8 @@ export interface PortalMe {
   unpaidInvoiceCount: number;
   /** Pinned, unexpired announcements for the room. */
   pinnedNotices: PortalNotice[];
+  /** Open maintenance reports, own pending requests and pending payment claims. */
+  openRequests: PortalOpenRequests;
   sessionExpiresAt: string;
 }
 

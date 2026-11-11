@@ -38,6 +38,8 @@ const ContractSettlePage = lazy(() => import('@/modules/contracts/settle-page'))
 const AuditPage = lazy(() => import('@/modules/audit/page'));
 const OverviewPage = lazy(() => import('@/modules/overview/page'));
 const PlaceholderPage = lazy(() => import('@/modules/placeholder/page'));
+const RequestsPage = lazy(() => import('@/modules/requests/page'));
+const AnnouncementsPage = lazy(() => import('@/modules/announcements/page'));
 const RoomMapPage = lazy(() => import('@/modules/rooms/page'));
 const RoomDetailPage = lazy(() => import('@/modules/rooms/detail-page'));
 const RoomFormPage = lazy(() => import('@/modules/rooms/form-page'));
@@ -288,7 +290,7 @@ export const appRoutes: StayRoute[] = [
     path: '/requests',
     name: 'requests',
     icon: 'messages',
-    component: PlaceholderPage,
+    component: RequestsPage,
     ability: { action: 'update', subject: 'Maintenance' },
   },
   {
@@ -372,6 +374,16 @@ export const appRoutes: StayRoute[] = [
     ability: { action: 'manage', subject: 'Building' },
     hideInMenu: true,
     parent: 'buildings',
+  },
+  {
+    path: '/announcements',
+    name: 'announcements',
+    icon: 'megaphone',
+    component: AnnouncementsPage,
+    // O-32 "manage Building": owner, and managers in assigned buildings (`update Building`).
+    ability: { action: 'update', subject: 'Building' },
+    hideInMenu: true,
+    parent: 'settings',
   },
   {
     path: '/settings/expense-categories',

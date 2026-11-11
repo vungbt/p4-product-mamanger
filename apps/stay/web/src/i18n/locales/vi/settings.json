@@ -34,6 +34,10 @@
       "expenseCategories": {
         "title": "Danh mục chi phí",
         "description": "Thêm, sửa và tắt danh mục chi phí vận hành."
+      },
+      "announcements": {
+        "title": "Thông báo cho người thuê",
+        "description": "Thông báo cả toà hoặc từng phòng, ghim và hạn hiển thị trên cổng người thuê."
       }
     }
   },

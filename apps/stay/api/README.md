@@ -639,22 +639,90 @@ Rules (`modules/portal`):
   `tenant_portal.verification_failed` (outcome `failure`, `locked`). Portal reads record nothing.
 - Links use `STAY_WEB_URL`, else the trusted caller origin, else the first web origin (as ST-16).
 
-Extension points for part B:
-
-- New tenant routes go in `portal.router.ts` behind `portalSessionRequired` and read
-  `portalOf(req)` (`PortalPrincipal`: session, link, building, contract, tenant and the `tenant`
-  ability); add their policies to `portalAuditPolicies`. Writes run in `apiHandler`'s audited
-  transaction; record rows with `actorId: null` and the link/tenant ids. Per-contract daily limits
-  (maintenance/requests 10/day) can reuse `rateLimit` keyed like `portalSessionTokenLimit`.
-- Payment claims (`payment_claims`): confirm with `insertPayment` (ST-15) using the claim id for
-  idempotency; the T-05 page already shows "Tôi đã chuyển khoản" as "Sắp có".
-- `tenant_requests`, `maintenance_requests` (private photos through upload tickets) and the owner
-  inbox `/requests` are not created yet; `PortalMe` can then add open request counts.
-- Announcements: staff CRUD (`GET/POST/PUT /announcements`, manage Building) writes the existing
-  table; the portal already filters by building, room, pin and expiry.
+Part B (below) built on these extension points: tenant routes in `portal.router.ts` behind
+`portalSessionRequired` reading `portalOf(req)`, policies in `portalAuditPolicies`.
 
 Integration coverage: `tests/portal.integration.test.mjs` (CI Postgres/API only); browser
 coverage: `apps/stay/web/e2e/portal.spec.ts`.
+
+### Tenant requests, maintenance, payment claims and announcements (ST-25, part B)
+
+Run migration `20261203000100-portal-requests.cjs`:
+
+- `payment_claims` (`building_id`, `contract_id`, `invoice_id`, `tenant_id`, `portal_link_id`, `amount`
+  BIGINT, `paid_on`, `receipt_file_id`, `reference`, `note`, `status`
+  `pending|confirmed|rejected|cancelled`, `payment_id`, `reject_reason`, `handled_by/at`,
+  `idempotency_key/hash`, `version`). One `pending` claim per invoice (partial unique index); one
+  claim per `(tenant_id, idempotency_key)`; a payment belongs to at most one claim.
+- `maintenance_requests` (columns of data-model.md: `source` `owner|tenant`, `category`
+  `electricity|water|appliance|other`, `severity` `normal|urgent`, `title`, `description`, `status`
+  `new|open|in_progress|done|rejected|cancelled`, `reply` + `replied_at/by`, `handled_by/at`,
+  `cost_expense_id`, `photos` uuid[] ≤ 5, `created_by`). Tenant rows require contract and tenant;
+  ST-22 adds the internal workflow (owner source, costs) on the same table.
+- `tenant_requests` (`type` `move_out|add_occupant|remove_occupant|add_vehicle|remove_vehicle|other`,
+  `payload` JSONB, `status` `new|accepted|rejected|cancelled`, `reply`, `result` JSONB of ids written
+  on accept, `handled_by/at`, `room_id` snapshot).
+- Portal uploads: `upload_tickets.owner_id` is nullable with `portal_link_id` (one of them is set);
+  `files.portal_link_id`. Purposes `payment_receipt` and `maintenance_photo` exist only for portal
+  tickets (`POST /api/uploads` still accepts the three staff purposes, `STAFF_UPLOAD_PURPOSES`).
+
+Shared types: `libs/stay/shared/src/requests.ts`. Tenants only **propose**; contract and ledger
+changes happen only when staff accept.
+
+| Method/path (prefix `/api`) | Auth | Notes |
+| --- | --- | --- |
+| POST `/portal/uploads`, `/portal/uploads/:id/complete` | portal | `{ purpose: payment_receipt\|maintenance_photo }`; ticket owned by the link, building of the contract; 60 tickets/day/contract |
+| POST `/portal/invoices/:id/payment-claims` | portal | `PaymentClaimInput` `{ amount 1…remaining, paidOn ≤ today, receiptFileId?, reference?, note? }`, optional `Idempotency-Key` (same key + body → same claim; other body → 409 `idempotency_conflict`). 422 `payment_exceeds_remaining`, 409 `payment_claim_pending` / `invoice_already_paid`; another contract's invoice → 404 |
+| POST `/portal/payment-claims/:id/cancel` | portal | Sender only, while `pending` (409 `request_not_pending`) |
+| GET/POST `/portal/maintenance` | portal | List of the contract (signed photo URLs, `isOwn`); create `{ title, description, category, severity, photoFileIds ≤ 5 }` (own `maintenance_photo` uploads), active/ending contract, 10/day/contract |
+| POST `/portal/maintenance/:id/cancel` | portal | Reporter only, while `new` |
+| GET/POST `/portal/requests` | portal | Own requests; create `{ type, payload }` validated per type (field errors `payload.<field>`; dates inside the term, move-out ≥ today), 10/day/contract |
+| POST `/portal/requests/:id/cancel` | portal | Own, while `new` |
+| GET `/requests` | read `Maintenance` (claims: read `Payment`) | Unified inbox (`InboxItem`): `kind` `maintenance\|tenant_request\|payment_claim`, common `status` `pending\|in_progress\|done\|rejected\|cancelled`, `buildingId`, `contractId`, `q` (room, contract, sender, title, invoice code), newest first; `meta.counts` per status for the filter without `status` |
+| POST `/requests/:id/accept` | update `Maintenance` | Maintenance → `in_progress` (`done: true` → `done`). Tenant request (`new`) → runs the contract change in the same transaction (below); optional `reply`, `effectiveDate`, `tenantId`, `newPrimaryTenantId`, `vehicleId` |
+| POST `/requests/:id/reject` | update `Maintenance` | `{ reason }` required (stored as the reply the tenant sees) |
+| POST `/requests/:id/reply` | update `Maintenance` | `{ message }`; replaces the latest reply, status unchanged |
+| POST `/payment-claims/:id/confirm` | create `Payment` | `insertPayment` (ST-15) with method `bank_transfer`, `paidOn`/`amount`/`reference` from the claim unless overridden; claim `confirmed` + `payment_id` |
+| POST `/payment-claims/:id/reject` | create `Payment` | `{ reason }`; invoice untouched |
+| GET/POST `/announcements`, PUT/DELETE `/announcements/:id`, POST `/announcements/:id/archive` | update `Building` | `AnnouncementInput` `{ buildingId, title, body, roomIds (null/[] = whole building, active rooms of the building), pinned, expiresOn (last day shown, VN; not in the past) }`; PUT with `version`; archive = expires now and unpinned; list `status=active\|expired\|all`, pinned first |
+
+`GET /portal/me` gains `openRequests` (`maintenance` open, own `requests` new, `paymentClaims`
+pending); `GET /portal/invoices/:id` gains `claims` (status, reject reason, `isOwn`).
+
+Rules:
+
+- **Accepting a tenant request** (`requests.inbox.ts`, `applyRequest`) calls the existing services
+  inside the inbox's audited transaction (nested `auditedTransaction` reuses it), so a validation
+  error of ST-12/ST-17 rolls back everything and the request stays `new`: `move_out` →
+  `giveNotice` (contract `ending`, `noticeDate`); `add_occupant` → `changeContract('occupants')`
+  with the inline name/phone from the effective date; `remove_occupant` → `changeContract('leave')`
+  (occupant by `tenantId`, else the unique occupant with that name); `add_vehicle` → the
+  requester's vehicle (created when the plate is new) + `changeContract('vehicles', enabled)`;
+  `remove_vehicle` → the registered vehicle with that plate (or `vehicleId`); `other` → status
+  only. The contract `version` is read in the transaction. Staff need `update Contract` too.
+- **Confirming a claim** locks the claim row first: a retry or a concurrent confirm returns the
+  same `paymentId` (exactly one payment). `insertPayment` keeps its checks (remaining, void, paid).
+- **Scope**: portal queries always combine ids with the session's contract (another contract →
+  404; uploads of another link are not attachable). Staff items/filters outside the user's
+  buildings → 404; the list is scoped by building in SQL (one UNION query, counts in SQL).
+- **Audit**: staff writes record `maintenance_request.*`/`tenant_request.*` (resource `request`),
+  `payment_claim.confirmed|rejected`, `announcement.created|updated|archived|deleted`; tenant writes
+  record `payment_claim.created|cancelled`, `maintenance_request.created|cancelled`,
+  `tenant_request.created|cancelled` with `actorId: null` and the link/tenant ids. Only ids, types,
+  statuses, dates, money and counts — never replies, reasons, notes, titles, names or phones.
+  Reads never call `setAuditChanges`.
+- **Ability kit**: unchanged — `Maintenance`, `Payment` and `Building` already follow the manager
+  rules (assigned buildings); "manage Maintenance/Building" in the spec maps to `update`.
+
+Web: tenant `/p/invoices/:id` "Tôi đã chuyển khoản" (amount = remaining, date, receipt photo,
+pending/rejected states, cancel), `/p/maintenance` + `/p/maintenance/new`, `/p/requests` +
+`/p/requests/new` (type-specific fields), home counts. Staff `/requests` (status chips with
+counts, kind filter, search, detail dialog with accept/reject/reply and claim confirmation showing
+the receipt), the "Yêu cầu" menu badge (pending of the active building), contract tab "Yêu cầu",
+and `/announcements` (from Cài đặt).
+
+Integration coverage: `tests/portal-requests.integration.test.mjs` (CI Postgres/API only);
+browser coverage: `apps/stay/web/e2e/portal-requests.spec.ts`.
 
 ### Temporary residence / Khai báo tạm trú (ST-28)
 

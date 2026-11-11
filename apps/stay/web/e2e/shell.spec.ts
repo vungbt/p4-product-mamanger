@@ -32,7 +32,8 @@ test.describe('C-02 shell on mobile (375px)', () => {
       'Sổ cọc',
       'Người thuê',
       'Tạm trú',
-      'Yêu cầu',
+      // The badge of new tenant requests (ST-25) may follow the label.
+      /^Yêu cầu/,
       'Chi phí',
       'Báo cáo',
       'Lịch sử thay đổi',
@@ -92,7 +93,8 @@ test.describe('C-02/C-03 shell on desktop', () => {
       'Sổ cọc',
       'Người thuê',
       'Tạm trú',
-      'Yêu cầu',
+      // The badge of new tenant requests (ST-25) may follow the label.
+      /^Yêu cầu/,
       'Chi phí',
       'Báo cáo',
       'Lịch sử thay đổi',

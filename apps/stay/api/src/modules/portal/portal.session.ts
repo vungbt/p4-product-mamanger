@@ -193,6 +193,24 @@ export const portalSessionTokenLimit: RequestHandler = (req, res, next) => {
   tokenLimiter(keyed, res, next);
 };
 
+/**
+ * Per-contract limit for portal writes (st-25.md: 10 maintenance reports and 10 requests per day
+ * per contract), whatever the device or occupant. Use after `portalSessionRequired`.
+ */
+export function portalContractLimit(namespace: string, max: number, windowMs: number) {
+  const limiter = rateLimit(namespace, max, windowMs);
+  const handler: RequestHandler = (req, res, next) => {
+    const keyed: Request = Object.create(req, {
+      ip: { value: `contract:${portalOf(req).contractId}` },
+      user: { value: undefined },
+    });
+
+    limiter(keyed, res, next);
+  };
+
+  return handler;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Sign in / out                                                               */
 /* -------------------------------------------------------------------------- */

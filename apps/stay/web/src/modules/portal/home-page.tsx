@@ -1,13 +1,12 @@
 import { Button } from '@itclabs/react-ui';
 import { usePortalInvoice, usePortalMe } from '@stay/sdk/react';
-import type { PortalInvoiceSummary } from '@stay/shared';
+import type { PortalInvoiceSummary, PortalOpenRequests } from '@stay/shared';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { displayDate, formatVnd } from '@/libraries/format';
 import { displayPeriod, INVOICE_KIND_LABELS } from '@/modules/invoices/invoice-ui';
 import { PaymentBlock } from '@/modules/invoices/share/invoice-card';
 import {
-  ComingSoonButton,
   ContactLinks,
   PortalInvoiceStatus,
   PortalQuery,
@@ -73,7 +72,41 @@ function CurrentInvoice({ invoice }: { invoice: PortalInvoiceSummary }) {
   );
 }
 
-/** T-03 `/p`: current invoice and payment, debt, notices, open requests (part B), contact. */
+/** Open maintenance reports, own pending requests and claims, with the two entry buttons. */
+function OpenRequests({ open }: { open: PortalOpenRequests }) {
+  const navigate = useNavigate();
+  const rows = [
+    { count: open.maintenance, label: 'báo hỏng đang mở', to: portalPaths.maintenance },
+    { count: open.requests, label: 'yêu cầu chờ duyệt', to: portalPaths.requests },
+    { count: open.paymentClaims, label: 'báo chuyển khoản chờ xác nhận', to: portalPaths.invoices },
+  ].filter((row) => row.count > 0);
+
+  return (
+    <PortalSection title="Báo hỏng và yêu cầu" testId="portal-open-requests">
+      {rows.length === 0 ? (
+        <p className="text-ui-sm text-muted">Không có báo hỏng hay yêu cầu nào đang chờ.</p>
+      ) : (
+        <ul className="grid gap-1">
+          {rows.map((row) => (
+            <li key={row.label}>
+              <Link className="font-semibold text-accent" to={row.to}>
+                {row.count} {row.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => navigate(portalPaths.maintenanceNew)}>Báo hỏng</Button>
+        <Button variant="secondary" onClick={() => navigate(portalPaths.requestNew)}>
+          Gửi yêu cầu
+        </Button>
+      </div>
+    </PortalSection>
+  );
+}
+
+/** T-03 `/p`: current invoice and payment, debt, notices, open requests, contact. */
 export default function PortalHomePage() {
   const me = usePortalMe();
 
@@ -127,15 +160,7 @@ export default function PortalHomePage() {
             </PortalSection>
           ) : null}
 
-          <PortalSection title="Báo hỏng và yêu cầu">
-            <p className="text-ui-sm text-muted">
-              Sắp có: báo hỏng, gửi yêu cầu cho chủ trọ và theo dõi trạng thái ngay tại đây.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <ComingSoonButton>Báo hỏng</ComingSoonButton>
-              <ComingSoonButton>Gửi yêu cầu</ComingSoonButton>
-            </div>
-          </PortalSection>
+          <OpenRequests open={data.openRequests} />
 
           <PortalSection title="Liên hệ chủ trọ">
             <ContactLinks phone={data.contactPhone} />

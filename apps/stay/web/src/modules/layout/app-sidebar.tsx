@@ -2,6 +2,7 @@ import { Sidebar, type SidebarEntry } from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { BRAND } from '@/brand';
+import { usePendingRequestCount } from '@/libraries/use-pending-requests';
 import { ROUTES } from '@/routing/route-configs';
 import { useMenuRoutes } from '@/routing/use-routes';
 
@@ -10,6 +11,7 @@ export default function AppSidebar() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const routes = useMenuRoutes();
+  const pending = usePendingRequestCount();
 
   const items: SidebarEntry[] = routes.map((route) => ({
     id: route.name,
@@ -17,6 +19,8 @@ export default function AppSidebar() {
     icon: route.icon,
     href: route.path,
     exact: route.exact,
+    // New tenant requests of the active building (O-26).
+    ...(route.name === 'requests' && pending > 0 ? { badge: pending } : {}),
   }));
 
   return (

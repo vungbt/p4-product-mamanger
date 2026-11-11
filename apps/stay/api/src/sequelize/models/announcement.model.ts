@@ -50,6 +50,6 @@ export function initAnnouncementModel(sequelize: Sequelize) {
       createdBy: { type: DataTypes.UUID, allowNull: true },
       version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
     },
-    { sequelize, tableName: 'announcements', underscored: true },
+    { sequelize, tableName: 'announcements', underscored: true, version: true },
   );
 }

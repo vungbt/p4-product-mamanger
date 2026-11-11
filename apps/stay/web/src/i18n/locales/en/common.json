@@ -46,7 +46,8 @@
     "deposits": "Deposits",
     "invoiceRun": "Billing run",
     "invoiceShare": "Share period",
-    "invoiceDetail": "Invoice detail"
+    "invoiceDetail": "Invoice detail",
+    "announcements": "Tenant announcements"
   },
   "header": {
     "back": "Back",
