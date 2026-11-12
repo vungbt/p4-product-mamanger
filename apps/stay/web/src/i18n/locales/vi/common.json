@@ -444,7 +444,28 @@
         "error": "Không tải được {{name}}. Chọn lại ảnh JPG/PNG/WEBP dưới 10 MB."
       }
     },
-    "importAction": "Nhập từ file"
+    "importAction": "Nhập từ file",
+    "scan": {
+      "button": "Quét CCCD",
+      "title": "Quét mã QR trên CCCD",
+      "description": "Đưa mã QR ở mặt trước thẻ CCCD vào khung hình. Dữ liệu chỉ được đọc trên máy này, không tải lên đâu.",
+      "starting": "Đang mở camera…",
+      "scanning": "Đang tìm mã QR… Giữ thẻ đủ sáng, không loá.",
+      "pickPhoto": "Chọn ảnh thẻ",
+      "pickPhotoHint": "Hoặc chọn ảnh chụp mặt trước có mã QR.",
+      "reading": "Đang đọc ảnh…",
+      "manual": "Nhập tay",
+      "video": "Hình camera để quét mã QR CCCD",
+      "denied": "Bạn đã từ chối quyền dùng camera. Cho phép camera trong cài đặt trình duyệt, chọn ảnh thẻ hoặc nhập tay.",
+      "noCamera": "Không tìm thấy camera trên thiết bị này. Chọn ảnh thẻ hoặc nhập tay.",
+      "cameraFailed": "Không mở được camera (có thể ứng dụng khác đang dùng). Chọn ảnh thẻ hoặc nhập tay.",
+      "notFound": "Không đọc được mã QR trong ảnh. Chụp gần, rõ nét mã QR ở mặt trước thẻ, hoặc nhập tay.",
+      "notCccd": "Mã QR này không phải mã CCCD. Hãy quét mã QR ở mặt trước thẻ căn cước.",
+      "invalidId": "Mã QR không có số CCCD hợp lệ (12 chữ số). Kiểm tra thẻ hoặc nhập tay.",
+      "decoderFailed": "Không tải được bộ đọc mã QR. Kiểm tra mạng rồi thử lại, hoặc nhập tay.",
+      "filled": "Đã điền từ CCCD: {{fields}}. Kiểm tra lại rồi lưu.",
+      "filledNone": "Đã đọc CCCD nhưng không có thông tin để điền."
+    }
   },
   "audit": {
     "search": "Tìm hành động hoặc bản ghi",

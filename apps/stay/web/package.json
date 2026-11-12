@@ -23,6 +23,7 @@
     "@tanstack/react-query": "catalog:",
     "html-to-image": "1.11.13",
     "i18next": "catalog:",
+    "jsqr": "1.4.0",
     "qrcode.react": "4.2.0",
     "react": "catalog:",
     "react-dom": "catalog:",

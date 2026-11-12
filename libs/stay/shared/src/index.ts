@@ -4,6 +4,7 @@ export * from './audit.js';
 export * from './automation.js';
 export * from './billing-cycle.js';
 export * from './building.js';
+export * from './cccd-qr.js';
 export * from './constants.js';
 export * from './contract.js';
 export * from './date.js';

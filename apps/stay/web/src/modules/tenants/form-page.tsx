@@ -27,6 +27,7 @@ import {
   getErrorMessage,
 } from '@stay/sdk/shared';
 import {
+  type CccdQrData,
   normalizeIdNumber,
   normalizePhone,
   STAY_UPLOAD_MIME_TYPES,
@@ -37,6 +38,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { CccdScanButton, cccdFilledFields } from '@/libraries/cccd/cccd-scan';
 import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { PageSpinner } from '@/routing/route-guards';
 
@@ -145,6 +147,7 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
   const [uploads, setUploads] = useState<Partial<Record<DocumentSide, UploadState>>>({});
   const [saved, setSaved] = useState(false);
   const [isDirty, setDirty] = useState(false);
+  const [scanned, setScanned] = useState<string[] | null>(null);
 
   const uploader = useMemo(() => createUploadApi(sdk, { baseUrl: window.location.origin }), [sdk]);
 
@@ -288,6 +291,26 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
 
   const error = (field: string): ReactNode => serverErrors[field];
 
+  // Prefill from the CCCD QR: only the values the card has; the owner reviews, then saves.
+  const applyScan = (data: CccdQrData) => {
+    const prefill: [keyof TenantValues, string | null][] = [
+      ['fullName', data.fullName],
+      ['idNumber', data.idNumber],
+      ['birthDate', data.birthDate],
+      ['gender', data.gender],
+      ['permanentAddress', data.permanentAddress],
+      ['idIssuedAt', data.issuedAt],
+    ];
+
+    for (const [field, value] of prefill)
+      if (value) {
+        form.setFieldValue(field, value);
+        clearError(field)();
+      }
+    setDirty(true);
+    setScanned(cccdFilledFields(data));
+  };
+
   const idNumberError: ReactNode = serverErrors.idNumber ? (
     <span>
       {serverErrors.idNumber}{' '}
@@ -322,6 +345,20 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
       ) : null}
 
       <section className="grid gap-4 rounded-panel border border-line bg-surface p-4 sm:grid-cols-2 sm:p-5">
+        <div className="grid gap-3 sm:col-span-2">
+          <div>
+            <CccdScanButton onScanned={applyScan} />
+          </div>
+          {scanned ? (
+            <Alert tone="success" role="status" data-testid="cccd-scan-filled">
+              {scanned.length
+                ? t('tenants.scan.filled', {
+                    fields: scanned.map((field) => t(`tenants.fields.${field}`)).join(', '),
+                  })
+                : t('tenants.scan.filledNone')}
+            </Alert>
+          ) : null}
+        </div>
         <FormField name="fullName" label={t('tenants.fields.fullName')} required className="mb-0">
           <Input autoComplete="off" error={error('fullName')} onChange={clearError('fullName')} />
         </FormField>
