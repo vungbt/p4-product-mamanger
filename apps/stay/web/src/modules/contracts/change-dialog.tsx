@@ -284,7 +284,10 @@ export function ContractChangeDialog({
             <Select
               options={(services.data ?? [])
                 .filter((s) => s.active)
-                .map((s) => ({ value: s.id, label: s.name }))}
+                .map((s) => ({
+                  value: s.id,
+                  label: s.description ? `${s.name} (${s.description})` : s.name,
+                }))}
             />
           </FormField>
         )}

@@ -133,6 +133,7 @@ export async function fixedInputs(
       serviceId: service.id,
       code: service.code,
       name: service.name,
+      description: service.description,
       kind: service.kind,
       unit: service.unit,
       unitPrice: priceOn(context, service, date),
@@ -230,6 +231,7 @@ async function utilityInputs(
       serviceId: service.id,
       code: service.code,
       name: service.name,
+      description: service.description,
       unit: service.unit,
       unitPrice: priceOn(context, service, issueDate),
     };

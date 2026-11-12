@@ -1,7 +1,7 @@
 import { type IsoDate, parseIsoDate, periodOfIsoDate } from './date.js';
 import { addMonths, type Period, previousPeriod } from './period.js';
 import type { RoomStatusCounts } from './room.js';
-import { billingDayOf } from './settings.js';
+import { type BillingSettings, billingDayOf } from './settings.js';
 
 /** Periods in the overview chart (screens.md O-01: "6 kỳ gần nhất"). */
 export const OVERVIEW_SERIES_LENGTH = 6;
@@ -30,14 +30,24 @@ export function periodSeries(period: Period, count: number = OVERVIEW_SERIES_LEN
 }
 
 /**
- * Billing period shown by default on `today`: the latest period whose issue date (the
- * building/system `issueDay` of that month) is on or before `today`.
+ * Billing period shown by default on `today`: the latest period M whose work has started on or
+ * before `today` — its issue day, or in `readingDayMonth: 'next'` mode its reading day (the
+ * readings closing M−1 are taken in M, on or before the issue day).
  */
-export function currentBillingPeriod(today: IsoDate, issueDay: number): Period {
+export function currentBillingPeriod(
+  today: IsoDate,
+  cycle: number | Pick<BillingSettings, 'issueDay' | 'readingDay' | 'readingDayMonth'>,
+): Period {
   const { year, month, day } = parseIsoDate(today);
   const period = periodOfIsoDate(today);
+  const start =
+    typeof cycle === 'number'
+      ? cycle
+      : cycle.readingDayMonth === 'next'
+        ? Math.min(cycle.readingDay, cycle.issueDay)
+        : cycle.issueDay;
 
-  return day >= billingDayOf(issueDay, year, month) ? period : previousPeriod(period);
+  return day >= billingDayOf(start, year, month) ? period : previousPeriod(period);
 }
 
 /** Occupied share of the rooms, 0–1 with four decimals; `null` without rooms. */
@@ -73,6 +83,11 @@ export interface OverviewTodo {
   total: number | null;
   /** Amount still owed for `overdue_invoices`; `null` for other items. */
   amount: number | null;
+  /**
+   * Calendar date of the step: the reading day closing M−1 for `readings`, the issue day of M
+   * for `invoices_to_create`; `null` for other items.
+   */
+  dueOn: IsoDate | null;
   link: OverviewLink;
 }
 
@@ -114,6 +129,8 @@ export interface StayOverview {
     totalRemaining: number;
     overdueRemaining: number;
     overdueInvoiceCount: number;
+    /** Building grace period: invoices count as overdue after `dueOn + graceDays`. */
+    graceDays: number;
   };
   /** Non-archived rooms by their status today (room map derivation). */
   rooms: RoomStatusCounts & { total: number };

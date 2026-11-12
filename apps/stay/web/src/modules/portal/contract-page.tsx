@@ -70,7 +70,14 @@ export default function PortalContractPage() {
               ) : (
                 <dl className="grid gap-2">
                   {data.services.map((service) => (
-                    <Row key={service.name} label={service.name}>
+                    <Row
+                      key={service.name}
+                      label={
+                        service.description
+                          ? `${service.name} (${service.description})`
+                          : service.name
+                      }
+                    >
                       {formatVnd(service.price)}/{service.unit}
                     </Row>
                   ))}

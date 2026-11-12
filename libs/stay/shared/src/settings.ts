@@ -15,14 +15,30 @@ export const BILLING_DAY_MAX_FIXED = 28;
 export const ROUNDING_UNITS = [1, 100, 1000] as const;
 export type RoundingUnit = (typeof ROUNDING_UNITS)[number];
 
+/** Maximum length of a service description. */
+export const SERVICE_DESCRIPTION_MAX = 500;
+
 /** Placeholder replaced by the invoice code in the bank transfer content. */
 export const TRANSFER_CONTENT_INVOICE_CODE = '{invoiceCode}';
+
+/**
+ * Month the meter reading day falls in (rules.md "Lịch thu"): `same` = the consumption month
+ * M−1 itself (e.g. the last day of November for November), `next` = the following month M, the
+ * month the invoice is issued (e.g. 5 December for November).
+ */
+export const READING_DAY_MONTHS = ['same', 'next'] as const;
+export type ReadingDayMonth = (typeof READING_DAY_MONTHS)[number];
+
+/** Days after the due date before an invoice counts as overdue (`graceDays`), 0–31. */
+export const GRACE_DAYS_MAX = 31;
 
 /** System billing defaults (rules.md "Giá trị mặc định"); buildings may override each one. */
 export const DEFAULT_BILLING_SETTINGS = {
   readingDay: BILLING_DAY_END_OF_MONTH,
+  readingDayMonth: 'same',
   issueDay: 1,
   dueDay: 5,
+  graceDays: 0,
   roundingUnit: 1000,
   refundUnusedRent: false,
   transferContentTemplate: TRANSFER_CONTENT_INVOICE_CODE,
@@ -33,6 +49,19 @@ export function isBillingDay(value: unknown): value is BillingDay {
     typeof value === 'number' &&
     Number.isSafeInteger(value) &&
     (value === BILLING_DAY_END_OF_MONTH || (value >= 1 && value <= BILLING_DAY_MAX_FIXED))
+  );
+}
+
+export function isReadingDayMonth(value: unknown): value is ReadingDayMonth {
+  return (READING_DAY_MONTHS as readonly unknown[]).includes(value);
+}
+
+export function isGraceDays(value: unknown): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isSafeInteger(value) &&
+    value >= 0 &&
+    value <= GRACE_DAYS_MAX
   );
 }
 
@@ -47,12 +76,19 @@ export function billingDayOf(day: BillingDay, year: number, month: number): numb
 
 /** Billing cycle parameters (`GET /api/settings`, effective values of a building). */
 export interface BillingSettings {
-  /** Meter reading day of month M−1. */
+  /**
+   * Meter reading day closing consumption month M−1: a day of M−1 (`readingDayMonth: 'same'`)
+   * or of M (`'next'`, then on or before `issueDay`).
+   */
   readingDay: BillingDay;
+  /** Month of `readingDay`: the consumption month (`same`) or the month after it (`next`). */
+  readingDayMonth: ReadingDayMonth;
   /** Issue day of the invoice of month M. */
   issueDay: BillingDay;
-  /** Payment due day of month M (on or after `issueDay`). */
+  /** Payment due day of month M (on or after `issueDay`), printed as "Hạn thanh toán". */
   dueDay: BillingDay;
+  /** Days after `dueOn` before an unpaid invoice counts as overdue (0 = the day after `dueOn`). */
+  graceDays: number;
   roundingUnit: RoundingUnit;
   /** Refund prepaid rent/services of unused days on early move-out. */
   refundUnusedRent: boolean;
@@ -72,6 +108,8 @@ export interface StayService {
   /** Stable machine code (`electricity`, `internet`…), generated from the name when created. */
   code: string;
   name: string;
+  /** Optional note shown under the name (e.g. "Thang máy, máy giặt, rác"), at most 500 characters. */
+  description: string | null;
   /** How the service is billed; immutable after creation. */
   kind: ServiceKind;
   unit: string;

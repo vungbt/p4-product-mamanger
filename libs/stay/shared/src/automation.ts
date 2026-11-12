@@ -1,6 +1,14 @@
+/** Upper bound of `readingReminderDaysBefore`. */
+export const READING_REMINDER_DAYS_MAX = 10;
+
 /** Automations are opt-in for each building. 409 on a stale version. */
 export interface StayAutomationSettings {
+  /** Owner reminder on the reading day, sent only while rooms still lack readings. */
   readingReminder: boolean;
+  /** Owner reminder `readingReminderDaysBefore` days before the reading day. */
+  readingReminderBefore: boolean;
+  /** 0–10, default 1; 0 turns the early reminder off. */
+  readingReminderDaysBefore: number;
   createDrafts: boolean;
   beforeDue: boolean;
   afterDue: boolean;

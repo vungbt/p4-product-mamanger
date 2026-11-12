@@ -3,6 +3,7 @@ import type { ListQuery, PaginationMeta } from '@p4/shared';
 import {
   CONTRACT_STATUSES,
   invoiceOverdueDays,
+  invoiceOverdueDaysSql,
   isoDateInTimeZone,
   RECEIVABLE_BUCKETS,
   type ReceivableBucket,
@@ -15,6 +16,7 @@ import {
 import { Op, QueryTypes, Transaction } from 'sequelize';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import { BuildingModel, InvoiceModel, sequelize } from '@/sequelize/models/index.js';
+import { buildingBilling } from '../settings/settings.service.js';
 
 export interface ReceivableListQuery extends ListQuery<ReceivableSortField> {
   bucket?: ReceivableBucket;
@@ -32,12 +34,13 @@ const SORT_COLUMNS: Record<ReceivableSortField, string> = {
 /**
  * One row per contract with unpaid invoices in the building, filtered by `q` (room code,
  * contract code, occupant name or phone). Amounts are summed in SQL from `total − paid_total`;
- * overdue days use `today` (Asia/Ho_Chi_Minh), as `isInvoiceOverdue` does.
+ * overdue days use `today` (Asia/Ho_Chi_Minh) and the building's `:graceDays`, with the
+ * shared `invoiceOverdueDaysSql` (the SQL twin of `isInvoiceOverdue`).
  */
 const ROWS_SQL = `
 WITH unpaid AS (
   SELECT i.contract_id, i.due_on, i.total - i.paid_total AS remaining,
-    GREATEST(CAST(:today AS date) - i.due_on, 0) AS overdue_days
+    ${invoiceOverdueDaysSql('i.due_on', ':graceDays', ':today')} AS overdue_days
   FROM invoices i
   WHERE i.building_id = :buildingId
     AND i.status IN (:statuses)
@@ -150,6 +153,7 @@ async function invoicesByContract(
   buildingId: string,
   contractIds: string[],
   today: string,
+  graceDays: number,
   transaction: Transaction,
 ): Promise<Map<string, ReceivableInvoice[]>> {
   const grouped = new Map<string, ReceivableInvoice[]>();
@@ -184,7 +188,7 @@ async function invoicesByContract(
       paidTotal: row.paidTotal,
       remaining: row.total - row.paidTotal,
       dueOn: row.dueOn,
-      overdueDays: invoiceOverdueDays(row.dueOn, today),
+      overdueDays: invoiceOverdueDays(row.dueOn, today, graceDays),
       shareExpiresAt:
         row.shareTokenHash && row.shareExpiresAt && row.shareExpiresAt > instant
           ? row.shareExpiresAt.toISOString()
@@ -211,6 +215,7 @@ export async function listReceivables(
   const replacements = {
     buildingId,
     today,
+    graceDays: 0,
     statuses: [...UNPAID_STATUSES],
     pattern: query.q ? searchPattern(query.q) : null,
   };
@@ -220,12 +225,10 @@ export async function listReceivables(
   return sequelize.transaction(
     { isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ },
     async (transaction) => {
-      const building = await BuildingModel.findByPk(buildingId, {
-        attributes: ['id'],
-        transaction,
-      });
+      const building = await BuildingModel.findByPk(buildingId, { transaction });
 
       if (!building) throw new NotFound();
+      replacements.graceDays = (await buildingBilling(building, transaction)).graceDays;
       const bucketRows = await sequelize.query<BucketRecord>(BUCKETS_SQL, {
         replacements,
         type: QueryTypes.SELECT,
@@ -252,6 +255,7 @@ export async function listReceivables(
         buildingId,
         rows.map((row) => row.contract_id),
         today,
+        replacements.graceDays,
         transaction,
       );
       const buckets = RECEIVABLE_BUCKETS.map((bucket) => {
@@ -314,10 +318,11 @@ export interface BuildingReceivableTotals {
 export async function buildingReceivableTotals(
   buildingId: string,
   today: string,
+  graceDays: number,
   transaction: Transaction,
 ): Promise<BuildingReceivableTotals> {
   const rows = await sequelize.query<BucketRecord>(BUCKETS_SQL, {
-    replacements: { buildingId, today, statuses: [...UNPAID_STATUSES], pattern: null },
+    replacements: { buildingId, today, graceDays, statuses: [...UNPAID_STATUSES], pattern: null },
     type: QueryTypes.SELECT,
     transaction,
   });

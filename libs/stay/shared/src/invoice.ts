@@ -17,6 +17,8 @@ export interface StayInvoiceMeterSegment {
 export interface StayInvoiceLineMeta {
   serviceCode?: string;
   serviceKind?: string;
+  /** Service description at draft time (e.g. "Thang máy, máy giặt, rác"); never changes once issued. */
+  serviceDescription?: string;
   /** Prorated rent/service: first and last day billed (inclusive). */
   coveredFrom?: string;
   coveredTo?: string;
@@ -83,8 +85,13 @@ export interface StayInvoiceSummary {
   paidTotal: number;
   /** `total − paidTotal`. */
   remaining: number;
-  /** Derived: issued/partially paid, past `dueOn` (Asia/Ho_Chi_Minh) and `remaining > 0`. */
+  /**
+   * Derived: issued/partially paid, `remaining > 0` and today (Asia/Ho_Chi_Minh) on or after
+   * `overdueFrom`.
+   */
   overdue: boolean;
+  /** First overdue day: `dueOn + graceDays + 1` with the building's grace period in force. */
+  overdueFrom: string;
   /** Expiry of the active share link (ST-16); `null` when none was created, revoked or expired. */
   shareExpiresAt: string | null;
   version: number;
@@ -242,6 +249,8 @@ export interface InvoicePeriodShareResult {
 
 /** Calculation details a tenant may see (no internal ids, reasons or references). */
 export interface PublicInvoiceLineMeta {
+  /** Service description snapshot of the line. */
+  serviceDescription?: string;
   coveredFrom?: string;
   coveredTo?: string;
   startReading?: number;

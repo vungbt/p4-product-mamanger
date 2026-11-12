@@ -8,11 +8,17 @@ import {
   NumberInput,
   Select,
   Switch,
+  Textarea,
   useAppForm,
 } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useCreateService, useUpdateService } from '@stay/sdk/react';
-import { SERVICE_KINDS, type ServiceKind, type StayService } from '@stay/shared';
+import {
+  SERVICE_DESCRIPTION_MAX,
+  SERVICE_KINDS,
+  type ServiceKind,
+  type StayService,
+} from '@stay/shared';
 import type { TFunction } from 'i18next';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +49,13 @@ function serviceSchema(t: TFunction<'settings'>) {
       v.minLength(1, t('validation.required')),
       v.maxLength(20, t('validation.maxLength', { max: 20 })),
     ),
+    description: v.pipe(
+      v.string(),
+      v.maxLength(
+        SERVICE_DESCRIPTION_MAX,
+        t('validation.maxLength', { max: SERVICE_DESCRIPTION_MAX }),
+      ),
+    ),
     defaultPrice: v.pipe(
       v.number(t('validation.required')),
       v.integer(t('validation.integer')),
@@ -50,6 +63,22 @@ function serviceSchema(t: TFunction<'settings'>) {
       v.maxValue(MAX_PRICE, t('validation.priceRange')),
     ),
   };
+}
+
+/** Optional description textarea with a character counter (`n/500`). */
+function DescriptionField({ length }: { length: number }) {
+  const { t } = useTranslation('settings');
+
+  return (
+    <FormField name="description" label={t('services.descriptionLabel')} className="mb-0">
+      <Textarea
+        rows={2}
+        maxLength={SERVICE_DESCRIPTION_MAX}
+        placeholder={t('services.descriptionPlaceholder')}
+        hint={t('services.descriptionHint', { count: length, max: SERVICE_DESCRIPTION_MAX })}
+      />
+    </FormField>
+  );
 }
 
 /** "Giá trị mới áp dụng cho hoá đơn lập từ nay…" (screens.md O-02). */
@@ -63,9 +92,19 @@ export function PriceChangeWarning() {
   );
 }
 
-type EditValues = { name: string; unit: string; defaultPrice: number | null };
+type EditValues = {
+  name: string;
+  description: string;
+  unit: string;
+  defaultPrice: number | null;
+};
 
-const EDIT_FIELDS = ['name', 'unit', 'defaultPrice'] as const satisfies (keyof EditValues)[];
+const EDIT_FIELDS = [
+  'name',
+  'description',
+  'unit',
+  'defaultPrice',
+] as const satisfies (keyof EditValues)[];
 
 /** Edits a service's name, unit and default price (inline row on desktop, sheet on mobile). */
 export function ServiceEditForm({
@@ -87,6 +126,7 @@ export function ServiceEditForm({
   const form = useAppForm({
     defaultValues: {
       name: service.name,
+      description: service.description ?? '',
       unit: service.unit,
       defaultPrice: service.defaultPrice,
     } as EditValues,
@@ -100,6 +140,7 @@ export function ServiceEditForm({
           id: service.id,
           body: {
             name: value.name.trim(),
+            description: value.description.trim() || null,
             unit: value.unit.trim(),
             defaultPrice: value.defaultPrice ?? 0,
             sortOrder: service.sortOrder,
@@ -130,6 +171,7 @@ export function ServiceEditForm({
 
   const dirty = useFormDirty(form);
   const price = useFormValue(form, (state) => state.values.defaultPrice);
+  const editDescription = useFormValue(form, (state) => state.values.description);
   const { prompt } = useUnsavedChanges(dirty);
 
   return (
@@ -155,6 +197,7 @@ export function ServiceEditForm({
           <NumberInput min={0} max={MAX_PRICE} step={1} endAddon="₫" inputMode="numeric" />
         </FormField>
       </div>
+      <DescriptionField length={editDescription.length} />
 
       {price !== service.defaultPrice ? <PriceChangeWarning /> : null}
 
@@ -182,6 +225,7 @@ export function ServiceEditForm({
 
 type CreateValues = {
   name: string;
+  description: string;
   kind: string;
   unit: string;
   defaultPrice: number | null;
@@ -190,6 +234,7 @@ type CreateValues = {
 
 const CREATE_FIELDS = [
   'name',
+  'description',
   'kind',
   'unit',
   'defaultPrice',
@@ -224,6 +269,7 @@ export function ServiceCreateForm({ onDone }: { onDone: () => void }) {
   const form = useAppForm({
     defaultValues: {
       name: '',
+      description: '',
       kind: '',
       unit: '',
       defaultPrice: null,
@@ -251,6 +297,7 @@ export function ServiceCreateForm({ onDone }: { onDone: () => void }) {
       try {
         const created = await create.mutateAsync({
           name: value.name.trim(),
+          description: value.description.trim() || null,
           kind: value.kind,
           unit: value.unit.trim(),
           defaultPrice: value.defaultPrice ?? 0,
@@ -266,14 +313,17 @@ export function ServiceCreateForm({ onDone }: { onDone: () => void }) {
         for (const field of CREATE_FIELDS) {
           const message = errors.fields[field];
 
-          if (message) form.setFieldMeta(field, serverError(message));
+          // A kind conflict (one active electricity/water service) concerns other services, so
+          // it stays as a form message: a field error clears on blur and shifts the actions.
+          if (message && field !== 'kind') form.setFieldMeta(field, serverError(message));
         }
-        setFormError(errors.message);
+        setFormError(errors.fields.kind ?? errors.message);
       }
     },
   });
 
   const dirty = useFormDirty(form);
+  const createDescription = useFormValue(form, (state) => state.values.description);
   const { prompt } = useUnsavedChanges(dirty);
 
   return (
@@ -287,6 +337,7 @@ export function ServiceCreateForm({ onDone }: { onDone: () => void }) {
       <FormField name="kind" label={t('services.kind')} required className="mb-0">
         <Select options={kindOptions} placeholder={t('services.kindPlaceholder')} />
       </FormField>
+      <DescriptionField length={createDescription.length} />
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField name="unit" label={t('services.unit')} required className="mb-0">
           <Input maxLength={20} />

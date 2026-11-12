@@ -32,12 +32,15 @@ export function ReadingRoomCard({
   room,
   buildingId,
   period,
+  readOn,
   accountId,
   onPending,
 }: {
   room: ReadingRoom;
   buildingId: string;
   period: string;
+  /** Date sent with new readings (`defaultReadOn` of the building cycle). */
+  readOn: string;
   accountId: string;
   onPending: (id: string, pending: boolean) => void;
 }) {
@@ -119,7 +122,6 @@ export function ReadingRoomCard({
     busy.current = true;
     setSaving(true);
     try {
-      const lastDay = new Date(Number(period.slice(0, 4)), Number(period.slice(5)), 0).getDate();
       const result = await save.mutateAsync({
         buildingId,
         body: {
@@ -127,7 +129,7 @@ export function ReadingRoomCard({
             meterId: meter.meterId,
             period,
             reading: Number(draft.value),
-            readOn: `${period}-${lastDay}`,
+            readOn: meter.current?.readOn ?? readOn,
             version: draft.version,
             confirmHighConsumption: draft.confirmed,
             photoFileId: draft.photoFileId,
@@ -174,7 +176,7 @@ export function ReadingRoomCard({
       busy.current = false;
       setSaving(false);
     }
-  }, [room.meters, period, buildingId, save, commit, uploading, replacing]);
+  }, [room.meters, period, readOn, buildingId, save, commit, uploading, replacing]);
 
   useEffect(() => {
     if (!dirty || !online || saving || uploading || replacing) return;

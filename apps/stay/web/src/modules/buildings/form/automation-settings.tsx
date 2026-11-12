@@ -1,7 +1,16 @@
-import { Alert, Button, Form, FormField, FormSubmit, Switch, useAppForm } from '@itclabs/react-ui';
+import {
+  Alert,
+  Button,
+  Form,
+  FormField,
+  FormSubmit,
+  Select,
+  Switch,
+  useAppForm,
+} from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useAutomationSettings, useUpdateAutomationSettings } from '@stay/sdk/react';
-import type { StayAutomationSettings } from '@stay/shared';
+import { READING_REMINDER_DAYS_MAX, type StayAutomationSettings } from '@stay/shared';
 import { useState } from 'react';
 import * as v from 'valibot';
 import { isVersionConflict } from '@/libraries/forms/api-errors';
@@ -15,15 +24,32 @@ const fields = [
   ['tenantRemindersDisabled', 'Tắt toàn bộ nhắc người thuê'],
 ] as const;
 
+const DAYS_BEFORE_OPTIONS = Array.from({ length: READING_REMINDER_DAYS_MAX + 1 }, (_, days) => ({
+  value: String(days),
+  label: days === 0 ? 'Không nhắc trước' : `Trước ${days} ngày`,
+}));
+
+type AutomationValues = Omit<StayAutomationSettings, 'readingReminderDaysBefore'> & {
+  readingReminderDaysBefore: string;
+};
+
 function AutomationForm({ id, settings }: { id: string; settings: StayAutomationSettings }) {
   const update = useUpdateAutomationSettings(id);
   const [error, setError] = useState('');
+  const defaultValues: AutomationValues = {
+    ...settings,
+    readingReminderDaysBefore: String(settings.readingReminderDaysBefore),
+  };
   const form = useAppForm({
-    defaultValues: settings,
+    defaultValues,
     onSubmit: async ({ value }) => {
       setError('');
       try {
-        await update.mutateAsync({ ...value, version: settings.version });
+        await update.mutateAsync({
+          ...value,
+          readingReminderDaysBefore: Number(value.readingReminderDaysBefore),
+          version: settings.version,
+        });
         toast.success('Đã lưu tự động hoá');
       } catch (cause) {
         setError(
@@ -40,6 +66,8 @@ function AutomationForm({ id, settings }: { id: string; settings: StayAutomation
       form={form}
       schema={{
         readingReminder: v.boolean(),
+        readingReminderBefore: v.boolean(),
+        readingReminderDaysBefore: v.string(),
         createDrafts: v.boolean(),
         beforeDue: v.boolean(),
         afterDue: v.boolean(),
@@ -52,6 +80,18 @@ function AutomationForm({ id, settings }: { id: string; settings: StayAutomation
       <p className="text-ui-sm text-muted">
         Theo giờ Việt Nam. Chỉ tạo hoá đơn nháp, chủ trọ kiểm tra và phát hành. Email chưa được kết
         nối; thông báo vẫn có trong chuông.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+        <FormField name="readingReminderBefore" className="mb-0">
+          <Switch label="Nhắc chủ trọ trước ngày chốt số" />
+        </FormField>
+        <FormField name="readingReminderDaysBefore" label="Nhắc chốt số trước" className="mb-0">
+          <Select options={DAYS_BEFORE_OPTIONS} />
+        </FormField>
+      </div>
+      <p className="-mt-2 text-ui-sm text-muted">
+        Nhắc trước và nhắc đúng ngày chốt số chỉ gửi khi còn phòng chưa nhập đủ chỉ số. Khi toà có
+        ngày ân hạn, nhắc quá hạn gửi vào ngày đầu tiên quá hạn thay vì sau hạn 3 ngày.
       </p>
       {fields.map(([name, label]) => (
         <FormField key={name} name={name}>

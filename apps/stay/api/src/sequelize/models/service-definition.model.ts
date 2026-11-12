@@ -6,6 +6,8 @@ export interface ServiceDefinitionAttributes {
   id: string;
   code: string;
   name: string;
+  /** Optional note shown under the name, at most 500 characters. */
+  description: string | null;
   kind: ServiceKind;
   unit: string;
   defaultPrice: number;
@@ -18,7 +20,7 @@ export interface ServiceDefinitionAttributes {
 
 export type ServiceDefinitionCreation = Optional<
   ServiceDefinitionAttributes,
-  'id' | 'active' | 'sortOrder' | 'version' | 'createdAt' | 'updatedAt'
+  'id' | 'description' | 'active' | 'sortOrder' | 'version' | 'createdAt' | 'updatedAt'
 >;
 
 export class ServiceDefinitionModel
@@ -28,6 +30,7 @@ export class ServiceDefinitionModel
   declare id: string;
   declare code: string;
   declare name: string;
+  declare description: string | null;
   declare kind: ServiceKind;
   declare unit: string;
   declare defaultPrice: number;
@@ -44,6 +47,7 @@ export function initServiceDefinitionModel(sequelize: Sequelize) {
       id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
       code: { type: DataTypes.STRING(32), allowNull: false, unique: true },
       name: { type: DataTypes.STRING(120), allowNull: false },
+      description: { type: DataTypes.TEXT, allowNull: true },
       kind: { type: DataTypes.STRING(16), allowNull: false },
       unit: { type: DataTypes.STRING(20), allowNull: false },
       defaultPrice: {

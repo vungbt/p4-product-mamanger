@@ -503,7 +503,9 @@ export async function moveInPreview(user: StayUser, id: string): Promise<MoveInP
           ? 'Tiền phòng'
           : line.type === 'rounding'
             ? 'Làm tròn'
-            : String(line.description.params.name ?? 'Dịch vụ'),
+            : `${String(line.description.params.name ?? 'Dịch vụ')}${
+                line.meta.serviceDescription ? ` (${line.meta.serviceDescription})` : ''
+              }`,
     })),
   };
 }

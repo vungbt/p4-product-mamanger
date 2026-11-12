@@ -88,6 +88,7 @@ export function serviceLines(
       meta: {
         serviceCode: service.code,
         serviceKind: service.kind,
+        ...(service.description ? { serviceDescription: service.description } : {}),
         ...coverage(ratio),
       },
     };
@@ -144,6 +145,7 @@ export function utilityLines(utilities: readonly UtilityInput[], period: Period)
       meta: {
         ...(utility.code ? { serviceCode: utility.code } : {}),
         serviceKind: utility.kind,
+        ...(utility.description ? { serviceDescription: utility.description } : {}),
         startReading: first.startReading,
         endReading: last.endReading,
         segments: usage.segments,

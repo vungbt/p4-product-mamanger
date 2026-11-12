@@ -3,6 +3,7 @@ import {
   addDays,
   currentBillingPeriod,
   firstDayOfPeriod,
+  invoiceCalendar,
   isoDateInTimeZone,
   lastDayOfPeriod,
   type OverviewLink,
@@ -20,8 +21,9 @@ import {
 import { QueryTypes, Transaction } from 'sequelize';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import { BuildingModel, sequelize } from '@/sequelize/models/index.js';
+import { READING_PROGRESS_CTE } from '../readings/readings.service.js';
 import { buildingReceivableTotals } from '../receivables/receivables.service.js';
-import { billingDefaults } from '../settings/settings.service.js';
+import { buildingBilling } from '../settings/settings.service.js';
 
 /** Invoices that count as billed: issued, never drafts or void (every kind). */
 export const BILLED_STATUSES = ['issued', 'partially_paid', 'paid'];
@@ -149,38 +151,14 @@ interface TodoRecord {
 /**
  * To-do counts in one statement:
  * - readings: rooms of the meter closing grid (ST-13) for consumption month M−1 whose current
- *   electricity and water meters do not both have a reading of M−1;
+ *   electricity and water meters do not both have a reading of M−1 (`READING_PROGRESS_CTE`);
  * - invoices to create: contracts billable in M (as the ST-14 preview selects them) with no
  *   non-void monthly or move-in invoice of M;
  * - drafts of M; issued/partially paid invoices of M with something left and no active link;
  * - contracts ending within 30 days (the contract list `expiring=true` filter) and notices.
  */
 const TODOS_SQL = `
-WITH grid AS (
-  SELECT DISTINCT ON (c.room_id) c.room_id, c.start_date
-  FROM contracts c
-  WHERE c.building_id = :buildingId
-    AND c.status IN (:holdingStatuses)
-    AND c.start_date <= CAST(:readingEnd AS date)
-  ORDER BY c.room_id, c.start_date
-),
-closed AS (
-  SELECT g.room_id,
-    (
-      SELECT COUNT(*)
-      FROM (
-        SELECT DISTINCT ON (m.kind) m.id
-        FROM meters m
-        WHERE m.room_id = g.room_id
-          AND m.installed_on <= CAST(:readingEnd AS date)
-          AND (m.removed_on IS NULL
-            OR m.removed_on >= GREATEST(CAST(:readingStart AS date), g.start_date))
-        ORDER BY m.kind, m.installed_on DESC, m.created_at DESC
-      ) last
-      JOIN meter_readings mr ON mr.meter_id = last.id AND mr.period = :readingPeriod
-    ) = 2 AS complete
-  FROM grid g
-)
+WITH ${READING_PROGRESS_CTE}
 SELECT
   (SELECT CAST(COUNT(*) AS int) FROM closed) AS reading_rooms,
   (SELECT CAST(COUNT(*) AS int) FROM closed WHERE NOT complete) AS reading_missing,
@@ -276,9 +254,9 @@ export async function buildingOverview(
     { isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ },
     async (transaction) => {
       const building = await overviewBuilding(user, buildingId, transaction);
-      const period =
-        requested ??
-        currentBillingPeriod(today, building.issueDay ?? (await billingDefaults()).issueDay);
+      const billing = await buildingBilling(building, transaction);
+      const period = requested ?? currentBillingPeriod(today, billing);
+      const calendar = invoiceCalendar(period, billing);
       const previous = previousPeriod(period);
       const series = periodSeries(period);
       const base = { buildingId, holdingStatuses: HOLDING_STATUSES };
@@ -304,7 +282,7 @@ export async function buildingOverview(
         currentDate,
         previousDate,
       });
-      const readingPeriod = previous;
+      const readingPeriod = calendar.consumptionPeriod;
       const [todo] = await query<TodoRecord>(TODOS_SQL, {
         period,
         periodStart: firstDayOfPeriod(period),
@@ -315,7 +293,12 @@ export async function buildingOverview(
         today,
         expiringEnd: addDays(today, 30),
       });
-      const receivables = await buildingReceivableTotals(buildingId, today, transaction);
+      const receivables = await buildingReceivableTotals(
+        buildingId,
+        today,
+        billing.graceDays,
+        transaction,
+      );
       const worstBucket =
         OVERDUE_BUCKETS.find(
           (bucket) => (receivables.buckets.find((row) => row.bucket === bucket)?.count ?? 0) > 0,
@@ -332,6 +315,7 @@ export async function buildingOverview(
           count: todo?.reading_missing ?? 0,
           total: todo?.reading_rooms ?? 0,
           amount: null,
+          dueOn: calendar.readingOn,
           link: link('/readings', { period: readingPeriod }),
         },
         {
@@ -339,6 +323,7 @@ export async function buildingOverview(
           count: todo?.to_create ?? 0,
           total: null,
           amount: null,
+          dueOn: calendar.issueOn,
           link: link('/invoices/run', { period }),
         },
         {
@@ -346,6 +331,7 @@ export async function buildingOverview(
           count: todo?.drafts ?? 0,
           total: null,
           amount: null,
+          dueOn: null,
           link: link('/invoices', { period, status: 'draft' }),
         },
         {
@@ -353,6 +339,7 @@ export async function buildingOverview(
           count: todo?.unshared ?? 0,
           total: null,
           amount: null,
+          dueOn: null,
           link: link('/invoices/share', { period }),
         },
         {
@@ -360,6 +347,7 @@ export async function buildingOverview(
           count: receivables.overdueInvoiceCount,
           total: null,
           amount: receivables.overdueRemaining,
+          dueOn: null,
           link: link('/receivables', { bucket: worstBucket }),
         },
         {
@@ -367,6 +355,7 @@ export async function buildingOverview(
           count: todo?.expiring ?? 0,
           total: null,
           amount: null,
+          dueOn: null,
           link: link('/contracts', { expiring: 'true' }),
         },
         {
@@ -374,6 +363,7 @@ export async function buildingOverview(
           count: todo?.ending ?? 0,
           total: null,
           amount: null,
+          dueOn: null,
           link: link('/contracts', { status: 'ending' }),
         },
       ];
@@ -390,6 +380,7 @@ export async function buildingOverview(
           totalRemaining: receivables.totalRemaining,
           overdueRemaining: receivables.overdueRemaining,
           overdueInvoiceCount: receivables.overdueInvoiceCount,
+          graceDays: billing.graceDays,
         },
         rooms: {
           ...counts,

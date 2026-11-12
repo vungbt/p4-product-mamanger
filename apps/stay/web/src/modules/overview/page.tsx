@@ -178,7 +178,11 @@ function OverviewContent({
             label="Công nợ quá hạn"
             icon="moneyTime"
             value={data.receivables.overdueRemaining}
-            note={`Tổng công nợ mọi kỳ: ${formatVnd(data.receivables.totalRemaining)}`}
+            note={`Tổng công nợ mọi kỳ: ${formatVnd(data.receivables.totalRemaining)}${
+              data.receivables.graceDays > 0
+                ? ` · tính sau hạn ${data.receivables.graceDays} ngày ân hạn`
+                : ''
+            }`}
             href="/receivables"
             tone={data.receivables.overdueRemaining > 0 ? 'danger' : 'success'}
           />
