@@ -63,6 +63,43 @@ try {
   if (result.status !== 0) throw new Error('OpenAPI generation failed');
   const spec = YAML.parse(await readFile(specPath, 'utf8'));
 
+  const signIn = spec.paths['/api/auth/sign-in/email'].post;
+  signIn.description =
+    'Sign in with email or a normalized Vietnamese phone number and password. Unknown phone and wrong password return the same error; rate limited.';
+  signIn.requestBody.content['application/json'].schema.properties.email.description =
+    'Email or Vietnamese phone (0xxxxxxxxx / +84xxxxxxxxx); resolved on the server.';
+
+  // Account tenants reuse portal services. Native links still use the portal cookie.
+  for (const [url, item] of Object.entries(spec.paths)) {
+    if (!url.startsWith('/api/portal/') || url.includes('/sessions') || url.includes('/links/'))
+      continue;
+    for (const operation of Object.values(item)) {
+      if (!operation?.responses) continue;
+      operation.security = [
+        ...(operation.security ?? []),
+        { sessionCookie: [] },
+        { bearerAuth: [] },
+      ];
+      operation.parameters ??= [];
+      operation.parameters.push({
+        name: 'X-Stay-Contract',
+        in: 'header',
+        required: false,
+        description:
+          'Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request.',
+        schema: { type: 'string', format: 'uuid' },
+      });
+      if (url.endsWith('/pdf'))
+        operation.parameters.push({
+          name: 'accountContract',
+          in: 'query',
+          required: false,
+          description: 'Contract selector for a browser PDF download with a Better Auth cookie.',
+          schema: { type: 'string', format: 'uuid' },
+        });
+    }
+  }
+
   for (const [url, method] of [
     ['/api/maintenance/{id}', 'put'],
     ['/api/maintenance/{id}/expense', 'post'],

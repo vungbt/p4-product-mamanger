@@ -25,7 +25,7 @@ export default function AppSidebar() {
 
   const entry = (route: (typeof routes)[number]): SidebarEntry => ({
     id: route.name,
-    label: t(`nav.${route.name}`),
+    label: route.label ?? t(`nav.${route.name}`),
     icon: route.icon,
     href: route.path,
     exact: route.exact,

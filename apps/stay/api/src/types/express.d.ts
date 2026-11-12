@@ -2,6 +2,7 @@ import type { StayAbilityUser, StayUser } from '@stay/shared';
 
 /** Tenant portal session (ST-25): one link of one occupant, scoped to one contract. */
 export interface PortalPrincipal {
+  accountUserId?: string;
   sessionId: string;
   sessionExpiresAt: Date;
   linkId: string;

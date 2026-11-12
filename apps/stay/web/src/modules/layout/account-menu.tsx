@@ -20,13 +20,14 @@ export default function AccountMenu() {
       id: 'notifications',
       icon: 'bell',
       label: t('account.notifications'),
-      onSelect: () => navigate(ROUTES.notificationSettings),
+      onSelect: () =>
+        navigate(user.role === 'tenant' ? '/my/notifications' : ROUTES.notificationSettings),
     },
     {
       id: 'password',
       icon: 'key',
       label: t('account.changePassword'),
-      onSelect: () => toast.info(t('account.changePasswordSoon')),
+      onSelect: () => navigate('/account/password'),
     },
     { id: 'separator', type: 'separator' },
     {
@@ -49,7 +50,7 @@ export default function AccountMenu() {
       avatar={{ src: user.avatarUrl ?? undefined }}
       label={t('account.menu')}
       collapseOnMobile
-      header={user.email}
+      header={user.role === 'tenant' ? user.displayName : user.email}
       items={items}
       data-testid="account-menu"
     />

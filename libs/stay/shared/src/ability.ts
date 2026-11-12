@@ -117,6 +117,7 @@ export const stayAbilityKit = createAbilityKit<
 
       if (groups.includes('operations')) {
         can('update', 'Building', assigned);
+        can('issue', 'Tenant', assigned);
         can(
           ['create', 'update', 'delete'],
           ['Room', 'Tenant', 'Contract', 'Deposit', 'Expense', 'Maintenance'],

@@ -101,7 +101,7 @@ export async function listPortalLinks(
   const contract = await findContract(user, contractId, 'read');
   const context = await contractContext(contract.id);
   const rows = await TenantPortalLinkModel.findAll({
-    where: { contractId: contract.id },
+    where: { contractId: contract.id, accountUserId: null },
     order: [
       ['createdAt', 'DESC'],
       ['id', 'DESC'],
@@ -132,7 +132,7 @@ export async function createPortalLink(
     if (!context || !portalOpen(contract, context.occupants, tenantId))
       throw new BaseError('portal_tenant_not_occupant', 422, 'portal_tenant_not_occupant');
     const previous = await TenantPortalLinkModel.findOne({
-      where: { contractId: contract.id, tenantId, revokedAt: null },
+      where: { contractId: contract.id, tenantId, revokedAt: null, accountUserId: null },
       lock: transaction.LOCK.UPDATE,
       transaction,
     });

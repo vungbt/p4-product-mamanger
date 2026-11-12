@@ -19,6 +19,7 @@ import { authRequired } from '@/middlewares/auth.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { type FormBody, formBody } from '@/shared/input.js';
+import { emailTenantCredentials, issueTenantCredentials } from './tenant-accounts.service.js';
 import { auditPolicies } from './tenants.audit.js';
 import { commitImport, IMPORT_MAX_BYTES, importTemplate, previewImport } from './tenants.import.js';
 import { readDocumentInput, readTenantInput, readVehicleInput } from './tenants.input.js';
@@ -120,6 +121,30 @@ function readImportCommitInput(body: FormBody) {
   body.assertValid();
   return { buildingId, rows };
 }
+
+router.post(
+  '/tenants/:id/credentials',
+  authRequired,
+  requireScopedAbility('issue', 'Tenant'),
+  rateLimit('stay-tenant-credentials', 20),
+  apiHandler((req) => {
+    req.res?.setHeader('Cache-Control', 'no-store');
+    return issueTenantCredentials(currentUser(req), uuidRouteId(req));
+  }),
+);
+router.post(
+  '/tenants/:id/credentials/email',
+  authRequired,
+  requireScopedAbility('issue', 'Tenant'),
+  rateLimit('stay-tenant-credentials-email', 10),
+  apiHandler((req) => {
+    const body = formBody(req);
+    const password = body.text('password', 128);
+
+    body.assertValid();
+    return emailTenantCredentials(currentUser(req), uuidRouteId(req), password);
+  }),
+);
 
 router.get(
   '/tenants',

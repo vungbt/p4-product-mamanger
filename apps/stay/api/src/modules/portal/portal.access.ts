@@ -50,7 +50,7 @@ export function portalReferenceDate(contract: ContractModel, today = todayVn()):
   return today < contract.startDate ? contract.startDate : today;
 }
 
-type OccupantRow = Pick<ContractOccupantModel, 'tenantId' | 'toDate'>;
+type OccupantRow = Pick<ContractOccupantModel, 'tenantId' | 'fromDate' | 'toDate'>;
 
 /**
  * Whether an occupant's portal may be used (st-25.md): active/ending contracts while the person
@@ -68,7 +68,9 @@ export function portalOpen(
     return false;
   const on = portalReferenceDate(contract, today);
 
-  return occupants.some((row) => row.tenantId === tenantId && (!row.toDate || row.toDate > on));
+  return occupants.some(
+    (row) => row.tenantId === tenantId && row.fromDate <= on && (!row.toDate || row.toDate > on),
+  );
 }
 
 export interface LinkContext {

@@ -143,5 +143,8 @@
   "landlord_signature_missing": "Save a signature in the landlord profile first.",
   "landlord_missing": "There is no owner account.",
   "password_invalid": "Wrong password.",
-  "contract_closed": "The contract has ended or was cancelled."
+  "contract_closed": "The contract has ended or was cancelled.",
+  "must_change_password": "Change your password before continuing.",
+  "credentials_unavailable": "These credentials are no longer valid. Issue a new temporary password.",
+  "document_privacy_restricted": "This original contains another occupant’s identifiers. Ask the owner for a suitable document."
 }

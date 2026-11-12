@@ -18,7 +18,7 @@ import type { TFunction } from 'i18next';
 import { Op, type Transaction } from 'sequelize';
 import { Open } from 'unzipper';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
-import { BuildingModel, sequelize, TenantModel } from '@/sequelize/models/index.js';
+import { BuildingModel, sequelize, TenantModel, UserModel } from '@/sequelize/models/index.js';
 import { runIdempotent } from '@/shared/persistence.js';
 import { foldText, normalizeTenantFields, type TenantFields } from './tenants.input.js';
 
@@ -236,6 +236,15 @@ async function checkRows(
   });
   const visible = (tenant: TenantModel) =>
     canAccessRecord(user, 'read', 'Tenant', { buildingId: tenant.buildingId }) ? tenant.id : null;
+  const emails = valid.flatMap((item) => (item.fields?.email ? [item.fields.email] : []));
+  const accounts = emails.length
+    ? await UserModel.findAll({
+        attributes: ['email'],
+        where: sequelize.where(sequelize.fn('lower', sequelize.col('email')), { [Op.in]: emails }),
+        transaction,
+      })
+    : [];
+  const usedEmails = new Set(accounts.map((account) => account.email.toLowerCase()));
   const seenPhones = new Set<string>();
   const seenIdNumbers = new Set<string>();
 
@@ -263,6 +272,15 @@ async function checkRows(
       item.row.status = 'duplicate';
       item.row.duplicate = duplicate;
       item.fields = null;
+    } else if (fields.email) {
+      if (usedEmails.has(fields.email)) {
+        item.row.status = 'error';
+        item.row.errors.push({
+          column: 'email',
+          message: t('error:unique_value', { attribute: 'Email' }),
+        });
+        item.fields = null;
+      } else usedEmails.add(fields.email);
     }
   }
   return checked;

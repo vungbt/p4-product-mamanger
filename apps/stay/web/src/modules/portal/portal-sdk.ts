@@ -1,6 +1,12 @@
 import { createPortalSdk } from '@stay/sdk/portal';
 import { currentLocale } from '@/i18n';
 
+export let accountContractId: string | undefined;
+
+export function selectAccountContract(id: string | undefined) {
+  accountContractId = id;
+}
+
 let sdk: ReturnType<typeof createPortalSdk> | undefined;
 
 /**
@@ -10,7 +16,12 @@ let sdk: ReturnType<typeof createPortalSdk> | undefined;
 export function getPortalSdk() {
   sdk ??= createPortalSdk({
     baseUrl: window.location.origin,
-    getHeaders: () => ({ 'Accept-Language': currentLocale() }),
+    getHeaders: () => ({
+      'Accept-Language': currentLocale(),
+      ...(window.location.pathname.startsWith('/my') && accountContractId
+        ? { 'X-Stay-Contract': accountContractId }
+        : {}),
+    }),
   });
   return sdk;
 }

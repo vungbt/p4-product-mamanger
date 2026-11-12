@@ -1,7 +1,10 @@
 import { type ComponentType, type LazyExoticComponent, lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { appRoutes, ROUTES } from './route-configs';
+import { appRoutes, ROUTES, tenantRoutes } from './route-configs';
 import { GuestOnly, PageSpinner, RequireAbility, RequireAuth } from './route-guards';
+
+const PasswordPage = lazy(() => import('@/modules/account/password-page'));
+const TenantAccountLayout = lazy(() => import('@/modules/portal/account-layout'));
 
 const VerifyDocumentPage = lazy(() => import('@/modules/documents/verify-page'));
 const ResetPasswordPage = lazy(() => import('@/modules/login/reset-password-page'));
@@ -68,6 +71,22 @@ export default function AppRoutes() {
       </Route>
 
       <Route element={<RequireAuth />}>
+        <Route path="/account/password" element={<LazyPage component={PasswordPage} />} />
+        <Route
+          element={
+            <RequireAbility ability={{ action: 'read', subject: 'Contract' }} tenantOnly>
+              <LazyPage component={TenantAccountLayout} />
+            </RequireAbility>
+          }
+        >
+          {tenantRoutes.map((route) => (
+            <Route
+              key={route.path}
+              path={route.path}
+              element={<LazyPage component={route.component} />}
+            />
+          ))}
+        </Route>
         <Route element={<LazyPage component={AppLayout} />}>
           {appRoutes.map((route) => (
             <Route

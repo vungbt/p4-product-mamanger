@@ -46,7 +46,7 @@ export default function BottomNav() {
     >
       <ItemContent
         icon={route.icon}
-        label={t(`nav.${route.name}`)}
+        label={route.label ?? t(`nav.${route.name}`)}
         badge={route.name === 'requests' ? pending : undefined}
       />
     </NavLink>

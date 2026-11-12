@@ -171,3 +171,11 @@ Các giá trị dưới đây là mặc định đề xuất. Tất cả đều 
 - Màn tạo hàng loạt: cột "phí cố định" hiển thị khác với tổng thực tính → **một công thức duy nhất, bản xem trước lấy từ API**.
 - Form một hoá đơn không chặn chỉ số mới nhỏ hơn số cũ → **validate ở server cho mọi đường nhập**.
 - Xoá dữ liệu không kiểm tra phụ thuộc; không có trạng thái/hạn thanh toán; không có migration; API không xác thực → **đều nằm trong các task nền tảng**.
+
+## Tài khoản và quyền của người thuê
+
+- Tạo hồ sơ/thêm người ở cấp tài khoản role `tenant` trong cùng transaction; hồ sơ cũ được cấp lười khi phát mật khẩu. Không tái sử dụng hoặc nâng quyền tài khoản chủ/quản lý theo email trùng.
+- Mật khẩu tạm ngẫu nhiên ít nhất 10 ký tự (thực hiện: 14), chỉ lưu bcrypt; cấp/cấp lại thu hồi phiên Better Auth và buộc đổi mật khẩu trước mọi chức năng nghiệp vụ. Chỉ chủ trọ/quản lý nhóm vận hành trong toà được phát; audit không chứa mật khẩu/hash. SMTP gửi sau commit; không lưu mật khẩu trong outbox.
+- SĐT chuẩn `0xxxxxxxxx` hoặc email là định danh đăng nhập. Giải SĐT phía server trong endpoint rate limit; không phân biệt lỗi SĐT không tồn tại với sai mật khẩu. SĐT trùng nhiều hồ sơ không được tự chọn một tài khoản.
+- Dashboard người thuê dùng DTO/command cổng và CASL hợp đồng đang được phép truy cập; selector không cấp quyền. API quản lý và trang chủ/quản lý trả 403 cho role tenant. Không lộ CCCD/SĐT người khác hoặc ghi chú nội bộ. Bản gốc văn bản có định danh người ở khác được giữ kín với tài khoản (nội dung, ký, PDF), không chỉnh sửa bản gốc đã ký; chính sách link cũ giữ nguyên.
+- Người thuê chỉ đề nghị thay đổi, báo hỏng, báo đã chuyển khoản; chủ/quản lý vẫn duyệt theo quyền hiện tại. Không thay đổi công thức tiền, trạng thái hoá đơn/hợp đồng hay hiệu lực link `/p/:token` cũ.

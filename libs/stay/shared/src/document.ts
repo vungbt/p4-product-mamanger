@@ -427,6 +427,7 @@ export interface PortalDocumentSummary {
 
 /** `GET /api/portal/documents/:id` (T-12). Only signers read the body (CCCD inside). */
 export interface PortalDocument extends PortalDocumentSummary {
+  privacyRestricted?: boolean;
   bodyHtml: string | null;
   myName: string | null;
   expiresAt: string | null;

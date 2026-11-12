@@ -3,6 +3,7 @@ import type { DocumentStatus } from '@stay/shared';
 import { isoDateInTimeZone } from '@stay/shared';
 import { useTranslation } from 'react-i18next';
 import { displayDate } from '@/libraries/format';
+import { portalBase } from './portal-ui';
 
 type Tone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
@@ -21,8 +22,10 @@ const STATUS_TONES: Record<DocumentStatus, Tone> = {
 };
 
 export const portalDocumentPaths = {
-  list: '/p/documents',
-  detail: (id: string) => `/p/documents/${id}`,
+  get list() {
+    return `${portalBase()}/documents`;
+  },
+  detail: (id: string) => `${portalBase()}/documents/${id}`,
 } as const;
 
 /** Business date (Asia/Ho_Chi_Minh) of an ISO instant, `dd/MM/yyyy`. */

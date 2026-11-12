@@ -10,6 +10,7 @@ import {
   useAppForm,
 } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
+import { normalizePhone } from '@stay/shared';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
@@ -28,7 +29,14 @@ export default function LoginPage() {
 
   const schema = useMemo(
     () => ({
-      email: v.pipe(v.string(), v.trim(), v.email(t('auth.emailInvalid'))),
+      email: v.pipe(
+        v.string(),
+        v.trim(),
+        v.check(
+          (value) => normalizePhone(value) !== null || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+          t('auth.emailInvalid'),
+        ),
+      ),
       password: v.pipe(v.string(), v.minLength(8, t('auth.passwordMin'))),
     }),
     [t],
@@ -78,9 +86,9 @@ export default function LoginPage() {
               <Alert tone="info">{t('auth.sessionExpired')}</Alert>
             ) : null}
 
-            <FormField name="email" label={t('auth.email')} required className="mb-0">
+            <FormField name="email" label="Email hoặc số điện thoại" required className="mb-0">
               <Input
-                type="email"
+                type="text"
                 icon="mail"
                 inputMode="email"
                 autoComplete="username"

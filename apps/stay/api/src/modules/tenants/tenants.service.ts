@@ -19,12 +19,13 @@ import {
   type TenantStatusFilter,
   type TenantVehicle,
 } from '@stay/shared';
-import { cast, col, Op, type Transaction, type WhereOptions, where } from 'sequelize';
+import { cast, col, Op, QueryTypes, type Transaction, type WhereOptions, where } from 'sequelize';
 import { canAccessRecord, hasAccess } from '@/middlewares/ability.middleware.js';
 import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import {
   BuildingModel,
   FileModel,
+  sequelize,
   TenantDocumentModel,
   TenantModel,
   VehicleModel,
@@ -124,7 +125,13 @@ async function detailDto(row: TenantModel): Promise<StayTenantDetail> {
     where: { id: { [Op.in]: documents.map((document) => document.fileId) } },
   });
 
+  const [account] = await sequelize.query<{ issued: boolean }>(
+    "SELECT EXISTS(SELECT 1 FROM auth_accounts WHERE user_id = :userId AND provider_id = 'credential') AS issued",
+    { replacements: { userId: row.userId }, type: QueryTypes.SELECT },
+  );
+
   return {
+    accountIssued: account?.issued ?? false,
     ...tenantDto(row, occupancy.get(row.id)),
     ...selectFields(row, [
       'email',

@@ -1,5 +1,10 @@
 import { Button } from '@itclabs/react-ui';
-import { usePortalDocuments, usePortalInvoice, usePortalMe } from '@stay/sdk/react';
+import {
+  usePortalDocuments,
+  usePortalInvoice,
+  usePortalMe,
+  usePortalNotifications,
+} from '@stay/sdk/react';
 import type { PortalInvoiceSummary, PortalOpenRequests } from '@stay/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +30,7 @@ function PaymentPanel({ id }: { id: string }) {
 }
 
 function CurrentInvoice({ invoice }: { invoice: PortalInvoiceSummary }) {
-  const [paying, setPaying] = useState(false);
+  const [paying, setPaying] = useState(() => window.location.pathname.startsWith('/my'));
 
   return (
     <div className="grid gap-3" data-testid="portal-current-invoice">
@@ -107,6 +112,37 @@ function OpenRequests({ open }: { open: PortalOpenRequests }) {
   );
 }
 
+function LatestNotifications() {
+  const notifications = usePortalNotifications();
+
+  return (
+    <PortalSection title="Thông báo mới nhất">
+      <PortalQuery query={notifications}>
+        {(data) => (
+          <>
+            {data.items.slice(0, 3).map((item) => (
+              <Link
+                key={item.id}
+                className="font-semibold text-accent"
+                to={item.path.replace(/^\/p(?=\/|$)/, portalPaths.home)}
+              >
+                {item.title}
+              </Link>
+            ))}
+            {data.items.length === 0 ? <p>Chưa có thông báo.</p> : null}
+            <Link className="text-accent" to={portalPaths.notifications}>
+              Xem thông báo và cài đặt
+            </Link>
+            <Link className="text-accent" to={portalPaths.notices}>
+              Thông báo từ chủ trọ và nội quy
+            </Link>
+          </>
+        )}
+      </PortalQuery>
+    </PortalSection>
+  );
+}
+
 /** T-03 `/p`: current invoice and payment, debt, notices, open requests, contact. */
 export default function PortalHomePage() {
   const { t } = useTranslation('portalDocuments');
@@ -172,13 +208,14 @@ export default function PortalHomePage() {
                 <Link
                   key={document.id}
                   className="font-semibold text-accent"
-                  to={`/p/documents/${document.id}`}
+                  to={`${portalPaths.home}/documents/${document.id}`}
                 >
                   {document.title} · {t('home.open')}
                 </Link>
               ))}
             </PortalSection>
           )}
+          <LatestNotifications />
           <OpenRequests open={data.openRequests} />
 
           <PortalSection title="Liên hệ chủ trọ">

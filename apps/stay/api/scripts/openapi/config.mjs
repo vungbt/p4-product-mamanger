@@ -115,6 +115,11 @@ export const FILE_RESPONSES = {
 };
 
 const OPERATIONS = {
+  'POST /api/tenants/{id}/credentials': [
+    'Cấp tài khoản / cấp lại mật khẩu người thuê',
+    'issue Tenant, trong phạm vi toà. Trả mật khẩu một lần; thu hồi phiên và buộc đổi mật khẩu.',
+  ],
+  'POST /api/tenants/{id}/credentials/email': ['Gửi thông tin đăng nhập qua SMTP'],
   'GET /api/maintenance/expense-categories': ['Danh mục chi phí cho bảo trì'],
   'GET /api/maintenance': ['Danh sách bảo trì theo toà/phòng/trạng thái/nguồn'],
   'GET /api/maintenance/{id}': ['Chi tiết bảo trì, ảnh, lịch sử và chi phí'],
@@ -879,6 +884,32 @@ const signatureImage = {
 };
 
 const OVERRIDES = {
+  'POST /api/tenants/{id}/credentials': {
+    response: {
+      type: 'object',
+      required: ['login', 'password', 'appUrl'],
+      properties: {
+        login: { type: 'string' },
+        password: { type: 'string' },
+        appUrl: { type: 'string' },
+      },
+    },
+  },
+  'POST /api/tenants/{id}/credentials/email': {
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            required: ['password'],
+            properties: { password: { type: 'string', maxLength: 128 } },
+          },
+        },
+      },
+    },
+    response: { type: 'object', required: ['sent'], properties: { sent: { type: 'boolean' } } },
+  },
   'GET /api/maintenance/expense-categories': {
     response: { type: 'array', items: { ref: 'StayExpenseCategory' } },
   },

@@ -9,7 +9,7 @@ import {
 import { TENANT_NOTIFICATION_GROUPS } from '@stay/shared';
 import { Link } from 'react-router-dom';
 import { NotificationSettingsPanel } from '@/libraries/notifications/notification-settings-panel';
-import { PortalQuery, PortalSection } from './portal-ui';
+import { PortalQuery, PortalSection, portalBase } from './portal-ui';
 
 /** `/p/notifications`: the tenant's notifications (live) and how they are delivered. */
 export default function PortalNotificationsPage() {
@@ -35,7 +35,7 @@ export default function PortalNotificationsPage() {
                 {data.items.map((item) => (
                   <li key={item.id} className="grid min-w-0 gap-1 border-b border-line pb-3">
                     <Link
-                      to={item.path}
+                      to={item.path.replace(/^\/p(?=\/|$)/, portalBase())}
                       onClick={() => {
                         if (!item.readAt) markRead.mutate(item.id);
                       }}

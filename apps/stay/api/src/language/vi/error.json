@@ -143,5 +143,8 @@
   "landlord_signature_missing": "Chưa có chữ ký mẫu trong Thông tin bên cho thuê.",
   "landlord_missing": "Chưa có tài khoản chủ trọ.",
   "password_invalid": "Mật khẩu không đúng.",
-  "contract_closed": "Hợp đồng đã kết thúc hoặc đã huỷ."
+  "contract_closed": "Hợp đồng đã kết thúc hoặc đã huỷ.",
+  "must_change_password": "Vui lòng đổi mật khẩu trước khi tiếp tục.",
+  "credentials_unavailable": "Thông tin đăng nhập này không còn hiệu lực. Vui lòng cấp lại mật khẩu.",
+  "document_privacy_restricted": "Văn bản chứa định danh của người ở khác. Liên hệ chủ trọ để được cấp bản phù hợp."
 }

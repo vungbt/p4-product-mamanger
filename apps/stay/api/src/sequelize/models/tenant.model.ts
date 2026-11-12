@@ -5,6 +5,7 @@ import { DataTypes, Model, type Optional, type Sequelize } from 'sequelize';
 export interface TenantAttributes {
   id: string;
   buildingId: string;
+  userId: string | null;
   fullName: string;
   phone: string;
   email: string | null;
@@ -24,6 +25,7 @@ export interface TenantAttributes {
 
 export type TenantCreation = Optional<
   TenantAttributes,
+  | 'userId'
   | 'id'
   | 'email'
   | 'idNumber'
@@ -46,6 +48,7 @@ export class TenantModel
 {
   declare id: string;
   declare buildingId: string;
+  declare userId: string | null;
   declare fullName: string;
   declare phone: string;
   declare email: string | null;
@@ -67,6 +70,7 @@ export function initTenantModel(sequelize: Sequelize) {
   TenantModel.init(
     {
       id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+      userId: { type: DataTypes.UUID, allowNull: true },
       buildingId: { type: DataTypes.UUID, allowNull: false },
       fullName: { type: DataTypes.STRING(120), allowNull: false },
       phone: { type: DataTypes.STRING(10), allowNull: false },

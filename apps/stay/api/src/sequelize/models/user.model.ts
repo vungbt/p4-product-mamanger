@@ -17,6 +17,7 @@ export interface UserAttributes {
   accountStatus: StayAccountStatus;
   permissionGroups?: ManagerPermissionGroup[];
   version?: number;
+  mustChangePassword?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -31,6 +32,7 @@ export class UserModel extends Model<UserAttributes> implements UserAttributes {
   declare accountStatus: StayAccountStatus;
   declare permissionGroups: ManagerPermissionGroup[];
   declare version: number;
+  declare mustChangePassword: boolean;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 }
@@ -44,6 +46,7 @@ export function initUserModel(sequelize: Sequelize) {
         allowNull: false,
         defaultValue: [...MANAGER_PERMISSION_GROUPS],
       },
+      mustChangePassword: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
       version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
       email: { type: DataTypes.TEXT, allowNull: false },
       displayName: { type: DataTypes.TEXT, allowNull: false },

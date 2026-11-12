@@ -7,20 +7,46 @@ import { LoadError } from '@/libraries/forms/page-states';
 /** Generic on purpose: titles and link previews never show names, rooms or amounts. */
 export const PORTAL_TITLE = 'Cổng người thuê';
 
+export const portalBase = () => (window.location.pathname.startsWith('/my') ? '/my' : '/p');
+
 export const portalPaths = {
-  home: '/p',
-  invoices: '/p/invoices',
-  invoice: (id: string) => `/p/invoices/${id}`,
-  contract: '/p/contract',
-  usage: '/p/usage',
-  notices: '/p/notices',
-  notifications: '/p/notifications',
-  more: '/p/more',
-  maintenance: '/p/maintenance',
-  maintenanceNew: '/p/maintenance/new',
-  requests: '/p/requests',
-  requestNew: '/p/requests/new',
-  signedOut: '/p/signed-out',
+  get home() {
+    return `${portalBase()}`;
+  },
+  get invoices() {
+    return `${portalBase()}/invoices`;
+  },
+  invoice: (id: string) => `${portalBase()}/invoices/${id}`,
+  get contract() {
+    return `${portalBase()}/contract`;
+  },
+  get usage() {
+    return `${portalBase()}/usage`;
+  },
+  get notices() {
+    return `${portalBase()}/notices`;
+  },
+  get notifications() {
+    return `${portalBase()}/notifications`;
+  },
+  get more() {
+    return `${portalBase()}/more`;
+  },
+  get maintenance() {
+    return `${portalBase()}/maintenance`;
+  },
+  get maintenanceNew() {
+    return `${portalBase()}/maintenance/new`;
+  },
+  get requests() {
+    return `${portalBase()}/requests`;
+  },
+  get requestNew() {
+    return `${portalBase()}/requests/new`;
+  },
+  get signedOut() {
+    return `${portalBase()}/signed-out`;
+  },
 } as const;
 
 const CONTACT_KEY = 'stay_portal_contact';

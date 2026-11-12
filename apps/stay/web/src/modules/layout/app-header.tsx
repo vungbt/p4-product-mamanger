@@ -5,8 +5,10 @@ import { BRAND, BrandMark } from '@/brand';
 import { useCanAccessSome } from '@/libraries/ability';
 import { BuildingSelector } from '@/libraries/buildings/building-selector';
 import { usePageDescription } from '@/libraries/page-meta';
+import { useAuth } from '@/libraries/session/auth-provider';
 import { appRoutes, ROUTES } from '@/routing/route-configs';
 import { routeTrail, useCurrentRoute } from '@/routing/use-routes';
+import { TenantContractSelector } from '../portal/account-contract-selector';
 import AccountMenu from './account-menu';
 import NotificationsBell from './notifications-bell';
 
@@ -19,6 +21,7 @@ function hasHistory() {
 /** Desktop: breadcrumb. Mobile: back button and screen title. Both: building + account. */
 export default function AppHeader() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const navigate = useNavigate();
   // Notifications are per building (API: read Building); tenants have none.
   const canReadNotifications = useCanAccessSome('read', 'Building');
@@ -27,7 +30,7 @@ export default function AppHeader() {
 
   const parent = route?.parent ? appRoutes.find(({ name }) => name === route.parent) : undefined;
 
-  const title = route ? t(`nav.${route.name}`) : '';
+  const title = route ? (route.label ?? t(`nav.${route.name}`)) : '';
   const isHome = route?.path === ROUTES.overview;
 
   const goBack = () => {
@@ -86,7 +89,7 @@ export default function AppHeader() {
       }
       actions={
         <>
-          <BuildingSelector />
+          {user?.role === 'tenant' ? <TenantContractSelector /> : <BuildingSelector />}
           {canReadNotifications ? <NotificationsBell /> : null}
           <AccountMenu />
         </>

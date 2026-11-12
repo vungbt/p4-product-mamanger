@@ -22,6 +22,7 @@ import { FormError } from '@/libraries/forms/page-states';
 import { useFormValue } from '@/libraries/forms/use-form-value';
 import { SignaturePad } from '@/libraries/signature-pad';
 import { DocumentStatusTag, documentDateTime, portalDocumentPaths } from './documents-ui';
+import { accountContractId } from './portal-sdk';
 import { PortalQuery } from './portal-ui';
 
 function SigningDocument({ data }: { data: PortalDocument }) {
@@ -117,6 +118,11 @@ function SigningDocument({ data }: { data: PortalDocument }) {
       <p>{data.code}</p>
       <DocumentStatusTag status={data.status} />
       <Alert tone="info">{t('detail.legal')}</Alert>
+      {data.privacyRestricted ? (
+        <Alert tone="warning">
+          Văn bản chứa thông tin cá nhân của người ở khác. Liên hệ chủ trọ để được cấp bản phù hợp.
+        </Alert>
+      ) : null}
       {data.bodyHtml ? (
         <>
           <p role="status">
@@ -247,7 +253,7 @@ function SigningDocument({ data }: { data: PortalDocument }) {
       )}
       {data.hasPdf && (
         <a
-          href={portalDocumentPdfPath(data.id)}
+          href={`${portalDocumentPdfPath(data.id)}${window.location.pathname.startsWith('/my') && accountContractId ? `?accountContract=${encodeURIComponent(accountContractId)}` : ''}`}
           download
           className="flex min-h-10 items-center gap-2 font-semibold text-accent"
         >

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { PageSpinner } from '@/routing/route-guards';
+import { TenantCredentialsAction } from './credentials-dialog';
 import { ContactLinks, formatDate, formatPhone, TenantStatusTag } from './tenant-ui';
 import { VehiclesSection } from './vehicles-section';
 
@@ -111,6 +112,7 @@ export default function TenantProfilePage() {
 
   const data = tenant.data;
   const canUpdate = useCanOn('update', 'Tenant', { buildingId: data?.buildingId });
+  const canIssue = useCanOn('issue', 'Tenant', { buildingId: data?.buildingId });
   const canArchive = useCanOn('delete', 'Tenant', { buildingId: data?.buildingId });
 
   if (tenant.isPending) return <PageSpinner />;
@@ -169,6 +171,13 @@ export default function TenantProfilePage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ContactLinks phone={data.phone} name={data.fullName} />
+          {active && canIssue ? (
+            <TenantCredentialsAction
+              id={data.id}
+              email={data.email}
+              accountIssued={data.accountIssued}
+            />
+          ) : null}
           {active && canArchive ? (
             <AlertDialog
               title={t('tenants.profile.archiveTitle', { name: data.fullName })}

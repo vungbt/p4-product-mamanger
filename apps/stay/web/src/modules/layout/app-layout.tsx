@@ -1,8 +1,15 @@
-import { SidebarProvider, WorkspaceBody, WorkspaceMain, WorkspaceShell } from '@itclabs/react-ui';
+import {
+  EmptyState,
+  SidebarProvider,
+  WorkspaceBody,
+  WorkspaceMain,
+  WorkspaceShell,
+} from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { BuildingProvider } from '@/libraries/buildings/building-provider';
 import { PageMetaProvider } from '@/libraries/page-meta';
+import { useAuth } from '@/libraries/session/auth-provider';
 import AppHeader from './app-header';
 import AppSidebar from './app-sidebar';
 import BottomNav from './bottom-nav';
@@ -12,6 +19,8 @@ const MAIN_ID = 'main-content';
 /** C-02 shell: sidebar on desktop (lg+), bottom navigation on mobile. */
 export default function AppLayout() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const { pathname } = useLocation();
 
   return (
     <BuildingProvider>
@@ -35,7 +44,16 @@ export default function AppLayout() {
                 tabIndex={-1}
                 className="px-4 py-5 pb-bottom-nav outline-none sm:px-6 lg:px-8 lg:py-8"
               >
-                <Outlet />
+                {user?.role === 'tenant' &&
+                user.contractIds.length === 0 &&
+                pathname !== '/my/account' ? (
+                  <EmptyState
+                    title="Chưa có hợp đồng"
+                    description="Liên hệ chủ trọ để được thêm vào hợp đồng."
+                  />
+                ) : (
+                  <Outlet />
+                )}
               </WorkspaceMain>
             </PageMetaProvider>
           </WorkspaceBody>

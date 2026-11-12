@@ -3,6 +3,8 @@ import { type ComponentType, type LazyExoticComponent, lazy } from 'react';
 import type { AbilityCheck } from '@/libraries/ability';
 
 export type StayRoute = {
+  tenantOnly?: boolean;
+  label?: string;
   path: string;
   /** Stable id, also the `nav.<name>` translation key of its label. */
   name: string;
@@ -486,3 +488,106 @@ export const appRoutes: StayRoute[] = [
     hideInMenu: true,
   },
 ];
+
+/** Tenant pages reuse portal components and the same navigation controls as staff. */
+const tenantPages: (Omit<StayRoute, 'ability' | 'icon'> & { icon?: IconName })[] = [
+  {
+    path: '/my',
+    name: 'overview',
+    label: 'Tổng quan',
+    icon: 'home',
+    component: lazy(() => import('@/modules/portal/home-page')),
+    bottomNav: true,
+    exact: true,
+  },
+  {
+    path: '/my/invoices',
+    name: 'invoices',
+    label: 'Hoá đơn',
+    icon: 'receipt',
+    component: lazy(() => import('@/modules/portal/invoices-page')),
+    bottomNav: true,
+  },
+  {
+    path: '/my/invoices/:id',
+    name: 'invoiceDetail',
+    component: lazy(() => import('@/modules/portal/invoice-page')),
+    hideInMenu: true,
+  },
+  {
+    path: '/my/contract',
+    name: 'contracts',
+    label: 'Hợp đồng & văn bản',
+    icon: 'clipboardText',
+    component: lazy(() => import('@/modules/portal/contract-page')),
+    bottomNav: true,
+  },
+  {
+    path: '/my/documents',
+    name: 'contractDocuments',
+    label: 'Văn bản',
+    component: lazy(() => import('@/modules/portal/documents-page')),
+    hideInMenu: true,
+  },
+  {
+    path: '/my/documents/:id',
+    name: 'contractDocument',
+    component: lazy(() => import('@/modules/portal/document-page')),
+    hideInMenu: true,
+  },
+  {
+    path: '/my/requests',
+    name: 'requests',
+    label: 'Yêu cầu',
+    icon: 'clipboardText',
+    component: lazy(() => import('@/modules/portal/requests-page')),
+    bottomNav: true,
+  },
+  {
+    path: '/my/requests/new',
+    name: 'requestNew',
+    component: lazy(() => import('@/modules/portal/request-new-page')),
+    hideInMenu: true,
+  },
+  {
+    path: '/my/maintenance',
+    name: 'maintenance',
+    label: 'Báo hỏng',
+    icon: 'wrench',
+    component: lazy(() => import('@/modules/portal/maintenance-page')),
+  },
+  {
+    path: '/my/maintenance/new',
+    name: 'maintenanceNew',
+    component: lazy(() => import('@/modules/portal/maintenance-new-page')),
+    hideInMenu: true,
+  },
+  {
+    path: '/my/notifications',
+    name: 'notifications',
+    label: 'Thông báo',
+    icon: 'bell',
+    component: lazy(() => import('@/modules/portal/notifications-page')),
+  },
+  {
+    path: '/my/notices',
+    name: 'announcements',
+    label: 'Nội quy',
+    component: lazy(() => import('@/modules/portal/notices-page')),
+    hideInMenu: true,
+  },
+  {
+    path: '/my/account',
+    name: 'account',
+    label: 'Tài khoản',
+    icon: 'key',
+    component: lazy(() => import('@/modules/account/password-page')),
+  },
+];
+
+export const tenantRoutes: StayRoute[] = tenantPages.map((route) => ({
+  icon: 'clipboardText',
+  ...route,
+  tenantOnly: true,
+  ability: { action: 'read', subject: 'Contract' },
+}));
