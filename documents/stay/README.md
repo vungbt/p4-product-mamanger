@@ -54,7 +54,7 @@ libs/server-core, libs/ability  dùng chung với P4
 | 18 | ST-18 | [Công nợ](st-18.md) | API + Web | ST-15 | Chưa bắt đầu |
 | 19 | ST-19 | [Tổng quan tháng](st-19.md) | API + Web | ST-15, ST-18 | Chưa bắt đầu |
 | 20 | ST-25 | [Cổng người thuê](st-25.md) | API + Web | ST-16, ST-17 | Chưa bắt đầu |
-| 20b | ST-30 | [Hợp đồng online](st-30.md) | API + Web | ST-10, ST-12, ST-17, ST-25 | Chưa bắt đầu |
+| 20b | ST-30 | [Hợp đồng online](st-30.md) | API + Web | ST-10, ST-12, ST-17, ST-25 | 30a xong |
 | 21 | ST-20 | [Chi phí vận hành](st-20.md) | API + Web | ST-07 | Chưa bắt đầu |
 | 22 | ST-21 | [Báo cáo và xuất Excel](st-21.md) | API + Web | ST-19, ST-20 | Chưa bắt đầu |
 | 23 | ST-22 | [Bảo trì và sửa chữa](st-22.md) | API + Web | ST-08, ST-20, ST-25 | Chưa bắt đầu |

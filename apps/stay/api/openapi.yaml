@@ -8045,6 +8045,16 @@ paths:
                 version:
                   type: integer
                   minimum: 0
+                birthDate:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+                idIssuedAt:
+                  type:
+                    - string
+                    - "null"
+                  format: date
               required:
                 - fullName
                 - version

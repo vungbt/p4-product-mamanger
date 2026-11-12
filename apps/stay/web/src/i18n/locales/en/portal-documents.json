@@ -1,0 +1,120 @@
+{
+  "kind": {
+    "contract": "Lease contract",
+    "addendum": "Contract addendum",
+    "handover": "Handover record",
+    "settlement": "Settlement record"
+  },
+  "status": {
+    "draft": "Draft",
+    "owner_signed": "Signed by landlord",
+    "sent": "Awaiting signature",
+    "viewed": "Viewed",
+    "signed_by_tenant": "Awaiting landlord",
+    "completed": "Completed",
+    "rejected": "Rejected",
+    "cancelled": "Cancelled",
+    "completed_paper": "Signed on paper",
+    "superseded": "Superseded",
+    "expired": "Signing expired"
+  },
+  "list": {
+    "title": "My documents",
+    "nav": "Documents",
+    "empty": "No documents yet.",
+    "awaiting": "Awaiting your signature",
+    "sentOn": "Sent {{date}}",
+    "completedOn": "Completed {{date}}",
+    "open": "Open document {{code}}"
+  },
+  "home": {
+    "title": "Documents to sign",
+    "awaiting_one": "{{count}} document is waiting for your signature.",
+    "awaiting_other": "{{count}} documents are waiting for your signature.",
+    "open": "Read and sign"
+  },
+  "detail": {
+    "back": "My documents",
+    "code": "Document code",
+    "progress": "Read {{percent}}%",
+    "readHint": "Scroll to the end of the document to sign.",
+    "bodyLabel": "Document content",
+    "notSigner": "You are not a signer of this document, so its content is hidden. Contact the landlord if needed.",
+    "signers": "Signers",
+    "signerRole": {
+      "tenant": "Tenant",
+      "owner": "Landlord"
+    },
+    "signerStatus": {
+      "pending": "Not signed",
+      "viewed": "Viewed",
+      "signed": "Signed",
+      "rejected": "Rejected"
+    },
+    "expires": "Sign by {{date}}",
+    "download": "Download PDF",
+    "signedWaiting": "Signed, waiting for the landlord",
+    "completed": "Completed",
+    "rejected": "You rejected this document.",
+    "closed": "The document is no longer awaiting signatures.",
+    "expired": "The signing link expired. Ask the landlord to send it again.",
+    "legal": "This is a simple electronic signature under the 2023 Law on Electronic Transactions and serves as evidence. You may ask the landlord for a paper copy to sign."
+  },
+  "sign": {
+    "title": "Sign the document",
+    "agree": "I have read and agree to the whole content",
+    "fullName": "Full name",
+    "fullNameHint": "Exactly as in your profile (case does not matter).",
+    "phoneLast4": "Last 4 digits of your phone number",
+    "signature": "Signature",
+    "signatureHint": "Draw your signature with a finger or the mouse.",
+    "useTyped": "Use a typed signature",
+    "useDrawn": "Draw a signature",
+    "typedPreview": "Typed signature: {{name}}",
+    "submit": "Sign document",
+    "readFirst": "Scroll through the whole document before signing.",
+    "required": "Required.",
+    "agreeRequired": "Tick the agreement box.",
+    "digits": "Enter exactly 4 digits.",
+    "drawRequired": "Draw a signature or choose the typed signature.",
+    "success": "Document signed.",
+    "errors": {
+      "phone": "The last 4 phone digits are wrong.",
+      "name": "The full name does not match your profile.",
+      "locked": "Too many wrong attempts. Try again in {{minutes}} minutes.",
+      "expired": "The signing link expired. Ask the landlord to send it again.",
+      "generic": "Could not sign. Please try again."
+    }
+  },
+  "reject": {
+    "open": "Reject",
+    "title": "Reject the document",
+    "reason": "Reason",
+    "submit": "Send rejection",
+    "cancel": "Cancel",
+    "success": "Rejection sent to the landlord.",
+    "error": "Could not send. Please try again."
+  },
+  "verify": {
+    "title": "Verify a document",
+    "intro": "Enter the code printed in the PDF footer to check that the document exists and is fully signed. This page never shows the content.",
+    "code": "Document code",
+    "check": "Check",
+    "notFound": "No document with this code.",
+    "error": "Could not check. Please try again.",
+    "kind": "Document type",
+    "building": "Building",
+    "status": "Status",
+    "signed": "Signed",
+    "signedCount": "{{signed}}/{{total}} people",
+    "completedAt": "Completed at",
+    "fileTitle": "Compare a PDF file",
+    "fileHint": "Upload the PDF you hold to compare its SHA-256 hash with the stored copy.",
+    "file": "PDF file",
+    "compare": "Compare",
+    "match": "Match: this is the signed copy.",
+    "mismatch": "No match: the file was changed or is not the final copy.",
+    "sha": "SHA-256 of the file: {{sha}}",
+    "noPdf": "The document has no final PDF to compare."
+  }
+}

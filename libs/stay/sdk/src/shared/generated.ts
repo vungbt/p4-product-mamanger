@@ -14870,7 +14870,11 @@ export interface operations {
     requestBody: {
       content: {
         'application/json': {
+          /** Format: date */
+          birthDate?: string | null;
           fullName: string;
+          /** Format: date */
+          idIssuedAt?: string | null;
           idIssuedBy?: string;
           idNumber?: string;
           permanentAddress?: string;

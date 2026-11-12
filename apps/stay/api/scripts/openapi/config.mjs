@@ -796,7 +796,13 @@ const signatureImage = {
 };
 
 const OVERRIDES = {
-  'PUT /api/settings/landlord': { fields: { signatureImage } },
+  'PUT /api/settings/landlord': {
+    fields: {
+      signatureImage,
+      birthDate: { schema: { type: ['string', 'null'], format: 'date' } },
+      idIssuedAt: { schema: { type: ['string', 'null'], format: 'date' } },
+    },
+  },
   'POST /api/portal/documents/{id}/sign': {
     fields: {
       signatureImage: {

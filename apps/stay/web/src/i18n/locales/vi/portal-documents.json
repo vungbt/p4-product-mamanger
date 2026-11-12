@@ -1,0 +1,120 @@
+{
+  "kind": {
+    "contract": "Hợp đồng thuê",
+    "addendum": "Phụ lục hợp đồng",
+    "handover": "Biên bản bàn giao",
+    "settlement": "Biên bản thanh lý"
+  },
+  "status": {
+    "draft": "Nháp",
+    "owner_signed": "Chủ trọ đã ký",
+    "sent": "Chờ ký",
+    "viewed": "Đã xem",
+    "signed_by_tenant": "Chờ chủ trọ ký",
+    "completed": "Hoàn tất",
+    "rejected": "Đã từ chối",
+    "cancelled": "Đã huỷ",
+    "completed_paper": "Đã ký giấy",
+    "superseded": "Đã được thay thế",
+    "expired": "Hết hạn ký"
+  },
+  "list": {
+    "title": "Văn bản của tôi",
+    "nav": "Văn bản",
+    "empty": "Chưa có văn bản nào.",
+    "awaiting": "Chờ bạn ký",
+    "sentOn": "Gửi ngày {{date}}",
+    "completedOn": "Hoàn tất ngày {{date}}",
+    "open": "Mở văn bản {{code}}"
+  },
+  "home": {
+    "title": "Văn bản cần ký",
+    "awaiting_one": "Có {{count}} văn bản đang chờ bạn ký.",
+    "awaiting_other": "Có {{count}} văn bản đang chờ bạn ký.",
+    "open": "Xem và ký"
+  },
+  "detail": {
+    "back": "Văn bản của tôi",
+    "code": "Mã văn bản",
+    "progress": "Đã đọc {{percent}}%",
+    "readHint": "Cuộn đến cuối văn bản để ký.",
+    "bodyLabel": "Nội dung văn bản",
+    "notSigner": "Bạn không phải người ký văn bản này nên không xem được nội dung. Liên hệ chủ trọ nếu cần.",
+    "signers": "Người ký",
+    "signerRole": {
+      "tenant": "Bên thuê",
+      "owner": "Bên cho thuê"
+    },
+    "signerStatus": {
+      "pending": "Chưa ký",
+      "viewed": "Đã xem",
+      "signed": "Đã ký",
+      "rejected": "Từ chối"
+    },
+    "expires": "Hạn ký: {{date}}",
+    "download": "Tải PDF",
+    "signedWaiting": "Đã ký, chờ chủ trọ ký",
+    "completed": "Hoàn tất",
+    "rejected": "Bạn đã từ chối văn bản này.",
+    "closed": "Văn bản không còn chờ ký.",
+    "expired": "Link ký đã hết hạn. Liên hệ chủ trọ để gửi lại.",
+    "legal": "Đây là chữ ký điện tử đơn giản theo Luật Giao dịch điện tử 2023, có giá trị làm bằng chứng. Bạn có thể yêu cầu ký bản giấy với chủ trọ."
+  },
+  "sign": {
+    "title": "Ký văn bản",
+    "agree": "Tôi đã đọc và đồng ý toàn bộ nội dung",
+    "fullName": "Họ tên đầy đủ",
+    "fullNameHint": "Nhập đúng như hồ sơ (không phân biệt chữ hoa, chữ thường).",
+    "phoneLast4": "4 số cuối số điện thoại",
+    "signature": "Chữ ký",
+    "signatureHint": "Vẽ chữ ký bằng ngón tay hoặc chuột.",
+    "useTyped": "Dùng chữ ký đánh máy",
+    "useDrawn": "Vẽ chữ ký",
+    "typedPreview": "Chữ ký đánh máy: {{name}}",
+    "submit": "Ký văn bản",
+    "readFirst": "Cuộn hết văn bản trước khi ký.",
+    "required": "Bắt buộc.",
+    "agreeRequired": "Cần tick ô đồng ý.",
+    "digits": "Nhập đúng 4 chữ số.",
+    "drawRequired": "Vẽ chữ ký hoặc chọn chữ ký đánh máy.",
+    "success": "Đã ký văn bản.",
+    "errors": {
+      "phone": "4 số cuối điện thoại không đúng.",
+      "name": "Họ tên không khớp hồ sơ.",
+      "locked": "Nhập sai quá nhiều lần. Thử lại sau {{minutes}} phút.",
+      "expired": "Link ký đã hết hạn. Liên hệ chủ trọ để gửi lại.",
+      "generic": "Không ký được. Vui lòng thử lại."
+    }
+  },
+  "reject": {
+    "open": "Từ chối ký",
+    "title": "Từ chối ký văn bản",
+    "reason": "Lý do từ chối",
+    "submit": "Gửi từ chối",
+    "cancel": "Huỷ",
+    "success": "Đã gửi từ chối cho chủ trọ.",
+    "error": "Không gửi được. Vui lòng thử lại."
+  },
+  "verify": {
+    "title": "Kiểm tra văn bản",
+    "intro": "Nhập mã văn bản in ở chân trang PDF để kiểm tra văn bản có tồn tại và đã ký đủ chưa. Trang này không hiển thị nội dung văn bản.",
+    "code": "Mã văn bản",
+    "check": "Kiểm tra",
+    "notFound": "Không tìm thấy văn bản với mã này.",
+    "error": "Không kiểm tra được. Vui lòng thử lại.",
+    "kind": "Loại văn bản",
+    "building": "Toà nhà",
+    "status": "Trạng thái",
+    "signed": "Đã ký",
+    "signedCount": "{{signed}}/{{total}} người",
+    "completedAt": "Hoàn tất lúc",
+    "fileTitle": "So khớp file PDF",
+    "fileHint": "Tải lên file PDF bạn đang giữ để so mã băm SHA-256 với bản đã lưu.",
+    "file": "File PDF",
+    "compare": "So khớp",
+    "match": "Khớp: file đúng là bản đã ký.",
+    "mismatch": "Không khớp: file đã bị sửa hoặc không phải bản cuối cùng.",
+    "sha": "SHA-256 của file: {{sha}}",
+    "noPdf": "Văn bản chưa có PDF cuối cùng để so khớp."
+  }
+}
