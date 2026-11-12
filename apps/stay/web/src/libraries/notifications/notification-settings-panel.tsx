@@ -6,6 +6,7 @@ import type {
   NotificationSettings,
 } from '@stay/shared';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   type BrowserSubscription,
   currentEndpoint,
@@ -23,6 +24,7 @@ const GROUP_LABELS: Record<NotificationGroup, string> = {
   reminders: 'Nhắc việc (chốt số, hạn thanh toán)',
   requests: 'Báo hỏng và yêu cầu',
   announcements: 'Thông báo của chủ trọ',
+  documents: 'Văn bản hợp đồng',
 };
 
 interface Props {
@@ -52,6 +54,7 @@ export function NotificationSettingsPanel({
   onUnsubscribe,
   nested = false,
 }: Props) {
+  const { t } = useTranslation('documents');
   const Heading = nested ? 'h3' : 'h2';
   const [permission, setPermission] = useState<PushState>(() => pushPermission());
   const [subscribed, setSubscribed] = useState(false);
@@ -193,7 +196,7 @@ export function NotificationSettingsPanel({
         {groups.map((group) => (
           <Switch
             key={group}
-            label={GROUP_LABELS[group]}
+            label={group === 'documents' ? t('documents') : GROUP_LABELS[group]}
             checked={!settings.mutedGroups.includes(group)}
             disabled={saving}
             onCheckedChange={(on) => toggleGroup(group, on)}

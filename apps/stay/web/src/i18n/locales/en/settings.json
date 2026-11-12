@@ -38,6 +38,14 @@
       "announcements": {
         "title": "Tenant announcements",
         "description": "Notices for the whole building or rooms, pinned, with an expiry, on the tenant portal."
+      },
+      "landlord": {
+        "title": "Landlord & signature",
+        "description": "Private profile and saved signature."
+      },
+      "contractTemplates": {
+        "title": "Contract templates",
+        "description": "Edit templates and manage versions."
       }
     }
   },

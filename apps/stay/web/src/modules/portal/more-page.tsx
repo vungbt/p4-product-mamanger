@@ -1,6 +1,7 @@
 import { Button, Icon, type IconName } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { usePortalMe, usePortalSignOut } from '@stay/sdk/react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { ContactLinks, PortalSection, portalPaths } from './portal-ui';
 
@@ -13,6 +14,7 @@ const LINKS: { to: string; label: string; icon: IconName }[] = [
 
 /** "Thêm": thông báo, điện nước, yêu cầu, thông báo & nội quy, liên hệ, đăng xuất. */
 export default function PortalMorePage() {
+  const { t } = useTranslation('portalDocuments');
   const me = usePortalMe();
   const signOut = usePortalSignOut();
   const navigate = useNavigate();
@@ -32,17 +34,19 @@ export default function PortalMorePage() {
       <h1 className="text-heading font-bold">Thêm</h1>
       <nav aria-label="Mục khác">
         <ul className="grid gap-2">
-          {LINKS.map((item) => (
-            <li key={item.to}>
-              <Link
-                to={item.to}
-                className="flex min-h-12 items-center gap-3 rounded-panel border border-line bg-surface px-4 font-medium"
-              >
-                <Icon name={item.icon} className="size-5 text-muted" aria-hidden />
-                <span className="min-w-0 flex-1">{item.label}</span>
-              </Link>
-            </li>
-          ))}
+          {[{ to: '/p/documents', label: t('list.nav'), icon: 'fileCheck' as const }, ...LINKS].map(
+            (item) => (
+              <li key={item.to}>
+                <Link
+                  to={item.to}
+                  className="flex min-h-12 items-center gap-3 rounded-panel border border-line bg-surface px-4 font-medium"
+                >
+                  <Icon name={item.icon} className="size-5 text-muted" aria-hidden />
+                  <span className="min-w-0 flex-1">{item.label}</span>
+                </Link>
+              </li>
+            ),
+          )}
         </ul>
       </nav>
       <PortalSection title="Liên hệ chủ trọ">
