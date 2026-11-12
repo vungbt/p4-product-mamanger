@@ -7,6 +7,9 @@ import {
   IconButton,
   Input,
   Select,
+  Tabs,
+  TabsList,
+  TabsTrigger,
   useDataTable,
 } from '@itclabs/react-ui';
 import { invoiceQueryOptions, useRooms, useStaySdk } from '@stay/sdk/react';
@@ -17,7 +20,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
-import { FILTER_WIDE, FilterBar, FilterCheckbox } from '@/libraries/filter-bar';
+import { FILTER_ROW_FIELD, FILTER_ROW_GROW, FilterBar } from '@/libraries/filter-bar';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ListTable, rowTestId } from '@/libraries/list-table';
@@ -42,6 +45,16 @@ import { InvoicePreviewButton } from './share/invoice-preview';
 const TABLE_ID = 'invoice-list';
 /** `sortBy` values of `GET /api/invoices` with a column here (createdAt is the default). */
 const SORT_FIELDS = ['code', 'period', 'total', 'dueOn', 'createdAt'] as const;
+/** Status tabs above the filters, in the order an owner follows an invoice. */
+const STATUS_TABS = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'draft', label: INVOICE_STATUS_LABELS.draft },
+  { value: 'issued', label: INVOICE_STATUS_LABELS.issued },
+  { value: 'partially_paid', label: INVOICE_STATUS_LABELS.partially_paid },
+  { value: 'paid', label: INVOICE_STATUS_LABELS.paid },
+  { value: 'overdue', label: 'Quá hạn' },
+  { value: 'void', label: INVOICE_STATUS_LABELS.void },
+] as const;
 /** `?period=all`: every period, chosen by clearing the picker (no `period` means the current one). */
 const ALL_PERIODS = 'all';
 
@@ -100,6 +113,24 @@ export default function InvoiceListPage() {
 
         if (value) next.set(field, value);
         else next.delete(field);
+        next.delete('page');
+        return next;
+      },
+      { replace: true },
+    );
+
+  // Status tabs: one of the statuses, or "Quá hạn" (`overdue=true`); "Tất cả" clears both.
+  const statusTab = overdue ? 'overdue' : (status ?? 'all');
+  const selectStatusTab = (value: string) =>
+    setParams(
+      () => {
+        const next = latestSearchParams();
+        const nextStatus = INVOICE_STATUSES.find((item) => item === value);
+
+        if (nextStatus) next.set('status', nextStatus);
+        else next.delete('status');
+        if (value === 'overdue') next.set('overdue', 'true');
+        else next.delete('overdue');
         next.delete('page');
         return next;
       },
@@ -171,15 +202,47 @@ export default function InvoiceListPage() {
       ) : (
         <>
           <FilterBar
+            layout="row"
+            header={
+              <Tabs
+                variant="underline"
+                label="Trạng thái hoá đơn"
+                value={statusTab}
+                onValueChange={selectStatusTab}
+                className="min-w-0"
+              >
+                {/* Phones: the tabs scroll inside their own strip, never the page. */}
+                <div className="min-w-0 overflow-x-auto">
+                  <TabsList className="w-max min-w-full">
+                    {STATUS_TABS.map((tab) => (
+                      <TabsTrigger key={tab.value} value={tab.value}>
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+              </Tabs>
+            }
             actions={
-              canCreate ? (
-                <Button
-                  onClick={() => navigate(billingRunPath(period || todayIsoDate().slice(0, 7)))}
-                >
-                  <Icon name="plus" className="size-4" aria-hidden />
-                  Lập hoá đơn kỳ
-                </Button>
-              ) : null
+              <>
+                {canShare && period ? (
+                  <IconButton
+                    icon="share"
+                    variant="secondary"
+                    label={`Chia sẻ hoá đơn kỳ ${displayPeriod(period)}`}
+                    onClick={() => navigate(periodSharePath(period))}
+                  />
+                ) : null}
+                {canCreate ? (
+                  <Button
+                    className="flex-1 sm:flex-none"
+                    onClick={() => navigate(billingRunPath(period || todayIsoDate().slice(0, 7)))}
+                  >
+                    <Icon name="plus" className="size-4" aria-hidden />
+                    Lập hoá đơn kỳ
+                  </Button>
+                ) : null}
+              </>
             }
           >
             <PeriodPicker
@@ -187,37 +250,17 @@ export default function InvoiceListPage() {
               value={period}
               clearable
               placeholder="Tất cả kỳ"
+              className={FILTER_ROW_FIELD}
               onChange={(value) => filter('period', value || ALL_PERIODS)}
             />
             <Input
               label="Tìm"
               type="search"
-              rootClassName={FILTER_WIDE}
-              placeholder="Mã hoá đơn hoặc phòng"
+              icon="search"
+              rootClassName={FILTER_ROW_GROW}
+              placeholder="Mã hoá đơn, phòng"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-            />
-            <Select
-              label="Trạng thái"
-              placeholder="Tất cả trạng thái"
-              clearable
-              value={status ?? null}
-              options={INVOICE_STATUSES.map((value) => ({
-                value,
-                label: INVOICE_STATUS_LABELS[value],
-              }))}
-              onValueChange={(value) => filter('status', value)}
-            />
-            <Select
-              label="Loại"
-              placeholder="Tất cả loại"
-              clearable
-              value={kind ?? null}
-              options={INVOICE_KINDS.map((value) => ({
-                value,
-                label: INVOICE_KIND_LABELS[value],
-              }))}
-              onValueChange={(value) => filter('kind', value)}
             />
             <Select
               label="Phòng"
@@ -225,6 +268,7 @@ export default function InvoiceListPage() {
               clearable
               searchMode="server"
               onSearchChange={setRoomSearch}
+              rootClassName={FILTER_ROW_FIELD}
               value={roomId || null}
               options={(rooms.data?.data ?? []).map((room) => ({
                 value: room.id,
@@ -232,17 +276,19 @@ export default function InvoiceListPage() {
               }))}
               onValueChange={(value) => filter('roomId', value)}
             />
-            <FilterCheckbox
-              label="Chỉ hoá đơn quá hạn"
-              checked={overdue}
-              onCheckedChange={(value) => filter('overdue', value === true ? 'true' : null)}
+            <Select
+              label="Loại"
+              placeholder="Tất cả loại"
+              clearable
+              rootClassName={FILTER_ROW_FIELD}
+              value={kind ?? null}
+              options={INVOICE_KINDS.map((value) => ({
+                value,
+                label: INVOICE_KIND_LABELS[value],
+              }))}
+              onValueChange={(value) => filter('kind', value)}
             />
           </FilterBar>
-          {canShare && period ? (
-            <Link className="font-semibold text-accent underline" to={periodSharePath(period)}>
-              Chia sẻ hoá đơn kỳ {displayPeriod(period)}
-            </Link>
-          ) : null}
 
           <ListTable
             controller={controller}
@@ -455,7 +501,7 @@ function InvoiceCards({ rows, onCollect }: RowsProps) {
             <dd className={cn('text-right', invoice.overdue && 'text-danger-700')}>
               {displayDate(invoice.dueOn)}
             </dd>
-            <dt className="text-muted">Link</dt>
+            <dt className="text-muted">Chia sẻ</dt>
             <dd className="text-right">
               <ShareStatus invoice={invoice} />
             </dd>
