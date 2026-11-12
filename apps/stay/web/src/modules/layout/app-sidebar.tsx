@@ -13,7 +13,7 @@ import { useMenuRoutes } from '@/routing/use-routes';
 const MENU_GROUPS = [
   { id: 'monthly', routes: ['readings', 'invoices', 'payments', 'receivables', 'requests'] },
   { id: 'rental', routes: ['rooms', 'contracts', 'deposits', 'tenants', 'residents'] },
-  { id: 'management', routes: ['expenses', 'reports', 'audit', 'settings'] },
+  { id: 'management', routes: ['maintenance', 'expenses', 'reports', 'audit', 'settings'] },
 ] as const;
 
 /** Desktop navigation (lg and up); mobile uses `BottomNav`. */

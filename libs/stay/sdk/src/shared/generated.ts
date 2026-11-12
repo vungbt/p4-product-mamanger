@@ -2266,6 +2266,100 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/maintenance': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh sách bảo trì theo toà/phòng/trạng thái/nguồn
+     * @description **Quyền:** `read:Maintenance`.
+     */
+    get: operations['get_api_maintenance'];
+    put?: never;
+    /**
+     * Tạo việc bảo trì
+     * @description create Maintenance trong toà; nguồn owner, trạng thái open.
+     *
+     *     **Quyền:** `create:Maintenance`.
+     */
+    post: operations['post_api_maintenance'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/maintenance/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chi tiết bảo trì, ảnh, lịch sử và chi phí
+     * @description **Quyền:** `read:Maintenance`.
+     */
+    get: operations['get_api_maintenance_id'];
+    /**
+     * Sửa việc bảo trì
+     * @description update Maintenance trong toà. new → open → in_progress → done/cancelled; sai thứ tự hoặc version cũ trả 409.
+     *
+     *     **Quyền:** `update:Maintenance`.
+     */
+    put: operations['put_api_maintenance_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/maintenance/{id}/expense': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Ghi chi phí sửa chữa
+     * @description update Maintenance và create Expense trong toà. Một khoản chi mỗi việc; trùng trả 409. Toà/phòng lấy từ việc.
+     *
+     *     **Quyền:** `update:Maintenance`.
+     */
+    post: operations['post_api_maintenance_id_expense'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/maintenance/expense-categories': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh mục chi phí cho bảo trì
+     * @description **Quyền:** `read:Maintenance`.
+     */
+    get: operations['get_api_maintenance_expense_categories'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/me': {
     parameters: {
       query?: never;
@@ -4803,6 +4897,30 @@ export interface components {
       signatureUpdatedAt: string | null;
       version: number;
     };
+    MaintenanceHistory: {
+      at: string;
+      /** @enum {string} */
+      status: 'cancelled' | 'done' | 'in_progress' | 'new' | 'open' | 'rejected';
+    };
+    MaintenanceInput: {
+      /** @enum {string} */
+      category?: 'appliance' | 'electricity' | 'other' | 'water';
+      description: string;
+      photoFileIds?: string[];
+      roomId: string;
+      /** @enum {string} */
+      severity?: 'normal' | 'urgent';
+      title: string;
+    };
+    MaintenanceUpdateInput: {
+      description?: string;
+      photoFileIds?: string[];
+      reply?: string;
+      /** @enum {string} */
+      status?: 'cancelled' | 'done' | 'in_progress' | 'new' | 'open' | 'rejected';
+      title?: string;
+      version: number;
+    };
     MemberInput: {
       buildingIds: string[];
       permissionGroups: ('billing' | 'operations' | 'payments' | 'readings')[];
@@ -5856,6 +5974,24 @@ export interface components {
       total: number;
       version: number;
     };
+    StayMaintenance: {
+      buildingId: string;
+      createdAt: string;
+      description: string;
+      expense: components['schemas']['StayExpense'] | null;
+      history: components['schemas']['MaintenanceHistory'][];
+      id: string;
+      photos: components['schemas']['RequestPhoto'][];
+      reply: string | null;
+      roomCode: string | null;
+      roomId: string | null;
+      /** @enum {string} */
+      source: 'owner' | 'tenant';
+      /** @enum {string} */
+      status: 'cancelled' | 'done' | 'in_progress' | 'new' | 'open' | 'rejected';
+      title: string;
+      version: number;
+    };
     StayMe: {
       user: components['schemas']['StayUser'];
     };
@@ -5990,6 +6126,7 @@ export interface components {
       debt: number;
       defaultServiceIds: string[];
       floor: number;
+      hasOpenMaintenance: boolean;
       id: string;
       listPrice: number;
       maintenance: boolean;
@@ -6016,6 +6153,7 @@ export interface components {
       defaultServiceIds: string[];
       defaultServices: components['schemas']['RoomService'][];
       floor: number;
+      hasOpenMaintenance: boolean;
       id: string;
       invoices: components['schemas']['RoomInvoiceSummary'][];
       listPrice: number;
@@ -13127,6 +13265,226 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_maintenance: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        roomId?: string;
+        sortBy?: 'createdAt';
+        sortOrder?: 'asc' | 'desc';
+        source?: 'owner' | 'tenant';
+        status?: 'cancelled' | 'done' | 'in_progress' | 'new' | 'open' | 'rejected';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMaintenance'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_maintenance: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MaintenanceInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMaintenance'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_maintenance_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMaintenance'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_maintenance_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MaintenanceUpdateInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMaintenance'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description maintenance_invalid_transition, version_conflict, maintenance_expense_exists hoặc maintenance_closed. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_maintenance_id_expense: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          amount: number;
+          /** Format: uuid */
+          categoryId: string;
+          note?: string | null;
+          /** Format: uuid */
+          receiptFileId?: string | null;
+          /** @description YYYY-MM-DD in Asia/Ho_Chi_Minh, or an ISO instant with explicit timezone. */
+          spentOn: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMaintenance'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      /** @description maintenance_invalid_transition, version_conflict, maintenance_expense_exists hoặc maintenance_closed. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_maintenance_expense_categories: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayExpenseCategory'][];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_me: {
     parameters: {
       query?: never;
@@ -16332,7 +16690,7 @@ export interface operations {
           /** Format: uuid */
           buildingId: string;
           /** @enum {string} */
-          purpose: 'tenant_document' | 'expense_receipt' | 'contract_meter';
+          purpose: 'tenant_document' | 'expense_receipt' | 'contract_meter' | 'maintenance_photo';
         };
       };
     };

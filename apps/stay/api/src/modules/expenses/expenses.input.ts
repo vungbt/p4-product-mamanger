@@ -5,8 +5,16 @@ export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0
 
 export function readExpenseInput(body: FormBody) {
   const buildingId = body.text('buildingId', 36);
-  const categoryId = body.text('categoryId', 36);
   const roomId = body.optionalText('roomId', 36) || null;
+
+  for (const [field, value] of Object.entries({ buildingId, roomId }))
+    if (value) body.check(field, UUID_PATTERN.test(value));
+  return { buildingId, roomId, ...readExpenseDetails(body) };
+}
+
+/** ST-20 details, also used for a maintenance job whose building/room are server-owned. */
+export function readExpenseDetails(body: FormBody) {
+  const categoryId = body.text('categoryId', 36);
   const receiptFileId = body.optionalText('receiptFileId', 36) || null;
   const amount = body.integer('amount', 1, Number.MAX_SAFE_INTEGER);
   const rawDate = body.text('spentOn', 40);
@@ -21,12 +29,12 @@ export function readExpenseInput(body: FormBody) {
   )
     spentOn = isoDateInTimeZone(new Date(rawDate));
   body.check('spentOn', isIsoDate(spentOn));
-  for (const [field, value] of Object.entries({ buildingId, categoryId, roomId, receiptFileId }))
+  for (const [field, value] of Object.entries({ categoryId, receiptFileId }))
     if (value) body.check(field, UUID_PATTERN.test(value));
   const note = body.optionalText('note', 2000) || null;
 
   body.assertValid();
-  return { buildingId, categoryId, roomId, receiptFileId, amount, spentOn, note };
+  return { categoryId, receiptFileId, amount, spentOn, note };
 }
 
 export function readCategoryInput(body: FormBody) {

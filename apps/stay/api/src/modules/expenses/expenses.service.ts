@@ -175,12 +175,13 @@ export async function saveExpense(
   input: ExpenseInput,
   id?: string,
   version?: number,
+  action: 'manage' | 'create' = 'manage',
 ): Promise<StayExpense> {
   return auditedTransaction(async (transaction) => {
     const row = id ? await findExpense(user, id, transaction) : null;
 
     if (row) assertVersion(row.version, version ?? 0);
-    if (!canAccessRecord(user, 'manage', 'Expense', { buildingId: input.buildingId }))
+    if (!canAccessRecord(user, action, 'Expense', { buildingId: input.buildingId }))
       throw new NotFound();
     const building = await BuildingModel.findByPk(input.buildingId, {
       transaction,

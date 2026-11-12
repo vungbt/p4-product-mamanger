@@ -50,6 +50,11 @@ const portalOwner = (portal: PortalPrincipal): UploadOwner => ({
 /** Whether `user` may upload files for `purpose` in `buildingId`. */
 function canUpload(user: StayUser, purpose: StaffUploadPurpose, buildingId: string) {
   switch (purpose) {
+    case 'maintenance_photo':
+      return (
+        canAccessRecord(user, 'create', 'Maintenance', { buildingId }) ||
+        canAccessRecord(user, 'update', 'Maintenance', { buildingId })
+      );
     case 'expense_receipt':
       return canAccessRecord(user, 'manage', 'Expense', { buildingId });
     case 'contract_meter':

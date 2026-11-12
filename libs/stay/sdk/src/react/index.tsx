@@ -20,6 +20,7 @@ export * from './deposits.js';
 export * from './documents.js';
 export * from './expenses.js';
 export * from './invoices.js';
+export * from './maintenance.js';
 export { meKeys, useCapabilities, useMe } from './me.js';
 export * from './members.js';
 export * from './notifications.js';

@@ -194,6 +194,15 @@ export default function RoomDetailPage() {
 
       {canManage && locked ? <Alert tone="info">{t('rooms.detail.lockedByContract')}</Alert> : null}
 
+      {room.hasOpenMaintenance ? (
+        <Link
+          className="text-accent underline"
+          to={`/maintenance?roomId=${room.id}`}
+          data-testid="room-open-maintenance"
+        >
+          {t('maintenance:openJob')}
+        </Link>
+      ) : null}
       {room.maintenance ? (
         <Alert
           tone="warning"

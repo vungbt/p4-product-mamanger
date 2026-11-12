@@ -10,6 +10,7 @@ export type StayUploadPurpose = (typeof STAY_UPLOAD_PURPOSES)[number];
 
 /** Purposes of staff uploads (`POST /api/uploads`); the others come from the tenant portal. */
 export const STAFF_UPLOAD_PURPOSES = [
+  'maintenance_photo',
   'tenant_document',
   'expense_receipt',
   'contract_meter',

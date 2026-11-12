@@ -54,6 +54,10 @@
       "rental": "Cho thuê",
       "management": "Quản lý"
     },
+    "maintenance": "Bảo trì",
+    "maintenanceDetail": "Chi tiết bảo trì",
+    "maintenanceNew": "Thêm việc bảo trì",
+    "maintenanceEdit": "Sửa việc bảo trì",
     "landlord": "Bên cho thuê & chữ ký",
     "contractTemplates": "Mẫu hợp đồng",
     "contractTemplate": "Soạn mẫu",

@@ -24,6 +24,7 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 - Mọi dữ liệu nghiệp vụ gắn \`buildingId\`; quyền kiểm tra theo toà.`;
 
 const TAG_DESCRIPTIONS = {
+  maintenance: 'Bảo trì theo phòng; mở → đang làm → xong/huỷ, ảnh private và chi phí ST-20.',
   members:
     'Người quản lý theo toà: mời qua email, gán toà/nhóm quyền và khoá tài khoản; chỉ chủ trọ.',
   automation:
@@ -114,6 +115,21 @@ export const FILE_RESPONSES = {
 };
 
 const OPERATIONS = {
+  'GET /api/maintenance/expense-categories': ['Danh mục chi phí cho bảo trì'],
+  'GET /api/maintenance': ['Danh sách bảo trì theo toà/phòng/trạng thái/nguồn'],
+  'GET /api/maintenance/{id}': ['Chi tiết bảo trì, ảnh, lịch sử và chi phí'],
+  'POST /api/maintenance': [
+    'Tạo việc bảo trì',
+    'create Maintenance trong toà; nguồn owner, trạng thái open.',
+  ],
+  'PUT /api/maintenance/{id}': [
+    'Sửa việc bảo trì',
+    'update Maintenance trong toà. new → open → in_progress → done/cancelled; sai thứ tự hoặc version cũ trả 409.',
+  ],
+  'POST /api/maintenance/{id}/expense': [
+    'Ghi chi phí sửa chữa',
+    'update Maintenance và create Expense trong toà. Một khoản chi mỗi việc; trùng trả 409. Toà/phòng lấy từ việc.',
+  ],
   'GET /api/settings/landlord': [
     'Thông tin bên cho thuê',
     'manage Settings (chủ trọ). Hồ sơ của tài khoản đang đăng nhập; `version: 0` khi chưa lưu. `signatureImage` là data URL PNG/JPG (riêng tư).',
@@ -863,6 +879,29 @@ const signatureImage = {
 };
 
 const OVERRIDES = {
+  'GET /api/maintenance/expense-categories': {
+    response: { type: 'array', items: { ref: 'StayExpenseCategory' } },
+  },
+  'GET /api/maintenance': {
+    list: true,
+    response: { type: 'array', items: { ref: 'StayMaintenance' } },
+  },
+  'GET /api/maintenance/{id}': { response: { ref: 'StayMaintenance' } },
+  'POST /api/maintenance': {
+    ...readingBody('MaintenanceInput'),
+    response: { ref: 'StayMaintenance' },
+  },
+  'PUT /api/maintenance/{id}': {
+    ...readingBody('MaintenanceUpdateInput'),
+    response: { ref: 'StayMaintenance' },
+  },
+  'POST /api/maintenance/{id}/expense': {
+    omit: ['buildingId', 'roomId'],
+    fields: Object.fromEntries(
+      Object.entries(expenseFields).filter(([key]) => key !== 'buildingId' && key !== 'roomId'),
+    ),
+    response: { ref: 'StayMaintenance' },
+  },
   'PUT /api/settings/landlord': {
     fields: {
       signatureImage,
@@ -1392,7 +1431,10 @@ const OVERRIDES = {
   'POST /api/uploads': {
     fields: {
       purpose: {
-        schema: { type: 'string', enum: ['tenant_document', 'expense_receipt', 'contract_meter'] },
+        schema: {
+          type: 'string',
+          enum: ['tenant_document', 'expense_receipt', 'contract_meter', 'maintenance_photo'],
+        },
         required: true,
       },
       buildingId: { schema: { type: 'string', format: 'uuid' }, required: true },
@@ -1487,6 +1529,7 @@ export default {
     'libs/stay/shared/src/overview.ts',
     'libs/stay/shared/src/portal.ts',
     'libs/stay/shared/src/requests.ts',
+    'libs/stay/shared/src/maintenance.ts',
     'libs/stay/shared/src/resident.ts',
     'libs/stay/shared/src/report.ts',
   ],
