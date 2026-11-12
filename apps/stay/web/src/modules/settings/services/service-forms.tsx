@@ -313,9 +313,11 @@ export function ServiceCreateForm({ onDone }: { onDone: () => void }) {
         for (const field of CREATE_FIELDS) {
           const message = errors.fields[field];
 
-          if (message) form.setFieldMeta(field, serverError(message));
+          // A kind conflict (one active electricity/water service) concerns other services, so
+          // it stays as a form message: a field error clears on blur and shifts the actions.
+          if (message && field !== 'kind') form.setFieldMeta(field, serverError(message));
         }
-        setFormError(errors.message);
+        setFormError(errors.fields.kind ?? errors.message);
       }
     },
   });
