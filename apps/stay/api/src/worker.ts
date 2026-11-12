@@ -1,44 +1,19 @@
-import { setTimeout } from 'node:timers/promises';
 import { logger } from '@p4/server-core';
 import { assertProductionConfig } from '@/configs/production.js';
-import { deliverAutomationMail, runAutomations } from '@/modules/automation/automation.jobs.js';
-import { deliverMemberInvitation } from '@/modules/members/members.jobs.js';
-import { deliverNotifications } from '@/modules/notifications/notifications.delivery.js';
-import { configuredTransports } from '@/modules/notifications/notifications.transports.js';
 import { sequelize } from '@/sequelize/models/index.js';
+import { runWorkerLoop } from '@/worker-loop.js';
 
-let stopped = false;
-process.on('SIGTERM', () => {
-  stopped = true;
-});
-process.on('SIGINT', () => {
-  stopped = true;
-});
+const controller = new AbortController();
+
+process.on('SIGTERM', () => controller.abort());
+process.on('SIGINT', () => controller.abort());
 
 async function main() {
   assertProductionConfig();
   await sequelize.authenticate();
-  let lastSweep = 0;
-  // Disabled channels (no SMTP host / VAPID keys) are never queued.
-  const transports = configuredTransports();
 
   try {
-    while (!stopped) {
-      try {
-        if (Date.now() - lastSweep >= 30_000) {
-          await runAutomations(new Date());
-          lastSweep = Date.now();
-        }
-        const invited = await deliverMemberInvitation(new Date());
-        const legacy = await deliverAutomationMail(new Date());
-        const delivered = await deliverNotifications(new Date(), transports);
-
-        if (!invited && !legacy && !delivered) await setTimeout(1000);
-      } catch {
-        logger.error('[stay-worker] Automation sweep/delivery failed');
-        await setTimeout(1000);
-      }
-    }
+    await runWorkerLoop(controller.signal);
   } finally {
     await sequelize.close();
   }

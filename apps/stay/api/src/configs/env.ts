@@ -36,6 +36,8 @@ export const env = {
   port,
   nodeEnv,
   isProd: nodeEnv === 'production',
+  /** Run the automation/outbox worker inside the API process (one Node process on small servers). */
+  inlineWorker: process.env.STAY_INLINE_WORKER === 'true',
   // Sign-in attempts per window. Only overridable outside production (CI signs in many times).
   signInRateLimit:
     nodeEnv !== 'production' && Number(process.env.STAY_SIGN_IN_RATE_LIMIT) > 0

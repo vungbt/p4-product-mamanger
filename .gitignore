@@ -40,3 +40,6 @@ pnpm-debug.log*
 
 # scratch — files staged for manual deletion (AI tooling can't delete directly)
 _to_delete/
+
+# Stay production secrets (server only)
+.env.stay.prod

@@ -43,6 +43,7 @@ COPY --from=build /app/apps/stay/api/openapi.yaml /app/apps/stay/api/.sequelizer
 COPY --from=build /app/apps/stay/api/src/sequelize/config ./apps/stay/api/src/sequelize/config
 COPY --from=build /app/apps/stay/api/src/sequelize/migrations ./apps/stay/api/src/sequelize/migrations
 COPY --from=build /app/apps/stay/api/docker-entrypoint.sh ./apps/stay/api/docker-entrypoint.sh
+COPY --from=build /app/apps/stay/api/scripts/create-owner.cjs ./apps/stay/api/scripts/create-owner.cjs
 COPY --from=build /app/libs/ability/dist ./libs/ability/dist
 COPY --from=build /app/libs/server-core/dist ./libs/server-core/dist
 COPY --from=build /app/libs/stay/shared/dist ./libs/stay/shared/dist
