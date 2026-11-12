@@ -1,12 +1,18 @@
 import { Button, Progress, Select } from '@itclabs/react-ui';
-import { useReadings } from '@stay/sdk/react';
-import { isPeriod, nextPeriod } from '@stay/shared';
+import { useBuilding, useReadings } from '@stay/sdk/react';
+import {
+  defaultReadingPeriod,
+  defaultReadOn,
+  isPeriod,
+  nextPeriod,
+  type ReadingGrid,
+} from '@stay/shared';
 import { useCallback, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FilterBar } from '@/libraries/filter-bar';
-import { todayIsoDate } from '@/libraries/format';
+import { displayDate, todayIsoDate } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ScreenHeader } from '@/libraries/screen-header';
@@ -19,8 +25,22 @@ export default function ReadingsPage() {
   const { buildingId } = useActiveBuilding();
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
+  const building = useBuilding(buildingId ?? '');
   const raw = params.get('period');
-  const period = isPeriod(raw) ? raw : todayIsoDate().slice(0, 7);
+  const billing = building.data?.billing;
+  // Without `?period=` open the consumption month being closed (`next` mode: until its
+  // reading day early next month); wait for the building cycle so the grid does not flip.
+  const period = isPeriod(raw)
+    ? raw
+    : billing
+      ? defaultReadingPeriod(todayIsoDate(), billing)
+      : null;
+
+  if (!period) {
+    if (buildingId && building.isError)
+      return <LoadError error={building.error} onRetry={() => void building.refetch()} />;
+    return buildingId ? <LoadingRows /> : <p>Chọn toà nhà để chốt số.</p>;
+  }
 
   return (
     <BuildingReadings
@@ -73,12 +93,28 @@ function BuildingReadings({
   const unsynced = Object.values(pending).filter(Boolean).length;
   const invoicePeriod = nextPeriod(period);
   const displayPeriod = (value: string) => `${value.slice(5)}/${value.slice(0, 4)}`;
+  const grid: ReadingGrid | undefined = query.data;
+  const next = grid?.readingDayMonth === 'next';
+  const readOn = grid
+    ? defaultReadOn(
+        period,
+        {
+          readingDayMonth: grid.readingDayMonth,
+          readingDay: Number(grid.readingOn.slice(8, 10)),
+        },
+        todayIsoDate(),
+      )
+    : '';
 
   return (
     <div className="grid min-w-0 gap-4">
       <ScreenHeader
         title="Chốt số điện nước"
-        description="Nhập chỉ số cuối tháng. Tự động lưu theo phòng."
+        description={
+          grid
+            ? `Chỉ số tiêu thụ tháng ${displayPeriod(period)}, chốt ngày ${displayDate(grid.readingOn)} (ngày đọc từ ${displayDate(grid.readOnFrom)} đến ${displayDate(grid.readOnTo)}). Tự động lưu theo phòng.`
+            : 'Nhập chỉ số cuối tháng. Tự động lưu theo phòng.'
+        }
       />
       {!buildingId ? (
         <p>Chọn toà nhà để chốt số.</p>
@@ -86,7 +122,7 @@ function BuildingReadings({
         <>
           <FilterBar>
             <PeriodPicker
-              label="Kỳ chốt số"
+              label={next ? 'Tháng tiêu thụ' : 'Kỳ chốt số'}
               value={period}
               onChange={(value) => {
                 if (isPeriod(value)) filter('period', value);
@@ -151,6 +187,7 @@ function BuildingReadings({
                     room={room}
                     buildingId={buildingId}
                     period={period}
+                    readOn={readOn}
                     accountId={accountId}
                     onPending={onPending}
                   />

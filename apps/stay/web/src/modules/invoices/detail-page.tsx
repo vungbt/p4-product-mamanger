@@ -1,7 +1,13 @@
 import { AlertDialog, Button, cn, EmptyState, IconButton } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useDeleteInvoiceLine, useInvoice, useIssueInvoices } from '@stay/sdk/react';
-import type { InvoiceShareLink, StayInvoice, StayInvoiceLine, StayPayment } from '@stay/shared';
+import {
+  addDays,
+  type InvoiceShareLink,
+  type StayInvoice,
+  type StayInvoiceLine,
+  type StayPayment,
+} from '@stay/shared';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
@@ -117,7 +123,11 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
           </p>
           <p className="text-ui-sm text-muted">
             {invoice.issuedOn ? `Phát hành ${displayDate(invoice.issuedOn)} · ` : ''}Hạn{' '}
-            {displayDate(invoice.dueOn)} · Hợp đồng{' '}
+            {displayDate(invoice.dueOn)}
+            {invoice.overdueFrom !== addDays(invoice.dueOn, 1)
+              ? ` (quá hạn từ ${displayDate(invoice.overdueFrom)})`
+              : ''}{' '}
+            · Hợp đồng{' '}
             <Link className="text-accent underline" to={`/contracts/${invoice.contractId}`}>
               {invoice.contractCode}
             </Link>

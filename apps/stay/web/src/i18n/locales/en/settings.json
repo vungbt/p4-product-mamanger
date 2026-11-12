@@ -45,12 +45,22 @@
     "title": "Billing cycle",
     "description": "System defaults; each building may override them.",
     "cycleTitle": "Billing schedule",
+    "readingDayMonth": "Readings taken",
+    "readingDayMonths": {
+      "same": "End of the consumption month",
+      "next": "Early next month"
+    },
+    "readingDayMonthHint": "Early next month: e.g. readings on 5 Dec close November.",
     "readingDay": "Meter reading day",
     "issueDay": "Issue day",
     "dueDay": "Due day",
+    "graceDays": "Grace days before overdue",
+    "graceDaysHint": "0 = overdue the day after the due date. The printed due date does not change.",
+    "graceDaysNone": "No grace period",
+    "graceDaysValue": "{{count}} days",
     "dayOfMonth": "Day {{day}}",
     "endOfMonth": "End of month",
-    "preview": "Meters are read on {{reading}}. Invoices for {{period}} are issued on {{issue}}, due {{due}}, including utilities of {{usageMonth}}.",
+    "preview": "Readings on {{reading}} close consumption month {{usageMonth}}; invoices of period {{period}} are issued {{issue}}, due {{due}}, overdue from {{overdue}}.",
     "moneyTitle": "Money and bank transfer",
     "roundingUnit": "Invoice total rounding",
     "roundingHint": "Rounded half-up; the difference shows as a \"Rounding\" line.",
@@ -59,7 +69,8 @@
     "refundUnusedRent": "Refund rent on early move-out",
     "refundHint": "On: refund rent and services of unused days pro rata.",
     "saved": "Billing cycle saved.",
-    "dueBeforeIssue": "The due day must be on or after the issue day."
+    "dueBeforeIssue": "The due day must be on or after the issue day.",
+    "readingAfterIssue": "When readings are taken early next month, the reading day must be on or before the issue day."
   },
   "services": {
     "title": "Services & prices",

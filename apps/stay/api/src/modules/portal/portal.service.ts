@@ -41,7 +41,7 @@ import { depositBalance } from '../deposits/deposits.service.js';
 import { ISSUED_STATUSES } from '../invoices/invoices.service.js';
 import { isTenantVisible, publicInvoiceView } from '../invoices/invoices.share.js';
 import { portalInvoiceClaims, portalOpenRequests } from '../requests/requests.portal.js';
-import { billingDefaults } from '../settings/settings.service.js';
+import { billingDefaults, graceDaysByBuilding } from '../settings/settings.service.js';
 import { portalReferenceDate, todayVn } from './portal.access.js';
 
 /** Most announcements returned (newest first after the pinned ones). */
@@ -75,7 +75,10 @@ async function portalContract(portal: PortalPrincipal) {
   return { contract, building, room, facts, date };
 }
 
-function invoiceSummary(row: InvoiceModel & { code: string }): PortalInvoiceSummary {
+function invoiceSummary(
+  row: InvoiceModel & { code: string },
+  graceDays: number,
+): PortalInvoiceSummary {
   const remaining = row.total - row.paidTotal;
 
   return {
@@ -89,7 +92,7 @@ function invoiceSummary(row: InvoiceModel & { code: string }): PortalInvoiceSumm
     total: row.total,
     paidTotal: row.paidTotal,
     remaining,
-    overdue: isInvoiceOverdue(row.status, row.dueOn, todayVn()) && remaining > 0,
+    overdue: isInvoiceOverdue(row.status, row.dueOn, todayVn(), graceDays) && remaining > 0,
   };
 }
 
@@ -104,7 +107,11 @@ async function contractInvoices(contractId: string) {
     ],
   });
 
-  return rows.filter(isTenantVisible).map(invoiceSummary);
+  const graceDays = await graceDaysByBuilding(rows.map((row) => row.buildingId));
+
+  return rows
+    .filter(isTenantVisible)
+    .map((row) => invoiceSummary(row, graceDays.get(row.buildingId) ?? 0));
 }
 
 function noticeDto(row: AnnouncementModel): PortalNotice {

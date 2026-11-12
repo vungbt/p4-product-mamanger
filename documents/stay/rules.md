@@ -7,10 +7,49 @@ Tài liệu nguồn cho mọi task liên quan tới tiền. Công thức đượ
 | Thuật ngữ | Nghĩa |
 | --- | --- |
 | Kỳ `M` | Tháng tính tiền, lưu dạng `YYYY-MM`, theo giờ `Asia/Ho_Chi_Minh` |
-| Ngày chốt số | Ngày ghi chỉ số điện nước của kỳ trước, mặc định **ngày cuối tháng M−1** (cấu hình theo toà) |
+| Ngày chốt số | Ngày ghi chỉ số điện nước khép tháng tiêu thụ M−1: mặc định **ngày cuối tháng M−1**, hoặc một ngày đầu tháng M (xem [Lịch thu](#lịch-thu)) |
 | Ngày phát hành | Ngày lập hoá đơn kỳ M, mặc định **ngày 1 tháng M** |
-| Hạn thanh toán | Mặc định **ngày 5 tháng M** (cấu hình theo toà) |
+| Hạn thanh toán | Mặc định **ngày 5 tháng M** (cấu hình theo toà); in trên hoá đơn (`dueOn`) |
+| Ân hạn | `graceDays` ngày sau hạn thanh toán chưa tính quá hạn, mặc định **0** |
 | Đơn giá | Lấy từ cấu hình hệ thống, toà có thể ghi đè; **chụp lại (snapshot) vào dòng hoá đơn** lúc phát hành |
+
+## Lịch thu
+
+Mọi ngày dưới đây là ngày theo giờ `Asia/Ho_Chi_Minh`. Ngày trong tháng là `1`–`28` hoặc `31` (= ngày cuối tháng, tháng 2 là 28/29). Hệ thống có giá trị mặc định (Cài đặt → Kỳ thu), mỗi toà ghi đè được từng tham số. Một helper dùng chung (`@stay/shared`, `billing-cycle.ts`) tính các ngày này cho API, SQL, worker và web.
+
+| Tham số | Giá trị | Ý nghĩa |
+| --- | --- | --- |
+| `readingDayMonth` ("Chốt số vào") | `same` (mặc định, "Cuối tháng tiêu thụ") hoặc `next` ("Đầu tháng sau") | Ngày chốt số thuộc tháng tiêu thụ M−1 hay thuộc tháng M |
+| `readingDay` ("Ngày chốt số") | 1–28, 31 | Ngày chốt số trong tháng ở trên |
+| `issueDay` ("Ngày phát hành") | 1–28, 31 | Ngày phát hành hoá đơn kỳ M (tháng M) |
+| `dueDay` ("Hạn thanh toán") | 1–28, 31, **≥ `issueDay`** | Hạn thanh toán in trên hoá đơn kỳ M (tháng M) |
+| `graceDays` ("Số ngày ân hạn trước khi tính quá hạn") | 0–31, mặc định 0 | Số ngày sau hạn thanh toán vẫn chưa tính quá hạn |
+
+### Chốt số
+
+- **`same`** (mặc định): chỉ số khép tháng tiêu thụ P ghi vào `readingDay` của chính tháng P (ví dụ 30/11 cho tháng 11). Ngày đọc (`readOn`) hợp lệ: **mọi ngày trong tháng P**.
+- **`next`**: chỉ số khép tháng P ghi vào `readingDay` của tháng P+1 (ví dụ **05/12 cho tháng 11**); bắt buộc `readingDay ≤ issueDay` để đủ chỉ số trước khi phát hành. Ngày đọc hợp lệ: **từ ngày 1 tháng P tới ngày chốt số của tháng P+1, gồm cả hai đầu** (01/11–05/12 cho tháng 11). Ngày 01–05/12 hợp lệ cho cả kỳ 11 lẫn kỳ 12; kỳ của chỉ số là trường `period`, không suy ra từ ngày đọc.
+- Chỉ số ngoài khoảng trên bị chặn ở server (lỗi tại `readOn`). Màn Chốt số mở mặc định tháng đang cần chốt: `same` là tháng hiện tại; `next` là tháng trước cho tới hết ngày chốt số (03/12 và 05/12 → tháng 11, 06/12 → tháng 12). Ngày đọc mặc định của chỉ số mới: `same` là ngày cuối tháng P; `next` là hôm nay nếu còn trong khoảng, ngược lại là ngày chốt số.
+- Tổng quan mặc định hiện kỳ M từ ngày phát hành của tháng M; ở chế độ `next` từ ngày chốt số của tháng M (sớm hơn hoặc bằng ngày phát hành).
+
+### Hạn thanh toán và quá hạn
+
+- Hoá đơn kỳ M có `dueOn` = `dueDay` của tháng M; đây là ngày in trên hoá đơn và không đổi theo ân hạn.
+- Hoá đơn **quá hạn** khi `issued`/`partially_paid`, còn nợ và hôm nay **sau `dueOn + graceDays`**; ngày đầu tiên quá hạn là `overdueFrom = dueOn + graceDays + 1`.
+- **Số ngày quá hạn** = hôm nay − (`dueOn + graceDays`), tối thiểu 0. Nhóm công nợ (1–7, 8–30, > 30 ngày), tổng quá hạn ở Công nợ và Tổng quan, bộ lọc `overdue` của danh sách hoá đơn và tô đỏ đều dùng số này (SQL cùng công thức qua `invoiceOverdueDaysSql`).
+- Ân hạn lấy theo cấu hình **đang áp dụng** của toà lúc xem, không chụp vào hoá đơn: đổi `graceDays` có hiệu lực ngay với các hoá đơn chưa thu đủ.
+
+### Nhắc tự động ([ST-26](st-26.md))
+
+| Việc | Ngày (của kỳ M) |
+| --- | --- |
+| Nhắc chủ trọ trước ngày chốt số | Ngày chốt số khép M−1 trừ `readingReminderDaysBefore` ngày (mặc định 1, 0 = tắt); chỉ gửi khi còn phòng thiếu chỉ số |
+| Nhắc chủ trọ ngày chốt số | Ngày chốt số khép M−1; chỉ gửi khi còn phòng thiếu chỉ số |
+| Tạo hoá đơn nháp | Ngày phát hành |
+| Nhắc người thuê trước hạn | `dueOn − 1` |
+| Nhắc người thuê quá hạn | `dueOn + 3` khi `graceDays = 0`; **`dueOn + graceDays + 1`** (ngày đầu tiên quá hạn) khi `graceDays > 0` |
+
+**Ví dụ chủ trọ thực tế** (`next`, chốt số ngày 5, phát hành ngày 6, hạn ngày 10, ân hạn 5 ngày): chốt số điện nước ngày 05/12 cho tiêu thụ tháng 11; hoá đơn kỳ 12 phát hành 06/12, hạn 10/12, quá hạn từ 16/12. Nhắc chốt số 04/12 và 05/12 nếu còn phòng chưa chốt, nhắc người thuê 09/12 và 16/12.
 
 ## Công thức hoá đơn kỳ M
 
@@ -22,7 +61,7 @@ Hoá đơn kỳ M của một hợp đồng gồm ba nhóm dòng:
    - `per_person`: đơn giá × **số người ở đang đăng ký trong hợp đồng tại ngày phát hành**.
    - `per_vehicle`: đơn giá × số xe đăng ký trong hợp đồng tại ngày phát hành.
    - Áp dụng cùng tỷ lệ ngày ở như tiền phòng khi hợp đồng bắt đầu/kết thúc trong tháng M.
-3. **Điện nước tiêu thụ tháng M−1** (trả sau) = (chỉ số chốt cuối M−1 − chỉ số chốt cuối M−2) × đơn giá.
+3. **Điện nước tiêu thụ tháng M−1** (trả sau) = (chỉ số chốt kỳ M−1 − chỉ số chốt kỳ M−2) × đơn giá. Chỉ số chốt kỳ P là chỉ số có `period = P`, ghi vào ngày chốt số khép tháng P (cuối tháng P hoặc đầu tháng P+1, xem [Lịch thu](#lịch-thu)).
    - Hợp đồng bắt đầu trong tháng M−1: chỉ số đầu là **chỉ số lúc nhận phòng** ghi trong hợp đồng.
    - Thay đồng hồ giữa kỳ: tiêu thụ = (số cuối đồng hồ cũ − số đầu kỳ) + (số chốt đồng hồ mới − số đầu đồng hồ mới).
    - Tiêu thụ âm là lỗi nhập liệu: chặn phát hành, không tự đưa về 0.
@@ -101,7 +140,7 @@ Khi trả phòng ngày `D` trong tháng M, lập **hoá đơn thanh lý** gồm:
 `draft` → `active` → `ending` (đã báo trả phòng, có ngày dự kiến) → `ended`. Ngoài ra: `draft` → `cancelled`; `active` → `ended` (thanh lý ngay, không cần báo trước); `ending` → `active` (huỷ báo trả phòng). Gia hạn giữ trạng thái `active` và lưu lịch sử ngày kết thúc.
 
 ### Hoá đơn
-`draft` → `issued` → `partially_paid` → `paid`; `issued` có thể thẳng sang `paid`, và lùi lại khi huỷ bút toán thu (trạng thái luôn tính lại từ tổng đã thu). `issued` có thể chuyển `void` khi chưa có thanh toán. **Quá hạn** là trạng thái suy ra: `issued`/`partially_paid` và đã qua hạn thanh toán; không lưu thành cột.
+`draft` → `issued` → `partially_paid` → `paid`; `issued` có thể thẳng sang `paid`, và lùi lại khi huỷ bút toán thu (trạng thái luôn tính lại từ tổng đã thu). `issued` có thể chuyển `void` khi chưa có thanh toán. **Quá hạn** là trạng thái suy ra: `issued`/`partially_paid`, còn nợ và đã qua `dueOn + graceDays` ([Lịch thu](#hạn-thanh-toán-và-quá-hạn)); không lưu thành cột.
 
 ### Thanh toán
 Không sửa, không xoá. Ghi sai thì tạo **bút toán huỷ** (`reversed`, có lý do); trạng thái hoá đơn tự tính lại.
@@ -116,7 +155,7 @@ Không sửa, không xoá. Ghi sai thì tạo **bút toán huỷ** (`reversed`, 
 
 Các giá trị dưới đây là mặc định đề xuất. Tất cả đều cấu hình được theo toà:
 
-- Ngày chốt số: cuối tháng. Ngày phát hành: ngày 1. Hạn thanh toán: ngày 5.
+- Chốt số vào: cuối tháng tiêu thụ (`same`). Ngày chốt số: cuối tháng. Ngày phát hành: ngày 1. Hạn thanh toán: ngày 5. Ân hạn: 0 ngày.
 - `roundingUnit` = 1.000đ. `refundUnusedRent` = không.
 - Số người tính phí lấy tại ngày phát hành (không lấy số lớn nhất trong tháng).
 

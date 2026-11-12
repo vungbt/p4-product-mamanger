@@ -8,7 +8,6 @@ import {
 } from '@p4/server-core';
 import type { ListQuery, PaginationMeta } from '@p4/shared';
 import type {
-  BillingSettings,
   BuildingStats,
   BuildingStatusFilter,
   StayBuilding,
@@ -22,7 +21,7 @@ import { BuildingModel } from '@/sequelize/models/index.js';
 import { auditedTransaction } from '@/shared/audit.js';
 import { assertVersion } from '@/shared/input.js';
 import type { ModelOrder } from '@/types/database.js';
-import { billingDefaults } from '../settings/settings.service.js';
+import { billingDefaults, effectiveBilling } from '../settings/settings.service.js';
 import { buildingHasInvoices, buildingStats, roomsWithActiveContracts } from './buildings.usage.js';
 
 export type BuildingSortField = 'code' | 'name' | 'createdAt';
@@ -38,8 +37,10 @@ export type BuildingInput = Pick<
   | 'name'
   | 'address'
   | 'readingDay'
+  | 'readingDayMonth'
   | 'issueDay'
   | 'dueDay'
+  | 'graceDays'
   | 'roundingUnit'
   | 'refundUnusedRent'
   | 'bankBin'
@@ -55,8 +56,10 @@ const buildingFields = [
   'name',
   'address',
   'readingDay',
+  'readingDayMonth',
   'issueDay',
   'dueDay',
+  'graceDays',
   'roundingUnit',
   'refundUnusedRent',
   'bankBin',
@@ -74,17 +77,6 @@ function buildingDto(row: BuildingModel, stats: BuildingStats | undefined): Stay
     stats: stats ?? { roomCount: 0, occupiedRoomCount: 0 },
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-  };
-}
-
-/** The building's own billing values, else the system defaults. */
-function effectiveBilling(row: BuildingModel, defaults: BillingSettings): BillingSettings {
-  return {
-    readingDay: row.readingDay ?? defaults.readingDay,
-    issueDay: row.issueDay ?? defaults.issueDay,
-    dueDay: row.dueDay ?? defaults.dueDay,
-    roundingUnit: row.roundingUnit ?? defaults.roundingUnit,
-    refundUnusedRent: row.refundUnusedRent ?? defaults.refundUnusedRent,
   };
 }
 

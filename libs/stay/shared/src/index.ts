@@ -2,6 +2,7 @@ export * from './ability.js';
 export * from './account.js';
 export * from './audit.js';
 export * from './automation.js';
+export * from './billing-cycle.js';
 export * from './building.js';
 export * from './constants.js';
 export * from './contract.js';

@@ -1,10 +1,12 @@
 import { applyAuditPolicies, currentUser, uuidRouteId } from '@p4/server-core';
+import { READING_REMINDER_DAYS_MAX } from '@stay/shared';
 import { Router } from 'express';
 import { requireAbility, requireScopedAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { apiHandler } from '@/shared/api-handler.js';
 import { formBody } from '@/shared/input.js';
 import {
+  automationDefaults,
   automationSettings,
   listNotifications,
   markNotificationRead,
@@ -27,6 +29,13 @@ router.put(
     const body = formBody(req);
     const input = {
       readingReminder: body.boolean('readingReminder'),
+      // Added later: omitted by older clients = off / 1 day.
+      readingReminderBefore: body.isEmpty('readingReminderBefore')
+        ? automationDefaults.readingReminderBefore
+        : body.boolean('readingReminderBefore'),
+      readingReminderDaysBefore: body.isEmpty('readingReminderDaysBefore')
+        ? automationDefaults.readingReminderDaysBefore
+        : body.integer('readingReminderDaysBefore', 0, READING_REMINDER_DAYS_MAX),
       createDrafts: body.boolean('createDrafts'),
       beforeDue: body.boolean('beforeDue'),
       afterDue: body.boolean('afterDue'),

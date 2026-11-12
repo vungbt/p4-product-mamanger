@@ -45,12 +45,22 @@
     "title": "Kỳ thu",
     "description": "Mặc định của hệ thống; mỗi toà có thể đặt riêng.",
     "cycleTitle": "Lịch thu tiền",
+    "readingDayMonth": "Chốt số vào",
+    "readingDayMonths": {
+      "same": "Cuối tháng tiêu thụ",
+      "next": "Đầu tháng sau"
+    },
+    "readingDayMonthHint": "Đầu tháng sau: ví dụ chốt ngày 05/12 cho điện nước tháng 11.",
     "readingDay": "Ngày chốt số",
     "issueDay": "Ngày phát hành",
     "dueDay": "Hạn thanh toán",
+    "graceDays": "Số ngày ân hạn trước khi tính quá hạn",
+    "graceDaysHint": "0 = quá hạn ngay sau hạn thanh toán. Hạn in trên hoá đơn không đổi.",
+    "graceDaysNone": "Không ân hạn",
+    "graceDaysValue": "{{count}} ngày",
     "dayOfMonth": "Ngày {{day}}",
     "endOfMonth": "Cuối tháng",
-    "preview": "Chốt số điện nước ngày {{reading}}. Hoá đơn kỳ {{period}} sẽ phát hành {{issue}}, hạn {{due}}, gồm điện nước tháng {{usageMonth}}.",
+    "preview": "Chốt số điện nước ngày {{reading}} cho tiêu thụ tháng {{usageMonth}}; hoá đơn kỳ {{period}} phát hành {{issue}}, hạn {{due}}, quá hạn từ {{overdue}}.",
     "moneyTitle": "Tiền và chuyển khoản",
     "roundingUnit": "Làm tròn tổng hoá đơn",
     "roundingHint": "Làm tròn half-up; phần chênh hiện thành dòng \"Làm tròn\".",
@@ -59,7 +69,8 @@
     "refundUnusedRent": "Hoàn tiền phòng khi trả phòng sớm",
     "refundHint": "Bật: hoàn tiền phòng và dịch vụ của những ngày chưa ở theo tỷ lệ ngày.",
     "saved": "Đã lưu kỳ thu.",
-    "dueBeforeIssue": "Hạn thanh toán phải bằng hoặc sau ngày phát hành."
+    "dueBeforeIssue": "Hạn thanh toán phải bằng hoặc sau ngày phát hành.",
+    "readingAfterIssue": "Khi chốt số vào đầu tháng sau, ngày chốt số phải bằng hoặc trước ngày phát hành."
   },
   "services": {
     "title": "Dịch vụ & đơn giá",

@@ -83,8 +83,13 @@ export interface StayInvoiceSummary {
   paidTotal: number;
   /** `total − paidTotal`. */
   remaining: number;
-  /** Derived: issued/partially paid, past `dueOn` (Asia/Ho_Chi_Minh) and `remaining > 0`. */
+  /**
+   * Derived: issued/partially paid, `remaining > 0` and today (Asia/Ho_Chi_Minh) on or after
+   * `overdueFrom`.
+   */
   overdue: boolean;
+  /** First overdue day: `dueOn + graceDays + 1` with the building's grace period in force. */
+  overdueFrom: string;
   /** Expiry of the active share link (ST-16); `null` when none was created, revoked or expired. */
   shareExpiresAt: string | null;
   version: number;

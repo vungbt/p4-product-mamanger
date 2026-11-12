@@ -1,5 +1,5 @@
 import type { ServiceKind } from './constants.js';
-import type { BillingDay, BillingSettings, RoundingUnit } from './settings.js';
+import type { BillingDay, BillingSettings, ReadingDayMonth, RoundingUnit } from './settings.js';
 
 /** Building code used in invoice codes: `A`–`Z`, `0`–`9`, at most 6 characters. */
 export const BUILDING_CODE_PATTERN = /^[A-Z0-9]{1,6}$/;
@@ -22,8 +22,10 @@ export interface StayBuilding {
   name: string;
   address: string | null;
   readingDay: BillingDay | null;
+  readingDayMonth: ReadingDayMonth | null;
   issueDay: BillingDay | null;
   dueDay: BillingDay | null;
+  graceDays: number | null;
   roundingUnit: RoundingUnit | null;
   refundUnusedRent: boolean | null;
   /** VietQR bank BIN (6 digits). */

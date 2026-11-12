@@ -4,13 +4,20 @@ import {
   type BillingSettings,
   DEFAULT_BILLING_SETTINGS,
   isBillingDay,
+  isGraceDays,
+  isReadingDayMonth,
   isRoundingUnit,
   type ServiceKind,
   type StayService,
   type StaySettings,
 } from '@stay/shared';
 import { Op, type Transaction } from 'sequelize';
-import { ServiceDefinitionModel, SystemSettingModel } from '@/sequelize/models/index.js';
+import type { BuildingAttributes } from '@/sequelize/models/building.model.js';
+import {
+  BuildingModel,
+  ServiceDefinitionModel,
+  SystemSettingModel,
+} from '@/sequelize/models/index.js';
 import type { ServiceDefinitionAttributes } from '@/sequelize/models/service-definition.model.js';
 import { auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { assertVersion } from '@/shared/input.js';
@@ -46,8 +53,14 @@ function settingsValue(value: JsonValue): SettingsInput {
 
   return {
     readingDay: day('readingDay'),
+    readingDayMonth: isReadingDayMonth(stored.readingDayMonth)
+      ? stored.readingDayMonth
+      : DEFAULT_BILLING_SETTINGS.readingDayMonth,
     issueDay: day('issueDay'),
     dueDay: day('dueDay'),
+    graceDays: isGraceDays(stored.graceDays)
+      ? stored.graceDays
+      : DEFAULT_BILLING_SETTINGS.graceDays,
     roundingUnit: isRoundingUnit(stored.roundingUnit)
       ? stored.roundingUnit
       : DEFAULT_BILLING_SETTINGS.roundingUnit,
@@ -82,12 +95,76 @@ export async function getSettings(): Promise<StaySettings> {
 }
 
 /** System billing defaults that buildings inherit (`null` building fields). */
-export async function billingDefaults(): Promise<BillingSettings> {
-  const { transferContentTemplate: _template, ...billing } = settingsValue(
-    (await settingsRow()).value,
-  );
+export async function billingDefaults(transaction?: Transaction): Promise<BillingSettings> {
+  const row = await SystemSettingModel.findOne({ where: { key: BILLING_KEY }, transaction });
+
+  if (!row) throw new BaseError('settings_missing', 503, 'settings_missing');
+
+  const { transferContentTemplate: _template, ...billing } = settingsValue(row.value);
 
   return billing;
+}
+
+type BuildingBilling = Pick<
+  BuildingAttributes,
+  | 'readingDay'
+  | 'readingDayMonth'
+  | 'issueDay'
+  | 'dueDay'
+  | 'graceDays'
+  | 'roundingUnit'
+  | 'refundUnusedRent'
+>;
+
+/** The building's own billing values, else the system defaults. */
+export function effectiveBilling(row: BuildingBilling, defaults: BillingSettings): BillingSettings {
+  return {
+    readingDay: row.readingDay ?? defaults.readingDay,
+    readingDayMonth: row.readingDayMonth ?? defaults.readingDayMonth,
+    issueDay: row.issueDay ?? defaults.issueDay,
+    dueDay: row.dueDay ?? defaults.dueDay,
+    graceDays: row.graceDays ?? defaults.graceDays,
+    roundingUnit: row.roundingUnit ?? defaults.roundingUnit,
+    refundUnusedRent: row.refundUnusedRent ?? defaults.refundUnusedRent,
+  };
+}
+
+/** Billing cycle in force for a building (its overrides, else the system defaults). */
+export async function buildingBilling(
+  building: BuildingBilling,
+  transaction?: Transaction,
+): Promise<BillingSettings> {
+  return effectiveBilling(building, await billingDefaults(transaction));
+}
+
+/** Grace period in force for each building id (`graceDays` override, else the system value). */
+export async function graceDaysByBuilding(
+  buildingIds: string[],
+  transaction?: Transaction,
+): Promise<Map<string, number>> {
+  const ids = [...new Set(buildingIds)];
+  const result = new Map<string, number>();
+
+  if (!ids.length) return result;
+
+  const fallback = (await billingDefaults(transaction)).graceDays;
+  const rows = await BuildingModel.findAll({
+    where: { id: { [Op.in]: ids } },
+    attributes: ['id', 'graceDays'],
+    transaction,
+  });
+
+  for (const row of rows) result.set(row.id, row.graceDays ?? fallback);
+  return result;
+}
+
+/**
+ * SQL expression of the grace period in force for the building in `buildingIdColumn`, for
+ * `invoiceOverdueDaysSql`: its override, else `systemGraceDays` (the system value).
+ */
+export function graceDaysSql(buildingIdColumn: string, systemGraceDays: number): string {
+  if (!Number.isSafeInteger(systemGraceDays)) throw new Error('Invalid grace days');
+  return `COALESCE((SELECT gb.grace_days FROM buildings gb WHERE gb.id = ${buildingIdColumn}), ${systemGraceDays})`;
 }
 
 export async function updateSettings(

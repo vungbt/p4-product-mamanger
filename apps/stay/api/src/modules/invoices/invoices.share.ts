@@ -413,7 +413,12 @@ export async function publicInvoiceView(
     issuedOn: row.issuedOn,
     dueOn: row.dueOn,
     overdue:
-      isInvoiceOverdue(row.status, row.dueOn, isoDateInTimeZone(new Date())) && remaining > 0,
+      isInvoiceOverdue(
+        row.status,
+        row.dueOn,
+        isoDateInTimeZone(new Date()),
+        building.graceDays ?? settings.graceDays,
+      ) && remaining > 0,
     lines: lines.map(publicLine),
     subtotal: row.subtotal,
     rounding: row.rounding,

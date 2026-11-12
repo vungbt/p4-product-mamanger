@@ -29,6 +29,8 @@
   "billing_day": "{{attribute}} must be 1–28, or 31 (end of month).",
   "rounding_unit": "{{attribute}} must be 1, 100 or 1,000 VND.",
   "due_before_issue": "The due day must be on or after the issue day.",
+  "reading_after_issue": "When readings are taken early next month, the reading day must be on or before the issue day.",
+  "grace_days_range": "{{attribute}} must be a whole number from 0 to 31.",
   "metered_service_active": "Another active service already uses this metered kind (electricity/water).",
   "building_code_format": "Building codes use A–Z and 0–9 only, up to 6 characters.",
   "building_code_locked": "The building code cannot change once the building has invoices.",

@@ -737,7 +737,7 @@ export interface paths {
     put?: never;
     /**
      * Tạo toà
-     * @description Mã A–Z, 0–9, tối đa 6 ký tự, duy nhất. Kỳ thu, làm tròn, hoàn tiền phòng để `null` = theo hệ thống. Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. Tài khoản ngân hàng nhập đủ cả ba trường (BIN VietQR 6 số, số tài khoản, tên chủ tài khoản in hoa không dấu) hoặc bỏ trống.
+     * @description Mã A–Z, 0–9, tối đa 6 ký tự, duy nhất. Kỳ thu, làm tròn, hoàn tiền phòng để `null` = theo hệ thống. Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. `readingDayMonth`: `same` = ngày chốt số thuộc tháng tiêu thụ M−1, `next` = thuộc tháng M (khi đó ngày chốt số ≤ ngày phát hành, 422 `reading_after_issue`). `graceDays` 0–31: hoá đơn chỉ tính quá hạn sau `dueOn + graceDays`. Tài khoản ngân hàng nhập đủ cả ba trường (BIN VietQR 6 số, số tài khoản, tên chủ tài khoản in hoa không dấu) hoặc bỏ trống.
      *
      *     **Quyền:** `manage:Building`.
      */
@@ -845,14 +845,14 @@ export interface paths {
     };
     /**
      * Chỉ số điện nước toàn toà
-     * @description Kỳ là tháng tiêu thụ (YYYY-MM). Bao gồm phòng có hợp đồng active/ending, chỉ số trước, tiêu thụ cả hai đoạn khi thay đồng hồ, trung bình tối đa 3 kỳ trước, cảnh báo và trạng thái draft/locked. Ngoài phạm vi quản lý trả 404.
+     * @description Kỳ là tháng tiêu thụ (YYYY-MM). `readOnFrom`/`readOnTo` là khoảng ngày đọc hợp lệ theo kỳ thu của toà (`readingDayMonth`), `readingOn` là ngày chốt số của kỳ. Bao gồm phòng có hợp đồng active/ending, chỉ số trước, tiêu thụ cả hai đoạn khi thay đồng hồ, trung bình tối đa 3 kỳ trước, cảnh báo và trạng thái draft/locked. Ngoài phạm vi quản lý trả 404.
      *
      *     **Quyền:** `read:MeterReading`.
      */
     get: operations['get_api_buildings_buildingId_readings'];
     /**
      * Lưu chỉ số theo dòng
-     * @description Mỗi dòng gửi meterId, period, reading, readOn và version (0 khi tạo). Trả results theo thứ tự đầu vào; dòng lỗi không huỷ dòng hợp lệ. Chỉ số nguyên không âm; số mới nhỏ hơn số cũ bị chặn. Tiêu thụ hơn 2 lần trung bình cần confirmHighConsumption. Version cũ trả lỗi dòng 409; locked không sửa được. Ảnh dùng private upload purpose contract_meter.
+     * @description Mỗi dòng gửi meterId, period, reading, readOn và version (0 khi tạo). `readOn` phải trong tháng tiêu thụ (`same`) hoặc từ ngày 1 của kỳ tới ngày chốt số tháng sau (`next`), sai trả lỗi dòng 422 tại `readOn`. Trả results theo thứ tự đầu vào; dòng lỗi không huỷ dòng hợp lệ. Chỉ số nguyên không âm; số mới nhỏ hơn số cũ bị chặn. Tiêu thụ hơn 2 lần trung bình cần confirmHighConsumption. Version cũ trả lỗi dòng 409; locked không sửa được. Ảnh dùng private upload purpose contract_meter.
      *
      *     **Quyền:** `update:MeterReading`.
      */
@@ -873,7 +873,7 @@ export interface paths {
     };
     /**
      * Công nợ của toà
-     * @description Mỗi dòng là một hợp đồng có hoá đơn chưa thu đủ (`issued`/`partially_paid`, `total − paidTotal > 0`; nháp và void không tính): mã hợp đồng, phòng hiện tại, người đại diện (`representativePhone` chỉ khi được xem người thuê của toà), số hoá đơn, tổng còn lại, phần quá hạn, hạn cũ nhất, số ngày quá hạn lâu nhất (`dueOn` so với hôm nay theo Asia/Ho_Chi_Minh) và nhóm `bucket` (`not_due`, `1_7`, `8_30`, `over_30`), kèm các hoá đơn đó (hạn cũ nhất trước, có `shareExpiresAt`). `q` tìm theo mã phòng, mã hợp đồng, tên hoặc SĐT người ở; lọc `bucket`; `sortBy` `remaining` (mặc định, giảm dần), `overdueDays`, `roomCode`. `meta.totalRemaining`, `meta.overdueRemaining`, `meta.invoiceCount` tính trên toàn bộ bộ lọc trước phân trang và luôn bằng tổng `total − paidTotal` của các hoá đơn được tính; `meta.buckets` đếm theo `q` nhưng không theo `bucket` (cho các chip). Toà ngoài phạm vi trả 404.
+     * @description Mỗi dòng là một hợp đồng có hoá đơn chưa thu đủ (`issued`/`partially_paid`, `total − paidTotal > 0`; nháp và void không tính): mã hợp đồng, phòng hiện tại, người đại diện (`representativePhone` chỉ khi được xem người thuê của toà), số hoá đơn, tổng còn lại, phần quá hạn, hạn cũ nhất, số ngày quá hạn lâu nhất (hôm nay theo Asia/Ho_Chi_Minh so với `dueOn + graceDays` của toà) và nhóm `bucket` (`not_due`, `1_7`, `8_30`, `over_30`), kèm các hoá đơn đó (hạn cũ nhất trước, có `shareExpiresAt`). `q` tìm theo mã phòng, mã hợp đồng, tên hoặc SĐT người ở; lọc `bucket`; `sortBy` `remaining` (mặc định, giảm dần), `overdueDays`, `roomCode`. `meta.totalRemaining`, `meta.overdueRemaining`, `meta.invoiceCount` tính trên toàn bộ bộ lọc trước phân trang và luôn bằng tổng `total − paidTotal` của các hoá đơn được tính; `meta.buckets` đếm theo `q` nhưng không theo `bucket` (cho các chip). Toà ngoài phạm vi trả 404.
      *
      *     **Quyền:** `read:Invoice`.
      */
@@ -1090,7 +1090,7 @@ export interface paths {
     get: operations['get_api_buildings_id_automation'];
     /**
      * Lưu tự động hoá
-     * @description manage Building; gửi đủ năm cờ và version; stale version trả 409, có audit.
+     * @description manage Building; gửi đủ năm cờ và version (`readingReminderBefore`, `readingReminderDaysBefore` 0–10 bỏ trống = tắt/1 ngày); stale version trả 409, có audit.
      *
      *     **Quyền:** `manage:Building`.
      */
@@ -1719,7 +1719,7 @@ export interface paths {
     };
     /**
      * Danh sách hoá đơn
-     * @description Lọc buildingId, period, kind, status, roomId, contractId, overdue=true|false (quá hạn suy ra: issued/partially_paid, quá dueOn theo Asia/Ho_Chi_Minh, còn nợ). `q` tìm theo mã hoá đơn hoặc mã phòng. Người thuê chỉ thấy hoá đơn đã phát hành của hợp đồng mình.
+     * @description Lọc buildingId, period, kind, status, roomId, contractId, overdue=true|false (quá hạn suy ra: issued/partially_paid, quá `dueOn + graceDays` của toà theo Asia/Ho_Chi_Minh, còn nợ; `overdueFrom` là ngày đầu tiên quá hạn). `q` tìm theo mã hoá đơn hoặc mã phòng. Người thuê chỉ thấy hoá đơn đã phát hành của hợp đồng mình.
      *
      *     **Quyền:** `read:Invoice`.
      */
@@ -2861,14 +2861,14 @@ export interface paths {
     };
     /**
      * Kỳ thu mặc định
-     * @description Ngày chốt số, ngày phát hành, hạn thanh toán, đơn vị làm tròn, hoàn tiền phòng và mẫu nội dung chuyển khoản. Toà để trống trường nào thì theo giá trị ở đây.
+     * @description Ngày chốt số và tháng chốt số (`readingDayMonth`), ngày phát hành, hạn thanh toán, số ngày ân hạn trước khi tính quá hạn (`graceDays`), đơn vị làm tròn, hoàn tiền phòng và mẫu nội dung chuyển khoản. Toà để trống trường nào thì theo giá trị ở đây.
      *
      *     **Quyền:** `read:Settings`.
      */
     get: operations['get_api_settings'];
     /**
      * Cập nhật kỳ thu mặc định
-     * @description Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. Làm tròn 1, 100 hoặc 1.000đ. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     * @description Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. `readingDayMonth`: `same` = ngày chốt số thuộc tháng tiêu thụ M−1, `next` = thuộc tháng M (khi đó ngày chốt số ≤ ngày phát hành, 422 `reading_after_issue`). `graceDays` 0–31: hoá đơn chỉ tính quá hạn sau `dueOn + graceDays`. Làm tròn 1, 100 hoặc 1.000đ. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
      *
      *     **Quyền:** `manage:Settings`.
      */
@@ -3392,8 +3392,11 @@ export interface components {
     };
     BillingSettings: {
       dueDay: number;
+      graceDays: number;
       issueDay: number;
       readingDay: number;
+      /** @enum {string} */
+      readingDayMonth: 'next' | 'same';
       refundUnusedRent: boolean;
       roundingUnit: 1 | 1000 | 100;
     };
@@ -3825,6 +3828,7 @@ export interface components {
     OverviewTodo: {
       amount: number | null;
       count: number;
+      dueOn: string | null;
       /** @enum {string} */
       kind:
         | 'draft_invoices'
@@ -4169,6 +4173,11 @@ export interface components {
     ReadingGrid: {
       buildingId: string;
       period: string;
+      /** @enum {string} */
+      readingDayMonth: 'next' | 'same';
+      readingOn: string;
+      readOnFrom: string;
+      readOnTo: string;
       rooms: components['schemas']['ReadingRoom'][];
     };
     ReadingMeter: {
@@ -4428,6 +4437,8 @@ export interface components {
       beforeDue: boolean;
       createDrafts: boolean;
       readingReminder: boolean;
+      readingReminderBefore: boolean;
+      readingReminderDaysBefore: number;
       tenantRemindersDisabled: boolean;
       version: number;
     };
@@ -4441,10 +4452,13 @@ export interface components {
       contactPhone: string | null;
       createdAt: string;
       dueDay: number | null;
+      graceDays: number | null;
       id: string;
       issueDay: number | null;
       name: string;
       readingDay: number | null;
+      /** @enum {string|null} */
+      readingDayMonth: 'next' | 'same' | null;
       refundUnusedRent: boolean | null;
       roundingUnit: (1 | 1000 | 100) | null;
       rulesText: string | null;
@@ -4464,10 +4478,13 @@ export interface components {
       contactPhone: string | null;
       createdAt: string;
       dueDay: number | null;
+      graceDays: number | null;
       id: string;
       issueDay: number | null;
       name: string;
       readingDay: number | null;
+      /** @enum {string|null} */
+      readingDayMonth: 'next' | 'same' | null;
       refundUnusedRent: boolean | null;
       roundingUnit: (1 | 1000 | 100) | null;
       rulesText: string | null;
@@ -4555,6 +4572,7 @@ export interface components {
       kind: 'monthly' | 'move_in' | 'settlement';
       lines: components['schemas']['StayInvoiceLine'][];
       overdue: boolean;
+      overdueFrom: string;
       paidTotal: number;
       payments: components['schemas']['StayPayment'][];
       period: string;
@@ -4636,6 +4654,7 @@ export interface components {
       /** @enum {string} */
       kind: 'monthly' | 'move_in' | 'settlement';
       overdue: boolean;
+      overdueFrom: string;
       paidTotal: number;
       period: string;
       remaining: number;
@@ -4690,6 +4709,7 @@ export interface components {
       previousOccupancy: components['schemas']['OverviewOccupancy'];
       previousPeriod: string;
       receivables: {
+        graceDays: number;
         overdueInvoiceCount: number;
         overdueRemaining: number;
         totalRemaining: number;
@@ -4867,8 +4887,11 @@ export interface components {
     };
     StaySettings: {
       dueDay: number;
+      graceDays: number;
       issueDay: number;
       readingDay: number;
+      /** @enum {string} */
+      readingDayMonth: 'next' | 'same';
       refundUnusedRent: boolean;
       roundingUnit: 1 | 1000 | 100;
       transferContentTemplate: string;
@@ -8774,9 +8797,12 @@ export interface operations {
           code: string;
           contactPhone?: string | null;
           dueDay?: number | null;
+          graceDays?: number | null;
           issueDay?: number | null;
           name: string;
           readingDay?: number | null;
+          /** @enum {string|null} */
+          readingDayMonth?: 'same' | 'next' | null;
           refundUnusedRent?: boolean | null;
           /** @enum {integer|null} */
           roundingUnit?: 1 | 100 | 1000 | null;
@@ -9422,9 +9448,12 @@ export interface operations {
           code: string;
           contactPhone?: string | null;
           dueDay?: number | null;
+          graceDays?: number | null;
           issueDay?: number | null;
           name: string;
           readingDay?: number | null;
+          /** @enum {string|null} */
+          readingDayMonth?: 'same' | 'next' | null;
           refundUnusedRent?: boolean | null;
           /** @enum {integer|null} */
           roundingUnit?: 1 | 100 | 1000 | null;
@@ -12981,8 +13010,15 @@ export interface operations {
       content: {
         'application/json': {
           dueDay: number;
+          /** @default 0 */
+          graceDays?: number;
           issueDay: number;
           readingDay: number;
+          /**
+           * @default same
+           * @enum {string}
+           */
+          readingDayMonth?: 'same' | 'next';
           refundUnusedRent: boolean;
           /** @enum {integer} */
           roundingUnit: 1 | 100 | 1000;
