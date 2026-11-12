@@ -1,0 +1,74 @@
+# Stay production (small VPS): Postgres + one Node process (API with the worker inline).
+# The web app is static files served by the host nginx; nginx proxies /api to 127.0.0.1:3011.
+# Deploy with scripts/deploy.stay.sh; secrets live in .env.stay.prod on the server (chmod 600).
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    # Tuned for ~1-2 GB RAM: small caches, few connections.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=64MB
+      - -c
+      - effective_cache_size=192MB
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=32MB
+      - -c
+      - max_connections=30
+      - -c
+      - wal_buffers=4MB
+    environment:
+      POSTGRES_DB: ${STAY_DATABASE_NAME:-p4_stay}
+      POSTGRES_USER: ${STAY_DATABASE_USERNAME:-stay}
+      POSTGRES_PASSWORD: ${STAY_DATABASE_PASSWORD:?STAY_DATABASE_PASSWORD is required}
+    volumes:
+      - stay-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${STAY_DATABASE_USERNAME:-stay} -d ${STAY_DATABASE_NAME:-p4_stay}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 256m
+    logging: *logging
+    networks:
+      - internal
+
+  api:
+    image: stay-api:latest
+    pull_policy: never
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      # Loopback only: nginx serves the public HTTPS endpoints.
+      - '127.0.0.1:3011:3011'
+    env_file: .env.stay.prod
+    environment:
+      NODE_ENV: production
+      STAY_PORT: 3011
+      STAY_DATABASE_HOST: postgres
+      STAY_DATABASE_PORT: 5432
+      # One Node process: automation, email and push delivery run inside the API.
+      STAY_INLINE_WORKER: 'true'
+      NODE_OPTIONS: --max-old-space-size=192
+    mem_limit: 320m
+    logging: *logging
+    networks:
+      - internal
+
+volumes:
+  stay-pgdata:
+
+networks:
+  internal:
