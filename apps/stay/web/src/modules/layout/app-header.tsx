@@ -37,6 +37,7 @@ export default function AppHeader() {
 
   return (
     <WorkspaceHeader
+      sidebarToggle
       className="sticky top-0 z-30 flex-nowrap gap-2 bg-surface px-3 sm:px-5"
       actionsClassName="ml-auto flex-nowrap"
       breadcrumb={
