@@ -16,6 +16,7 @@ import { DomainEventModel, InvoiceModel, sequelize } from '@/sequelize/models/in
 import { automationRunAllowed } from '../automation/automation.jobs.js';
 import { webOrigin } from '../invoices/invoices.share.js';
 import { contractContext, portalOpen } from '../portal/portal.access.js';
+import { invoiceEmailExtras } from './notifications.invoice-email.js';
 import { type DeliveryGuard, DISPATCH_EVENT, primaryOccupant } from './notifications.publish.js';
 import { channelAllowed, type Principal, preferencesOf } from './notifications.service.js';
 import { renderEmail } from './notifications.templates.js';
@@ -167,6 +168,8 @@ async function dispatch(
   const shared: Record<string, JsonValue> = {
     notificationId: notification.id,
     ...(payload.guard ? { guard: payload.guard } : {}),
+    ...(typeof payload.invoiceId === 'string' ? { invoiceId: payload.invoiceId } : {}),
+    ...(typeof payload.emailAmount === 'number' ? { emailAmount: payload.emailAmount } : {}),
   };
   const emailLink = stringOf(payload, 'emailLink');
   const allowed = async (principal: Principal, channel: 'email' | 'push') =>
@@ -258,17 +261,19 @@ async function deliverEmail(
 
   if (!notification || (!userId && !tenantId)) return 'skipped';
   let to: string | null = null;
+  let recipientName: string | null = null;
 
   if (userId) {
     // Still active and still staff of the building.
     to = (await staffRecipients(notification.buildingId, undefined, userId))[0]?.email ?? null;
   } else if (tenantId) {
-    const [tenant] = await sequelize.query<{ email: string | null }>(
-      'SELECT email FROM tenants WHERE id=:id AND archived_at IS NULL',
+    const [tenant] = await sequelize.query<{ email: string | null; fullName: string | null }>(
+      'SELECT email, full_name AS "fullName" FROM tenants WHERE id=:id AND archived_at IS NULL',
       { replacements: { id: tenantId }, type: QueryTypes.SELECT },
     );
 
     to = tenant?.email ?? null;
+    recipientName = tenant?.fullName ?? null;
   }
   const principal: Principal = userId ? { userId } : { tenantId: tenantId ?? '' };
 
@@ -282,6 +287,17 @@ async function deliverEmail(
     stringOf(payload, 'emailLink') ??
     (notification.audience === 'staff' ? `${webOrigin(undefined)}${notification.path}` : null);
 
+  const guard = objectOf(payload.guard);
+  const invoiceId = stringOf(payload, 'invoiceId') ?? stringOf(guard, 'unpaidInvoiceId');
+  const invoice = invoiceId
+    ? await invoiceEmailExtras({
+        kind: notification.kind,
+        invoiceId,
+        emailAmount: typeof payload.emailAmount === 'number' ? payload.emailAmount : null,
+        audience: notification.audience,
+      })
+    : null;
+
   await transports.email.send({
     id: event.id,
     to,
@@ -292,6 +308,8 @@ async function deliverEmail(
       body: notification.body,
       link,
       audience: notification.audience,
+      recipientName,
+      invoice,
     }),
   });
   return 'sent';

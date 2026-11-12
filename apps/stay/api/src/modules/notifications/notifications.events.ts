@@ -62,6 +62,8 @@ export async function notifyPaymentClaimCreated(
       body: `Phòng ${room} báo đã chuyển ${formatVnd(claim.amount)} cho hoá đơn ${invoice.code ?? ''} (ngày ${displayDate(claim.paidOn)}). Kiểm tra tài khoản rồi xác nhận trong mục Yêu cầu.`,
       path: '/requests?kind=payment_claim',
       audience: 'staff',
+      invoiceId: invoice.id,
+      emailAmount: claim.amount,
     },
     transaction,
   );
@@ -89,6 +91,8 @@ export async function notifyPaymentRecorded(
       path: `/p/invoices/${invoice.id}`,
       audience: 'tenant',
       contractId: invoice.contractId,
+      invoiceId: invoice.id,
+      emailAmount: amount,
     },
     transaction,
   );
@@ -114,6 +118,7 @@ export async function notifyPaymentClaimRejected(
       audience: 'tenant',
       contractId: claim.contractId,
       tenantId: claim.tenantId,
+      invoiceId: claim.invoiceId,
     },
     transaction,
   );
@@ -147,6 +152,7 @@ export async function notifyInvoiceIssued(
       path: `/p/invoices/${invoice.id}`,
       audience: 'tenant',
       contractId: invoice.contractId,
+      invoiceId: invoice.id,
       ...(link ? { emailLink: link.url } : {}),
     },
     transaction,
