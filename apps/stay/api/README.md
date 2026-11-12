@@ -123,7 +123,11 @@ Script build, migrate, seed hai lần (kiểm tra idempotent), chạy API rồi 
 | `STAY_UPLOAD_STUB_DIR` | thư mục tạm của hệ điều hành | Nơi kho stub lưu file (dev/test/CI) |
 | `STAY_PORTAL_SESSION_RATE_LIMIT`, `STAY_PORTAL_TOKEN_RATE_LIMIT`, `STAY_PORTAL_LOOKUP_RATE_LIMIT` | `30`, `5`, `120` / 15 phút | Cổng người thuê (ST-25): vào cổng theo IP, theo token, tra link theo IP. Chỉ đổi được ngoài production (CI nâng lên) |
 
-Gửi email (đặt lại mật khẩu, xác minh) chưa có: ngoài production link được ghi log, production trả `mail_unavailable`.
+| `STAY_SMTP_HOST`, `STAY_SMTP_PORT`, `STAY_SMTP_SECURE`, `STAY_SMTP_USER`, `STAY_SMTP_PASSWORD` | trống, `1025`, `false`, trống, trống | Email thông báo (worker). Không có host: tắt email. Local: Mailpit `localhost:1025` |
+| `STAY_MAIL_FROM` | `no-reply@stay.local` | Địa chỉ gửi |
+| `STAY_VAPID_PUBLIC_KEY`, `STAY_VAPID_PRIVATE_KEY`, `STAY_VAPID_SUBJECT` | trống, trống, `mailto:<STAY_MAIL_FROM>` | Thông báo trình duyệt (Web Push). Thiếu một khoá: tắt. Tạo cặp khoá: `pnpm --filter @stay/api exec web-push generate-vapid-keys` |
+
+Gửi email đặt lại mật khẩu/xác minh tài khoản chưa có: ngoài production link được ghi log, production trả `mail_unavailable`.
 
 ### Rental contracts (ST-10)
 
@@ -860,13 +864,11 @@ there is no automatic backfill of days when the worker never ran. Previously pen
 is always retried. Automation audit uses a system actor (`actorId: null`, `source: worker`),
 with identifiers/period/kind only. The internal CASL system principal is never an HTTP user.
 
-Mailer abstraction: `AutomationMailer.send(eventId, payload)`. There is no SMTP library in the
-repository, so the default **log transport does not send email** (including production); it logs
-only the event ID, never recipients, bodies or share tokens. In-app notifications still work.
-An eventual provider transport must use the stable event ID as an idempotency key: external
-provider calls can repeat after a process dies between delivery and acknowledgement.
-Delivery re-checks automation switches, archived buildings and the unpaid invoice state before
-calling the transport, so queued reminders are suppressed after opt-out or payment.
+Reminders and owner notices go through the notification channels below (in-app, email, browser
+push). Delivery re-checks automation switches, archived buildings and the unpaid invoice state
+(`guard` of the dispatch event) before calling a transport, so queued reminders are suppressed
+after opt-out or payment. Legacy `stay.automation.mail` events queued before that change are still
+drained (`deliverAutomationMail`, plain text through SMTP when configured, else logged by id).
 Mail delivery has a 90-second lease, delayed retries, and dead-letter after five failed attempts
 (`domain_events.status = 'dead_letter'`; inspect/requeue operationally after fixing transport).
 Outbox payloads contain recipient and invoice links; restrict database access accordingly.
@@ -882,3 +884,53 @@ create drafts and queue reminders; normal opt-in and deduplication still apply.
 
 Browser coverage: `apps/stay/web/e2e/automation.spec.ts`, building A only, restores settings
 in `finally`, tests desktop/375px, bell opening and horizontal overflow.
+
+### Notifications: in-app, SSE, email and browser push
+
+Migration `20261206000100-notification-channels.cjs`: `notifications` gains `kind`, `audience`
+(`staff` = owner + managers of the building; `tenant` = occupants of `contract_id`, or only
+`tenant_id`), `notification_tenant_reads`, `notification_preferences` (per staff user or tenant;
+no row = everything on) and `push_subscriptions` (per staff user or tenant portal link).
+
+Events (`modules/notifications/notifications.events.ts`, each inside the business transaction):
+
+| Event | Audience | Kind / group |
+| --- | --- | --- |
+| Tenant "Báo đã chuyển khoản" | staff of the building ("Phòng X báo đã chuyển Y ₫ cho hoá đơn Z") | `payment_claim.created` / payments |
+| Payment recorded or claim confirmed | tenant contract, with the remaining amount | `payment.recorded` / payments |
+| Claim rejected | the sender, with the reason | `payment_claim.rejected` / payments |
+| Invoice issued | tenant contract: amount, due date; email links to a fresh shared invoice (`/i/:token`) when the primary occupant has an email and SMTP is on | `invoice.issued` / invoices |
+| Maintenance report / tenant request | staff | `maintenance.created`, `tenant_request.created` / requests |
+| Accept / reject / reply | the tenant who sent it | `request.updated` / requests |
+| Announcement created | every active/ending contract of the building (or chosen rooms) | `announcement.created` / announcements |
+| Automations (ST-26) | reading/reading_before/drafts → staff; before/after due → tenant contract with the remaining amount | `reading.reminder`, `drafts.ready`, `reminder.unreachable`, `invoice.due_soon`, `invoice.overdue` / reminders |
+
+Flow (no provider call before commit): `publishNotification` inserts the row, enqueues one
+`stay.notification.dispatch` outbox event and calls `pg_notify('stay_notifications', ids)`
+(delivered by Postgres only on commit). The worker (`deliverNotifications`, same loop as ST-26)
+resolves recipients and preferences and queues one `stay.notification.email` per address and one
+`stay.notification.push` per browser subscription (deduplicated by `dedupe_key`). Each delivery
+re-checks access, preferences and the guard, then calls the transport. Retries: 30 s, 2 min,
+10 min, 30 min; the 5th failure, an SMTP 5xx or a push 4xx dead-letters; push 404/410 deletes the
+subscription. Email: the addressed tenant, else the contract's primary occupant, only with an
+email on file; staff: active owners and assigned managers. Push: subscribed staff browsers, or
+subscribed portal links of the contract (revoked links and occupants who left are skipped).
+Channels are disabled (nothing queued) without `STAY_SMTP_HOST` / VAPID keys.
+
+| Method/path (prefix `/api`) | Auth | Notes |
+| --- | --- | --- |
+| GET `/notifications/stream` | staff, read `Building` | SSE: `ready`, `notification` (`NotificationStreamEvent`), `: ping` every 25 s; only buildings the user can read; closes after 10 min (EventSource reconnects and re-checks the session) |
+| GET/PUT `/me/notification-settings` | staff | `{ email, push, mutedGroups }`; response adds `emailAvailable`, `hasEmail`, `pushPublicKey`, `pushSubscriptions` |
+| POST/DELETE `/me/push-subscriptions` | staff | `PushSubscription.toJSON()`; endpoints must be HTTPS on a browser push service host (no SSRF); delete only own |
+| GET `/portal/notifications`, POST `/portal/notifications/:id/read` | portal | Own contract only (whole contract or this occupant) |
+| GET `/portal/notifications/stream` | portal | SSE of the session's contract only |
+| GET/PUT `/portal/notification-settings`, POST/DELETE `/portal/push-subscriptions` | portal | Per tenant; subscriptions belong to the portal link |
+
+Web: the header bell and the portal bell listen to the stream (toast + live badge), poll every
+30 s while it is down; after sign-in (staff) or portal sign-in they ask once for browser
+permission (`public/sw.js`, click opens the related screen); a denial is remembered and
+"Tài khoản → Cài đặt thông báo" / portal "Thêm → Thông báo của tôi" offer re-enabling and the
+channel/group switches.
+
+Tests: `tests/notifications.integration.test.mjs` (fake transports via
+`deliverNotifications(now, transports)`), browser: `apps/stay/web/e2e/notifications.spec.ts`.

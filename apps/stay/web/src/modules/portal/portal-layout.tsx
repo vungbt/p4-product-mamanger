@@ -1,8 +1,25 @@
-import { cn, Icon, type IconName } from '@itclabs/react-ui';
-import { PortalSdkProvider, usePortalMe } from '@stay/sdk/react';
+import { cn, Icon, IconButton, type IconName } from '@itclabs/react-ui';
+import { toast } from '@itclabs/react-ui/toast';
+import {
+  NOTIFICATION_STREAMS,
+  notificationKeys,
+  PortalSdkProvider,
+  portalKeys,
+  usePortalMe,
+  usePortalNotificationSettings,
+  usePortalNotifications,
+  usePortalPushSubscription,
+} from '@stay/sdk/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useGenericDocumentMeta } from '@/libraries/document-meta';
+import { useAutoPush } from '@/libraries/notifications/use-auto-push';
+import {
+  POLL_CONNECTED_MS,
+  POLL_FALLBACK_MS,
+  useNotificationStream,
+} from '@/libraries/notifications/use-notification-stream';
 import { getPortalSdk } from './portal-sdk';
 import { PORTAL_TITLE, PortalQuery, portalPaths, rememberContact } from './portal-ui';
 
@@ -44,6 +61,42 @@ function PortalNav() {
   );
 }
 
+/**
+ * Header bell of the portal: live via SSE (polling while the stream is down); asks once for
+ * browser notification permission after the tenant signs in.
+ */
+function PortalBell() {
+  const client = useQueryClient();
+  const navigate = useNavigate();
+  const live = useNotificationStream(NOTIFICATION_STREAMS.portal, {
+    onReady: () => void client.invalidateQueries({ queryKey: notificationKeys.portalList() }),
+    onEvent: (event) => {
+      // Payments and request answers change the invoice/request screens too.
+      void client.invalidateQueries({ queryKey: portalKeys.all });
+      toast.info(event.title, { description: event.body });
+    },
+  });
+  const list = usePortalNotifications({
+    refetchInterval: live ? POLL_CONNECTED_MS : POLL_FALLBACK_MS,
+  });
+  const settings = usePortalNotificationSettings();
+  const push = usePortalPushSubscription();
+  const unread = list.data?.unreadCount ?? 0;
+
+  useAutoPush('portal', settings.data, (subscription) => push.subscribe.mutateAsync(subscription));
+
+  return (
+    <IconButton
+      icon="bell"
+      variant="ghost"
+      badge={unread || undefined}
+      label={`Thông báo (${unread} chưa đọc)`}
+      onClick={() => navigate(portalPaths.notifications)}
+      data-testid="portal-bell"
+    />
+  );
+}
+
 function PortalShell() {
   const me = usePortalMe();
 
@@ -56,11 +109,14 @@ function PortalShell() {
       {(data) => (
         <div className="min-h-dvh bg-canvas">
           <header className="border-b border-line bg-surface">
-            <div className="mx-auto grid w-full max-w-xl min-w-0 gap-0.5 px-4 py-3">
-              <p className="font-semibold break-words" data-testid="portal-building">
-                {data.buildingName}
-              </p>
-              <p className="text-ui-sm text-muted">Phòng {data.roomCode}</p>
+            <div className="mx-auto flex w-full max-w-xl min-w-0 items-center gap-2 px-4 py-3">
+              <div className="grid min-w-0 flex-1 gap-0.5">
+                <p className="font-semibold break-words" data-testid="portal-building">
+                  {data.buildingName}
+                </p>
+                <p className="text-ui-sm text-muted">Phòng {data.roomCode}</p>
+              </div>
+              <PortalBell />
             </div>
           </header>
           <main className="mx-auto grid w-full max-w-xl min-w-0 gap-4 px-4 pt-4 pb-28">

@@ -405,11 +405,18 @@ describe('Notification channels', { skip: !base }, () => {
     const mails = fake.mails.filter((mail) =>
       mail.subject.startsWith(`[Trọ thông báo ${suffix}] Phòng ${tenant.room.code} báo đã chuyển`),
     );
-    assert.deepEqual(new Set(mails.map((mail) => mail.to)), new Set([managerInEmail, 'owner@stay.local']));
+    assert.deepEqual(
+      new Set(mails.map((mail) => mail.to)),
+      new Set([managerInEmail, 'owner@stay.local']),
+    );
     assert.ok(mails.every((mail) => mail.html.includes('Xác nhận chuyển khoản')));
     assert.ok(mails.every((mail) => mail.text.includes('/requests?kind=payment_claim')));
     // The tenant got the invoice email when it was issued, never the staff notice.
-    assert.ok(fake.mails.some((mail) => mail.to === tenant.tenant.email && mail.subject.includes('Hoá đơn mới')));
+    assert.ok(
+      fake.mails.some(
+        (mail) => mail.to === tenant.tenant.email && mail.subject.includes('Hoá đơn mới'),
+      ),
+    );
     const push = fake.pushes.find((item) => item.endpoint === pushEndpoint);
     assert.equal(push?.tag, row.id);
     assert.equal(push?.url, '/requests?kind=payment_claim');
