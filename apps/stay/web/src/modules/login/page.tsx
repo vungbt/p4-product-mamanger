@@ -9,9 +9,9 @@ import {
   InputPassword,
   useAppForm,
 } from '@itclabs/react-ui';
-import { toast } from '@itclabs/react-ui/toast';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import * as v from 'valibot';
 import { BRAND, BrandMark } from '@/brand';
 import { useAuth } from '@/libraries/session/auth-provider';
@@ -42,6 +42,7 @@ export default function LoginPage() {
     });
   };
 
+  const navigate = useNavigate();
   const form = useAppForm({
     defaultValues: { email: savedEmail, password: '' },
     onSubmit: async ({ value }) => {
@@ -110,7 +111,15 @@ export default function LoginPage() {
                 variant="ghost"
                 size="sm"
                 className="text-accent"
-                onClick={() => toast.info(t('auth.forgotPasswordSoon'))}
+                onClick={() => {
+                  const email = form.getFieldValue('email').trim();
+
+                  navigate(
+                    email
+                      ? `/forgot-password?email=${encodeURIComponent(email)}`
+                      : '/forgot-password',
+                  );
+                }}
               >
                 {t('auth.forgotPassword')}
               </Button>
