@@ -45,7 +45,7 @@ export function ReceivableActions({
   const who = row.representativeName ?? `phòng ${row.roomCode}`;
 
   return (
-    <div className="flex shrink-0 items-center gap-1">
+    <div className="inline-flex shrink-0 items-center gap-1">
       {onCollect ? (
         <IconButton
           icon="moneyReceive"

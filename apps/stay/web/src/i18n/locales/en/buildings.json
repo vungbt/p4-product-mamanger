@@ -57,6 +57,7 @@
     "generalTitle": "General",
     "code": "Building code",
     "codeHint": "A–Z, 0–9, at most 6 characters.",
+    "codeSuggestHint": "Suggested from the name; A–Z, 0–9, at most 6 characters.",
     "codeLocked": "The building has invoices, so its code cannot change.",
     "codeFormat": "Use only A–Z and 0–9, at most 6 characters.",
     "name": "Building name",

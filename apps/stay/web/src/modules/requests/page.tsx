@@ -1,18 +1,27 @@
-import { Button, EmptyState, Input, Select } from '@itclabs/react-ui';
+import { Button, type ColumnDef, EmptyState, Input, Select, useDataTable } from '@itclabs/react-ui';
 import { useRequestInbox } from '@stay/sdk/react';
+import { getErrorMessage } from '@stay/sdk/shared';
 import { INBOX_KINDS, INBOX_STATUSES, type InboxItem } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
-import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { ListTable } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
+import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
 import { RequestDetailDialog } from './request-detail';
 import { RequestList } from './request-list';
-import { INBOX_STATUS_LABELS, KIND_LABELS } from './request-ui';
+import {
+  displayDateTime,
+  INBOX_STATUS_LABELS,
+  InboxStatusTag,
+  itemSummary,
+  itemTypeLabel,
+  KIND_LABELS,
+} from './request-ui';
 
-const PAGE_SIZE = 20;
+const SORT_FIELDS = ['createdAt'] as const;
 const ALL = 'all';
 
 const KIND_OPTIONS = [
@@ -26,6 +35,10 @@ export default function RequestsPage() {
   const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState(params.get('q') ?? '');
   const [selected, setSelected] = useState<InboxItem | null>(null);
+  const table = useTableParams({
+    sortFields: SORT_FIELDS,
+    defaultSort: { sortBy: 'createdAt', sortOrder: 'desc' },
+  });
 
   const q = params.get('q') ?? '';
   const kind = INBOX_KINDS.find((value) => value === params.get('kind'));
@@ -35,7 +48,6 @@ export default function RequestsPage() {
     statusParam === ALL
       ? undefined
       : (INBOX_STATUSES.find((value) => value === statusParam) ?? 'pending');
-  const page = Math.max(1, Number(params.get('page')) || 1);
 
   const query = useRequestInbox(
     {
@@ -43,8 +55,10 @@ export default function RequestsPage() {
       kind,
       status,
       q: q || undefined,
-      page,
-      pageSize: PAGE_SIZE,
+      page: table.page,
+      pageSize: table.pageSize,
+      sortBy: table.sortBy,
+      sortOrder: table.sortOrder,
     },
     { enabled: Boolean(buildingId) },
   );
@@ -56,7 +70,7 @@ export default function RequestsPage() {
 
         if (value) next.set(field, value);
         else next.delete(field);
-        if (field !== 'page') next.delete('page');
+        next.delete('page');
         return next;
       },
       { replace: true },
@@ -88,8 +102,37 @@ export default function RequestsPage() {
   const counts = meta?.counts ?? [];
   const countOf = (value: string) => counts.find((row) => row.status === value)?.count ?? 0;
   const allCount = counts.reduce((sum, row) => sum + row.count, 0);
-  const totalPages = Math.max(1, meta?.totalPages ?? 1);
   const filtered = Boolean(q || kind);
+
+  const controller = useDataTable<InboxItem>({
+    caption: 'Yêu cầu từ người thuê',
+    mode: 'server',
+    rows,
+    rowCount: meta?.total ?? 0,
+    // Keep the page height only once rows exist (not the first load's skeleton).
+    preservePageHeight: (meta?.total ?? 0) > 0,
+    columns: requestColumns(setSelected),
+    rowId: (row) => `${row.kind}-${row.id}`,
+    state: table.state,
+    onStateChange: table.onStateChange,
+    pageSizeOptions: PAGE_SIZE_OPTIONS,
+    loading: query.isPending,
+    error: query.isError ? getErrorMessage(query.error, 'Không tải được yêu cầu.') : undefined,
+    onRetry: () => void query.refetch(),
+    emptyState: (
+      <EmptyState
+        size="compact"
+        title={filtered ? 'Không có yêu cầu phù hợp' : 'Không có yêu cầu'}
+        description={
+          filtered
+            ? 'Đổi loại, trạng thái hoặc từ khoá tìm kiếm.'
+            : 'Người thuê chưa gửi yêu cầu nào ở trạng thái này.'
+        }
+        variant={filtered ? 'no-results' : 'empty'}
+      />
+    ),
+    'data-testid': 'request-table',
+  });
 
   return (
     <div className="grid min-w-0 gap-5">
@@ -143,47 +186,56 @@ export default function RequestsPage() {
             />
           </FilterBar>
 
-          {query.isPending ? (
-            <LoadingRows />
-          ) : query.isError ? (
-            <LoadError error={query.error} onRetry={() => void query.refetch()} />
-          ) : !rows.length ? (
-            <EmptyState
-              title={filtered ? 'Không có yêu cầu phù hợp' : 'Không có yêu cầu'}
-              description={
-                filtered
-                  ? 'Đổi loại, trạng thái hoặc từ khoá tìm kiếm.'
-                  : 'Người thuê chưa gửi yêu cầu nào ở trạng thái này.'
-              }
-              variant={filtered ? 'no-results' : 'empty'}
-            />
-          ) : (
-            <>
-              <RequestList items={rows} onOpen={setSelected} />
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="secondary"
-                  disabled={page <= 1 || query.isFetching}
-                  onClick={() => filter('page', String(page - 1))}
-                >
-                  Trước
-                </Button>
-                <span>
-                  Trang {page}/{totalPages} · {meta?.total ?? 0} mục
-                </span>
-                <Button
-                  variant="secondary"
-                  disabled={page >= totalPages || query.isFetching}
-                  onClick={() => filter('page', String(page + 1))}
-                >
-                  Sau
-                </Button>
-              </div>
-            </>
-          )}
+          <ListTable
+            controller={controller}
+            refreshing={query.isFetching && !query.isPending}
+            cards={(items) => <RequestList items={items} onOpen={setSelected} />}
+          />
         </>
       )}
       {selected ? <RequestDetailDialog item={selected} onClose={() => setSelected(null)} /> : null}
     </div>
   );
+}
+
+/** Desktop rows; the summary button (`request-row-<id>`) opens the detail like a phone card. */
+function requestColumns(onOpen: (item: InboxItem) => void): ColumnDef<InboxItem, unknown>[] {
+  return [
+    {
+      id: 'summary',
+      header: 'Nội dung',
+      cell: ({ row }) => (
+        <button
+          type="button"
+          className="grid max-w-96 rounded-control text-left font-semibold text-accent hover:underline focus-visible:outline-2 focus-visible:outline-accent"
+          data-testid={`request-row-${row.original.id}`}
+          onClick={() => onOpen(row.original)}
+        >
+          <span className="break-words">
+            {itemSummary(row.original) || itemTypeLabel(row.original)}
+          </span>
+        </button>
+      ),
+    },
+    { id: 'type', header: 'Loại', cell: ({ row }) => itemTypeLabel(row.original) },
+    {
+      id: 'room',
+      header: 'Phòng',
+      cell: ({ row }) => <span className="whitespace-nowrap">{row.original.roomCode ?? '—'}</span>,
+    },
+    { id: 'tenant', header: 'Người gửi', cell: ({ row }) => row.original.tenantName ?? '—' },
+    {
+      id: 'createdAt',
+      header: 'Ngày gửi',
+      accessorFn: (row) => row.createdAt,
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">{displayDateTime(row.original.createdAt)}</span>
+      ),
+    },
+    {
+      id: 'status',
+      header: 'Trạng thái',
+      cell: ({ row }) => <InboxStatusTag status={row.original.status} />,
+    },
+  ];
 }

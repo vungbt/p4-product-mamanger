@@ -59,7 +59,7 @@ for (const width of [1280, 375]) {
     expect(activation.ok(), await activation.text()).toBe(true);
     await page.evaluate((id) => localStorage.setItem('stay_building_id', id), building.id);
     await page.goto('/deposits');
-    const row = page.getByTestId('deposit-row').filter({ hasText: contract.code });
+    const row = page.getByTestId(/^deposit-list-row-/).filter({ hasText: contract.code });
     const total = page.getByTestId('deposit-total');
     await expect(row.getByTestId('deposit-held')).toContainText('1.000.000');
     const baseline = Number((await total.innerText()).replace(/\D/g, '')) - 1_000_000;

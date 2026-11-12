@@ -1,4 +1,4 @@
-import { AlertDialog, Button, cn, EmptyState, IconButton } from '@itclabs/react-ui';
+import { AlertDialog, Button, cn, EmptyState, Icon, IconButton } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useDeleteInvoiceLine, useInvoice, useIssueInvoices } from '@stay/sdk/react';
 import {
@@ -139,24 +139,36 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
             ) : null}
           </p>
         </div>
+        {/* Secondary and destructive actions first, the primary action (issue / collect) last. */}
         <div className="flex flex-wrap gap-2">
-          {draft && canUpdate ? (
-            <Button variant="secondary" onClick={() => setDialog('line')}>
-              Thêm phụ thu / giảm trừ
+          {voidable ? (
+            <Button variant="danger" onClick={() => setDialog('void')}>
+              <Icon name="delete" className="size-4" aria-hidden />
+              Void
             </Button>
-          ) : null}
-          {draft && canIssue ? <Button onClick={() => setDialog('issue')}>Phát hành</Button> : null}
-          {canPay && isCollectable(invoice) ? (
-            <Button onClick={() => setDialog('payment')}>Thu tiền</Button>
           ) : null}
           {shareable ? (
             <Button variant="secondary" onClick={() => setDialog('share')}>
+              <Icon name="share" className="size-4" aria-hidden />
               Chia sẻ
             </Button>
           ) : null}
-          {voidable ? (
-            <Button variant="danger" onClick={() => setDialog('void')}>
-              Void
+          {draft && canUpdate ? (
+            <Button variant="secondary" onClick={() => setDialog('line')}>
+              <Icon name="plus" className="size-4" aria-hidden />
+              Thêm phụ thu / giảm trừ
+            </Button>
+          ) : null}
+          {draft && canIssue ? (
+            <Button onClick={() => setDialog('issue')}>
+              <Icon name="send" className="size-4" aria-hidden />
+              Phát hành
+            </Button>
+          ) : null}
+          {canPay && isCollectable(invoice) ? (
+            <Button onClick={() => setDialog('payment')}>
+              <Icon name="moneyReceive" className="size-4" aria-hidden />
+              Thu tiền
             </Button>
           ) : null}
         </div>
@@ -363,14 +375,13 @@ function PaymentRow({ payment, onReverse }: { payment: StayPayment; onReverse?: 
         ) : null}
       </div>
       {onReverse ? (
-        <Button
+        <IconButton
+          icon="rotateLeft"
           variant="ghost"
           size="sm"
-          aria-label={`Huỷ bút toán ${formatVnd(payment.amount)} ngày ${displayDate(payment.paidOn)}`}
+          label={`Huỷ bút toán ${formatVnd(payment.amount)} ngày ${displayDate(payment.paidOn)}`}
           onClick={onReverse}
-        >
-          Huỷ bút toán
-        </Button>
+        />
       ) : null}
     </li>
   );

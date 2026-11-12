@@ -1,11 +1,11 @@
-import { cn, Skeleton } from '@itclabs/react-ui';
+import { cn, KpiGrid, Skeleton } from '@itclabs/react-ui';
 import { useBuildingOverview } from '@stay/sdk/react';
 import { isPeriod, type StayOverview } from '@stay/shared';
 import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
-import { formatVnd } from '@/libraries/format';
+import { formatVnd, formatVndCompact } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ScreenHeader } from '@/libraries/screen-header';
@@ -59,6 +59,7 @@ export default function OverviewPage() {
   return (
     <div className="grid min-w-0 grid-cols-1 gap-6">
       <ScreenHeader
+        visible
         title={t('overview.greeting', { name })}
         description={
           <span className="block truncate" data-testid="signed-in-user">
@@ -138,10 +139,11 @@ function OverviewContent({
         <h2 id="overview-stats-title" className="text-section font-semibold text-ink">
           Kỳ {period}
         </h2>
-        <ul className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+        <KpiGrid columns={5}>
           <StatCard
             id="billed"
             label="Phải thu kỳ này"
+            icon="receipt"
             value={data.current.billed}
             previous={data.previous.billed}
             previousLabel={previous}
@@ -151,6 +153,8 @@ function OverviewContent({
           <StatCard
             id="collected"
             label="Đã thu"
+            icon="moneyReceive"
+            tone="success"
             value={data.current.collected}
             previous={data.previous.collected}
             previousLabel={previous}
@@ -160,14 +164,19 @@ function OverviewContent({
           <StatCard
             id="remaining"
             label="Còn lại"
+            icon="walletMoney"
             value={data.current.remaining}
+            previous={data.previous.remaining}
+            previousLabel={previous}
+            upIsGood={false}
             note={`Của các hoá đơn kỳ ${period}`}
             href={`/invoices?period=${data.period}`}
-            tone={data.current.remaining > 0 ? 'warning' : undefined}
+            tone={data.current.remaining > 0 ? 'warning' : 'success'}
           />
           <StatCard
             id="overdue"
             label="Công nợ quá hạn"
+            icon="moneyTime"
             value={data.receivables.overdueRemaining}
             note={`Tổng công nợ mọi kỳ: ${formatVnd(data.receivables.totalRemaining)}${
               data.receivables.graceDays > 0
@@ -175,10 +184,10 @@ function OverviewContent({
                 : ''
             }`}
             href="/receivables"
-            tone={data.receivables.overdueRemaining > 0 ? 'danger' : undefined}
+            tone={data.receivables.overdueRemaining > 0 ? 'danger' : 'success'}
           />
           <OccupancyCard data={data} previousLabel={previous} />
-        </ul>
+        </KpiGrid>
       </section>
 
       <TodoList todos={data.todos} />
@@ -205,6 +214,7 @@ function OverviewContent({
                   { id: 'collected', label: 'Đã thu' },
                 ]}
                 valueFormatter={formatVnd}
+                axisValueFormatter={formatVndCompact}
                 emptyMessage="Chưa có hoá đơn phát hành trong 6 kỳ này."
                 loadingLabel="Đang tải biểu đồ"
                 loading={loading}

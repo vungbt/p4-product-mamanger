@@ -3,6 +3,7 @@ import {
   AlertDialog,
   Button,
   EmptyState,
+  Icon,
   PageHeader,
   Skeleton,
   Tag,
@@ -153,31 +154,38 @@ export default function RoomDetailPage() {
         }
         action={
           (canManage && !archived) || (canPay && room.debt > 0) ? (
+            // Secondary actions first, the primary action (collect, else edit) last.
             <div className="flex flex-wrap gap-2">
-              {canPay && room.debt > 0 ? (
-                <Button onClick={() => setCollectOpen(true)}>{t('rooms.actions.collect')}</Button>
-              ) : null}
               {canManage && !archived ? (
                 <>
-                  <Button
-                    variant={room.debt > 0 && canPay ? 'secondary' : 'primary'}
-                    onClick={() => navigate(roomEditPath(room.id))}
-                  >
-                    {t('rooms.actions.edit')}
+                  <Button variant="ghost" disabled={locked} onClick={() => setArchiveOpen(true)}>
+                    <Icon name="archive" className="size-4" aria-hidden />
+                    {t('rooms.actions.archive')}
                   </Button>
                   <Button
                     variant="secondary"
                     disabled={locked}
                     onClick={() => setMaintenanceOpen(true)}
                   >
+                    <Icon name="wrench" className="size-4" aria-hidden />
                     {room.maintenance
                       ? t('rooms.actions.maintenanceOff')
                       : t('rooms.actions.maintenanceOn')}
                   </Button>
-                  <Button variant="ghost" disabled={locked} onClick={() => setArchiveOpen(true)}>
-                    {t('rooms.actions.archive')}
+                  <Button
+                    variant={room.debt > 0 && canPay ? 'secondary' : 'primary'}
+                    onClick={() => navigate(roomEditPath(room.id))}
+                  >
+                    <Icon name="edit" className="size-4" aria-hidden />
+                    {t('rooms.actions.edit')}
                   </Button>
                 </>
+              ) : null}
+              {canPay && room.debt > 0 ? (
+                <Button onClick={() => setCollectOpen(true)}>
+                  <Icon name="moneyReceive" className="size-4" aria-hidden />
+                  {t('rooms.actions.collect')}
+                </Button>
               ) : null}
             </div>
           ) : null

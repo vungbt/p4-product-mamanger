@@ -101,23 +101,35 @@ for (const width of [375, 1280]) {
       'href',
       '/invoices/invoice-1',
     );
-    await page.getByRole('button', { name: 'Chi tiết thay đổi' }).click();
-    await expect(page.locator('pre')).toContainText('[REDACTED]');
+    // Each entry reads as a sentence; the detail dialog shows the diff and the redacted JSON.
+    await page.getByRole('button', { name: /^Chi tiết thay đổi/ }).click();
+    const detail = page.getByRole('dialog', { name: 'Chi tiết thay đổi' });
+    await expect(detail.getByText('Phát hành', { exact: true })).toBeVisible();
+    await expect(detail.locator('pre')).toContainText('[REDACTED]');
+    await page.keyboard.press('Escape');
+    await expect(detail).toBeHidden();
     await page.getByRole('searchbox', { name: 'Tìm hành động hoặc bản ghi' }).fill('invoice');
     await expect(page).toHaveURL(/q=invoice/);
     await expect(page).not.toHaveURL(/page=2/);
-    await page.getByRole('textbox', { name: 'Hành động', exact: true }).fill('issue');
-    await page.getByRole('button', { name: 'Áp dụng' }).click();
+    // Actions are offered by name ("Phát hành hoá đơn"), filtered by their code in the URL.
+    await chooseOption(page, page, 'Hành động', 'Phát hành hoá đơn');
     await expect(page).toHaveURL(/action=issue/);
-    await chooseOption(page, page, 'Sắp xếp theo', 'Hành động');
-    await expect(page).toHaveURL(/sortBy=action/);
+    await chooseOption(page, page, 'Thứ tự', 'Cũ nhất trước');
+    await expect(page).toHaveURL(/sortOrder=asc/);
     await page.reload();
-    await expect(page.getByRole('textbox', { name: 'Hành động', exact: true })).toHaveValue(
-      'issue',
-    );
+    // The kit Select shows the chosen option next to its (empty) search input.
+    await expect(
+      page.getByRole('group', { name: 'Bộ lọc' }).getByText('Phát hành hoá đơn', { exact: true }),
+    ).toBeVisible();
     await expect.poll(() => api.queries.at(-1)?.get('buildingId')).toBe(buildingId);
-    await expect(page.getByRole('combobox', { name: 'Sắp xếp theo' })).toBeVisible();
-    await expect.poll(() => api.queries.at(-1)?.get('sortBy')).toBe('action');
+    await expect(page.getByRole('combobox', { name: 'Thứ tự' })).toBeVisible();
+    await expect
+      .poll(() =>
+        api.queries.some(
+          (query) => query.get('pageSize') === '20' && query.get('sortOrder') === 'asc',
+        ),
+      )
+      .toBe(true);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);

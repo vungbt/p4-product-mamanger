@@ -1,4 +1,4 @@
-import { Button, Progress, Select } from '@itclabs/react-ui';
+import { Button, Icon, Progress, Select } from '@itclabs/react-ui';
 import { useBuilding, useReadings } from '@stay/sdk/react';
 import {
   defaultReadingPeriod,
@@ -169,6 +169,7 @@ function BuildingReadings({
             </div>
             {canBill ? (
               <Button className="shrink-0" onClick={() => navigate(billingRunPath(invoicePeriod))}>
+                <Icon name="plus" className="size-4" aria-hidden />
                 Lập hoá đơn kỳ {displayPeriod(invoicePeriod)}
               </Button>
             ) : null}

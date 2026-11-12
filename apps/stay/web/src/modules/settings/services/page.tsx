@@ -17,6 +17,7 @@ import { ApiSdkError } from '@stay/sdk/shared';
 import type { StayService } from '@stay/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FilterBar } from '@/libraries/filter-bar';
 import { formatVnd } from '@/libraries/format';
 import { isVersionConflict } from '@/libraries/forms/api-errors';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
@@ -123,16 +124,7 @@ export default function ServicesPage() {
   };
 
   const header = (
-    <ScreenHeader
-      title={t('services.title')}
-      description={t('services.description')}
-      action={
-        <Button onClick={() => setCreating(true)} disabled={!query.data}>
-          <Icon name="plus" className="size-4" aria-hidden />
-          {t('services.add')}
-        </Button>
-      }
-    />
+    <ScreenHeader title={t('services.title')} description={t('services.description')} />
   );
 
   if (query.isPending)
@@ -154,6 +146,15 @@ export default function ServicesPage() {
   return (
     <div className="grid gap-6">
       {header}
+
+      <FilterBar
+        actions={
+          <Button onClick={() => setCreating(true)}>
+            <Icon name="plus" className="size-4" aria-hidden />
+            {t('services.add')}
+          </Button>
+        }
+      />
 
       <Dialog
         open={creating}
@@ -178,7 +179,7 @@ export default function ServicesPage() {
           className="overflow-hidden rounded-panel border border-line bg-surface shadow-panel"
           data-testid="services-table"
         >
-          <div aria-hidden="true" className="hidden border-b border-line bg-canvas lg:block">
+          <div aria-hidden="true" className="hidden border-b border-line bg-table-header lg:block">
             <div className="flex items-center gap-3 px-4 py-2.5 text-eyebrow font-semibold uppercase text-muted">
               <span className="w-8">
                 <span className="sr-only">{t('services.order')}</span>

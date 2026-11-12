@@ -527,8 +527,8 @@ importers:
   apps/stay/web:
     dependencies:
       '@itclabs/react-ui':
-        specifier: 0.14.0
-        version: 0.14.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/core@3.30.5(@tiptap/pm@3.30.5))(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))
+        specifier: 0.18.0
+        version: 0.18.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/core@3.30.5(@tiptap/pm@3.30.5))(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))
       '@p4/ability':
         specifier: workspace:*
         version: link:../../../libs/ability
@@ -1612,8 +1612,8 @@ packages:
       valibot:
         optional: true
 
-  '@itclabs/react-ui@0.14.0':
-    resolution: {integrity: sha512-Cvc+25O59Ot6lm7noMwJuksNuw8TwOMXo5Viue7GgJlbv60rZwN+6u/iYH2OEGlhOG0/Q6hCvyaGEBTcaBy3ZQ==}
+  '@itclabs/react-ui@0.18.0':
+    resolution: {integrity: sha512-nodsO1/9bDmw78mb0RDoboDVvc2ZfjjBjfM1BxMQn5As6OAdBsEBgmJtLiWTIgnWqRn7nu8EPvkjUMAa59gdCQ==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       '@date-fns/tz': ^1.2.0
@@ -7091,7 +7091,7 @@ snapshots:
       - embla-carousel
       - supports-color
 
-  '@itclabs/react-ui@0.14.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/core@3.30.5(@tiptap/pm@3.30.5))(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))':
+  '@itclabs/react-ui@0.18.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/core@3.30.5(@tiptap/pm@3.30.5))(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))':
     dependencies:
       '@date-fns/tz': 1.5.0
       '@dnd-kit/core': 6.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

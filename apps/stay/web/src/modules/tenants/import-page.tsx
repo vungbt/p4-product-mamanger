@@ -244,7 +244,7 @@ export default function TenantImportPage() {
           <div className="max-h-[60vh] overflow-auto rounded-control border border-line">
             <table className="w-full min-w-max text-left text-ui-sm" data-testid="import-preview">
               <caption className="sr-only">{t('tenants.import.previewStep')}</caption>
-              <thead className="sticky top-0 bg-canvas text-muted">
+              <thead className="sticky top-0 bg-table-header text-muted">
                 <tr>
                   <th scope="col" className="px-3 py-2 font-semibold">
                     {t('tenants.import.line')}

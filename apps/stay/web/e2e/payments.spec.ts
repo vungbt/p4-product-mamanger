@@ -152,12 +152,15 @@ for (const width of [1280, 375]) {
     await expect(page).toHaveURL(new RegExp(`from=${paidOn}`));
     await expect(page).toHaveURL(new RegExp(`to=${paidOn}`));
     await expect(page).toHaveURL(/q=/);
-    const rows = page.getByTestId('payment-row').filter({ hasText: code });
+    const rows = page.getByTestId(/^payment-list-row-/).filter({ hasText: code });
     // The previous (unfiltered) page stays visible until the filtered result arrives.
     await expect(rows).toHaveCount(1);
     await expect(rows.first()).toContainText(money(partial));
     await expect(rows.first()).toContainText('Chuyển khoản');
-    await expect(rows.first()).toHaveAttribute('data-payment-status', 'recorded');
+    await expect(rows.first().locator('[data-payment-status]')).toHaveAttribute(
+      'data-payment-status',
+      'recorded',
+    );
     await expect(page.getByTestId('payment-total-bank_transfer')).toContainText(money(partial));
     await expect(page.getByTestId('payment-total-all')).toContainText(money(partial));
     expect(await noHorizontalScroll(page)).toBe(true);
@@ -167,7 +170,10 @@ for (const width of [1280, 375]) {
     await pickDate(page, page, 'Đến ngày', today());
     await pickDate(page, page, 'Từ ngày', today());
     await expect(rows).toHaveCount(1);
-    await expect(rows.first()).toHaveAttribute('data-payment-status', 'reversed');
+    await expect(rows.first().locator('[data-payment-status]')).toHaveAttribute(
+      'data-payment-status',
+      'reversed',
+    );
     await expect(page.getByTestId('payment-total-all')).toContainText(/(^|\D)0\s₫/);
   });
 }

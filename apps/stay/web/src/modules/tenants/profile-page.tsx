@@ -1,4 +1,4 @@
-import { Alert, AlertDialog, Button, EmptyState, Tag } from '@itclabs/react-ui';
+import { Alert, AlertDialog, Button, EmptyState, Icon, Tag } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useArchiveTenant, useRevealTenantIdNumber, useTenant } from '@stay/sdk/react';
 import { ApiSdkError, type components, getErrorMessage } from '@stay/sdk/shared';
@@ -169,11 +169,6 @@ export default function TenantProfilePage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ContactLinks phone={data.phone} name={data.fullName} />
-          {active && canUpdate ? (
-            <Button variant="secondary" onClick={() => navigate(`/tenants/${data.id}/edit`)}>
-              {t('common.edit')}
-            </Button>
-          ) : null}
           {active && canArchive ? (
             <AlertDialog
               title={t('tenants.profile.archiveTitle', { name: data.fullName })}
@@ -183,9 +178,20 @@ export default function TenantProfilePage() {
               confirmVariant="danger"
               confirmLoading={archive.isPending}
               onConfirm={() => void archiveTenant()}
-              trigger={<Button variant="ghost">{t('tenants.profile.archive')}</Button>}
+              trigger={
+                <Button variant="ghost">
+                  <Icon name="archive" className="size-4" aria-hidden />
+                  {t('tenants.profile.archive')}
+                </Button>
+              }
               triggerAsChild
             />
+          ) : null}
+          {active && canUpdate ? (
+            <Button variant="secondary" onClick={() => navigate(`/tenants/${data.id}/edit`)}>
+              <Icon name="edit" className="size-4" aria-hidden />
+              {t('common.edit')}
+            </Button>
           ) : null}
         </div>
       </header>

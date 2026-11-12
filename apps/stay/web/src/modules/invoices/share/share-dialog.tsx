@@ -1,4 +1,4 @@
-import { AlertDialog, Button, Input } from '@itclabs/react-ui';
+import { AlertDialog, Button, Icon, Input } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useRevokeInvoiceShare, useShareInvoice } from '@stay/sdk/react';
 import type { InvoiceShareLink, StayInvoiceSummary } from '@stay/shared';
@@ -7,6 +7,7 @@ import { FormError } from '@/libraries/forms/page-states';
 import { Overlay } from '../invoice-dialogs';
 import { displayExpiry, displayPeriod, invoiceErrorMessage } from '../invoice-ui';
 import { InvoiceImageButton } from './invoice-image-button';
+import { InvoicePreviewButton } from './invoice-preview';
 import { canWebShare, copyWithToast, shareLink } from './share-tools';
 
 type SharedInvoice = Pick<
@@ -31,12 +32,16 @@ export function ShareLinkActions({
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button onClick={() => void copyWithToast(link.url, 'link')}>Sao chép link</Button>
+      <Button onClick={() => void copyWithToast(link.url, 'link')}>
+        <Icon name="copy" className="size-4" aria-hidden />
+        Sao chép link
+      </Button>
       {canWebShare() ? (
         <Button
           variant="secondary"
           onClick={() => void shareLink('Hoá đơn tiền phòng', shareMessage(invoice), link.url)}
         >
+          <Icon name="share" className="size-4" aria-hidden />
           Chia sẻ…
         </Button>
       ) : null}
@@ -45,8 +50,9 @@ export function ShareLinkActions({
         href={link.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center px-2 font-semibold text-accent underline"
+        className="inline-flex items-center gap-2 px-2 font-semibold text-accent underline"
       >
+        <Icon name="printer" className="size-4" aria-hidden />
         Mở trang in / PDF
       </a>
     </div>
@@ -128,19 +134,22 @@ export function ShareInvoiceDialog({
           <p>Chưa có link chia sẻ cho hoá đơn này. Link có hiệu lực 60 ngày.</p>
         )}
         <div className="flex flex-wrap gap-2 border-t border-line pt-4">
+          <InvoicePreviewButton invoiceId={invoice.id} />
           <Button
             variant={link ? 'secondary' : 'primary'}
             loading={share.isPending}
             onClick={() => void create()}
           >
+            <Icon name={activeUntil ? 'refresh' : 'link'} className="size-4" aria-hidden />
             {activeUntil ? 'Tạo link mới' : 'Tạo link'}
           </Button>
           {activeUntil ? (
             <Button variant="danger" onClick={() => setConfirmRevoke(true)}>
+              <Icon name="delete" className="size-4" aria-hidden />
               Thu hồi link
             </Button>
           ) : null}
-          <Button variant="ghost" onClick={close}>
+          <Button variant="ghost" className="sm:ml-auto" onClick={close}>
             Đóng
           </Button>
         </div>

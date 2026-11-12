@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { BRAND, BrandMark } from '@/brand';
 import { useCanAccessSome } from '@/libraries/ability';
 import { BuildingSelector } from '@/libraries/buildings/building-selector';
+import { usePageDescription } from '@/libraries/page-meta';
 import { appRoutes, ROUTES } from '@/routing/route-configs';
 import { routeTrail, useCurrentRoute } from '@/routing/use-routes';
 import AccountMenu from './account-menu';
@@ -22,6 +23,7 @@ export default function AppHeader() {
   // Notifications are per building (API: read Building); tenants have none.
   const canReadNotifications = useCanAccessSome('read', 'Building');
   const route = useCurrentRoute();
+  const description = usePageDescription();
 
   const parent = route?.parent ? appRoutes.find(({ name }) => name === route.parent) : undefined;
 
@@ -57,21 +59,28 @@ export default function AppHeader() {
               {title || BRAND.name}
             </span>
           </div>
-          <Breadcrumb
-            className="hidden min-w-0 lg:block"
-            items={
-              route && !isHome
-                ? [
-                    { key: 'overview', title: t('nav.overview'), href: ROUTES.overview },
-                    ...routeTrail(route).map((item) =>
-                      item === route
-                        ? { key: item.name, title }
-                        : { key: item.name, title: t(`nav.${item.name}`), href: item.path },
-                    ),
-                  ]
-                : [{ key: 'overview', title: t('nav.overview') }]
-            }
-          />
+          <div className="hidden min-w-0 lg:grid lg:gap-0.5">
+            <Breadcrumb
+              className="min-w-0"
+              items={
+                route && !isHome
+                  ? [
+                      { key: 'overview', title: t('nav.overview'), href: ROUTES.overview },
+                      ...routeTrail(route).map((item) =>
+                        item === route
+                          ? { key: item.name, title }
+                          : { key: item.name, title: t(`nav.${item.name}`), href: item.path },
+                      ),
+                    ]
+                  : [{ key: 'overview', title: t('nav.overview') }]
+              }
+            />
+            {description ? (
+              <p className="truncate text-ui-sm text-muted" data-testid="page-description">
+                {description}
+              </p>
+            ) : null}
+          </div>
         </>
       }
       actions={

@@ -114,7 +114,8 @@ for (const width of [1280, 375]) {
     await page.setViewportSize({ width, height: 900 });
     await signIn(page);
     const { year, usage, period, eligible, excluded, get } = await fixtures(page);
-    const billingRow = (code: string) => page.getByTestId('billing-row').filter({ hasText: code });
+    const billingRow = (code: string) =>
+      page.getByTestId(/^billing-list-row-/).filter({ hasText: code });
 
     // Step 1: preview scoped to our two contracts.
     await page.goto(`/invoices/run?period=${period}`);
@@ -132,11 +133,11 @@ for (const width of [1280, 375]) {
 
     // Step 2: drafts (fresh Idempotency-Key per click), then open ours.
     await page.getByRole('button', { name: 'Tạo bản nháp', exact: true }).click();
-    const draftRow = page.getByTestId('draft-row').filter({ hasText: eligible.room.code });
+    const draftRow = page.getByTestId(/^draft-list-row-/).filter({ hasText: eligible.room.code });
     await expect(draftRow).toBeVisible();
-    await expect(page.getByTestId('draft-row').filter({ hasText: excluded.room.code })).toHaveCount(
-      0,
-    );
+    await expect(
+      page.getByTestId(/^draft-list-row-/).filter({ hasText: excluded.room.code }),
+    ).toHaveCount(0);
     await saveScreenshot(page, `invoices-run-${width}`);
     await draftRow.getByRole('link', { name: `Xem nháp phòng ${eligible.room.code}` }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Hoá đơn nháp' })).toBeVisible();
@@ -225,9 +226,11 @@ for (const width of [1280, 375]) {
 
     // List: the period filter (URL) shows our voided invoice and not the move-in drafts of M−1.
     await page.goto('/invoices');
-    await pickMonth(page, page, 'Kỳ', period);
+    // The filter, not the sortable "Kỳ" column header of the table.
+    await pickMonth(page, page.getByRole('group', { name: 'Bộ lọc' }), 'Kỳ', period);
     await expect(page).toHaveURL(new RegExp(`period=${period}`));
-    const listRow = (code: string) => page.getByTestId('invoice-row').filter({ hasText: code });
+    const listRow = (code: string) =>
+      page.getByTestId(/^invoice-list-row-/).filter({ hasText: code });
     // The previous (unfiltered) page stays visible until the filtered result arrives.
     await expect(listRow(eligible.room.code)).toHaveCount(1);
     await expect(listRow(eligible.room.code)).toContainText(issued.code ?? '');

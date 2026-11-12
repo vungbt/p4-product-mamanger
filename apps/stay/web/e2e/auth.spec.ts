@@ -47,9 +47,10 @@ test.describe('C-01 login and session', () => {
 
     await expect(page).toHaveURL('/invoices?period=2026-11');
     await expect(page.getByRole('heading', { level: 1, name: 'Hoá đơn' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Kỳ', exact: true })).toHaveText(
-      displayPeriod('2026-11'),
-    );
+    // The sortable "Kỳ" column header is also a button; the period picker lives in the filters.
+    await expect(
+      page.getByRole('group', { name: 'Bộ lọc' }).getByRole('button', { name: 'Kỳ', exact: true }),
+    ).toHaveText(displayPeriod('2026-11'));
   });
 
   test('shows field errors and a generic message for wrong credentials', async ({ page }) => {

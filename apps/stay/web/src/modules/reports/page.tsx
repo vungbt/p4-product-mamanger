@@ -1,11 +1,21 @@
-import { Button, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger } from '@itclabs/react-ui';
+import {
+  Button,
+  Icon,
+  KpiCard,
+  KpiGrid,
+  Skeleton,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@itclabs/react-ui';
 import { useRevenueReport, useRoomsReport, useUtilitiesReport } from '@stay/sdk/react';
 import { isPeriod, type RevenueReport, type RoomsReport, type UtilitiesReport } from '@stay/shared';
 import { lazy, type ReactNode, Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FilterBar } from '@/libraries/filter-bar';
-import { formatVnd, todayIsoDate } from '@/libraries/format';
+import { formatVnd, formatVndCompact, todayIsoDate } from '@/libraries/format';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ScreenHeader } from '@/libraries/screen-header';
@@ -46,16 +56,15 @@ export default function ReportsPage() {
 
   return (
     <div className="grid min-w-0 max-w-full gap-5">
-      <ScreenHeader
-        title="Báo cáo"
-        description={building?.name ?? 'Chọn toà nhà'}
-        action={
+      <ScreenHeader title="Báo cáo" description={building?.name ?? 'Chọn toà nhà'} />
+      <FilterBar
+        actions={
           <Button disabled={!buildingId} onClick={() => setExportOpen(true)}>
+            <Icon name="download" className="size-4" aria-hidden />
             Xuất Excel
           </Button>
         }
-      />
-      <FilterBar>
+      >
         <PeriodPicker
           label="Từ tháng"
           value={from}
@@ -147,6 +156,36 @@ function RevenueContent({ data }: { data: RevenueReport }) {
       data-to={data.to}
     >
       {empty ? <p>Chưa có hoá đơn, khoản thu hoặc chi phí trong khoảng này.</p> : null}
+      <KpiGrid aria-label="Tổng cả khoảng">
+        <KpiCard
+          label="Phải thu"
+          value={formatVnd(data.totals.billed)}
+          icon="receipt"
+          tone="brand"
+          compact
+        />
+        <KpiCard
+          label="Đã thu"
+          value={formatVnd(data.totals.collected)}
+          icon="moneyReceive"
+          tone="success"
+          compact
+        />
+        <KpiCard
+          label="Chi phí"
+          value={formatVnd(data.totals.expenses)}
+          icon="walletMoney"
+          tone="warning"
+          compact
+        />
+        <KpiCard
+          label="Lãi/lỗ"
+          value={formatVnd(data.totals.profit)}
+          icon="chart"
+          tone={data.totals.profit < 0 ? 'danger' : 'success'}
+          compact
+        />
+      </KpiGrid>
       <div className="relative min-w-0 overflow-hidden rounded-panel border border-line bg-surface p-3">
         <Suspense fallback={<Skeleton className="h-64" />}>
           <PeriodChart
@@ -170,6 +209,7 @@ function RevenueContent({ data }: { data: RevenueReport }) {
             }
             series={series}
             valueFormatter={formatVnd}
+            axisValueFormatter={formatVndCompact}
             emptyMessage="Chưa có dữ liệu."
           />
         </Suspense>

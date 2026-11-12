@@ -33,7 +33,7 @@ const STATUS_TONES: Record<InvoiceStatus, TagTone> = {
 };
 
 export const INVOICE_KIND_LABELS: Record<InvoiceKind, string> = {
-  monthly: 'Kỳ',
+  monthly: 'Hoá đơn tháng',
   move_in: 'Nhận phòng',
   settlement: 'Thanh lý',
 };

@@ -15,13 +15,16 @@
   /* Surfaces and content: cool greys */
   --color-canvas: #f3f5f8;
   --color-surface: #ffffff;
-  /* Tinted sidebar (kit indicator items) on an inset shell: slightly darker than the canvas so
-     item hover and the active row stay visible and the page card stands out. */
-  --color-sidebar: #e9edf2;
+  /* Light teal-grey sidebar (kit indicator items) on an inset shell; the white page card and the
+     kit's ink-tinted hover keep the active row and hover visible. */
+  --color-sidebar: #f2f7f6;
   --color-ink: #1f2937;
   --color-muted: #556070;
   --color-line: #e2e6ec;
   --color-control-border: #8a94a3;
+  /* DataTable header row: teal-grey, set apart from the canvas page and the white rows.
+     muted/table-header 5.45 · ink/table-header 12.54 · accent/table-header 4.67 */
+  --color-table-header: #e6efed;
 
   /* Teal brand; filled controls use brand-700 so white labels stay readable. */
   --color-brand-50: #f0fdfa;
