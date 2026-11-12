@@ -12,6 +12,8 @@ export interface BuildingAttributes {
   issueDay: BillingDay | null;
   dueDay: BillingDay | null;
   graceDays: number | null;
+  /** Move-out facility depreciation fee (VND, 0 = off). */
+  moveOutFee: number | null;
   roundingUnit: RoundingUnit | null;
   refundUnusedRent: boolean | null;
   bankBin: string | null;
@@ -34,6 +36,7 @@ export type BuildingCreation = Optional<
   | 'issueDay'
   | 'dueDay'
   | 'graceDays'
+  | 'moveOutFee'
   | 'roundingUnit'
   | 'refundUnusedRent'
   | 'bankBin'
@@ -60,6 +63,7 @@ export class BuildingModel
   declare issueDay: BillingDay | null;
   declare dueDay: BillingDay | null;
   declare graceDays: number | null;
+  declare moveOutFee: number | null;
   declare roundingUnit: RoundingUnit | null;
   declare refundUnusedRent: boolean | null;
   declare bankBin: string | null;
@@ -85,6 +89,7 @@ export function initBuildingModel(sequelize: Sequelize) {
       issueDay: { type: DataTypes.SMALLINT, allowNull: true },
       dueDay: { type: DataTypes.SMALLINT, allowNull: true },
       graceDays: { type: DataTypes.SMALLINT, allowNull: true },
+      moveOutFee: { type: DataTypes.INTEGER, allowNull: true },
       roundingUnit: { type: DataTypes.INTEGER, allowNull: true },
       refundUnusedRent: { type: DataTypes.BOOLEAN, allowNull: true },
       bankBin: { type: DataTypes.STRING(6), allowNull: true },

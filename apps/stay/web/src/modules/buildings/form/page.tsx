@@ -6,6 +6,7 @@ import {
   FormSubmit,
   Icon,
   Input,
+  NumberInput,
   Select,
   type SelectOption,
   Textarea,
@@ -22,6 +23,7 @@ import {
   BUILDING_CODE_PATTERN,
   billingCycleErrors,
   isReadingDayMonth,
+  MOVE_OUT_FEE_MAX,
   ROUNDING_UNITS,
   type StayBuildingDetail,
   type StaySettings,
@@ -72,6 +74,8 @@ type BuildingValues = {
   graceDays: string;
   roundingUnit: string;
   refundUnusedRent: string;
+  /** `null` = follow the system setting. */
+  moveOutFee: number | null;
   bankBin: string;
   bankAccount: string;
   bankAccountName: string;
@@ -90,6 +94,7 @@ const FIELDS = [
   'graceDays',
   'roundingUnit',
   'refundUnusedRent',
+  'moveOutFee',
   'bankBin',
   'bankAccount',
   'bankAccountName',
@@ -110,6 +115,7 @@ const EMPTY_VALUES: BuildingValues = {
   graceDays: SYSTEM,
   roundingUnit: SYSTEM,
   refundUnusedRent: SYSTEM,
+  moveOutFee: null,
   bankBin: '',
   bankAccount: '',
   bankAccountName: '',
@@ -132,6 +138,7 @@ function toValues(building: StayBuildingDetail): BuildingValues {
     roundingUnit: choice(building.roundingUnit),
     refundUnusedRent:
       building.refundUnusedRent === null ? SYSTEM : building.refundUnusedRent ? 'yes' : 'no',
+    moveOutFee: building.moveOutFee,
     bankBin: building.bankBin ?? '',
     bankAccount: building.bankAccount ?? '',
     bankAccountName: building.bankAccountName ?? '',
@@ -304,6 +311,7 @@ function BuildingForm({
         roundingUnit: ROUNDING_UNITS.find((unit) => String(unit) === value.roundingUnit) ?? null,
         refundUnusedRent:
           value.refundUnusedRent === SYSTEM ? null : value.refundUnusedRent === 'yes',
+        moveOutFee: value.moveOutFee,
         bankBin: value.bankBin || null,
         bankAccount: value.bankAccount.replace(/\s+/g, '') || null,
         bankAccountName: value.bankAccountName.trim() || null,
@@ -458,6 +466,24 @@ function BuildingForm({
             className="mb-0 md:col-span-2"
           >
             <Select options={refundOptions} />
+          </FormField>
+          <FormField
+            name="moveOutFee"
+            label={ts('billing.moveOutFee')}
+            className="mb-0 md:col-span-3"
+          >
+            <NumberInput
+              min={0}
+              max={MOVE_OUT_FEE_MAX}
+              step={1000}
+              endAddon="₫"
+              placeholder={
+                settings
+                  ? t('form.systemValue', { value: formatVnd(settings.moveOutFee) })
+                  : t('form.system')
+              }
+              hint={t('form.moveOutFeeHint')}
+            />
           </FormField>
         </div>
         {effective ? (

@@ -485,7 +485,9 @@ settle so both return the same numbers; all money from `@stay/billing`):
   monthly/move-in invoice, refunds prepaid days after D from issued invoices of D's month or later
   when the building's `refundUnusedRent` (else the system setting) is on, surcharges (each with a
   reason, stored as manual surcharge lines with `meta.reason`) and rounds the total with the
-  building `roundingUnit`. Earlier issued invoices with something left are listed only
+  building `roundingUnit`. When the body omits `surcharges`, the building's `moveOutFee` (else
+  the system setting, default 300.000đ; 0 = off) is added as one "Khấu hao cơ sở vật chất"
+  surcharge; an array (even empty) is used as sent, so the owner can edit or remove that line. Earlier issued invoices with something left are listed only
   (`outstandingInvoices`, oldest period first).
 - `allocateSettlementDeposit` (new in `@stay/billing`) splits the deposit: earlier invoices first,
   then the settlement invoice; the rest is refunded. A negative settlement total (refunds larger

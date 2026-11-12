@@ -1,4 +1,5 @@
 import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { expect, type Page, test } from '@playwright/test';
 import { saveScreenshot, signIn } from './helpers';
 
@@ -84,6 +85,34 @@ test.describe('O-11..O-14 tenants (desktop)', () => {
     await expect(page.getByText('Số CCCD này đã có trong hồ sơ người thuê khác.')).toBeVisible();
     await page.getByRole('link', { name: 'Xem hồ sơ đã có' }).click();
     await expect(page.getByRole('heading', { level: 1, name: SEEDED.name })).toBeVisible();
+  });
+
+  test('Quét CCCD: camera fallback message, then a card photo prefills the form', async ({
+    page,
+  }) => {
+    await signIn(page);
+    await page.goto('/tenants/new');
+    await page.getByRole('button', { name: 'Quét CCCD', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: 'Quét mã QR trên CCCD' });
+
+    await expect(dialog).toBeVisible();
+    // Headless Chromium has no camera (or no permission): a clear message, never a blank dialog.
+    await expect(dialog.getByRole('status')).toContainText(
+      /Đang mở camera|Đang tìm mã QR|camera|Chọn ảnh thẻ/,
+    );
+    // A synthetic card QR (fixtures/cccd-qr.png) read from a picked photo, in the browser only.
+    await dialog
+      .getByLabel('Chọn ảnh thẻ')
+      .setInputFiles(path.resolve(import.meta.dirname, 'fixtures/cccd-qr.png'));
+    await expect(dialog).toBeHidden();
+    await expect(page.getByTestId('cccd-scan-filled')).toContainText('Đã điền từ CCCD');
+    await expect(page.getByRole('textbox', { name: /Họ tên/ })).toHaveValue('Phạm Thị E2E Quét');
+    await expect(page.getByRole('textbox', { name: /Số CCCD/ })).toHaveValue('079199000123');
+    await expect(page.getByRole('textbox', { name: /Địa chỉ thường trú/ })).toHaveValue(
+      /Phường Bến Nghé/,
+    );
+    await expect(page.getByRole('button', { name: /Ngày sinh/ })).toContainText('15/08/1999');
+    await saveScreenshot(page, 'tenant-cccd-scan');
   });
 
   test('the list searches tenants and the profile reveals the full CCCD', async ({ page }) => {

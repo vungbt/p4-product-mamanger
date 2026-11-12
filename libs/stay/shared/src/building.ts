@@ -46,6 +46,8 @@ export interface StayBuilding {
   graceDays: number | null;
   roundingUnit: RoundingUnit | null;
   refundUnusedRent: boolean | null;
+  /** Move-out facility depreciation fee (VND, 0 = off); `null` follows the system. */
+  moveOutFee: number | null;
   /** VietQR bank BIN (6 digits). */
   bankBin: string | null;
   bankAccount: string | null;

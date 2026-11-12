@@ -7,6 +7,7 @@ import {
   checkBillingDay,
   checkRoundingUnit,
   readGraceDays,
+  readMoveOutFee,
   readReadingDayMonth,
 } from '../settings/settings.input.js';
 import { billingDefaults } from '../settings/settings.service.js';
@@ -41,6 +42,7 @@ export async function readBuildingInput(
       ? null
       : checkBillingDay(body, 'dueDay', body.integer('dueDay', 1, 31)),
     graceDays: body.isEmpty('graceDays') ? null : readGraceDays(body),
+    moveOutFee: body.isEmpty('moveOutFee') ? null : readMoveOutFee(body),
     roundingUnit: body.isEmpty('roundingUnit')
       ? null
       : checkRoundingUnit(body, body.integer('roundingUnit', 1, 1000)),

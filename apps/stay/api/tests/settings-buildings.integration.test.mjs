@@ -129,6 +129,7 @@ describe('Stay API: settings, services, buildings and prices', { skip: !base }, 
         graceDays: 0,
         roundingUnit: 1000,
         refundUnusedRent: false,
+        moveOutFee: 300000,
         transferContentTemplate: '{invoiceCode}',
         version: undefined,
       },
@@ -428,6 +429,7 @@ describe('Stay API: settings, services, buildings and prices', { skip: !base }, 
       graceDays: 0,
       roundingUnit: 1000,
       refundUnusedRent: true,
+      moveOutFee: 300000,
     });
     assert.deepEqual(building.stats, { roomCount: 0, occupiedRoomCount: 0 });
     assert.equal(building.codeLocked, false);

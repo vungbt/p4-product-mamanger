@@ -87,7 +87,8 @@
     "tenantDescription": "Hiện ở cổng người thuê.",
     "contactPhone": "Số điện thoại liên hệ",
     "phoneFormat": "Số điện thoại gồm 10–11 chữ số, bắt đầu bằng 0.",
-    "rulesText": "Nội quy toà"
+    "rulesText": "Nội quy toà",
+    "moveOutFeeHint": "Để trống = theo hệ thống; 0 = không thu khi trả phòng."
   },
   "prices": {
     "title": "Đơn giá của toà",

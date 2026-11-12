@@ -249,7 +249,7 @@ const OPERATIONS = {
   ],
   'POST /api/contracts/{id}/settlement-preview': [
     'Xem trước thanh lý',
-    'Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu; nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.',
+    'Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu (không gửi `surcharges` → tự thêm dòng "Khấu hao cơ sở vật chất" bằng `moveOutFee` của toà, 0 = không thêm; gửi mảng, kể cả rỗng, → dùng đúng danh sách đó); nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.',
   ],
   'POST /api/contracts/{id}/settle': [
     'Thanh lý hợp đồng',
@@ -635,6 +635,7 @@ const buildingFields = {
   dueDay: { schema: billingDay },
   roundingUnit: { schema: { type: ['integer', 'null'], enum: [...roundingUnit.enum, null] } },
   refundUnusedRent: { schema: { type: ['boolean', 'null'] } },
+  moveOutFee: { schema: { type: ['integer', 'null'], minimum: 0, maximum: 100_000_000 } },
   address: { schema: { type: ['string', 'null'], maxLength: 255 } },
   bankBin: { schema: { type: ['string', 'null'], pattern: '^[0-9]{6}$' } },
   bankAccount: { schema: { type: ['string', 'null'], maxLength: 19 } },
@@ -1141,6 +1142,9 @@ const OVERRIDES = {
       roundingUnit: { schema: roundingUnit, required: true },
       readingDayMonth: { schema: { type: 'string', enum: ['same', 'next'], default: 'same' } },
       graceDays: { schema: { type: 'integer', minimum: 0, maximum: 31, default: 0 } },
+      moveOutFee: {
+        schema: { type: 'integer', minimum: 0, maximum: 100_000_000, default: 300_000 },
+      },
     },
   },
   'POST /api/services': { fields: serviceFields },

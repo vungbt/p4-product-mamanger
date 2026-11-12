@@ -119,7 +119,17 @@ for (const width of [1280, 375]) {
     expect(await noHorizontalScroll(page)).toBe(true);
     await page.getByRole('button', { name: 'Tiếp tục', exact: true }).click();
 
-    // Step 2: one surcharge with its reason (the reason is required).
+    // Step 2: building A follows the system move-out fee (300.000 ₫), prefilled and removable.
+    const fee = page.getByRole('group', { name: 'Phụ thu 1' });
+    await expect(page.getByTestId('settle-move-out-fee')).toBeVisible();
+    await expect(fee.getByRole('spinbutton', { name: /Số tiền/ })).toHaveValue(/300[.,]000/);
+    await expect(fee.getByRole('textbox', { name: /Lý do/ })).toHaveValue(
+      'Khấu hao cơ sở vật chất',
+    );
+    await fee.getByRole('button', { name: 'Xoá phụ thu 1', exact: true }).click();
+    await expect(fee).toBeHidden();
+
+    // One surcharge with its reason (the reason is required).
     await page.getByRole('button', { name: 'Thêm phụ thu', exact: true }).click();
     const surcharge = page.getByRole('group', { name: 'Phụ thu 1' });
     await surcharge.getByRole('spinbutton', { name: /Số tiền/ }).fill('200000');

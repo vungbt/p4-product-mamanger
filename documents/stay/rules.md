@@ -110,6 +110,9 @@ Khi trả phòng ngày `D` trong tháng M, lập **hoá đơn thanh lý** gồm:
 2. **Tiền phòng và dịch vụ của những ngày đã ở nhưng chưa có hoá đơn** (ví dụ trả phòng 03/12 khi hoá đơn kỳ 12 chưa phát hành: tính 01–03/12 theo tỷ lệ ngày). Kỳ đã có hoá đơn thì không tính lại.
 3. Hoàn tiền phòng/dịch vụ của những ngày chưa ở trong tháng M (đã trả trước). Có làm hay không tuỳ cấu hình toà `refundUnusedRent` (mặc định **không hoàn**; khi bật thì hoàn theo tỷ lệ ngày).
 4. Phụ thu thanh lý (hư hỏng, dọn dẹp) do chủ trọ nhập kèm lý do.
+   - **Phí khấu hao cơ sở vật chất** (`moveOutFee`, "Phí khấu hao cơ sở vật chất khi trả phòng"): mặc định hệ thống **300.000đ** (`system_settings` key `billing`), toà ghi đè được (`null` = theo hệ thống, **0 = không thu**). Khi lập thanh lý, phí này được **thêm sẵn thành một dòng phụ thu** lý do "Khấu hao cơ sở vật chất"; chủ trọ sửa số tiền/lý do hoặc xoá dòng trước khi phát hành, như mọi phụ thu khác.
+   - API: không gửi `surcharges` → server tự thêm dòng này theo phí đang áp dụng của toà; gửi mảng (kể cả rỗng) → dùng đúng danh sách đã gửi. Số tiền **chụp vào dòng hoá đơn** lúc phát hành; đổi cấu hình sau đó không ảnh hưởng hoá đơn đã phát hành.
+   - Phụ thu (gồm phí khấu hao) nằm trong tổng hoá đơn thanh lý nên được **cấn trừ vào cọc** ở bước 6.
 5. Các hoá đơn trước còn nợ: **liệt kê, không cộng vào hoá đơn thanh lý**; tính vào số phải trả khi cấn trừ cọc, nhưng thanh toán vẫn ghi vào đúng hoá đơn gốc.
 6. **Cấn trừ cọc:** số cọc đang giữ trừ đi tổng phải thu. Kết quả là **chủ trọ hoàn lại** hoặc **người thuê trả thêm**.
 
@@ -156,7 +159,7 @@ Không sửa, không xoá. Ghi sai thì tạo **bút toán huỷ** (`reversed`, 
 Các giá trị dưới đây là mặc định đề xuất. Tất cả đều cấu hình được theo toà:
 
 - Chốt số vào: cuối tháng tiêu thụ (`same`). Ngày chốt số: cuối tháng. Ngày phát hành: ngày 1. Hạn thanh toán: ngày 5. Ân hạn: 0 ngày.
-- `roundingUnit` = 1.000đ. `refundUnusedRent` = không.
+- `roundingUnit` = 1.000đ. `refundUnusedRent` = không. `moveOutFee` (phí khấu hao cơ sở vật chất khi trả phòng) = 300.000đ.
 - Số người tính phí lấy tại ngày phát hành (không lấy số lớn nhất trong tháng).
 
 ## Những lỗi của SCM không được lặp lại

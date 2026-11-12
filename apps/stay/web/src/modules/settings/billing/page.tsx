@@ -5,6 +5,7 @@ import {
   FormField,
   FormSubmit,
   Input,
+  NumberInput,
   Select,
   Switch,
   useAppForm,
@@ -14,6 +15,7 @@ import { useStaySettings, useUpdateStaySettings } from '@stay/sdk/react';
 import {
   billingCycleErrors,
   isReadingDayMonth,
+  MOVE_OUT_FEE_MAX,
   type ReadingDayMonth,
   ROUNDING_UNITS,
   type StaySettings,
@@ -47,6 +49,7 @@ type BillingValues = {
   graceDays: string;
   roundingUnit: string;
   refundUnusedRent: boolean;
+  moveOutFee: number | null;
   transferContentTemplate: string;
 };
 
@@ -58,6 +61,7 @@ const FIELDS = [
   'graceDays',
   'roundingUnit',
   'refundUnusedRent',
+  'moveOutFee',
   'transferContentTemplate',
 ] as const satisfies (keyof BillingValues)[];
 
@@ -73,6 +77,7 @@ function toValues(settings: StaySettings): BillingValues {
     graceDays: String(settings.graceDays),
     roundingUnit: String(settings.roundingUnit),
     refundUnusedRent: settings.refundUnusedRent,
+    moveOutFee: settings.moveOutFee,
     transferContentTemplate: settings.transferContentTemplate,
   };
 }
@@ -97,6 +102,12 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
       dueDay: required,
       graceDays: required,
       roundingUnit: required,
+      moveOutFee: v.pipe(
+        v.number(t('validation.required')),
+        v.integer(t('billing.moveOutFeeRange')),
+        v.minValue(0, t('billing.moveOutFeeRange')),
+        v.maxValue(MOVE_OUT_FEE_MAX, t('billing.moveOutFeeRange')),
+      ),
       transferContentTemplate: v.pipe(
         v.string(),
         v.trim(),
@@ -121,6 +132,7 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
         graceDays: Number(value.graceDays),
         roundingUnit: ROUNDING_UNITS.find((unit) => String(unit) === value.roundingUnit) ?? 1000,
         refundUnusedRent: value.refundUnusedRent,
+        moveOutFee: value.moveOutFee ?? 0,
         transferContentTemplate: value.transferContentTemplate.trim(),
         version: settings.version,
       };
@@ -231,6 +243,15 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
           <Switch label={t('billing.refundUnusedRent')} />
         </FormField>
         <p className="-mt-2 text-ui-sm text-muted">{t('billing.refundHint')}</p>
+        <FormField name="moveOutFee" label={t('billing.moveOutFee')} required className="mb-0">
+          <NumberInput
+            min={0}
+            max={MOVE_OUT_FEE_MAX}
+            step={1000}
+            endAddon="₫"
+            hint={t('billing.moveOutFeeHint')}
+          />
+        </FormField>
       </section>
 
       <div className="flex flex-wrap justify-end gap-2">

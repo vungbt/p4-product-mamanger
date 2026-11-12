@@ -259,6 +259,7 @@ const FIELD_LABELS: Record<string, string> = {
   readingDay: 'Ngày chốt số',
   reason: 'Lý do',
   refundUnusedRent: 'Hoàn tiền phòng',
+  moveOutFee: 'Phí khấu hao khi trả phòng',
   replacedActiveLink: 'Thay link đang dùng',
   roundingUnit: 'Làm tròn',
   rulesText: 'Nội quy',

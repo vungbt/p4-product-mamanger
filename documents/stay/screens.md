@@ -168,6 +168,7 @@ Tổng: **3 màn chung, 39 màn chủ trọ/quản lý, 13 màn người thuê, 
 - **Route** `/tenants/new`, `/tenants/:id/edit` · manage Tenant · ST-09
 - **Bắt buộc:** họ tên, SĐT (10 số, bắt đầu 0). **Tuỳ chọn:** email, CCCD (12 số, duy nhất), ngày cấp, ngày sinh, giới tính, quê quán, thường trú, nghề nghiệp/nơi làm, ảnh CCCD (2 mặt), xe, ghi chú.
 - CCCD trùng → lỗi kèm liên kết tới hồ sơ đã có.
+- Nút **Quét CCCD**: camera sau hoặc ảnh thẻ → đọc mã QR trên máy → điền họ tên, CCCD, ngày sinh, giới tính, thường trú, ngày cấp và báo các trường đã điền; chủ trọ kiểm tra rồi lưu. Lỗi quyền camera/không có camera/không đọc được → thông báo rõ, nhập tay.
 
 ### O-14 Import người thuê
 - **Route** `/tenants/import` · manage Tenant · ST-09
