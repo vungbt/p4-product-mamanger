@@ -158,6 +158,8 @@ export interface StayRoom {
   occupantCount: number;
   /** Unpaid amount of issued invoices (VND, ST-14/ST-18). */
   debt: number;
+  /** A reported/open/in-progress maintenance job exists, independent of occupancy. */
+  hasOpenMaintenance: boolean;
   version: number;
   createdAt: string;
   updatedAt: string;

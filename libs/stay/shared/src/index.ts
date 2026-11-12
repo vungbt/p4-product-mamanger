@@ -14,6 +14,7 @@ export * from './errors.js';
 export * from './expense.js';
 export * from './invoice.js';
 export * from './invoice-code.js';
+export * from './maintenance.js';
 export * from './member.js';
 export * from './money.js';
 export * from './notification.js';

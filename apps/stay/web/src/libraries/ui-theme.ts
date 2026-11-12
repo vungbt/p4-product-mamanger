@@ -99,6 +99,7 @@ export const uiTheme = defineTheme({
       users: UsersIcon,
       view: ViewIcon,
       walletMoney: WalletMoneyIcon,
+      // ST-08 room availability and ST-22 repair jobs share this registered glyph.
       wrench: WrenchIcon,
     },
   },

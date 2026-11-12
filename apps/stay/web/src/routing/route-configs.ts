@@ -30,6 +30,9 @@ const PeriodSharePage = lazy(() => import('@/modules/invoices/share/period-share
 const PaymentsPage = lazy(() => import('@/modules/payments/page'));
 const ReceivablesPage = lazy(() => import('@/modules/receivables/page'));
 const ReportsPage = lazy(() => import('@/modules/reports/page'));
+const MaintenancePage = lazy(() => import('@/modules/maintenance/page'));
+const MaintenanceDetailPage = lazy(() => import('@/modules/maintenance/detail-page'));
+const MaintenanceFormPage = lazy(() => import('@/modules/maintenance/form-page'));
 const ExpensesPage = lazy(() => import('@/modules/expenses/page'));
 const ExpenseCategoriesPage = lazy(() => import('@/modules/expenses/categories-page'));
 const ContractListPage = lazy(() => import('@/modules/contracts/list-page'));
@@ -85,6 +88,40 @@ export const buildingPricesPath = (id: string) => `/buildings/${id}/prices`;
 
 /** Signed-in app routes (screens.md C-02 menu order). Menus are derived from this list. */
 export const appRoutes: StayRoute[] = [
+  {
+    path: '/maintenance',
+    name: 'maintenance',
+    icon: 'wrench',
+    component: MaintenancePage,
+    ability: { action: 'read', subject: 'Maintenance' },
+  },
+  {
+    path: '/maintenance/new',
+    name: 'maintenanceNew',
+    icon: 'wrench',
+    component: MaintenanceFormPage,
+    ability: { action: 'create', subject: 'Maintenance' },
+    hideInMenu: true,
+    parent: 'maintenance',
+  },
+  {
+    path: '/maintenance/:id/edit',
+    name: 'maintenanceEdit',
+    icon: 'wrench',
+    component: MaintenanceFormPage,
+    ability: { action: 'update', subject: 'Maintenance' },
+    hideInMenu: true,
+    parent: 'maintenance',
+  },
+  {
+    path: '/maintenance/:id',
+    name: 'maintenanceDetail',
+    icon: 'wrench',
+    component: MaintenanceDetailPage,
+    ability: { action: 'read', subject: 'Maintenance' },
+    hideInMenu: true,
+    parent: 'maintenance',
+  },
   {
     path: ROUTES.overview,
     name: 'overview',

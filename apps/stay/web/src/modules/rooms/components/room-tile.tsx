@@ -2,6 +2,7 @@ import {
   cn,
   DropdownMenu,
   type DropdownMenuEntry,
+  Icon,
   IconButton,
   Tag,
   useFormatters,
@@ -134,6 +135,15 @@ export function RoomTile({ room, canManage, onMaintenance, onCollect }: RoomTile
         </div>
         <div className="grid min-w-0 flex-1 gap-0.5">
           <RoomStatusBadge status={room.status} />
+          {room.hasOpenMaintenance ? (
+            <span
+              className="inline-flex items-center gap-1 text-ui-sm text-warning"
+              data-testid="room-open-maintenance"
+            >
+              <Icon name="wrench" className="size-4" aria-hidden />
+              {t('maintenance:openJob')}
+            </span>
+          ) : null}
           <span className="truncate text-ui-sm text-ink" data-testid="room-tenant">
             {tenant ?? <span className="text-muted">{t('rooms.map.noTenant')}</span>}
           </span>

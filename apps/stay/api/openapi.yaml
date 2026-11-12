@@ -40,6 +40,8 @@ tags:
   - name: invoices
     description: "Hoá đơn: xem trước và tạo bản nháp kỳ M (tiền phòng + dịch vụ M, điện nước M−1), phụ thu/giảm trừ, phát
       hành (cấp mã, khoá chỉ số), void. Mọi số tiền tính bằng `@stay/billing` tại server; dòng hoá đơn là snapshot."
+  - name: maintenance
+    description: Bảo trì theo phòng; mở → đang làm → xong/huỷ, ảnh private và chi phí ST-20.
   - name: me
     description: Người dùng hiện tại và quyền CASL.
   - name: members
@@ -3009,13 +3011,13 @@ paths:
                 buildingId:
                   type: string
                   format: uuid
-                categoryId:
-                  type: string
-                  format: uuid
                 roomId:
                   type:
                     - string
                     - "null"
+                  format: uuid
+                categoryId:
+                  type: string
                   format: uuid
                 receiptFileId:
                   type:
@@ -3096,13 +3098,13 @@ paths:
                 buildingId:
                   type: string
                   format: uuid
-                categoryId:
-                  type: string
-                  format: uuid
                 roomId:
                   type:
                     - string
                     - "null"
+                  format: uuid
+                categoryId:
+                  type: string
                   format: uuid
                 receiptFileId:
                   type:
@@ -4819,6 +4821,355 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/maintenance:
+    get:
+      tags:
+        - maintenance
+      operationId: get_api_maintenance
+      summary: Danh sách bảo trì theo toà/phòng/trạng thái/nguồn
+      description: "**Quyền:** `read:Maintenance`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - createdAt
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: desc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+        - name: buildingId
+          in: query
+          schema:
+            type: string
+        - name: roomId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - cancelled
+              - done
+              - in_progress
+              - new
+              - open
+              - rejected
+        - name: source
+          in: query
+          schema:
+            type: string
+            enum:
+              - owner
+              - tenant
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayMaintenance"
+                  message:
+                    type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - maintenance
+      operationId: post_api_maintenance
+      summary: Tạo việc bảo trì
+      description: |-
+        create Maintenance trong toà; nguồn owner, trạng thái open.
+
+        **Quyền:** `create:Maintenance`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaintenanceInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMaintenance"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/maintenance/expense-categories:
+    get:
+      tags:
+        - maintenance
+      operationId: get_api_maintenance_expense_categories
+      summary: Danh mục chi phí cho bảo trì
+      description: "**Quyền:** `read:Maintenance`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayExpenseCategory"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/maintenance/{id}:
+    get:
+      tags:
+        - maintenance
+      operationId: get_api_maintenance_id
+      summary: Chi tiết bảo trì, ảnh, lịch sử và chi phí
+      description: "**Quyền:** `read:Maintenance`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMaintenance"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - maintenance
+      operationId: put_api_maintenance_id
+      summary: Sửa việc bảo trì
+      description: |-
+        update Maintenance trong toà. new → open → in_progress → done/cancelled; sai thứ tự hoặc version cũ trả 409.
+
+        **Quyền:** `update:Maintenance`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaintenanceUpdateInput"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMaintenance"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: maintenance_invalid_transition, version_conflict, maintenance_expense_exists hoặc maintenance_closed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/maintenance/{id}/expense:
+    post:
+      tags:
+        - maintenance
+      operationId: post_api_maintenance_id_expense
+      summary: Ghi chi phí sửa chữa
+      description: |-
+        update Maintenance và create Expense trong toà. Một khoản chi mỗi việc; trùng trả 409. Toà/phòng lấy từ việc.
+
+        **Quyền:** `update:Maintenance`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                categoryId:
+                  type: string
+                  format: uuid
+                receiptFileId:
+                  type:
+                    - string
+                    - "null"
+                  format: uuid
+                amount:
+                  type: integer
+                  minimum: 1
+                  maximum: 9007199254740991
+                spentOn:
+                  type: string
+                  description: YYYY-MM-DD in Asia/Ho_Chi_Minh, or an ISO instant with explicit timezone.
+                note:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 2000
+              required:
+                - categoryId
+                - amount
+                - spentOn
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMaintenance"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: maintenance_invalid_transition, version_conflict, maintenance_expense_exists hoặc maintenance_closed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/settings:
@@ -6746,6 +7097,7 @@ paths:
                     - tenant_document
                     - expense_receipt
                     - contract_meter
+                    - maintenance_photo
                 buildingId:
                   type: string
                   format: uuid
@@ -14425,6 +14777,78 @@ components:
           type: number
       required:
         - reason
+    MaintenanceHistory:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - cancelled
+            - done
+            - in_progress
+            - new
+            - open
+            - rejected
+        at:
+          type: string
+      required:
+        - status
+        - at
+    MaintenanceInput:
+      type: object
+      properties:
+        roomId:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum:
+            - appliance
+            - electricity
+            - other
+            - water
+        severity:
+          type: string
+          enum:
+            - normal
+            - urgent
+        photoFileIds:
+          type: array
+          items:
+            type: string
+      required:
+        - roomId
+        - title
+        - description
+    MaintenanceUpdateInput:
+      type: object
+      properties:
+        version:
+          type: number
+        title:
+          type: string
+        description:
+          type: string
+        photoFileIds:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+            - cancelled
+            - done
+            - in_progress
+            - new
+            - open
+            - rejected
+        reply:
+          type: string
+      required:
+        - version
     MemberInput:
       type: object
       properties:
@@ -17450,6 +17874,74 @@ components:
         - shareExpiresAt
         - version
         - createdAt
+    StayMaintenance:
+      type: object
+      properties:
+        id:
+          type: string
+        buildingId:
+          type: string
+        roomId:
+          type:
+            - string
+            - "null"
+        roomCode:
+          type:
+            - string
+            - "null"
+        title:
+          type: string
+        description:
+          type: string
+        source:
+          type: string
+          enum:
+            - owner
+            - tenant
+        status:
+          type: string
+          enum:
+            - cancelled
+            - done
+            - in_progress
+            - new
+            - open
+            - rejected
+        photos:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestPhoto"
+        reply:
+          type:
+            - string
+            - "null"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/MaintenanceHistory"
+        expense:
+          anyOf:
+            - $ref: "#/components/schemas/StayExpense"
+            - type: "null"
+        version:
+          type: number
+        createdAt:
+          type: string
+      required:
+        - id
+        - buildingId
+        - roomId
+        - roomCode
+        - title
+        - description
+        - source
+        - status
+        - photos
+        - reply
+        - history
+        - expense
+        - version
+        - createdAt
     StayMe:
       type: object
       properties:
@@ -17866,6 +18358,8 @@ components:
           type: number
         debt:
           type: number
+        hasOpenMaintenance:
+          type: boolean
         version:
           type: number
         createdAt:
@@ -17890,6 +18384,7 @@ components:
         - contract
         - occupantCount
         - debt
+        - hasOpenMaintenance
         - version
         - createdAt
         - updatedAt
@@ -17969,6 +18464,8 @@ components:
           type: number
         debt:
           type: number
+        hasOpenMaintenance:
+          type: boolean
         version:
           type: number
         createdAt:
@@ -17999,6 +18496,7 @@ components:
         - contract
         - occupantCount
         - debt
+        - hasOpenMaintenance
         - version
         - createdAt
         - updatedAt

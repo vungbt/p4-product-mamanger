@@ -63,6 +63,17 @@ try {
   if (result.status !== 0) throw new Error('OpenAPI generation failed');
   const spec = YAML.parse(await readFile(specPath, 'utf8'));
 
+  for (const [url, method] of [
+    ['/api/maintenance/{id}', 'put'],
+    ['/api/maintenance/{id}/expense', 'post'],
+  ]) {
+    spec.paths[url][method].responses['409'] = {
+      description:
+        'maintenance_invalid_transition, version_conflict, maintenance_expense_exists hoặc maintenance_closed.',
+      content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
+    };
+  }
+
   // The shared generator appends parameter overrides. Keep the last definition per name/location.
   for (const item of Object.values(spec.paths)) {
     for (const operation of Object.values(item)) {

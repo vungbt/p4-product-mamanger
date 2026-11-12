@@ -25,6 +25,7 @@ import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import {
   BuildingModel,
+  MaintenanceRequestModel,
   MeterModel,
   RoomDefaultServiceModel,
   RoomModel,
@@ -113,6 +114,7 @@ interface RoomContext {
   serviceIds: Map<string, string[]>;
   occupancies: Map<string, RoomOccupancy>;
   debts: Map<string, number>;
+  openJobs: Set<string | null>;
 }
 
 function roomDto(row: RoomModel, context: RoomContext): StayRoom {
@@ -126,6 +128,7 @@ function roomDto(row: RoomModel, context: RoomContext): StayRoom {
     contract: occupancy?.contract ?? null,
     occupantCount: occupancy?.occupantCount ?? 0,
     debt: context.debts.get(row.id) ?? 0,
+    hasOpenMaintenance: context.openJobs.has(row.id),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -134,18 +137,30 @@ function roomDto(row: RoomModel, context: RoomContext): StayRoom {
 /** Default services, holding contracts and debts of `rows`, loaded together. */
 async function roomContext(rows: readonly RoomModel[], transaction?: Transaction) {
   const ids = rows.map((row) => row.id);
-  const [links, occupancies, debts] = await Promise.all([
+  const [links, occupancies, debts, jobs] = await Promise.all([
     ids.length
       ? RoomDefaultServiceModel.findAll({ where: { roomId: { [Op.in]: ids } }, transaction })
       : [],
     roomOccupancies(ids, transaction),
     roomDebts(ids),
+    ids.length
+      ? MaintenanceRequestModel.findAll({
+          where: { roomId: { [Op.in]: ids }, status: { [Op.in]: ['new', 'open', 'in_progress'] } },
+          attributes: ['roomId'],
+          transaction,
+        })
+      : [],
   ]);
   const serviceIds = new Map<string, string[]>();
 
   for (const link of links)
     serviceIds.set(link.roomId, [...(serviceIds.get(link.roomId) ?? []), link.serviceId]);
-  return { serviceIds, occupancies, debts } satisfies RoomContext;
+  return {
+    serviceIds,
+    occupancies,
+    debts,
+    openJobs: new Set(jobs.map((job) => job.roomId)),
+  } satisfies RoomContext;
 }
 
 export async function roomDtos(rows: readonly RoomModel[], transaction?: Transaction) {

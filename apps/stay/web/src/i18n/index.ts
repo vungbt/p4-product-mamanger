@@ -3,11 +3,13 @@ import enBuildings from './locales/en/buildings.json';
 import en from './locales/en/common.json';
 import enForms from './locales/en/forms.json';
 import enInvoices from './locales/en/invoices.json';
+import enMaintenance from './locales/en/maintenance.json';
 import enSettings from './locales/en/settings.json';
 import viBuildings from './locales/vi/buildings.json';
 import vi from './locales/vi/common.json';
 import viForms from './locales/vi/forms.json';
 import viInvoices from './locales/vi/invoices.json';
+import viMaintenance from './locales/vi/maintenance.json';
 import viSettings from './locales/vi/settings.json';
 
 export const LOCALE_STORAGE_KEY = 'stay_locale';
@@ -26,6 +28,7 @@ const i18n = createI18n({
   resources: {
     vi: {
       common: vi,
+      maintenance: viMaintenance,
       forms: viForms,
       settings: viSettings,
       buildings: viBuildings,
@@ -33,6 +36,7 @@ const i18n = createI18n({
     },
     en: {
       common: en,
+      maintenance: enMaintenance,
       forms: enForms,
       settings: enSettings,
       buildings: enBuildings,

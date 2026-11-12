@@ -1,5 +1,6 @@
 import type {
   MaintenanceCategory,
+  MaintenanceHistory,
   MaintenanceSeverity,
   MaintenanceSource,
   MaintenanceStatus,
@@ -28,6 +29,7 @@ export interface MaintenanceRequestAttributes {
   costExpenseId: string | null;
   /** Private file ids (`maintenance_photo`). */
   photos: string[];
+  history: MaintenanceHistory[];
   createdBy: string | null;
   version: number;
   createdAt?: Date;
@@ -51,6 +53,7 @@ export type MaintenanceRequestCreation = Optional<
   | 'handledAt'
   | 'costExpenseId'
   | 'photos'
+  | 'history'
   | 'createdBy'
   | 'version'
   | 'createdAt'
@@ -80,6 +83,7 @@ export class MaintenanceRequestModel
   declare handledAt: Date | null;
   declare costExpenseId: string | null;
   declare photos: string[];
+  declare history: MaintenanceHistory[];
   declare createdBy: string | null;
   declare version: number;
   declare readonly createdAt: Date;
@@ -107,6 +111,7 @@ export function initMaintenanceRequestModel(sequelize: Sequelize) {
       handledBy: { type: DataTypes.UUID, allowNull: true },
       handledAt: { type: DataTypes.DATE, allowNull: true },
       costExpenseId: { type: DataTypes.UUID, allowNull: true },
+      history: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] },
       photos: { type: DataTypes.ARRAY(DataTypes.UUID), allowNull: false, defaultValue: [] },
       createdBy: { type: DataTypes.UUID, allowNull: true },
       version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },

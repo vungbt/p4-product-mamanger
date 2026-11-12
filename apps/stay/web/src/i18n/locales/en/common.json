@@ -53,7 +53,11 @@
       "monthly": "Monthly",
       "rental": "Rentals",
       "management": "Management"
-    }
+    },
+    "maintenance": "Maintenance",
+    "maintenanceDetail": "Maintenance detail",
+    "maintenanceNew": "Add maintenance job",
+    "maintenanceEdit": "Edit maintenance job"
   },
   "header": {
     "back": "Back",
