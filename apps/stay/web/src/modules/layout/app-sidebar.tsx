@@ -58,6 +58,7 @@ export default function AppSidebar() {
   return (
     <Sidebar
       data-testid="app-sidebar"
+      collapseToggle="none"
       itemVariant="indicator"
       groupLabel="caps"
       groupDividers
