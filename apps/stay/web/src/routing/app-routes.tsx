@@ -18,6 +18,7 @@ const PortalContractPage = lazy(() => import('@/modules/portal/contract-page'));
 const PortalUsagePage = lazy(() => import('@/modules/portal/usage-page'));
 const PortalNoticesPage = lazy(() => import('@/modules/portal/notices-page'));
 const PortalMorePage = lazy(() => import('@/modules/portal/more-page'));
+const PortalNotificationsPage = lazy(() => import('@/modules/portal/notifications-page'));
 const PortalMaintenancePage = lazy(() => import('@/modules/portal/maintenance-page'));
 const PortalMaintenanceNewPage = lazy(() => import('@/modules/portal/maintenance-new-page'));
 const PortalRequestsPage = lazy(() => import('@/modules/portal/requests-page'));
@@ -48,6 +49,7 @@ export default function AppRoutes() {
         <Route path="usage" element={<LazyPage component={PortalUsagePage} />} />
         <Route path="notices" element={<LazyPage component={PortalNoticesPage} />} />
         <Route path="more" element={<LazyPage component={PortalMorePage} />} />
+        <Route path="notifications" element={<LazyPage component={PortalNotificationsPage} />} />
         <Route path="maintenance" element={<LazyPage component={PortalMaintenancePage} />} />
         <Route path="maintenance/new" element={<LazyPage component={PortalMaintenanceNewPage} />} />
         <Route path="requests" element={<LazyPage component={PortalRequestsPage} />} />

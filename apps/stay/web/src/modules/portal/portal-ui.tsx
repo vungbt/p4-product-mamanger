@@ -14,6 +14,7 @@ export const portalPaths = {
   contract: '/p/contract',
   usage: '/p/usage',
   notices: '/p/notices',
+  notifications: '/p/notifications',
   more: '/p/more',
   maintenance: '/p/maintenance',
   maintenanceNew: '/p/maintenance/new',

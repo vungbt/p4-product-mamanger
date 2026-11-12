@@ -15,6 +15,7 @@ export * from './invoice.js';
 export * from './invoice-code.js';
 export * from './member.js';
 export * from './money.js';
+export * from './notification.js';
 export * from './overview.js';
 export * from './payment.js';
 export * from './period.js';

@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { Op } from 'sequelize';
 import { auth } from '@/configs/better-auth.js';
-import { env } from '@/configs/env.js';
 import { DomainEventModel, sequelize, UserModel } from '@/sequelize/models/index.js';
+import { webOrigin } from '../invoices/invoices.share.js';
 
 /** Claim with a row lock; dispatch only after the claim commits. Failed mail remains retryable. */
 export async function deliverMemberInvitation(now: Date): Promise<boolean> {
@@ -50,7 +50,7 @@ export async function deliverMemberInvitation(now: Date): Promise<boolean> {
       await auth.api.requestPasswordReset({
         body: {
           email: user.email,
-          redirectTo: `${Array.isArray(env.corsOrigin) ? env.corsOrigin[0] : 'http://localhost:5174'}/reset-password`,
+          redirectTo: `${webOrigin(undefined)}/reset-password`,
         },
       });
     await DomainEventModel.update(

@@ -28,7 +28,8 @@ const TAG_DESCRIPTIONS = {
     'Người quản lý theo toà: mời qua email, gán toà/nhóm quyền và khoá tài khoản; chỉ chủ trọ.',
   automation:
     'Tự động hoá theo toà, chỉ tạo bản nháp; nhắc qua email và thông báo. Nhắc chủ trọ trước ngày chốt số `readingReminderDaysBefore` ngày (0 = tắt) và vào ngày chốt số, chỉ khi còn phòng thiếu chỉ số. Nhắc người thuê trước hạn 1 ngày và sau hạn 3 ngày, hoặc vào ngày đầu tiên quá hạn khi toà có `graceDays` > 0.',
-  notifications: 'Thông báo nhân viên theo toà; trạng thái đã đọc riêng từng người.',
+  notifications:
+    'Thông báo trong ứng dụng (nhân viên theo toà, người thuê theo hợp đồng), luồng SSE, email SMTP và thông báo trình duyệt (Web Push) gửi qua outbox sau commit; cài đặt kênh/nhóm sự kiện theo người.',
   residents: 'Tạm trú theo ngày, khai báo theo lần ở và xuất Excel có audit.',
   reports:
     'Báo cáo tổng hợp SQL theo tháng, theo phòng, điện nước và xuất sổ Excel. Chỉ đọc, có phân quyền theo toà.',
@@ -73,6 +74,18 @@ const VERSION_NOTE =
 const TENANT_FIELDS_NOTE =
   'Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu chấm và tự chuẩn hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và `extensions.duplicateTenant` (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc `dd/MM/yyyy`), không sau hôm nay. Không tự điền giá trị nào.';
 
+/** Server-Sent Events (GET): `event: notification` with a `NotificationStreamEvent` JSON. */
+export const EVENT_STREAM_RESPONSES = Object.fromEntries(
+  ['/api/notifications/stream', '/api/portal/notifications/stream'].map((url) => [
+    url,
+    {
+      description:
+        'Luồng `text/event-stream`: `event: ready` khi mở, `event: notification` với `data` là `NotificationStreamEvent` (JSON), comment `: ping` mỗi 25 giây. Server đóng luồng sau 10 phút; EventSource tự kết nối lại.',
+      content: { 'text/event-stream': { schema: { type: 'string' } } },
+    },
+  ]),
+);
+
 export const FILE_RESPONSES = {
   '/api/buildings/{buildingId}/residents/export': {
     description: 'Danh sách tạm trú XLSX; audit trước khi trả dữ liệu cá nhân.',
@@ -99,6 +112,51 @@ const OPERATIONS = {
   'PUT /api/buildings/{id}/automation': [
     'Lưu tự động hoá',
     'manage Building; gửi đủ năm cờ và version (`readingReminderBefore`, `readingReminderDaysBefore` 0–10 bỏ trống = tắt/1 ngày); stale version trả 409, có audit.',
+  ],
+  'GET /api/notifications/stream': [
+    'Luồng thông báo (SSE)',
+    'Server-Sent Events của thông báo nhân viên mới trong các toà được phép đọc (đánh thức bằng Postgres NOTIFY sau commit). Client giữ polling `GET /api/notifications` làm dự phòng.',
+  ],
+  'GET /api/me/notification-settings': [
+    'Cài đặt nhận thông báo',
+    'Kênh email/trình duyệt và nhóm sự kiện bị tắt của người dùng hiện tại (mặc định bật hết), kèm `emailAvailable`, `pushPublicKey` (VAPID, null khi chưa cấu hình) và số thiết bị đã đăng ký.',
+  ],
+  'PUT /api/me/notification-settings': [
+    'Lưu cài đặt nhận thông báo',
+    '`{ email, push, mutedGroups }`. Thông báo trong ứng dụng luôn được ghi; cài đặt chỉ áp dụng cho email và thông báo trình duyệt. Có audit.',
+  ],
+  'POST /api/me/push-subscriptions': [
+    'Đăng ký thông báo trình duyệt',
+    '`PushSubscription.toJSON()` của trình duyệt. Endpoint phải thuộc dịch vụ push của trình duyệt (HTTPS). Idempotent theo endpoint; cùng trình duyệt đăng nhập người khác thì chuyển sang người đó.',
+  ],
+  'DELETE /api/me/push-subscriptions': [
+    'Huỷ đăng ký thông báo trình duyệt',
+    '`{ endpoint }`; chỉ xoá endpoint của chính người dùng. Không có thì không làm gì.',
+  ],
+  'GET /api/portal/notifications': [
+    'Thông báo của người thuê',
+    '50 thông báo mới nhất của hợp đồng trong phiên (cả hợp đồng hoặc riêng người ở này) và `unreadCount`.',
+  ],
+  'POST /api/portal/notifications/{id}/read': [
+    'Người thuê đánh dấu đã đọc',
+    'Idempotent; thông báo của hợp đồng khác → 404.',
+  ],
+  'GET /api/portal/notifications/stream': [
+    'Luồng thông báo người thuê (SSE)',
+    'Server-Sent Events chỉ của hợp đồng trong phiên cổng; không bao giờ nhận thông báo của hợp đồng/người khác.',
+  ],
+  'GET /api/portal/notification-settings': [
+    'Cài đặt nhận thông báo (người thuê)',
+    'Như `/api/me/notification-settings`, theo người thuê của phiên. Email chỉ gửi khi hồ sơ có email.',
+  ],
+  'PUT /api/portal/notification-settings': ['Lưu cài đặt nhận thông báo (người thuê)', 'Có audit.'],
+  'POST /api/portal/push-subscriptions': [
+    'Người thuê đăng ký thông báo trình duyệt',
+    'Gắn với link cổng của phiên: thu hồi link thì dừng gửi, xoá link thì xoá đăng ký.',
+  ],
+  'DELETE /api/portal/push-subscriptions': [
+    'Người thuê huỷ đăng ký thông báo trình duyệt',
+    '`{ endpoint }` của link trong phiên.',
   ],
   'GET /api/notifications': [
     'Thông báo nhân viên',
@@ -706,6 +764,37 @@ const OVERRIDES = {
     },
   },
   'GET /api/notifications': { response: { ref: 'StayNotifications' } },
+  ...Object.fromEntries(
+    ['/api/me/notification-settings', '/api/portal/notification-settings'].flatMap((url) => [
+      [`GET ${url}`, { response: { ref: 'NotificationSettings' } }],
+      [
+        `PUT ${url}`,
+        {
+          response: { ref: 'NotificationSettings' },
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { ref: 'NotificationPreferences' } } },
+          },
+        },
+      ],
+    ]),
+  ),
+  ...Object.fromEntries(
+    ['/api/me/push-subscriptions', '/api/portal/push-subscriptions'].flatMap((url) => [
+      [
+        `POST ${url}`,
+        {
+          response: { ref: 'PushSubscriptionResult' },
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { ref: 'PushSubscriptionInput' } } },
+          },
+        },
+      ],
+      [`DELETE ${url}`, { response: { ref: 'PushSubscriptionResult' } }],
+    ]),
+  ),
+  'GET /api/portal/notifications': { response: { ref: 'PortalNotifications' } },
   'POST /api/contracts/{id}/portal-links': {
     requestBody: {
       required: true,
@@ -1229,6 +1318,7 @@ export default {
     'libs/stay/shared/src/account.ts',
     'libs/stay/shared/src/member.ts',
     'libs/stay/shared/src/automation.ts',
+    'libs/stay/shared/src/notification.ts',
     'libs/stay/shared/src/audit.ts',
     'libs/stay/shared/src/building.ts',
     'libs/stay/shared/src/constants.ts',

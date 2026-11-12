@@ -21,6 +21,7 @@ export type StayRoute = {
 };
 
 const DepositsPage = lazy(() => import('@/modules/deposits/page'));
+const NotificationSettingsPage = lazy(() => import('@/modules/account/notifications-page'));
 const ReadingsPage = lazy(() => import('@/modules/readings/page'));
 const InvoiceListPage = lazy(() => import('@/modules/invoices/list-page'));
 const BillingRunPage = lazy(() => import('@/modules/invoices/run-page'));
@@ -71,6 +72,7 @@ export const ROUTES = {
   settings: '/settings',
   services: '/settings/services',
   billing: '/settings/billing',
+  notificationSettings: '/account/notifications',
   buildings: '/buildings',
   newBuilding: '/buildings/new',
 } as const;
@@ -400,6 +402,14 @@ export const appRoutes: StayRoute[] = [
     icon: 'users',
     component: MembersPage,
     ability: { action: 'manage', subject: 'Member' },
+    hideInMenu: true,
+  },
+  {
+    path: ROUTES.notificationSettings,
+    name: 'notificationSettings',
+    icon: 'bell',
+    component: NotificationSettingsPage,
+    ability: { action: 'read', subject: 'Building' },
     hideInMenu: true,
   },
 ];

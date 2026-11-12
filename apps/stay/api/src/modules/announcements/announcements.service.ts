@@ -20,6 +20,7 @@ import { AnnouncementModel, RoomModel, UserModel } from '@/sequelize/models/inde
 import { auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { assertVersion } from '@/shared/input.js';
 import type { ModelOrder } from '@/types/database.js';
+import { notifyAnnouncement } from '../notifications/notifications.events.js';
 import { invalid } from '../requests/requests.shared.js';
 
 export type AnnouncementSortField = 'createdAt' | 'expiresAt';
@@ -198,6 +199,7 @@ export async function createAnnouncement(
     );
 
     await audit('created', row, transaction);
+    await notifyAnnouncement(row, transaction);
     return dto(row, transaction);
   });
 }

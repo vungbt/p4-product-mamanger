@@ -61,6 +61,7 @@ import { auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { assertVersion } from '@/shared/input.js';
 import { runIdempotent } from '@/shared/persistence.js';
 import type { ModelOrder } from '@/types/database.js';
+import { notifyInvoiceIssued } from '../notifications/notifications.events.js';
 import { invoicePayments } from '../payments/payments.dto.js';
 import {
   billingDefaults,
@@ -1044,6 +1045,7 @@ export async function issueInvoices(user: StayUser, ids: string[]): Promise<Invo
         { transaction },
       );
       await auditInvoice(row, 'issued', transaction);
+      await notifyInvoiceIssued(user, row, transaction);
     }
     for (const reading of readings)
       if (reading.status !== 'locked') await reading.update({ status: 'locked' }, { transaction });
