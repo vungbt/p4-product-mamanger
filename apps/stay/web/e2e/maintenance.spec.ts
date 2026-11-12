@@ -19,6 +19,7 @@ for (const width of [1280, 375]) {
     expect(building).toBeTruthy();
     const roomCode = `M${randomUUID().replaceAll('-', '').slice(0, 7).toUpperCase()}`;
     const createdRoom = await page.request.post(`/api/buildings/${building.id}/rooms`, {
+      headers: { origin: new URL(page.url()).origin },
       data: {
         code: roomCode,
         floor: 1,
@@ -50,7 +51,9 @@ for (const width of [1280, 375]) {
     const detailPath = new URL(page.url()).pathname;
 
     await expect(page.getByRole('img', { name: 'Ảnh bảo trì' })).toBeVisible();
-    await expect(page.getByText('Chủ trọ / Quản lý', { exact: false }).first()).toBeVisible();
+    await expect(
+      page.getByText('Chủ trọ / Quản lý', { exact: false }).filter({ visible: true }).first(),
+    ).toBeVisible();
     await page.goto(`/rooms/${room.id}`);
     await expect(page.getByTestId('room-open-maintenance')).toBeVisible();
     await page.goto(`/rooms?q=${roomCode}`);
@@ -119,6 +122,7 @@ test('operations manager handles a job in building A', async ({ page }) => {
   ).json();
   const title = `Manager maintenance ${randomUUID()}`;
   const response = await page.request.post('/api/maintenance', {
+    headers: { origin: new URL(page.url()).origin },
     data: { roomId: rooms.data[0].id, title, description: 'Manager A' },
   });
 
