@@ -42,6 +42,9 @@ tags:
       hành (cấp mã, khoá chỉ số), void. Mọi số tiền tính bằng `@stay/billing` tại server; dòng hoá đơn là snapshot."
   - name: me
     description: Người dùng hiện tại và quyền CASL.
+  - name: notifications
+    description: Thông báo trong ứng dụng (nhân viên theo toà, người thuê theo hợp đồng), luồng SSE, email SMTP và thông báo
+      trình duyệt (Web Push) gửi qua outbox sau commit; cài đặt kênh/nhóm sự kiện theo người.
   - name: operations
     description: Kiểm tra trạng thái dịch vụ.
   - name: overview
@@ -448,6 +451,511 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/notifications/stream:
+    get:
+      tags:
+        - notifications
+      operationId: get_api_notifications_stream
+      summary: Luồng thông báo (SSE)
+      description: >-
+        Server-Sent Events của thông báo nhân viên mới trong các toà được phép đọc (đánh thức bằng Postgres NOTIFY sau
+        commit). Client giữ polling `GET /api/notifications` làm dự phòng.
+
+
+        **Quyền:** `read:Building`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: "Luồng `text/event-stream`: `event: ready` khi mở, `event: notification` với `data` là
+            `NotificationStreamEvent` (JSON), comment `: ping` mỗi 25 giây. Server đóng luồng sau 10 phút; EventSource
+            tự kết nối lại."
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/me/notification-settings:
+    get:
+      tags:
+        - notifications
+      operationId: get_api_me_notification_settings
+      summary: Cài đặt nhận thông báo
+      description: >-
+        Kênh email/trình duyệt và nhóm sự kiện bị tắt của người dùng hiện tại (mặc định bật hết), kèm `emailAvailable`,
+        `pushPublicKey` (VAPID, null khi chưa cấu hình) và số thiết bị đã đăng ký.
+
+
+        **Yêu cầu đăng nhập.**
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/NotificationSettings"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - notifications
+      operationId: put_api_me_notification_settings
+      summary: Lưu cài đặt nhận thông báo
+      description: >-
+        `{ email, push, mutedGroups }`. Thông báo trong ứng dụng luôn được ghi; cài đặt chỉ áp dụng cho email và thông
+        báo trình duyệt. Có audit.
+
+
+        **Yêu cầu đăng nhập.**
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationPreferences"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/NotificationSettings"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/me/push-subscriptions:
+    post:
+      tags:
+        - notifications
+      operationId: post_api_me_push_subscriptions
+      summary: Đăng ký thông báo trình duyệt
+      description: >-
+        `PushSubscription.toJSON()` của trình duyệt. Endpoint phải thuộc dịch vụ push của trình duyệt (HTTPS).
+        Idempotent theo endpoint; cùng trình duyệt đăng nhập người khác thì chuyển sang người đó.
+
+
+        **Yêu cầu đăng nhập.**
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushSubscriptionInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PushSubscriptionResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    delete:
+      tags:
+        - notifications
+      operationId: delete_api_me_push_subscriptions
+      summary: Huỷ đăng ký thông báo trình duyệt
+      description: |-
+        `{ endpoint }`; chỉ xoá endpoint của chính người dùng. Không có thì không làm gì.
+
+        **Yêu cầu đăng nhập.**
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: delete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                endpoint:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+              required:
+                - endpoint
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PushSubscriptionResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/notifications:
+    get:
+      tags:
+        - notifications
+      operationId: get_api_portal_notifications
+      summary: Thông báo của người thuê
+      description: |-
+        50 thông báo mới nhất của hợp đồng trong phiên (cả hợp đồng hoặc riêng người ở này) và `unreadCount`.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalNotifications"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/notifications/{id}/read:
+    post:
+      tags:
+        - notifications
+      operationId: post_api_portal_notifications_id_read
+      summary: Người thuê đánh dấu đã đọc
+      description: |-
+        Idempotent; thông báo của hợp đồng khác → 404.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                    required:
+                      - id
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/notifications/stream:
+    get:
+      tags:
+        - notifications
+      operationId: get_api_portal_notifications_stream
+      summary: Luồng thông báo người thuê (SSE)
+      description: |-
+        Server-Sent Events chỉ của hợp đồng trong phiên cổng; không bao giờ nhận thông báo của hợp đồng/người khác.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: "Luồng `text/event-stream`: `event: ready` khi mở, `event: notification` với `data` là
+            `NotificationStreamEvent` (JSON), comment `: ping` mỗi 25 giây. Server đóng luồng sau 10 phút; EventSource
+            tự kết nối lại."
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/notification-settings:
+    get:
+      tags:
+        - notifications
+      operationId: get_api_portal_notification_settings
+      summary: Cài đặt nhận thông báo (người thuê)
+      description: |-
+        Như `/api/me/notification-settings`, theo người thuê của phiên. Email chỉ gửi khi hồ sơ có email.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/NotificationSettings"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - notifications
+      operationId: put_api_portal_notification_settings
+      summary: Lưu cài đặt nhận thông báo (người thuê)
+      description: |-
+        Có audit.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationPreferences"
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/NotificationSettings"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/push-subscriptions:
+    post:
+      tags:
+        - notifications
+      operationId: post_api_portal_push_subscriptions
+      summary: Người thuê đăng ký thông báo trình duyệt
+      description: |-
+        Gắn với link cổng của phiên: thu hồi link thì dừng gửi, xoá link thì xoá đăng ký.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushSubscriptionInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PushSubscriptionResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    delete:
+      tags:
+        - notifications
+      operationId: delete_api_portal_push_subscriptions
+      summary: Người thuê huỷ đăng ký thông báo trình duyệt
+      description: |-
+        `{ endpoint }` của link trong phiên.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: delete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                endpoint:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+              required:
+                - endpoint
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PushSubscriptionResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
         "409":
           $ref: "#/components/responses/Conflict"
         "429":
@@ -12517,10 +13025,10 @@ components:
                 - 1
             - type: number
               enum:
-                - 1000
+                - 100
             - type: number
               enum:
-                - 100
+                - 1000
         refundUnusedRent:
           type: boolean
       required:
@@ -13791,6 +14299,62 @@ components:
             - "null"
       required:
         - expectedMoveOutDate
+    NotificationPreferences:
+      type: object
+      properties:
+        email:
+          type: boolean
+        push:
+          type: boolean
+        mutedGroups:
+          type: array
+          items:
+            type: string
+            enum:
+              - announcements
+              - invoices
+              - payments
+              - reminders
+              - requests
+      required:
+        - email
+        - push
+        - mutedGroups
+    NotificationSettings:
+      type: object
+      properties:
+        emailAvailable:
+          type: boolean
+        hasEmail:
+          type: boolean
+        pushPublicKey:
+          type:
+            - string
+            - "null"
+        pushSubscriptions:
+          type: number
+        email:
+          type: boolean
+        push:
+          type: boolean
+        mutedGroups:
+          type: array
+          items:
+            type: string
+            enum:
+              - announcements
+              - invoices
+              - payments
+              - reminders
+              - requests
+      required:
+        - emailAvailable
+        - hasEmail
+        - pushPublicKey
+        - pushSubscriptions
+        - email
+        - push
+        - mutedGroups
     OtherRequestPayload:
       type: object
       properties:
@@ -14466,6 +15030,60 @@ components:
         - buildingName
         - rulesText
         - contactPhone
+    PortalNotification:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+            - announcement.created
+            - automation
+            - drafts.ready
+            - invoice.due_soon
+            - invoice.issued
+            - invoice.overdue
+            - maintenance.created
+            - payment.recorded
+            - payment_claim.created
+            - payment_claim.rejected
+            - reading.reminder
+            - reminder.unreachable
+            - request.updated
+            - tenant_request.created
+        title:
+          type: string
+        body:
+          type: string
+        path:
+          type: string
+        createdAt:
+          type: string
+        readAt:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - kind
+        - title
+        - body
+        - path
+        - createdAt
+        - readAt
+    PortalNotifications:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortalNotification"
+        unreadCount:
+          type: number
+      required:
+        - items
+        - unreadCount
     PortalOccupant:
       type: object
       properties:
@@ -14904,6 +15522,34 @@ components:
         - bankName
         - accountNumber
         - accountName
+    PushSubscriptionInput:
+      type: object
+      properties:
+        endpoint:
+          type: string
+        keys:
+          type: object
+          properties:
+            p256dh:
+              type: string
+            auth:
+              type: string
+          required:
+            - p256dh
+            - auth
+      required:
+        - endpoint
+        - keys
+    PushSubscriptionResult:
+      type: object
+      properties:
+        endpoint:
+          type: string
+        subscribed:
+          type: boolean
+      required:
+        - endpoint
+        - subscribed
     ReadingBulkResult:
       type: object
       properties:
@@ -15757,10 +16403,10 @@ components:
                     - 1
                 - type: number
                   enum:
-                    - 1000
+                    - 100
                 - type: number
                   enum:
-                    - 100
+                    - 1000
             - type: "null"
         refundUnusedRent:
           type:
@@ -15869,10 +16515,10 @@ components:
                     - 1
                 - type: number
                   enum:
-                    - 1000
+                    - 100
                 - type: number
                   enum:
-                    - 100
+                    - 1000
             - type: "null"
         refundUnusedRent:
           type:
@@ -16564,6 +17210,23 @@ components:
           type: string
         buildingId:
           type: string
+        kind:
+          type: string
+          enum:
+            - announcement.created
+            - automation
+            - drafts.ready
+            - invoice.due_soon
+            - invoice.issued
+            - invoice.overdue
+            - maintenance.created
+            - payment.recorded
+            - payment_claim.created
+            - payment_claim.rejected
+            - reading.reminder
+            - reminder.unreachable
+            - request.updated
+            - tenant_request.created
         title:
           type: string
         body:
@@ -16579,6 +17242,7 @@ components:
       required:
         - id
         - buildingId
+        - kind
         - title
         - body
         - path
@@ -17184,10 +17848,10 @@ components:
                 - 1
             - type: number
               enum:
-                - 1000
+                - 100
             - type: number
               enum:
-                - 100
+                - 1000
         refundUnusedRent:
           type: boolean
       required:

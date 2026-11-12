@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/libraries/session/auth-provider';
 import { ROUTES } from '@/routing/route-configs';
 
-/** Header account menu: change password (placeholder) and sign out. */
+/** Header account menu: notification settings, change password (placeholder) and sign out. */
 export default function AccountMenu() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -16,6 +16,12 @@ export default function AccountMenu() {
   const name = user.displayName.trim() || user.email;
 
   const items: DropdownMenuEntry[] = [
+    {
+      id: 'notifications',
+      icon: 'bell',
+      label: t('account.notifications'),
+      onSelect: () => navigate(ROUTES.notificationSettings),
+    },
     {
       id: 'password',
       icon: 'key',

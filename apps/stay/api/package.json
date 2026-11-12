@@ -42,11 +42,13 @@
     "i18next-fs-backend": "catalog:",
     "i18next-http-middleware": "catalog:",
     "multer": "catalog:",
+    "nodemailer": "10.0.12",
     "pg": "catalog:",
     "pg-hstore": "catalog:",
     "sequelize": "catalog:",
     "sequelize-cli": "catalog:",
     "unzipper": "catalog:",
+    "web-push": "3.6.7",
     "yaml": "catalog:"
   },
   "devDependencies": {
@@ -56,8 +58,10 @@
     "@types/express": "catalog:",
     "@types/multer": "catalog:",
     "@types/node": "catalog:",
+    "@types/nodemailer": "8.0.2",
     "@types/pg": "catalog:",
     "@types/unzipper": "catalog:",
+    "@types/web-push": "3.6.4",
     "tsc-alias": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
