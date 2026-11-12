@@ -1,9 +1,15 @@
 import {
+  type BillingCycle,
   type BillingDay,
+  billingCycleErrors,
   DEFAULT_BILLING_SETTINGS,
+  GRACE_DAYS_MAX,
   isBillingDay,
   isRoundingUnit,
+  READING_DAY_MONTHS,
+  type ReadingDayMonth,
   type RoundingUnit,
+  SERVICE_DESCRIPTION_MAX,
   SERVICE_KINDS,
 } from '@stay/shared';
 import type { FormBody } from '@/shared/input.js';
@@ -32,21 +38,69 @@ export function checkRoundingUnit(body: FormBody, unit: number): RoundingUnit {
   return DEFAULT_BILLING_SETTINGS.roundingUnit;
 }
 
-/** Body of `PUT /api/settings`. */
+/** `readingDayMonth`: `same` | `next`. */
+export function readReadingDayMonth(body: FormBody): ReadingDayMonth {
+  return body.enum('readingDayMonth', READING_DAY_MONTHS);
+}
+
+/** `graceDays`: whole days 0–31 after the due date before an invoice counts as overdue. */
+export function readGraceDays(body: FormBody): number {
+  return body.integer('graceDays', 0, GRACE_DAYS_MAX);
+}
+
+/**
+ * Cross-field cycle rules (`billingCycleErrors`) on the effective values. Fields with an own
+ * error, and fields the request leaves to the system (`own[field] === false`), are skipped.
+ */
+export function checkBillingCycle(
+  body: FormBody,
+  cycle: BillingCycle,
+  own: Partial<Record<keyof BillingCycle, boolean>> = {},
+) {
+  const fields = ['readingDay', 'readingDayMonth', 'issueDay', 'dueDay', 'graceDays'] as const;
+
+  if (fields.some((field) => body.errors[field])) return;
+
+  const errors = billingCycleErrors(cycle);
+
+  if (errors.readingDay) {
+    // In a building form the error belongs to whichever of the two days the request sets.
+    const field = own.readingDay === false && own.issueDay !== false ? 'issueDay' : 'readingDay';
+
+    body.invalid(field, errors.readingDay);
+  }
+  if (errors.dueDay)
+    body.invalid(
+      own.dueDay === false && own.issueDay !== false ? 'issueDay' : 'dueDay',
+      errors.dueDay,
+    );
+  if (errors.graceDays) body.invalid('graceDays', errors.graceDays);
+}
+
+/** Body of `PUT /api/settings`. `readingDayMonth`/`graceDays` omitted = `same`/0. */
 export function readSettingsInput(body: FormBody): SettingsInput & { version: number } {
   const input = {
     readingDay: checkBillingDay(body, 'readingDay', body.integer('readingDay', 1, 31)),
+    readingDayMonth: body.isEmpty('readingDayMonth')
+      ? DEFAULT_BILLING_SETTINGS.readingDayMonth
+      : readReadingDayMonth(body),
     issueDay: checkBillingDay(body, 'issueDay', body.integer('issueDay', 1, 31)),
     dueDay: checkBillingDay(body, 'dueDay', body.integer('dueDay', 1, 31)),
+    graceDays: body.isEmpty('graceDays') ? DEFAULT_BILLING_SETTINGS.graceDays : readGraceDays(body),
     roundingUnit: checkRoundingUnit(body, body.integer('roundingUnit', 1, 1000)),
     refundUnusedRent: body.boolean('refundUnusedRent'),
     transferContentTemplate: body.text('transferContentTemplate', 50),
     version: body.integer('version', 1),
   };
 
-  if (!body.errors.dueDay) body.check('dueDay', input.dueDay >= input.issueDay, 'due_before_issue');
+  checkBillingCycle(body, input);
   body.assertValid();
   return input;
+}
+
+/** Optional `description` (≤ 500 characters); empty, `null` or omitted = `null`. */
+function readServiceDescription(body: FormBody): string | null {
+  return body.optionalText('description', SERVICE_DESCRIPTION_MAX) || null;
 }
 
 async function checkServiceName(body: FormBody, name: string, exceptId?: string) {
@@ -58,6 +112,7 @@ async function checkServiceName(body: FormBody, name: string, exceptId?: string)
 export async function readNewServiceInput(body: FormBody): Promise<NewServiceInput> {
   const input = {
     name: body.text('name', 120),
+    description: readServiceDescription(body),
     kind: body.enum('kind', SERVICE_KINDS),
     unit: body.text('unit', 20),
     defaultPrice: body.integer('defaultPrice', 0, MAX_PRICE),
@@ -79,6 +134,8 @@ export async function readServiceInput(
 ): Promise<ServiceInput & { version: number }> {
   const input = {
     name: body.text('name', 120),
+    // Omitted by older clients (toggle, reorder): keep the stored description.
+    description: 'description' in body.data ? readServiceDescription(body) : undefined,
     unit: body.text('unit', 20),
     defaultPrice: body.integer('defaultPrice', 0, MAX_PRICE),
     sortOrder: body.integer('sortOrder', 0, MAX_SORT_ORDER),

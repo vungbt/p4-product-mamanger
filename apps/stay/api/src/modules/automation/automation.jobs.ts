@@ -1,10 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { logger, requestStore } from '@p4/server-core';
 import type { JsonValue } from '@p4/shared';
-import { billingDate } from '@stay/billing';
 import {
   addDays,
   addMonths,
+  afterDueReminderOn,
+  type BillingSettings,
+  invoiceCalendar,
+  isInvoiceOverdue,
   isoDateInTimeZone,
   type NotificationKind,
   type StayAutomationSettings,
@@ -21,16 +24,19 @@ import {
 import { auditedCommand, auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { createDrafts } from '../invoices/invoices.service.js';
 import { shareInvoice } from '../invoices/invoices.share.js';
-import {
-  displayDate,
-  formatVnd,
-  publishNotification,
-} from '../notifications/notifications.publish.js';
+import { formatVnd, publishNotification } from '../notifications/notifications.publish.js';
 import { smtpTransport } from '../notifications/notifications.transports.js';
-import { billingDefaults } from '../settings/settings.service.js';
+import { readingProgress } from '../readings/readings.service.js';
+import { billingDefaults, effectiveBilling } from '../settings/settings.service.js';
 import { automationDefaults, settingsColumns } from './automation.service.js';
 
-export type AutomationKind = 'reading' | 'drafts' | 'before_due' | 'after_due';
+/**
+ * Runs of invoice period M (unique per building + period + kind): `reading_before` N days before
+ * and `reading` on the reading day that closes M−1, `drafts` on the issue day, `before_due` the
+ * day before `dueOn`, `after_due` on `afterDueReminderOn` (due + 3, or the first overdue day
+ * when the building has a grace period).
+ */
+export type AutomationKind = 'reading_before' | 'reading' | 'drafts' | 'before_due' | 'after_due';
 
 interface Run {
   id: string;
@@ -93,6 +99,8 @@ async function reachable(contractId: string, email: string | null, transaction: 
 }
 
 function enabled(settings: StayAutomationSettings, kind: AutomationKind) {
+  if (kind === 'reading_before')
+    return settings.readingReminderBefore && settings.readingReminderDaysBefore > 0;
   if (kind === 'reading') return settings.readingReminder;
   if (kind === 'drafts') return settings.createDrafts;
   return (
@@ -112,14 +120,21 @@ async function executeRun(run: Run, now: Date, transaction: Transaction) {
     { replacements: { id: building.id }, transaction, type: QueryTypes.SELECT },
   );
   if (!enabled(stored ?? automationDefaults, run.kind)) return;
-  if (run.kind === 'reading') {
-    await ownerNotice(
-      run,
-      'Đến ngày chốt số',
-      `Chốt chỉ số kỳ ${addMonths(run.period, -1)} — ${building.name}`,
-      `/readings?period=${addMonths(run.period, -1)}`,
-      transaction,
-    );
+  const billing = effectiveBilling(building, await billingDefaults(transaction));
+  if (run.kind === 'reading_before' || run.kind === 'reading') {
+    const consumption = addMonths(run.period, -1);
+    const progress = await readingProgress(building.id, consumption, transaction);
+    // Nothing to remind once every room of the grid has its readings.
+    if (progress.missing > 0) {
+      const readingOn = invoiceCalendar(run.period, billing).readingOn;
+      await ownerNotice(
+        run,
+        run.kind === 'reading' ? 'Đến ngày chốt số' : 'Sắp đến ngày chốt số',
+        `${building.name}: còn ${progress.missing}/${progress.rooms} phòng chưa chốt số tiêu thụ tháng ${displayPeriod(consumption)} (ngày chốt ${displayDate(readingOn)}).`,
+        `/readings?period=${consumption}`,
+        transaction,
+      );
+    }
   } else if (run.kind === 'drafts') {
     const result = await createDrafts(system, building.id, run.period, `automation:${run.id}`);
     const missing = result.rows.filter(
@@ -134,12 +149,13 @@ async function executeRun(run: Run, now: Date, transaction: Transaction) {
         transaction,
       );
   } else {
-    const dueOn = addDays(run.scheduledOn, run.kind === 'before_due' ? 1 : -3);
+    // before_due: invoices due tomorrow; after_due: invoices of the period overdue on the run
+    // date with the building's grace period (`isInvoiceOverdue`).
     const invoices = await InvoiceModel.findAll({
       where: {
         buildingId: building.id,
         period: run.period,
-        dueOn,
+        ...(run.kind === 'before_due' ? { dueOn: addDays(run.scheduledOn, 1) } : {}),
         status: { [Op.in]: ['issued', 'partially_paid'] },
       },
       transaction,
@@ -148,6 +164,11 @@ async function executeRun(run: Run, now: Date, transaction: Transaction) {
     const unreachable: string[] = [];
     for (const invoice of invoices) {
       if (invoice.paidTotal >= invoice.total) continue;
+      if (
+        run.kind === 'after_due' &&
+        !isInvoiceOverdue(invoice.status, invoice.dueOn, run.scheduledOn, billing.graceDays)
+      )
+        continue;
       const [tenant] = await sequelize.query<{ email: string | null; fullName: string }>(
         `SELECT t.email,t.full_name AS "fullName" FROM contract_occupants o JOIN tenants t ON t.id=o.tenant_id
         WHERE o.contract_id=:id AND o.is_primary AND o.from_date<=:date AND (o.to_date IS NULL OR o.to_date>:date)
@@ -250,6 +271,27 @@ export async function resumeAutomationRun(run: Run, now: Date): Promise<boolean>
   );
 }
 
+const displayDate = (date: string) =>
+  `${date.slice(8, 10)}/${date.slice(5, 7)}/${date.slice(0, 4)}`;
+const displayPeriod = (period: string) => `${period.slice(5)}/${period.slice(0, 4)}`;
+
+/** Dates of the runs of invoice period M (Asia/Ho_Chi_Minh business dates). */
+export function automationSchedule(
+  period: string,
+  billing: BillingSettings,
+  settings: Pick<StayAutomationSettings, 'readingReminderDaysBefore'>,
+): [AutomationKind, string][] {
+  const calendar = invoiceCalendar(period, billing);
+
+  return [
+    ['reading_before', addDays(calendar.readingOn, -settings.readingReminderDaysBefore)],
+    ['reading', calendar.readingOn],
+    ['drafts', calendar.issueOn],
+    ['before_due', addDays(calendar.dueOn, -1)],
+    ['after_due', afterDueReminderOn(calendar.dueOn, billing.graceDays)],
+  ];
+}
+
 /** Explicit clock; all calendar dates use Asia/Ho_Chi_Minh, including month boundaries. */
 export async function runAutomations(now: Date): Promise<{ completed: number }> {
   if (!Number.isFinite(now.getTime())) throw new Error('Invalid automation date');
@@ -262,14 +304,12 @@ export async function runAutomations(now: Date): Promise<{ completed: number }> 
       { replacements: { id: building.id }, type: QueryTypes.SELECT },
     );
     const settings = stored ?? automationDefaults;
-    // Adjacent periods cover due-1 at the previous month's end and due+3 next month.
-    for (const period of [addMonths(month, -1), month, addMonths(month, 1)]) {
-      const schedule: [AutomationKind, string][] = [
-        ['reading', billingDate(addMonths(period, -1), building.readingDay ?? defaults.readingDay)],
-        ['drafts', billingDate(period, building.issueDay ?? defaults.issueDay)],
-        ['before_due', addDays(billingDate(period, building.dueDay ?? defaults.dueDay), -1)],
-        ['after_due', addDays(billingDate(period, building.dueDay ?? defaults.dueDay), 3)],
-      ];
+    const billing = effectiveBilling(building, defaults);
+    // Neighbouring periods: an early reading reminder may fall two months before M (`same`
+    // mode), due − 1 at the previous month's end, after-due reminders in the next months.
+    for (let offset = -2; offset <= 2; offset++) {
+      const period = addMonths(month, offset);
+      const schedule = automationSchedule(period, billing, settings);
       for (const [kind, scheduledOn] of schedule) {
         if (scheduledOn !== date || !enabled(settings, kind)) continue;
         await sequelize.query(
@@ -335,6 +375,7 @@ export async function automationRunAllowed(runId: string): Promise<boolean> {
   const [permission] = await sequelize.query<{ allowed: boolean }>(
     `SELECT
     b.archived_at IS NULL AND CASE r.kind WHEN 'reading' THEN a.reading_reminder
+    WHEN 'reading_before' THEN a.reading_reminder_before AND a.reading_reminder_days_before > 0
     WHEN 'drafts' THEN a.create_drafts
     WHEN 'before_due' THEN NOT a.tenant_reminders_disabled AND a.before_due
     WHEN 'after_due' THEN NOT a.tenant_reminders_disabled AND a.after_due ELSE false END AS allowed

@@ -40,16 +40,19 @@ async function signIn(email = 'owner@stay.local', password = 'stay-owner-123') {
 }
 
 describe('ST-26 automation', { skip: !process.env.CI || !base }, () => {
-  let owner, building, ready, missing, settings, managerIn, managerOut;
+  let owner, building, ready, missing, noEmail, settings, managerIn, managerOut;
   const settingsPath = () => `/buildings/${building.id}/automation`;
   const set = async (changes) => {
     settings = await call(owner, 'PUT', settingsPath(), { ...settings, ...changes });
   };
   const runs = () =>
-    sequelize.query('SELECT * FROM automation_runs WHERE building_id=:id', {
-      replacements: { id: building.id },
-      type: QueryTypes.SELECT,
-    });
+    sequelize.query(
+      'SELECT id,period,kind,status,scheduled_on::text AS scheduled_on FROM automation_runs WHERE building_id=:id ORDER BY scheduled_on,id',
+      {
+        replacements: { id: building.id },
+        type: QueryTypes.SELECT,
+      },
+    );
   const notices = () =>
     sequelize.query(
       `SELECT * FROM notifications WHERE building_id=:id AND audience='staff' ORDER BY created_at,id`,
@@ -126,7 +129,8 @@ describe('ST-26 automation', { skip: !process.env.CI || !base }, () => {
       201,
     );
     const contract = await call(owner, 'POST', `/contracts/${draft.id}/activate`);
-    return { room, contract, tenant };
+    const { meters } = await call(owner, 'GET', `/rooms/${room.id}`);
+    return { room, contract, tenant, meters };
   }
   before(async () => {
     owner = await signIn();
@@ -141,7 +145,7 @@ describe('ST-26 automation', { skip: !process.env.CI || !base }, () => {
     assert.equal(settings.tenantRemindersDisabled, true);
     ready = await fixture('READY', `ready-${suffix.toLowerCase()}@stay.local`, false);
     missing = await fixture('MISSING', `missing-${suffix.toLowerCase()}@stay.local`, true);
-    await fixture('NOEMAIL', null, false);
+    noEmail = await fixture('NOEMAIL', null, false);
     managerIn = await manager(true, 1);
     managerOut = await manager(false, 2);
   });
@@ -294,5 +298,144 @@ describe('ST-26 automation', { skip: !process.env.CI || !base }, () => {
     assert.ok(ours.every((mail) => mail.subject.startsWith(`[Automation ${suffix}]`)));
     assert.ok(ours.some((mail) => mail.text.includes('/i/')));
     assert.equal(await deliverNotifications(at('2044-01-02'), transports), false);
+  });
+
+  const updateBuilding = async (changes) => {
+    const current = await call(owner, 'GET', `/buildings/${building.id}`);
+    const fields = [
+      'code',
+      'name',
+      'address',
+      'readingDay',
+      'readingDayMonth',
+      'issueDay',
+      'dueDay',
+      'graceDays',
+      'roundingUnit',
+      'refundUnusedRent',
+      'bankBin',
+      'bankAccount',
+      'bankAccountName',
+      'rulesText',
+      'contactPhone',
+      'version',
+    ];
+    return call(owner, 'PUT', `/buildings/${building.id}`, {
+      ...Object.fromEntries(fields.map((field) => [field, current[field]])),
+      ...changes,
+    });
+  };
+  const readAll = async (period, readOn) => {
+    const rows = [ready, missing, noEmail].flatMap((fixtureRow) =>
+      fixtureRow.meters.map((meter) => ({
+        meterId: meter.id,
+        period,
+        reading: 10,
+        readOn,
+        version: 0,
+      })),
+    );
+    const result = await call(owner, 'PUT', `/buildings/${building.id}/readings`, { rows });
+    assert.ok(
+      result.results.every((row) => row.error === null),
+      JSON.stringify(result.results),
+    );
+  };
+
+  test('reading reminders: N days before and on the reading day, only while rooms lack readings', async () => {
+    await set({ readingReminder: true, readingReminderBefore: true, readingReminderDaysBefore: 2 });
+    assert.equal(settings.readingReminderDaysBefore, 2);
+    await runAutomations(at('2043-05-28'));
+    await runAutomations(at('2043-05-29'));
+    await runAutomations(at('2043-05-29'));
+    const early = (await runs()).filter((row) => row.kind === 'reading_before');
+    assert.deepEqual(
+      early.map((row) => [row.period, row.scheduled_on, row.status]),
+      [['2043-06', '2043-05-29', 'done']],
+    );
+    const before = (await notices()).filter((row) => row.title === 'Sắp đến ngày chốt số');
+    assert.equal(before.length, 1);
+    assert.equal(before[0].path, '/readings?period=2043-05');
+    assert.match(before[0].body, /còn 3\/3 phòng/);
+    assert.match(before[0].body, /31\/05\/2043/);
+    assert.equal(before[0].kind, 'reading.reminder');
+    // Email/push to staff go through the outbox, committed with the run.
+    assert.equal((await dispatches(before)).length, 1);
+
+    // Every room read before the reading day: the reading-day run completes silently.
+    await readAll('2043-05', '2043-05-31');
+    const count = (await notices()).length;
+    await runAutomations(at('2043-05-31'));
+    const readingRun = (await runs()).find(
+      (row) => row.kind === 'reading' && row.period === '2043-06',
+    );
+    assert.equal(readingRun.status, 'done');
+    assert.equal((await notices()).length, count);
+
+    // 0 days turns the early reminder off.
+    await set({ readingReminderDaysBefore: 0 });
+    await runAutomations(at('2043-06-30'));
+    assert.equal((await runs()).filter((row) => row.kind === 'reading_before').length, 1);
+    await call(owner, 'PUT', settingsPath(), { ...settings, readingReminderDaysBefore: 11 }, 400);
+  });
+
+  test('next mode: reading reminders fall in the invoice month, after-due waits for the grace period', async () => {
+    await updateBuilding({
+      readingDayMonth: 'next',
+      readingDay: 5,
+      issueDay: 6,
+      dueDay: 10,
+      graceDays: 5,
+    });
+    await set({ readingReminderDaysBefore: 1 });
+    await runAutomations(at('2043-08-04'));
+    const early = (await runs()).find(
+      (row) => row.kind === 'reading_before' && row.period === '2043-08',
+    );
+    assert.equal(early.scheduled_on, '2043-08-04');
+    const notice = (await notices()).at(-1);
+    assert.equal(notice.title, 'Sắp đến ngày chốt số');
+    assert.equal(notice.path, '/readings?period=2043-07');
+    assert.match(notice.body, /05\/08\/2043/);
+    await runAutomations(at('2043-08-05'));
+    assert.equal((await notices()).at(-1).title, 'Đến ngày chốt số');
+
+    // Drafts of 2043-09 on its issue day, then issued: due 10/09, overdue from 16/09.
+    await runAutomations(at('2043-09-06'));
+    const drafts = await InvoiceModel.findAll({
+      where: { buildingId: building.id, period: '2043-09', status: 'draft' },
+    });
+    assert.ok(drafts.some((row) => row.contractId === ready.contract.id));
+    await call(owner, 'POST', '/invoices/issue', { ids: drafts.map((row) => row.id) });
+    const issued = await InvoiceModel.findOne({
+      where: { contractId: ready.contract.id, period: '2043-09' },
+    });
+    assert.equal(issued.dueOn, '2043-09-10');
+
+    await runAutomations(at('2043-09-09'));
+    const beforeDue = (await runs()).find(
+      (row) => row.kind === 'before_due' && row.period === '2043-09',
+    );
+    assert.equal(beforeDue.scheduled_on, '2043-09-09');
+    for (const date of ['2043-09-13', '2043-09-15']) await runAutomations(at(date));
+    const afterDue = () =>
+      runs().then((rows) =>
+        rows.filter((row) => row.kind === 'after_due' && row.period === '2043-09'),
+      );
+    assert.equal((await afterDue()).length, 0);
+    await runAutomations(at('2043-09-16'));
+    await runAutomations(at('2043-09-16'));
+    const [run] = await afterDue();
+    assert.equal(run.scheduled_on, '2043-09-16');
+    assert.equal(run.status, 'done');
+    const overdue = (await reminders()).filter(
+      (row) =>
+        row.kind === 'invoice.overdue' &&
+        row.contract_id === ready.contract.id &&
+        row.body.includes('10/09/2043'),
+    );
+    assert.equal(overdue.length, 1);
+    assert.equal(overdue[0].title, 'Hoá đơn đã quá hạn thanh toán');
+    assert.match(overdue[0].body, /hạn thanh toán 10\/09\/2043/);
   });
 });

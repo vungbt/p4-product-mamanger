@@ -216,12 +216,12 @@ describe('state machines', () => {
   });
 
   test('overdue is derived: issued/partially_paid after the due date', () => {
-    assert.equal(isInvoiceOverdue('issued', '2026-11-05', '2026-11-05'), false);
-    assert.equal(isInvoiceOverdue('issued', '2026-11-05', '2026-11-06'), true);
-    assert.equal(isInvoiceOverdue('partially_paid', '2026-11-05', '2026-12-01'), true);
-    assert.equal(isInvoiceOverdue('paid', '2026-11-05', '2026-12-01'), false);
-    assert.equal(isInvoiceOverdue('void', '2026-11-05', '2026-12-01'), false);
-    assert.equal(isInvoiceOverdue('draft', '2026-11-05', '2026-12-01'), false);
+    assert.equal(isInvoiceOverdue('issued', '2026-11-05', '2026-11-05', 0), false);
+    assert.equal(isInvoiceOverdue('issued', '2026-11-05', '2026-11-06', 0), true);
+    assert.equal(isInvoiceOverdue('partially_paid', '2026-11-05', '2026-12-01', 0), true);
+    assert.equal(isInvoiceOverdue('paid', '2026-11-05', '2026-12-01', 0), false);
+    assert.equal(isInvoiceOverdue('void', '2026-11-05', '2026-12-01', 0), false);
+    assert.equal(isInvoiceOverdue('draft', '2026-11-05', '2026-12-01', 0), false);
   });
 });
 

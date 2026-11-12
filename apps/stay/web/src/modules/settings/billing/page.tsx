@@ -11,7 +11,13 @@ import {
 } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useStaySettings, useUpdateStaySettings } from '@stay/sdk/react';
-import { ROUNDING_UNITS, type StaySettings } from '@stay/shared';
+import {
+  billingCycleErrors,
+  isReadingDayMonth,
+  type ReadingDayMonth,
+  ROUNDING_UNITS,
+  type StaySettings,
+} from '@stay/shared';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
@@ -26,12 +32,19 @@ import { ConflictAlert, FormError, LoadError, LoadingRows } from '@/libraries/fo
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty, useFormValue } from '@/libraries/forms/use-form-value';
 import { ScreenHeader } from '@/libraries/screen-header';
-import { billingDayOptions, roundingUnitOptions } from './options';
+import {
+  billingDayOptions,
+  graceDaysOptions,
+  readingDayMonthOptions,
+  roundingUnitOptions,
+} from './options';
 
 type BillingValues = {
   readingDay: string;
+  readingDayMonth: string;
   issueDay: string;
   dueDay: string;
+  graceDays: string;
   roundingUnit: string;
   refundUnusedRent: boolean;
   transferContentTemplate: string;
@@ -39,18 +52,25 @@ type BillingValues = {
 
 const FIELDS = [
   'readingDay',
+  'readingDayMonth',
   'issueDay',
   'dueDay',
+  'graceDays',
   'roundingUnit',
   'refundUnusedRent',
   'transferContentTemplate',
 ] as const satisfies (keyof BillingValues)[];
 
+const readingDayMonthOf = (value: string): ReadingDayMonth =>
+  isReadingDayMonth(value) ? value : 'same';
+
 function toValues(settings: StaySettings): BillingValues {
   return {
     readingDay: String(settings.readingDay),
+    readingDayMonth: settings.readingDayMonth,
     issueDay: String(settings.issueDay),
     dueDay: String(settings.dueDay),
+    graceDays: String(settings.graceDays),
     roundingUnit: String(settings.roundingUnit),
     refundUnusedRent: settings.refundUnusedRent,
     transferContentTemplate: settings.transferContentTemplate,
@@ -64,14 +84,18 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
   const [conflict, setConflict] = useState(false);
 
   const dayOptions = useMemo(() => billingDayOptions(t), [t]);
+  const monthOptions = useMemo(() => readingDayMonthOptions(t), [t]);
+  const graceOptions = useMemo(() => graceDaysOptions(t), [t]);
   const roundingOptions = useMemo(() => roundingUnitOptions(), []);
   const schema = useMemo(() => {
     const required = v.pipe(v.string(), v.minLength(1, t('validation.required')));
 
     return {
       readingDay: required,
+      readingDayMonth: required,
       issueDay: required,
       dueDay: required,
+      graceDays: required,
       roundingUnit: required,
       transferContentTemplate: v.pipe(
         v.string(),
@@ -91,18 +115,23 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
 
       const body = {
         readingDay: Number(value.readingDay),
+        readingDayMonth: readingDayMonthOf(value.readingDayMonth),
         issueDay: Number(value.issueDay),
         dueDay: Number(value.dueDay),
+        graceDays: Number(value.graceDays),
         roundingUnit: ROUNDING_UNITS.find((unit) => String(unit) === value.roundingUnit) ?? 1000,
         refundUnusedRent: value.refundUnusedRent,
         transferContentTemplate: value.transferContentTemplate.trim(),
         version: settings.version,
       };
 
-      if (body.dueDay < body.issueDay) {
-        form.setFieldMeta('dueDay', serverError(t('billing.dueBeforeIssue')));
-        return;
-      }
+      // Same cross-field rules as the API (`billingCycleErrors`).
+      const errors = billingCycleErrors(body);
+
+      if (errors.dueDay) form.setFieldMeta('dueDay', serverError(t('billing.dueBeforeIssue')));
+      if (errors.readingDay)
+        form.setFieldMeta('readingDay', serverError(t('billing.readingAfterIssue')));
+      if (errors.dueDay || errors.readingDay) return;
 
       try {
         await update.mutateAsync(body);
@@ -131,8 +160,10 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
 
   const preview = billingPreview({
     readingDay: Number(values.readingDay),
+    readingDayMonth: readingDayMonthOf(values.readingDayMonth),
     issueDay: Number(values.issueDay),
     dueDay: Number(values.dueDay),
+    graceDays: Number(values.graceDays),
   });
 
   return (
@@ -144,6 +175,14 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
       <section className="grid gap-4 rounded-panel border border-line bg-surface p-4 shadow-panel sm:p-6">
         <h2 className="text-section font-semibold text-ink">{t('billing.cycleTitle')}</h2>
         <div className="grid gap-4 md:grid-cols-3">
+          <FormField
+            name="readingDayMonth"
+            label={t('billing.readingDayMonth')}
+            required
+            className="mb-0"
+          >
+            <Select options={monthOptions} hint={t('billing.readingDayMonthHint')} />
+          </FormField>
           <FormField name="readingDay" label={t('billing.readingDay')} required className="mb-0">
             <Select options={dayOptions} />
           </FormField>
@@ -152,6 +191,14 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
           </FormField>
           <FormField name="dueDay" label={t('billing.dueDay')} required className="mb-0">
             <Select options={dayOptions} />
+          </FormField>
+          <FormField
+            name="graceDays"
+            label={t('billing.graceDays')}
+            required
+            className="mb-0 md:col-span-2"
+          >
+            <Select options={graceOptions} hint={t('billing.graceDaysHint')} />
           </FormField>
         </div>
 

@@ -314,6 +314,7 @@ async function finalUtility(
         serviceId: service.id,
         code: service.code,
         name: service.name,
+        description: service.description,
         unit: service.unit,
         unitPrice: priceOn(context, service, moveOutDate),
         segments,
@@ -349,7 +350,7 @@ async function prepaidLines(
   });
 
   return lines.flatMap((line): PrepaidLineInput[] => {
-    const { coveredFrom, coveredTo, serviceCode } = line.meta;
+    const { coveredFrom, coveredTo, serviceCode, serviceDescription } = line.meta;
 
     if (
       (line.type !== 'rent' && line.type !== 'service') ||
@@ -367,6 +368,7 @@ async function prepaidLines(
         serviceId: line.serviceId,
         ...(serviceCode ? { code: serviceCode } : {}),
         ...(typeof name === 'string' ? { name } : {}),
+        ...(serviceDescription ? { description: serviceDescription } : {}),
         period: line.period,
         unitPrice: line.unitPrice,
         quantity: line.quantity,

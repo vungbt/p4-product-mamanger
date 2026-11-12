@@ -123,8 +123,10 @@ describe('Stay API: settings, services, buildings and prices', { skip: !base }, 
       { ...current.body.data, version: undefined },
       {
         readingDay: 31,
+        readingDayMonth: 'same',
         issueDay: 1,
         dueDay: 5,
+        graceDays: 0,
         roundingUnit: 1000,
         refundUnusedRent: false,
         transferContentTemplate: '{invoiceCode}',
@@ -420,8 +422,10 @@ describe('Stay API: settings, services, buildings and prices', { skip: !base }, 
     assert.equal(building.issueDay, 2);
     assert.deepEqual(building.billing, {
       readingDay: 31,
+      readingDayMonth: 'same',
       issueDay: 2,
       dueDay: 5,
+      graceDays: 0,
       roundingUnit: 1000,
       refundUnusedRent: true,
     });

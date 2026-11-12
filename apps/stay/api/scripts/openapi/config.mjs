@@ -24,7 +24,8 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 - Mọi dữ liệu nghiệp vụ gắn \`buildingId\`; quyền kiểm tra theo toà.`;
 
 const TAG_DESCRIPTIONS = {
-  automation: 'Tự động hoá theo toà, chỉ tạo bản nháp; nhắc qua email và thông báo.',
+  automation:
+    'Tự động hoá theo toà, chỉ tạo bản nháp; nhắc qua email và thông báo. Nhắc chủ trọ trước ngày chốt số `readingReminderDaysBefore` ngày (0 = tắt) và vào ngày chốt số, chỉ khi còn phòng thiếu chỉ số. Nhắc người thuê trước hạn 1 ngày và sau hạn 3 ngày, hoặc vào ngày đầu tiên quá hạn khi toà có `graceDays` > 0.',
   notifications:
     'Thông báo trong ứng dụng (nhân viên theo toà, người thuê theo hợp đồng), luồng SSE, email SMTP và thông báo trình duyệt (Web Push) gửi qua outbox sau commit; cài đặt kênh/nhóm sự kiện theo người.',
   residents: 'Tạm trú theo ngày, khai báo theo lần ở và xuất Excel có audit.',
@@ -64,7 +65,7 @@ const TAG_DESCRIPTIONS = {
 };
 
 const BILLING_DAY_NOTE =
-  'Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành.';
+  'Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. `readingDayMonth`: `same` = ngày chốt số thuộc tháng tiêu thụ M−1, `next` = thuộc tháng M (khi đó ngày chốt số ≤ ngày phát hành, 422 `reading_after_issue`). `graceDays` 0–31: hoá đơn chỉ tính quá hạn sau `dueOn + graceDays`.';
 const VERSION_NOTE =
   'Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.';
 
@@ -101,7 +102,7 @@ const OPERATIONS = {
   ],
   'PUT /api/buildings/{id}/automation': [
     'Lưu tự động hoá',
-    'manage Building; gửi đủ năm cờ và version; stale version trả 409, có audit.',
+    'manage Building; gửi đủ năm cờ và version (`readingReminderBefore`, `readingReminderDaysBefore` 0–10 bỏ trống = tắt/1 ngày); stale version trả 409, có audit.',
   ],
   'GET /api/notifications/stream': [
     'Luồng thông báo (SSE)',
@@ -196,11 +197,11 @@ const OPERATIONS = {
   ],
   'GET /api/buildings/{buildingId}/readings': [
     'Chỉ số điện nước toàn toà',
-    'Kỳ là tháng tiêu thụ (YYYY-MM). Bao gồm phòng có hợp đồng active/ending, chỉ số trước, tiêu thụ cả hai đoạn khi thay đồng hồ, trung bình tối đa 3 kỳ trước, cảnh báo và trạng thái draft/locked. Ngoài phạm vi quản lý trả 404.',
+    'Kỳ là tháng tiêu thụ (YYYY-MM). `readOnFrom`/`readOnTo` là khoảng ngày đọc hợp lệ theo kỳ thu của toà (`readingDayMonth`), `readingOn` là ngày chốt số của kỳ. Bao gồm phòng có hợp đồng active/ending, chỉ số trước, tiêu thụ cả hai đoạn khi thay đồng hồ, trung bình tối đa 3 kỳ trước, cảnh báo và trạng thái draft/locked. Ngoài phạm vi quản lý trả 404.',
   ],
   'PUT /api/buildings/{buildingId}/readings': [
     'Lưu chỉ số theo dòng',
-    'Mỗi dòng gửi meterId, period, reading, readOn và version (0 khi tạo). Trả results theo thứ tự đầu vào; dòng lỗi không huỷ dòng hợp lệ. Chỉ số nguyên không âm; số mới nhỏ hơn số cũ bị chặn. Tiêu thụ hơn 2 lần trung bình cần confirmHighConsumption. Version cũ trả lỗi dòng 409; locked không sửa được. Ảnh dùng private upload purpose contract_meter.',
+    'Mỗi dòng gửi meterId, period, reading, readOn và version (0 khi tạo). `readOn` phải trong tháng tiêu thụ (`same`) hoặc từ ngày 1 của kỳ tới ngày chốt số tháng sau (`next`), sai trả lỗi dòng 422 tại `readOn`. Trả results theo thứ tự đầu vào; dòng lỗi không huỷ dòng hợp lệ. Chỉ số nguyên không âm; số mới nhỏ hơn số cũ bị chặn. Tiêu thụ hơn 2 lần trung bình cần confirmHighConsumption. Version cũ trả lỗi dòng 409; locked không sửa được. Ảnh dùng private upload purpose contract_meter.',
   ],
   'PUT /api/readings/{id}': [
     'Sửa chỉ số draft',
@@ -268,7 +269,7 @@ const OPERATIONS = {
   ],
   'GET /api/invoices': [
     'Danh sách hoá đơn',
-    'Lọc buildingId, period, kind, status, roomId, contractId, overdue=true|false (quá hạn suy ra: issued/partially_paid, quá dueOn theo Asia/Ho_Chi_Minh, còn nợ). `q` tìm theo mã hoá đơn hoặc mã phòng. Người thuê chỉ thấy hoá đơn đã phát hành của hợp đồng mình.',
+    'Lọc buildingId, period, kind, status, roomId, contractId, overdue=true|false (quá hạn suy ra: issued/partially_paid, quá `dueOn + graceDays` của toà theo Asia/Ho_Chi_Minh, còn nợ; `overdueFrom` là ngày đầu tiên quá hạn). `q` tìm theo mã hoá đơn hoặc mã phòng. Người thuê chỉ thấy hoá đơn đã phát hành của hợp đồng mình.',
   ],
   'GET /api/invoices/{id}': [
     'Chi tiết hoá đơn',
@@ -453,7 +454,7 @@ const OPERATIONS = {
   ],
   'GET /api/buildings/{buildingId}/receivables': [
     'Công nợ của toà',
-    'Mỗi dòng là một hợp đồng có hoá đơn chưa thu đủ (`issued`/`partially_paid`, `total − paidTotal > 0`; nháp và void không tính): mã hợp đồng, phòng hiện tại, người đại diện (`representativePhone` chỉ khi được xem người thuê của toà), số hoá đơn, tổng còn lại, phần quá hạn, hạn cũ nhất, số ngày quá hạn lâu nhất (`dueOn` so với hôm nay theo Asia/Ho_Chi_Minh) và nhóm `bucket` (`not_due`, `1_7`, `8_30`, `over_30`), kèm các hoá đơn đó (hạn cũ nhất trước, có `shareExpiresAt`). `q` tìm theo mã phòng, mã hợp đồng, tên hoặc SĐT người ở; lọc `bucket`; `sortBy` `remaining` (mặc định, giảm dần), `overdueDays`, `roomCode`. `meta.totalRemaining`, `meta.overdueRemaining`, `meta.invoiceCount` tính trên toàn bộ bộ lọc trước phân trang và luôn bằng tổng `total − paidTotal` của các hoá đơn được tính; `meta.buckets` đếm theo `q` nhưng không theo `bucket` (cho các chip). Toà ngoài phạm vi trả 404.',
+    'Mỗi dòng là một hợp đồng có hoá đơn chưa thu đủ (`issued`/`partially_paid`, `total − paidTotal > 0`; nháp và void không tính): mã hợp đồng, phòng hiện tại, người đại diện (`representativePhone` chỉ khi được xem người thuê của toà), số hoá đơn, tổng còn lại, phần quá hạn, hạn cũ nhất, số ngày quá hạn lâu nhất (hôm nay theo Asia/Ho_Chi_Minh so với `dueOn + graceDays` của toà) và nhóm `bucket` (`not_due`, `1_7`, `8_30`, `over_30`), kèm các hoá đơn đó (hạn cũ nhất trước, có `shareExpiresAt`). `q` tìm theo mã phòng, mã hợp đồng, tên hoặc SĐT người ở; lọc `bucket`; `sortBy` `remaining` (mặc định, giảm dần), `overdueDays`, `roomCode`. `meta.totalRemaining`, `meta.overdueRemaining`, `meta.invoiceCount` tính trên toàn bộ bộ lọc trước phân trang và luôn bằng tổng `total − paidTotal` của các hoá đơn được tính; `meta.buckets` đếm theo `q` nhưng không theo `bucket` (cho các chip). Toà ngoài phạm vi trả 404.',
   ],
   'GET /api/buildings/{buildingId}/overview': [
     'Tổng quan tháng của toà',
@@ -479,7 +480,7 @@ const OPERATIONS = {
   ],
   'GET /api/settings': [
     'Kỳ thu mặc định',
-    'Ngày chốt số, ngày phát hành, hạn thanh toán, đơn vị làm tròn, hoàn tiền phòng và mẫu nội dung chuyển khoản. Toà để trống trường nào thì theo giá trị ở đây.',
+    'Ngày chốt số và tháng chốt số (`readingDayMonth`), ngày phát hành, hạn thanh toán, số ngày ân hạn trước khi tính quá hạn (`graceDays`), đơn vị làm tròn, hoàn tiền phòng và mẫu nội dung chuyển khoản. Toà để trống trường nào thì theo giá trị ở đây.',
   ],
   'PUT /api/settings': [
     'Cập nhật kỳ thu mặc định',
@@ -491,11 +492,11 @@ const OPERATIONS = {
   ],
   'POST /api/services': [
     'Thêm dịch vụ',
-    'Tên không trùng (không phân biệt hoa thường); đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và một `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.',
+    'Tên không trùng (không phân biệt hoa thường); `description` tuỳ chọn, tối đa 500 ký tự, được chụp vào dòng hoá đơn (`meta.serviceDescription`) khi lập bản nháp; đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và một `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.',
   ],
   'PUT /api/services/{id}': [
     'Sửa dịch vụ',
-    `Sửa tên, đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn đã phát hành. ${VERSION_NOTE}`,
+    `Sửa tên, mô tả (\`description\`), đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Hoá đơn đã phát hành giữ mô tả đã chụp. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn đã phát hành. ${VERSION_NOTE}`,
   ],
   'GET /api/buildings': [
     'Danh sách toà',
@@ -628,6 +629,8 @@ const billingDay = { type: ['integer', 'null'], minimum: 1, maximum: 31 };
 const roundingUnit = { type: 'integer', enum: [1, 100, 1000] };
 const buildingFields = {
   readingDay: { schema: billingDay },
+  readingDayMonth: { schema: { type: ['string', 'null'], enum: ['same', 'next', null] } },
+  graceDays: { schema: { type: ['integer', 'null'], minimum: 0, maximum: 31 } },
   issueDay: { schema: billingDay },
   dueDay: { schema: billingDay },
   roundingUnit: { schema: { type: ['integer', 'null'], enum: [...roundingUnit.enum, null] } },
@@ -642,6 +645,11 @@ const buildingFields = {
     schema: { type: 'string', minLength: 1, maxLength: 6, pattern: '^[A-Za-z0-9]{1,6}$' },
     required: true,
   },
+};
+
+// Optional note under the service name, copied to invoice lines; empty or `null` = none.
+const serviceFields = {
+  description: { schema: { type: ['string', 'null'], maxLength: 500 } },
 };
 
 // Area in m², at most two decimals; `null` when unknown.
@@ -1129,8 +1137,14 @@ const OVERRIDES = {
     },
   },
   'PUT /api/settings': {
-    fields: { roundingUnit: { schema: roundingUnit, required: true } },
+    fields: {
+      roundingUnit: { schema: roundingUnit, required: true },
+      readingDayMonth: { schema: { type: 'string', enum: ['same', 'next'], default: 'same' } },
+      graceDays: { schema: { type: 'integer', minimum: 0, maximum: 31, default: 0 } },
+    },
   },
+  'POST /api/services': { fields: serviceFields },
+  'PUT /api/services/{id}': { fields: serviceFields },
   'POST /api/buildings': { fields: buildingFields },
   'PUT /api/buildings/{id}': { fields: buildingFields },
   'POST /api/buildings/{buildingId}/rooms': { fields: { ...roomFields, ...initialReadings } },

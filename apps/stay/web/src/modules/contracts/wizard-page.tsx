@@ -508,6 +508,7 @@ function Wizard({
                         <Checkbox
                           key={s.serviceId}
                           label={`${s.name} · ${formatVnd(s.price)}/${s.unit}`}
+                          hint={s.description ?? undefined}
                           checked={value.serviceIds.includes(s.serviceId)}
                           onCheckedChange={(checked) =>
                             field.handleChange(

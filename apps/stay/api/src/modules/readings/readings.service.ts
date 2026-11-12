@@ -6,15 +6,19 @@ import {
   setAuditChanges,
 } from '@p4/server-core';
 import { type MeterSegment, meterConsumption } from '@stay/billing';
-import type {
-  MeterReadingInput,
-  MeterReplacementInput,
-  ReadingGrid,
-  ReadingMeter,
-  StayMeterReading,
-  StayUser,
+import {
+  type BillingSettings,
+  isInReadingWindow,
+  type MeterReadingInput,
+  type MeterReplacementInput,
+  type ReadingGrid,
+  type ReadingMeter,
+  readingDateOf,
+  readingWindow,
+  type StayMeterReading,
+  type StayUser,
 } from '@stay/shared';
-import { Op, type Transaction } from 'sequelize';
+import { Op, QueryTypes, type Transaction } from 'sequelize';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   BuildingModel,
@@ -23,10 +27,12 @@ import {
   MeterModel,
   MeterReadingModel,
   RoomModel,
+  sequelize,
 } from '@/sequelize/models/index.js';
 import { auditedTransaction } from '@/shared/audit.js';
 import { assertVersion } from '@/shared/input.js';
 import { runIdempotent } from '@/shared/persistence.js';
+import { buildingBilling } from '../settings/settings.service.js';
 import { attachableFile, signedFileUrl } from '../uploads/uploads.service.js';
 
 const fields = [
@@ -240,13 +246,89 @@ async function withAverage(
   return result;
 }
 
+/**
+ * CTEs `grid` (rooms of the closing grid of consumption month `:readingPeriod`) and `closed`
+ * (`complete` when both current meters have a reading of that period). Parameters:
+ * `:buildingId`, `:holdingStatuses`, `:readingPeriod`, `:readingStart`, `:readingEnd`.
+ * Shared by the overview to-do and the reading-day reminders (ST-19, ST-26).
+ */
+export const READING_PROGRESS_CTE = `grid AS (
+  SELECT DISTINCT ON (c.room_id) c.room_id, c.start_date
+  FROM contracts c
+  WHERE c.building_id = :buildingId
+    AND c.status IN (:holdingStatuses)
+    AND c.start_date <= CAST(:readingEnd AS date)
+  ORDER BY c.room_id, c.start_date
+),
+closed AS (
+  SELECT g.room_id,
+    (
+      SELECT COUNT(*)
+      FROM (
+        SELECT DISTINCT ON (m.kind) m.id
+        FROM meters m
+        WHERE m.room_id = g.room_id
+          AND m.installed_on <= CAST(:readingEnd AS date)
+          AND (m.removed_on IS NULL
+            OR m.removed_on >= GREATEST(CAST(:readingStart AS date), g.start_date))
+        ORDER BY m.kind, m.installed_on DESC, m.created_at DESC
+      ) last
+      JOIN meter_readings mr ON mr.meter_id = last.id AND mr.period = :readingPeriod
+    ) = 2 AS complete
+  FROM grid g
+)`;
+
+/** Rooms of the closing grid of consumption month `period` and how many still lack readings. */
+export async function readingProgress(
+  buildingId: string,
+  period: string,
+  transaction?: Transaction,
+): Promise<{ rooms: number; missing: number }> {
+  const { start, end } = periodBounds(period);
+  const [row] = await sequelize.query<{ rooms: number; missing: number }>(
+    `WITH ${READING_PROGRESS_CTE}
+    SELECT CAST(COUNT(*) AS int) AS rooms, CAST(COUNT(*) FILTER (WHERE NOT complete) AS int) AS missing
+    FROM closed`,
+    {
+      replacements: {
+        buildingId,
+        holdingStatuses: ['active', 'ending'],
+        readingPeriod: period,
+        readingStart: start,
+        readingEnd: end,
+      },
+      type: QueryTypes.SELECT,
+      transaction,
+    },
+  );
+
+  return { rooms: row?.rooms ?? 0, missing: row?.missing ?? 0 };
+}
+
+const displayDate = (date: string) =>
+  `${date.slice(8, 10)}/${date.slice(5, 7)}/${date.slice(0, 4)}`;
+
+/** `readOn` must fall in the reading window of `period` (rules.md "Lịch thu"). */
+function assertReadingWindow(period: string, readOn: string, billing: BillingSettings) {
+  const window = readingWindow(period, billing);
+
+  if (!isInReadingWindow(readOn, window))
+    throw new InputValidError('input_valid_error', {
+      readOn: [
+        `Ngày đọc của kỳ ${period.slice(5)}/${period.slice(0, 4)} phải từ ${displayDate(window.from)} đến ${displayDate(window.to)}.`,
+      ],
+    });
+}
+
 export async function readingGrid(
   user: StayUser,
   buildingId: string,
   period: string,
 ): Promise<ReadingGrid> {
   return auditedTransaction(async (transaction) => {
-    await readingBuilding(user, buildingId, false, transaction);
+    const building = await readingBuilding(user, buildingId, false, transaction);
+    const billing = await buildingBilling(building, transaction);
+    const window = readingWindow(period, billing);
     const contracts = await ContractModel.findAll({
       where: { buildingId, status: { [Op.in]: ['active', 'ending'] } },
       transaction,
@@ -259,7 +341,15 @@ export async function readingGrid(
       ],
       transaction,
     });
-    const result: ReadingGrid = { buildingId, period, rooms: [] };
+    const result: ReadingGrid = {
+      buildingId,
+      period,
+      readingDayMonth: billing.readingDayMonth,
+      readingOn: readingDateOf(period, billing),
+      readOnFrom: window.from,
+      readOnTo: window.to,
+      rooms: [],
+    };
     for (const room of rooms) {
       const contract = contracts.find((c) => c.roomId === room.id);
       if (!contract || contract.startDate > periodBounds(period).end) continue;
@@ -296,6 +386,9 @@ export async function saveReading(
   if (id && row?.id !== id) throw new NotFound();
   if (row?.status === 'locked') throw new BaseError('Chỉ số đã khoá.', 409, 'reading_locked');
   assertVersion(row?.version ?? 0, input.version);
+  const building = await BuildingModel.findByPk(room.buildingId, { transaction });
+  if (!building) throw new NotFound();
+  assertReadingWindow(input.period, input.readOn, await buildingBilling(building, transaction));
   if (
     input.readOn < meter.installedOn ||
     input.readOn < contract.startDate ||

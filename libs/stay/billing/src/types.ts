@@ -41,6 +41,8 @@ export interface MeterSegmentSnapshot {
 export interface InvoiceLineMeta {
   serviceCode?: string;
   serviceKind?: ServiceKind;
+  /** Service description snapshot (e.g. "Thang máy, máy giặt, rác"); omitted when empty. */
+  serviceDescription?: string;
   /** First and last day billed by a prorated rent/service line (inclusive). */
   coveredFrom?: IsoDate;
   coveredTo?: IsoDate;
@@ -97,6 +99,8 @@ export interface FixedServiceInput {
   serviceId?: string | null;
   code: string;
   name: string;
+  /** Optional service description, snapshotted into `meta.serviceDescription`. */
+  description?: string | null;
   kind: FixedServiceKind;
   unit?: string | null;
   /** Resolved price snapshot (see `resolvePrice`). */
@@ -115,6 +119,8 @@ export interface UtilityInput {
   serviceId?: string | null;
   code?: string;
   name?: string;
+  /** Optional service description, snapshotted into `meta.serviceDescription`. */
+  description?: string | null;
   unit?: string | null;
   unitPrice: Vnd;
   /** One segment normally; two when the meter was replaced during the window. */
@@ -164,6 +170,7 @@ export interface PrepaidLineInput {
   serviceId?: string | null;
   code?: string;
   name?: string;
+  description?: string;
   period: Period;
   unitPrice: Vnd;
   quantity: number;

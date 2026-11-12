@@ -1,7 +1,7 @@
 import { Icon, type IconName } from '@itclabs/react-ui';
 import type { OverviewLink, OverviewTodo, OverviewTodoKind } from '@stay/shared';
 import { Link } from 'react-router-dom';
-import { formatVnd } from '@/libraries/format';
+import { displayDate, formatVnd } from '@/libraries/format';
 import { displayPeriod } from '@/modules/invoices/invoice-ui';
 
 type TodoCopy = {
@@ -12,16 +12,21 @@ type TodoCopy = {
 
 const periodOf = (link: OverviewLink) => displayPeriod(link.query.period ?? '');
 
+/** ` · {label} dd/MM/yyyy` when the step has a calendar date. */
+const dated = (todo: OverviewTodo, label: string) =>
+  todo.dueOn ? ` · ${label} ${displayDate(todo.dueOn)}` : '';
+
 const COPY: Record<OverviewTodoKind, TodoCopy> = {
   readings: {
     icon: 'bolt',
-    title: (todo) => `Chốt số điện nước tháng ${periodOf(todo.link)}`,
-    detail: (todo) => `Còn ${todo.count}/${todo.total ?? todo.count} phòng`,
+    title: (todo) => `Chốt số điện nước tiêu thụ tháng ${periodOf(todo.link)}`,
+    detail: (todo) =>
+      `Còn ${todo.count}/${todo.total ?? todo.count} phòng${dated(todo, 'chốt ngày')}`,
   },
   invoices_to_create: {
     icon: 'receipt',
     title: (todo) => `Lập hoá đơn kỳ ${periodOf(todo.link)}`,
-    detail: (todo) => `${todo.count} hợp đồng chưa có hoá đơn`,
+    detail: (todo) => `${todo.count} hợp đồng chưa có hoá đơn${dated(todo, 'phát hành')}`,
   },
   draft_invoices: {
     icon: 'edit',

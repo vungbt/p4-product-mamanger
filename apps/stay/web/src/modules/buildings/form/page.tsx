@@ -20,6 +20,8 @@ import {
 } from '@stay/sdk/react';
 import {
   BUILDING_CODE_PATTERN,
+  billingCycleErrors,
+  isReadingDayMonth,
   ROUNDING_UNITS,
   type StayBuildingDetail,
   type StaySettings,
@@ -44,7 +46,13 @@ import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty, useFormValue } from '@/libraries/forms/use-form-value';
 import { ScreenHeader } from '@/libraries/screen-header';
 import NotFoundPage from '@/modules/errors/not-found-page';
-import { billingDayLabel, billingDayOptions } from '@/modules/settings/billing/options';
+import {
+  billingDayLabel,
+  billingDayOptions,
+  graceDaysLabel,
+  graceDaysOptions,
+  readingDayMonthOptions,
+} from '@/modules/settings/billing/options';
 import { buildingPricesPath, ROUTES } from '@/routing/route-configs';
 import { BANK_OPTIONS } from '../banks';
 import { AutomationSettings } from './automation-settings';
@@ -58,8 +66,10 @@ type BuildingValues = {
   name: string;
   address: string;
   readingDay: string;
+  readingDayMonth: string;
   issueDay: string;
   dueDay: string;
+  graceDays: string;
   roundingUnit: string;
   refundUnusedRent: string;
   bankBin: string;
@@ -74,8 +84,10 @@ const FIELDS = [
   'name',
   'address',
   'readingDay',
+  'readingDayMonth',
   'issueDay',
   'dueDay',
+  'graceDays',
   'roundingUnit',
   'refundUnusedRent',
   'bankBin',
@@ -92,8 +104,10 @@ const EMPTY_VALUES: BuildingValues = {
   name: '',
   address: '',
   readingDay: SYSTEM,
+  readingDayMonth: SYSTEM,
   issueDay: SYSTEM,
   dueDay: SYSTEM,
+  graceDays: SYSTEM,
   roundingUnit: SYSTEM,
   refundUnusedRent: SYSTEM,
   bankBin: '',
@@ -111,8 +125,10 @@ function toValues(building: StayBuildingDetail): BuildingValues {
     name: building.name,
     address: building.address ?? '',
     readingDay: choice(building.readingDay),
+    readingDayMonth: building.readingDayMonth ?? SYSTEM,
     issueDay: choice(building.issueDay),
     dueDay: choice(building.dueDay),
+    graceDays: choice(building.graceDays),
     roundingUnit: choice(building.roundingUnit),
     refundUnusedRent:
       building.refundUnusedRent === null ? SYSTEM : building.refundUnusedRent ? 'yes' : 'no',
@@ -142,6 +158,7 @@ const codeText = (value: unknown) =>
     .slice(0, 6);
 
 const daysOrSystem = (value: string) => (value === SYSTEM ? null : Number(value));
+const monthOrSystem = (value: string) => (isReadingDayMonth(value) ? value : null);
 const compact = (value: string) => value.replace(/[\s.-]/g, '');
 
 function buildingSchema(t: TFunction<'buildings'>) {
@@ -235,6 +252,14 @@ function BuildingForm({
     systemOption(day === undefined ? null : billingDayLabel(ts, day)),
     ...billingDayOptions(ts),
   ];
+  const monthOptions = [
+    systemOption(settings ? ts(`billing.readingDayMonths.${settings.readingDayMonth}`) : null),
+    ...readingDayMonthOptions(ts),
+  ];
+  const graceOptions = [
+    systemOption(settings ? graceDaysLabel(ts, settings.graceDays) : null),
+    ...graceDaysOptions(ts),
+  ];
   const roundingOptions = [
     systemOption(settings ? formatVnd(settings.roundingUnit) : null),
     ...ROUNDING_UNITS.map((unit) => ({ value: String(unit), label: formatVnd(unit) })),
@@ -272,8 +297,10 @@ function BuildingForm({
         name: value.name.trim(),
         address: value.address.trim() || null,
         readingDay: daysOrSystem(value.readingDay),
+        readingDayMonth: monthOrSystem(value.readingDayMonth),
         issueDay: daysOrSystem(value.issueDay),
         dueDay: daysOrSystem(value.dueDay),
+        graceDays: daysOrSystem(value.graceDays),
         roundingUnit: ROUNDING_UNITS.find((unit) => String(unit) === value.roundingUnit) ?? null,
         refundUnusedRent:
           value.refundUnusedRent === SYSTEM ? null : value.refundUnusedRent === 'yes',
@@ -294,12 +321,24 @@ function BuildingForm({
             invalid = true;
           }
 
-      const issueDay = body.issueDay ?? settings?.issueDay;
-      const dueDay = body.dueDay ?? settings?.dueDay;
+      // Cycle rules on the effective values, as the API checks them (`billingCycleErrors`).
+      if (settings) {
+        const errors = billingCycleErrors({
+          readingDay: body.readingDay ?? settings.readingDay,
+          readingDayMonth: body.readingDayMonth ?? settings.readingDayMonth,
+          issueDay: body.issueDay ?? settings.issueDay,
+          dueDay: body.dueDay ?? settings.dueDay,
+          graceDays: body.graceDays ?? settings.graceDays,
+        });
 
-      if (issueDay !== undefined && dueDay !== undefined && dueDay < issueDay) {
-        form.setFieldMeta('dueDay', serverError(ts('billing.dueBeforeIssue')));
-        invalid = true;
+        if (errors.dueDay) {
+          form.setFieldMeta('dueDay', serverError(ts('billing.dueBeforeIssue')));
+          invalid = true;
+        }
+        if (errors.readingDay) {
+          form.setFieldMeta('readingDay', serverError(ts('billing.readingAfterIssue')));
+          invalid = true;
+        }
       }
       if (invalid) return;
 
@@ -342,8 +381,10 @@ function BuildingForm({
   const effective = settings
     ? {
         readingDay: daysOrSystem(values.readingDay) ?? settings.readingDay,
+        readingDayMonth: monthOrSystem(values.readingDayMonth) ?? settings.readingDayMonth,
         issueDay: daysOrSystem(values.issueDay) ?? settings.issueDay,
         dueDay: daysOrSystem(values.dueDay) ?? settings.dueDay,
+        graceDays: daysOrSystem(values.graceDays) ?? settings.graceDays,
       }
     : null;
 
@@ -389,6 +430,9 @@ function BuildingForm({
 
       <Section title={t('form.billingTitle')} description={t('form.billingDescription')}>
         <div className="grid gap-4 md:grid-cols-3">
+          <FormField name="readingDayMonth" label={ts('billing.readingDayMonth')} className="mb-0">
+            <Select options={monthOptions} hint={ts('billing.readingDayMonthHint')} />
+          </FormField>
           <FormField name="readingDay" label={ts('billing.readingDay')} className="mb-0">
             <Select options={dayOptions(settings?.readingDay)} />
           </FormField>
@@ -397,6 +441,13 @@ function BuildingForm({
           </FormField>
           <FormField name="dueDay" label={ts('billing.dueDay')} className="mb-0">
             <Select options={dayOptions(settings?.dueDay)} />
+          </FormField>
+          <FormField
+            name="graceDays"
+            label={ts('billing.graceDays')}
+            className="mb-0 md:col-span-2"
+          >
+            <Select options={graceOptions} hint={ts('billing.graceDaysHint')} />
           </FormField>
           <FormField name="roundingUnit" label={ts('billing.roundingUnit')} className="mb-0">
             <Select options={roundingOptions} />

@@ -2,11 +2,11 @@ import { formatCurrency } from '@itclabs/react-ui';
 import {
   BILLING_DAY_END_OF_MONTH,
   BILLING_DAY_MAX_FIXED,
-  billingDayOf,
+  type BillingCycle,
+  invoiceCalendar,
   isoDateInTimeZone,
   nextPeriod,
   parseIsoDate,
-  parsePeriod,
   periodOfIsoDate,
 } from '@stay/shared';
 
@@ -52,24 +52,27 @@ export const BILLING_DAYS: readonly number[] = [
   BILLING_DAY_END_OF_MONTH,
 ];
 
-export type BillingDays = { readingDay: number; issueDay: number; dueDay: number };
+export type BillingDays = Pick<
+  BillingCycle,
+  'readingDay' | 'readingDayMonth' | 'issueDay' | 'dueDay' | 'graceDays'
+>;
+
+/** `YYYY-MM-DD` → `dd/MM`. */
+const dayMonth = (date: string) => `${date.slice(8, 10)}/${date.slice(5, 7)}`;
 
 /**
- * Dates of the next billing period M (screens.md O-03 preview): meters are read in M−1 (the
- * current month), the invoice is issued and due in M.
+ * Dates of the next billing period M (screens.md O-03 preview), from the shared billing
+ * calendar: the reading that closes consumption month M−1, issue, due and first overdue day.
  */
-export function billingPreview(
-  { readingDay, issueDay, dueDay }: BillingDays,
-  today = todayIsoDate(),
-) {
-  const usage = parsePeriod(periodOfIsoDate(today));
-  const { year, month } = parsePeriod(nextPeriod(periodOfIsoDate(today)));
+export function billingPreview(cycle: BillingDays, today = todayIsoDate()) {
+  const calendar = invoiceCalendar(nextPeriod(periodOfIsoDate(today)), cycle);
 
   return {
-    period: `${pad(month)}/${year}`,
-    usageMonth: `${pad(usage.month)}/${usage.year}`,
-    reading: `${pad(billingDayOf(readingDay, usage.year, usage.month))}/${pad(usage.month)}`,
-    issue: `${pad(billingDayOf(issueDay, year, month))}/${pad(month)}`,
-    due: `${pad(billingDayOf(dueDay, year, month))}/${pad(month)}`,
+    period: calendar.period.slice(5),
+    usageMonth: calendar.consumptionPeriod.slice(5),
+    reading: dayMonth(calendar.readingOn),
+    issue: dayMonth(calendar.issueOn),
+    due: dayMonth(calendar.dueOn),
+    overdue: dayMonth(calendar.overdueFrom),
   };
 }

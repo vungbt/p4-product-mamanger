@@ -29,6 +29,8 @@
   "billing_day": "{{attribute}} phải từ 1 đến 28, hoặc 31 (cuối tháng).",
   "rounding_unit": "{{attribute}} chỉ được là 1đ, 100đ hoặc 1.000đ.",
   "due_before_issue": "Hạn thanh toán phải bằng hoặc sau ngày phát hành.",
+  "reading_after_issue": "Khi chốt số vào đầu tháng sau, ngày chốt số phải bằng hoặc trước ngày phát hành.",
+  "grace_days_range": "{{attribute}} phải là số nguyên từ 0 đến 31.",
   "metered_service_active": "Đã có một dịch vụ cùng cách tính (điện/nước) đang bật.",
   "building_code_format": "Mã toà chỉ gồm chữ A–Z và số 0–9, tối đa 6 ký tự.",
   "building_code_locked": "Không thể đổi mã toà khi toà đã có hoá đơn.",

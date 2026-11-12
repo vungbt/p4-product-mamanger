@@ -101,6 +101,7 @@ function refundLine(
       coveredFrom: refundFrom,
       coveredTo,
       ...(line.code ? { serviceCode: line.code } : {}),
+      ...(line.description ? { serviceDescription: line.description } : {}),
       ...(line.sourceInvoiceId ? { sourceInvoiceId: line.sourceInvoiceId } : {}),
     },
   };
@@ -144,7 +145,7 @@ export function toPrepaidLines(
       return [];
     }
 
-    const { coveredFrom, coveredTo, serviceCode } = line.meta;
+    const { coveredFrom, coveredTo, serviceCode, serviceDescription } = line.meta;
 
     if (!line.period || !coveredFrom || !coveredTo || line.unitPrice === null) {
       throw new BillingError('INVALID_PREPAID_LINE', 'Prepaid line is missing its coverage', {
@@ -161,6 +162,7 @@ export function toPrepaidLines(
         ...(typeof line.description.params.name === 'string'
           ? { name: line.description.params.name }
           : {}),
+        ...(serviceDescription ? { description: serviceDescription } : {}),
         period: line.period,
         unitPrice: line.unitPrice,
         quantity: line.quantity,

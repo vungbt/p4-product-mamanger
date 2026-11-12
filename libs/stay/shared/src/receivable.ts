@@ -1,20 +1,15 @@
 import type { ContractStatus, InvoiceKind, InvoiceStatus } from './constants.js';
-import { type IsoDate, toEpochDay } from './date.js';
 
 /**
  * Receivable age groups (screens.md O-25), by the most overdue unpaid invoice of a contract:
- * not due yet, 1–7, 8–30 and more than 30 days past `dueOn` (Asia/Ho_Chi_Minh).
+ * not due yet, 1–7, 8–30 and more than 30 days overdue (`invoiceOverdueDays`: past
+ * `dueOn + graceDays`, Asia/Ho_Chi_Minh).
  */
 export const RECEIVABLE_BUCKETS = ['not_due', '1_7', '8_30', 'over_30'] as const;
 export type ReceivableBucket = (typeof RECEIVABLE_BUCKETS)[number];
 
 export const RECEIVABLE_SORT_FIELDS = ['remaining', 'overdueDays', 'roomCode'] as const;
 export type ReceivableSortField = (typeof RECEIVABLE_SORT_FIELDS)[number];
-
-/** Whole days `today` is after `dueOn`; 0 on or before the due date. */
-export function invoiceOverdueDays(dueOn: IsoDate, today: IsoDate): number {
-  return Math.max(0, toEpochDay(today) - toEpochDay(dueOn));
-}
 
 export function receivableBucket(overdueDays: number): ReceivableBucket {
   if (overdueDays <= 0) return 'not_due';
@@ -35,7 +30,7 @@ export interface ReceivableInvoice {
   /** `total − paidTotal`, always > 0. */
   remaining: number;
   dueOn: string;
-  /** Days past `dueOn` today (Asia/Ho_Chi_Minh); 0 when not due yet. */
+  /** Days overdue today (`invoiceOverdueDays`, after the grace period); 0 when not overdue. */
   overdueDays: number;
   /** Expiry of the active share link (ST-16), `null` when none or expired. */
   shareExpiresAt: string | null;

@@ -1,5 +1,6 @@
+import { invoiceOverdueDays } from './billing-cycle.js';
 import type { ContractStatus, InvoiceStatus, MeterReadingStatus } from './constants.js';
-import { compareIsoDates, type IsoDate } from './date.js';
+import type { IsoDate } from './date.js';
 
 type TransitionMap<S extends string> = Readonly<Record<S, readonly S[]>>;
 
@@ -43,7 +44,18 @@ export function canTransition<S extends string>(
   return transitions[from]?.includes(to) ?? false;
 }
 
-/** Overdue is derived: `issued`/`partially_paid` and `today` is after the due date. */
-export function isInvoiceOverdue(status: InvoiceStatus, dueOn: IsoDate, today: IsoDate): boolean {
-  return (status === 'issued' || status === 'partially_paid') && compareIsoDates(today, dueOn) > 0;
+/**
+ * Overdue is derived: `issued`/`partially_paid` and `today` is after `dueOn + graceDays`
+ * (`invoiceOverdueDays` > 0; the building's grace period, 0 = the day after `dueOn`).
+ */
+export function isInvoiceOverdue(
+  status: InvoiceStatus,
+  dueOn: IsoDate,
+  today: IsoDate,
+  graceDays: number,
+): boolean {
+  return (
+    (status === 'issued' || status === 'partially_paid') &&
+    invoiceOverdueDays(dueOn, today, graceDays) > 0
+  );
 }

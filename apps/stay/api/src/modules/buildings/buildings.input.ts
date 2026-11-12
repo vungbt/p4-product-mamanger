@@ -2,7 +2,13 @@ import { BUILDING_CODE_PATTERN, isIsoDate } from '@stay/shared';
 import { Op } from 'sequelize';
 import { BuildingModel, ServiceDefinitionModel } from '@/sequelize/models/index.js';
 import type { FormBody } from '@/shared/input.js';
-import { checkBillingDay, checkRoundingUnit } from '../settings/settings.input.js';
+import {
+  checkBillingCycle,
+  checkBillingDay,
+  checkRoundingUnit,
+  readGraceDays,
+  readReadingDayMonth,
+} from '../settings/settings.input.js';
 import { billingDefaults } from '../settings/settings.service.js';
 import type { PriceOverrideInput } from './building-prices.service.js';
 import type { BuildingInput } from './buildings.service.js';
@@ -27,12 +33,14 @@ export async function readBuildingInput(
     readingDay: body.isEmpty('readingDay')
       ? null
       : checkBillingDay(body, 'readingDay', body.integer('readingDay', 1, 31)),
+    readingDayMonth: body.isEmpty('readingDayMonth') ? null : readReadingDayMonth(body),
     issueDay: body.isEmpty('issueDay')
       ? null
       : checkBillingDay(body, 'issueDay', body.integer('issueDay', 1, 31)),
     dueDay: body.isEmpty('dueDay')
       ? null
       : checkBillingDay(body, 'dueDay', body.integer('dueDay', 1, 31)),
+    graceDays: body.isEmpty('graceDays') ? null : readGraceDays(body),
     roundingUnit: body.isEmpty('roundingUnit')
       ? null
       : checkRoundingUnit(body, body.integer('roundingUnit', 1, 1000)),
@@ -72,13 +80,29 @@ export async function readBuildingInput(
   if (input.contactPhone)
     body.check('contactPhone', /^0\d{9,10}$/.test(input.contactPhone), 'phone_format');
 
-  if (!body.errors.issueDay && !body.errors.dueDay && (input.issueDay || input.dueDay)) {
+  if (
+    input.readingDay !== null ||
+    input.readingDayMonth !== null ||
+    input.issueDay !== null ||
+    input.dueDay !== null
+  ) {
     const defaults = await billingDefaults();
 
-    body.check(
-      input.dueDay ? 'dueDay' : 'issueDay',
-      (input.dueDay ?? defaults.dueDay) >= (input.issueDay ?? defaults.issueDay),
-      'due_before_issue',
+    // Rules apply to the effective cycle: the building's own values, else the system ones.
+    checkBillingCycle(
+      body,
+      {
+        readingDay: input.readingDay ?? defaults.readingDay,
+        readingDayMonth: input.readingDayMonth ?? defaults.readingDayMonth,
+        issueDay: input.issueDay ?? defaults.issueDay,
+        dueDay: input.dueDay ?? defaults.dueDay,
+        graceDays: input.graceDays ?? defaults.graceDays,
+      },
+      {
+        readingDay: input.readingDay !== null,
+        issueDay: input.issueDay !== null,
+        dueDay: input.dueDay !== null,
+      },
     );
   }
 

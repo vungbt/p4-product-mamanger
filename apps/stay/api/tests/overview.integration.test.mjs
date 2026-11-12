@@ -345,6 +345,8 @@ describe('ST-19 overview', { skip: !base }, () => {
       count: 2,
       total: null,
       amount: null,
+      // Issue date of the period (system issue day 1).
+      dueOn: `${period}-01`,
       link: { path: '/invoices/run', query: { period } },
     });
     assert.equal(todo(data, 'draft_invoices').count, 1);

@@ -28,9 +28,11 @@ import {
   type InvoiceLineInput,
   type InvoiceStatus,
   type InvoiceVoidInput,
+  invoiceOverdueDaysSql,
   isInvoiceOverdue,
   isoDateInTimeZone,
   lastDayOfPeriod,
+  overdueFrom,
   type Period,
   previousPeriod,
   type StayAction,
@@ -60,6 +62,11 @@ import { runIdempotent } from '@/shared/persistence.js';
 import type { ModelOrder } from '@/types/database.js';
 import { notifyInvoiceIssued } from '../notifications/notifications.events.js';
 import { invoicePayments } from '../payments/payments.dto.js';
+import {
+  billingDefaults,
+  graceDaysByBuilding,
+  graceDaysSql,
+} from '../settings/settings.service.js';
 import {
   type BillingContext,
   billingContext,
@@ -138,7 +145,7 @@ async function summaries(
   rows: InvoiceModel[],
   transaction?: Transaction,
 ): Promise<StayInvoiceSummary[]> {
-  const [rooms, contracts] = await Promise.all([
+  const [rooms, contracts, graceDays] = await Promise.all([
     RoomModel.findAll({
       where: { id: { [Op.in]: [...new Set(rows.map((row) => row.roomId))] } },
       attributes: ['id', 'code'],
@@ -149,6 +156,10 @@ async function summaries(
       attributes: ['id', 'code'],
       transaction,
     }),
+    graceDaysByBuilding(
+      rows.map((row) => row.buildingId),
+      transaction,
+    ),
   ]);
   const roomCodes = new Map(rooms.map((room) => [room.id, room.code]));
   const contractCodes = new Map(contracts.map((contract) => [contract.id, contract.code]));
@@ -157,6 +168,7 @@ async function summaries(
 
   return rows.map((row) => {
     const remaining = row.total - row.paidTotal;
+    const grace = graceDays.get(row.buildingId) ?? 0;
     const shareExpiresAt =
       row.shareTokenHash && row.shareExpiresAt && row.shareExpiresAt > instant
         ? row.shareExpiresAt.toISOString()
@@ -183,7 +195,8 @@ async function summaries(
       contractCode: contractCodes.get(row.contractId) ?? '',
       roomCode: roomCodes.get(row.roomId) ?? '',
       remaining,
-      overdue: isInvoiceOverdue(row.status, row.dueOn, now) && remaining > 0,
+      overdue: isInvoiceOverdue(row.status, row.dueOn, now, grace) && remaining > 0,
+      overdueFrom: overdueFrom(row.dueOn, grace),
       shareExpiresAt,
       createdAt: row.createdAt.toISOString(),
     };
@@ -701,6 +714,7 @@ export async function listInvoices(
     throw new NotFound();
   const scope = readableScope(user);
   const now = today();
+  const defaults = await billingDefaults();
   const conditions: WhereOptions<InvoiceAttributes>[] = scope ? [scope] : [];
 
   if (query.buildingId) conditions.push({ buildingId: query.buildingId });
@@ -722,10 +736,16 @@ export async function listInvoices(
       ],
     });
   }
+  // `isInvoiceOverdue` in SQL with each building's grace period in force.
+  const overdueDays = invoiceOverdueDaysSql(
+    '"InvoiceModel"."due_on"',
+    graceDaysSql('"InvoiceModel"."building_id"', defaults.graceDays),
+    sequelize.escape(now),
+  );
   const overdue: WhereOptions<InvoiceAttributes> = {
     status: { [Op.in]: ['issued', 'partially_paid'] },
-    dueOn: { [Op.lt]: now },
     total: { [Op.gt]: sequelize.col('paid_total') },
+    [Op.and]: [sequelize.literal(`${overdueDays} > 0`)],
   };
 
   if (query.overdue === true) conditions.push(overdue);

@@ -25,7 +25,9 @@ tags:
   - name: audit
     description: Lịch sử thay đổi đã ẩn dữ liệu nhạy cảm.
   - name: automation
-    description: Tự động hoá theo toà, chỉ tạo bản nháp; nhắc qua email và thông báo.
+    description: Tự động hoá theo toà, chỉ tạo bản nháp; nhắc qua email và thông báo. Nhắc chủ trọ trước ngày chốt số
+      `readingReminderDaysBefore` ngày (0 = tắt) và vào ngày chốt số, chỉ khi còn phòng thiếu chỉ số. Nhắc người thuê
+      trước hạn 1 ngày và sau hạn 3 ngày, hoặc vào ngày đầu tiên quá hạn khi toà có `graceDays` > 0.
   - name: buildings
     description: Toà nhà, kỳ thu và tài khoản nhận tiền theo toà, đơn giá ghi đè theo ngày.
   - name: contracts
@@ -322,8 +324,10 @@ paths:
         - automation
       operationId: put_api_buildings_id_automation
       summary: Lưu tự động hoá
-      description: |-
-        manage Building; gửi đủ năm cờ và version; stale version trả 409, có audit.
+      description: >-
+        manage Building; gửi đủ năm cờ và version (`readingReminderBefore`, `readingReminderDaysBefore` 0–10 bỏ trống =
+        tắt/1 ngày); stale version trả 409, có audit.
+
 
         **Quyền:** `manage:Building`.
       security:
@@ -1136,8 +1140,9 @@ paths:
       summary: Danh sách hoá đơn
       description: >-
         Lọc buildingId, period, kind, status, roomId, contractId, overdue=true|false (quá hạn suy ra:
-        issued/partially_paid, quá dueOn theo Asia/Ho_Chi_Minh, còn nợ). `q` tìm theo mã hoá đơn hoặc mã phòng. Người
-        thuê chỉ thấy hoá đơn đã phát hành của hợp đồng mình.
+        issued/partially_paid, quá `dueOn + graceDays` của toà theo Asia/Ho_Chi_Minh, còn nợ; `overdueFrom` là ngày đầu
+        tiên quá hạn). `q` tìm theo mã hoá đơn hoặc mã phòng. Người thuê chỉ thấy hoá đơn đã phát hành của hợp đồng
+        mình.
 
 
         **Quyền:** `read:Invoice`.
@@ -1931,12 +1936,13 @@ paths:
       description: >-
         Mỗi dòng là một hợp đồng có hoá đơn chưa thu đủ (`issued`/`partially_paid`, `total − paidTotal > 0`; nháp và
         void không tính): mã hợp đồng, phòng hiện tại, người đại diện (`representativePhone` chỉ khi được xem người thuê
-        của toà), số hoá đơn, tổng còn lại, phần quá hạn, hạn cũ nhất, số ngày quá hạn lâu nhất (`dueOn` so với hôm nay
-        theo Asia/Ho_Chi_Minh) và nhóm `bucket` (`not_due`, `1_7`, `8_30`, `over_30`), kèm các hoá đơn đó (hạn cũ nhất
-        trước, có `shareExpiresAt`). `q` tìm theo mã phòng, mã hợp đồng, tên hoặc SĐT người ở; lọc `bucket`; `sortBy`
-        `remaining` (mặc định, giảm dần), `overdueDays`, `roomCode`. `meta.totalRemaining`, `meta.overdueRemaining`,
-        `meta.invoiceCount` tính trên toàn bộ bộ lọc trước phân trang và luôn bằng tổng `total − paidTotal` của các hoá
-        đơn được tính; `meta.buckets` đếm theo `q` nhưng không theo `bucket` (cho các chip). Toà ngoài phạm vi trả 404.
+        của toà), số hoá đơn, tổng còn lại, phần quá hạn, hạn cũ nhất, số ngày quá hạn lâu nhất (hôm nay theo
+        Asia/Ho_Chi_Minh so với `dueOn + graceDays` của toà) và nhóm `bucket` (`not_due`, `1_7`, `8_30`, `over_30`), kèm
+        các hoá đơn đó (hạn cũ nhất trước, có `shareExpiresAt`). `q` tìm theo mã phòng, mã hợp đồng, tên hoặc SĐT người
+        ở; lọc `bucket`; `sortBy` `remaining` (mặc định, giảm dần), `overdueDays`, `roomCode`. `meta.totalRemaining`,
+        `meta.overdueRemaining`, `meta.invoiceCount` tính trên toàn bộ bộ lọc trước phân trang và luôn bằng tổng `total
+        − paidTotal` của các hoá đơn được tính; `meta.buckets` đếm theo `q` nhưng không theo `bucket` (cho các chip).
+        Toà ngoài phạm vi trả 404.
 
 
         **Quyền:** `read:Invoice`.
@@ -2482,8 +2488,10 @@ paths:
       operationId: get_api_buildings_buildingId_readings
       summary: Chỉ số điện nước toàn toà
       description: >-
-        Kỳ là tháng tiêu thụ (YYYY-MM). Bao gồm phòng có hợp đồng active/ending, chỉ số trước, tiêu thụ cả hai đoạn khi
-        thay đồng hồ, trung bình tối đa 3 kỳ trước, cảnh báo và trạng thái draft/locked. Ngoài phạm vi quản lý trả 404.
+        Kỳ là tháng tiêu thụ (YYYY-MM). `readOnFrom`/`readOnTo` là khoảng ngày đọc hợp lệ theo kỳ thu của toà
+        (`readingDayMonth`), `readingOn` là ngày chốt số của kỳ. Bao gồm phòng có hợp đồng active/ending, chỉ số trước,
+        tiêu thụ cả hai đoạn khi thay đồng hồ, trung bình tối đa 3 kỳ trước, cảnh báo và trạng thái draft/locked. Ngoài
+        phạm vi quản lý trả 404.
 
 
         **Quyền:** `read:MeterReading`.
@@ -2533,10 +2541,11 @@ paths:
       operationId: put_api_buildings_buildingId_readings
       summary: Lưu chỉ số theo dòng
       description: >-
-        Mỗi dòng gửi meterId, period, reading, readOn và version (0 khi tạo). Trả results theo thứ tự đầu vào; dòng lỗi
-        không huỷ dòng hợp lệ. Chỉ số nguyên không âm; số mới nhỏ hơn số cũ bị chặn. Tiêu thụ hơn 2 lần trung bình cần
-        confirmHighConsumption. Version cũ trả lỗi dòng 409; locked không sửa được. Ảnh dùng private upload purpose
-        contract_meter.
+        Mỗi dòng gửi meterId, period, reading, readOn và version (0 khi tạo). `readOn` phải trong tháng tiêu thụ
+        (`same`) hoặc từ ngày 1 của kỳ tới ngày chốt số tháng sau (`next`), sai trả lỗi dòng 422 tại `readOn`. Trả
+        results theo thứ tự đầu vào; dòng lỗi không huỷ dòng hợp lệ. Chỉ số nguyên không âm; số mới nhỏ hơn số cũ bị
+        chặn. Tiêu thụ hơn 2 lần trung bình cần confirmHighConsumption. Version cũ trả lỗi dòng 409; locked không sửa
+        được. Ảnh dùng private upload purpose contract_meter.
 
 
         **Quyền:** `update:MeterReading`.
@@ -4597,8 +4606,9 @@ paths:
       operationId: get_api_settings
       summary: Kỳ thu mặc định
       description: >-
-        Ngày chốt số, ngày phát hành, hạn thanh toán, đơn vị làm tròn, hoàn tiền phòng và mẫu nội dung chuyển khoản. Toà
-        để trống trường nào thì theo giá trị ở đây.
+        Ngày chốt số và tháng chốt số (`readingDayMonth`), ngày phát hành, hạn thanh toán, số ngày ân hạn trước khi tính
+        quá hạn (`graceDays`), đơn vị làm tròn, hoàn tiền phòng và mẫu nội dung chuyển khoản. Toà để trống trường nào
+        thì theo giá trị ở đây.
 
 
         **Quyền:** `read:Settings`.
@@ -4632,8 +4642,10 @@ paths:
       operationId: put_api_settings
       summary: Cập nhật kỳ thu mặc định
       description: >-
-        Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. Làm tròn 1, 100 hoặc
-        1.000đ. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+        Ngày trong tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. `readingDayMonth`:
+        `same` = ngày chốt số thuộc tháng tiêu thụ M−1, `next` = thuộc tháng M (khi đó ngày chốt số ≤ ngày phát hành,
+        422 `reading_after_issue`). `graceDays` 0–31: hoá đơn chỉ tính quá hạn sau `dueOn + graceDays`. Làm tròn 1, 100
+        hoặc 1.000đ. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
 
 
         **Quyền:** `manage:Settings`.
@@ -4652,6 +4664,12 @@ paths:
                   type: integer
                   minimum: 1
                   maximum: 31
+                readingDayMonth:
+                  type: string
+                  enum:
+                    - same
+                    - next
+                  default: same
                 issueDay:
                   type: integer
                   minimum: 1
@@ -4660,6 +4678,11 @@ paths:
                   type: integer
                   minimum: 1
                   maximum: 31
+                graceDays:
+                  type: integer
+                  minimum: 0
+                  maximum: 31
+                  default: 0
                 roundingUnit:
                   type: integer
                   enum:
@@ -4749,8 +4772,9 @@ paths:
       operationId: post_api_services
       summary: Thêm dịch vụ
       description: >-
-        Tên không trùng (không phân biệt hoa thường); đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và một
-        `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.
+        Tên không trùng (không phân biệt hoa thường); `description` tuỳ chọn, tối đa 500 ký tự, được chụp vào dòng hoá
+        đơn (`meta.serviceDescription`) khi lập bản nháp; đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và
+        một `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.
 
 
         **Quyền:** `manage:Settings`.
@@ -4769,6 +4793,11 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 120
+                description:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 500
                 kind:
                   type: string
                   enum:
@@ -4827,8 +4856,9 @@ paths:
       operationId: put_api_services_id
       summary: Sửa dịch vụ
       description: >-
-        Sửa tên, đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn
-        đã phát hành. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+        Sửa tên, mô tả (`description`), đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Hoá đơn đã phát hành giữ mô tả đã
+        chụp. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn đã phát hành. Gửi lại `version` đã đọc; dữ
+        liệu đã bị người khác sửa thì trả 409 `version_conflict`.
 
 
         **Quyền:** `manage:Settings`.
@@ -4853,6 +4883,11 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 120
+                description:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 500
                 unit:
                   type: string
                   minLength: 1
@@ -4995,8 +5030,10 @@ paths:
       summary: Tạo toà
       description: >-
         Mã A–Z, 0–9, tối đa 6 ký tự, duy nhất. Kỳ thu, làm tròn, hoàn tiền phòng để `null` = theo hệ thống. Ngày trong
-        tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. Tài khoản ngân hàng nhập đủ cả ba
-        trường (BIN VietQR 6 số, số tài khoản, tên chủ tài khoản in hoa không dấu) hoặc bỏ trống.
+        tháng `1`–`28`, hoặc `31` = cuối tháng. Hạn thanh toán phải ≥ ngày phát hành. `readingDayMonth`: `same` = ngày
+        chốt số thuộc tháng tiêu thụ M−1, `next` = thuộc tháng M (khi đó ngày chốt số ≤ ngày phát hành, 422
+        `reading_after_issue`). `graceDays` 0–31: hoá đơn chỉ tính quá hạn sau `dueOn + graceDays`. Tài khoản ngân hàng
+        nhập đủ cả ba trường (BIN VietQR 6 số, số tài khoản, tên chủ tài khoản in hoa không dấu) hoặc bỏ trống.
 
 
         **Quyền:** `manage:Building`.
@@ -5031,6 +5068,14 @@ paths:
                     - "null"
                   minimum: 1
                   maximum: 31
+                readingDayMonth:
+                  type:
+                    - string
+                    - "null"
+                  enum:
+                    - same
+                    - next
+                    - null
                 issueDay:
                   type:
                     - integer
@@ -5042,6 +5087,12 @@ paths:
                     - integer
                     - "null"
                   minimum: 1
+                  maximum: 31
+                graceDays:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 0
                   maximum: 31
                 roundingUnit:
                   type:
@@ -5202,6 +5253,14 @@ paths:
                     - "null"
                   minimum: 1
                   maximum: 31
+                readingDayMonth:
+                  type:
+                    - string
+                    - "null"
+                  enum:
+                    - same
+                    - next
+                    - null
                 issueDay:
                   type:
                     - integer
@@ -5213,6 +5272,12 @@ paths:
                     - integer
                     - "null"
                   minimum: 1
+                  maximum: 31
+                graceDays:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 0
                   maximum: 31
                 roundingUnit:
                   type:
@@ -12942,9 +13007,16 @@ components:
       properties:
         readingDay:
           type: number
+        readingDayMonth:
+          type: string
+          enum:
+            - next
+            - same
         issueDay:
           type: number
         dueDay:
+          type: number
+        graceDays:
           type: number
         roundingUnit:
           anyOf:
@@ -12961,8 +13033,10 @@ components:
           type: boolean
       required:
         - readingDay
+        - readingDayMonth
         - issueDay
         - dueDay
+        - graceDays
         - roundingUnit
         - refundUnusedRent
     BuildingPriceList:
@@ -13010,6 +13084,10 @@ components:
           type: string
         name:
           type: string
+        description:
+          type:
+            - string
+            - "null"
         kind:
           type: string
           enum:
@@ -13043,6 +13121,7 @@ components:
         - serviceId
         - code
         - name
+        - description
         - kind
         - unit
         - active
@@ -14355,6 +14434,10 @@ components:
           type:
             - number
             - "null"
+        dueOn:
+          type:
+            - string
+            - "null"
         link:
           $ref: "#/components/schemas/OverviewLink"
       required:
@@ -14362,6 +14445,7 @@ components:
         - count
         - total
         - amount
+        - dueOn
         - link
     PaginationMeta:
       type: object
@@ -14564,6 +14648,10 @@ components:
       properties:
         name:
           type: string
+        description:
+          type:
+            - string
+            - "null"
         kind:
           type: string
           enum:
@@ -14578,6 +14666,7 @@ components:
           type: number
       required:
         - name
+        - description
         - kind
         - unit
         - price
@@ -15385,6 +15474,8 @@ components:
     PublicInvoiceLineMeta:
       type: object
       properties:
+        serviceDescription:
+          type: string
         coveredFrom:
           type: string
         coveredTo:
@@ -15475,6 +15566,17 @@ components:
           type: string
         period:
           type: string
+        readingDayMonth:
+          type: string
+          enum:
+            - next
+            - same
+        readingOn:
+          type: string
+        readOnFrom:
+          type: string
+        readOnTo:
+          type: string
         rooms:
           type: array
           items:
@@ -15482,6 +15584,10 @@ components:
       required:
         - buildingId
         - period
+        - readingDayMonth
+        - readingOn
+        - readOnFrom
+        - readOnTo
         - rooms
     ReadingMeter:
       type: object
@@ -16229,6 +16335,10 @@ components:
       properties:
         readingReminder:
           type: boolean
+        readingReminderBefore:
+          type: boolean
+        readingReminderDaysBefore:
+          type: number
         createDrafts:
           type: boolean
         beforeDue:
@@ -16241,6 +16351,8 @@ components:
           type: number
       required:
         - readingReminder
+        - readingReminderBefore
+        - readingReminderDaysBefore
         - createDrafts
         - beforeDue
         - afterDue
@@ -16263,11 +16375,23 @@ components:
           type:
             - number
             - "null"
+        readingDayMonth:
+          type:
+            - string
+            - "null"
+          enum:
+            - next
+            - same
+            - null
         issueDay:
           type:
             - number
             - "null"
         dueDay:
+          type:
+            - number
+            - "null"
+        graceDays:
           type:
             - number
             - "null"
@@ -16326,8 +16450,10 @@ components:
         - name
         - address
         - readingDay
+        - readingDayMonth
         - issueDay
         - dueDay
+        - graceDays
         - roundingUnit
         - refundUnusedRent
         - bankBin
@@ -16361,11 +16487,23 @@ components:
           type:
             - number
             - "null"
+        readingDayMonth:
+          type:
+            - string
+            - "null"
+          enum:
+            - next
+            - same
+            - null
         issueDay:
           type:
             - number
             - "null"
         dueDay:
+          type:
+            - number
+            - "null"
+        graceDays:
           type:
             - number
             - "null"
@@ -16426,8 +16564,10 @@ components:
         - name
         - address
         - readingDay
+        - readingDayMonth
         - issueDay
         - dueDay
+        - graceDays
         - roundingUnit
         - refundUnusedRent
         - bankBin
@@ -16757,6 +16897,8 @@ components:
           type: number
         overdue:
           type: boolean
+        overdueFrom:
+          type: string
         shareExpiresAt:
           type:
             - string
@@ -16789,6 +16931,7 @@ components:
         - paidTotal
         - remaining
         - overdue
+        - overdueFrom
         - shareExpiresAt
         - version
         - createdAt
@@ -16878,6 +17021,8 @@ components:
         serviceCode:
           type: string
         serviceKind:
+          type: string
+        serviceDescription:
           type: string
         coveredFrom:
           type: string
@@ -16972,6 +17117,8 @@ components:
           type: number
         overdue:
           type: boolean
+        overdueFrom:
+          type: string
         shareExpiresAt:
           type:
             - string
@@ -16999,6 +17146,7 @@ components:
         - paidTotal
         - remaining
         - overdue
+        - overdueFrom
         - shareExpiresAt
         - version
         - createdAt
@@ -17138,10 +17286,13 @@ components:
               type: number
             overdueInvoiceCount:
               type: number
+            graceDays:
+              type: number
           required:
             - totalRemaining
             - overdueRemaining
             - overdueInvoiceCount
+            - graceDays
         rooms:
           type: object
           properties:
@@ -17637,6 +17788,10 @@ components:
           type: string
         name:
           type: string
+        description:
+          type:
+            - string
+            - "null"
         kind:
           type: string
           enum:
@@ -17659,6 +17814,7 @@ components:
         - id
         - code
         - name
+        - description
         - kind
         - unit
         - defaultPrice
@@ -17674,9 +17830,16 @@ components:
           type: number
         readingDay:
           type: number
+        readingDayMonth:
+          type: string
+          enum:
+            - next
+            - same
         issueDay:
           type: number
         dueDay:
+          type: number
+        graceDays:
           type: number
         roundingUnit:
           anyOf:
@@ -17695,8 +17858,10 @@ components:
         - transferContentTemplate
         - version
         - readingDay
+        - readingDayMonth
         - issueDay
         - dueDay
+        - graceDays
         - roundingUnit
         - refundUnusedRent
     StayTenant:

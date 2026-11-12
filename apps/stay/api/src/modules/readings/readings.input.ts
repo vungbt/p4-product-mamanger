@@ -16,7 +16,8 @@ export function readReadingInput(body: FormBody): MeterReadingInput {
 
   body.check('meterId', UUID_PATTERN.test(meterId));
   body.check('period', isPeriod(period));
-  body.check('readOn', isIsoDate(readOn) && readOn.slice(0, 7) === period);
+  // The reading window depends on the building cycle; `saveReading` checks it.
+  body.check('readOn', isIsoDate(readOn));
   if (photoFileId) body.check('photoFileId', UUID_PATTERN.test(photoFileId));
   body.assertValid();
   return { meterId, period, reading, readOn, photoFileId, version, confirmHighConsumption };

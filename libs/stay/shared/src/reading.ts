@@ -53,7 +53,15 @@ export interface ReadingRoom {
 
 export interface ReadingGrid {
   buildingId: string;
+  /** Consumption month M−1 the readings close. */
   period: string;
+  /** Building `readingDayMonth` in force. */
+  readingDayMonth: 'same' | 'next';
+  /** Reading day closing `period` (`YYYY-MM-DD`). */
+  readingOn: string;
+  /** First and last `readOn` accepted for `period` (both included). */
+  readOnFrom: string;
+  readOnTo: string;
   rooms: ReadingRoom[];
 }
 

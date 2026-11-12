@@ -1,4 +1,4 @@
-import type { BillingDay, RoundingUnit } from '@stay/shared';
+import type { BillingDay, ReadingDayMonth, RoundingUnit } from '@stay/shared';
 import { DataTypes, Model, type Optional, type Sequelize } from 'sequelize';
 
 /** Billing columns left `null` follow `system_settings` (key `billing`). */
@@ -8,8 +8,10 @@ export interface BuildingAttributes {
   name: string;
   address: string | null;
   readingDay: BillingDay | null;
+  readingDayMonth: ReadingDayMonth | null;
   issueDay: BillingDay | null;
   dueDay: BillingDay | null;
+  graceDays: number | null;
   roundingUnit: RoundingUnit | null;
   refundUnusedRent: boolean | null;
   bankBin: string | null;
@@ -28,8 +30,10 @@ export type BuildingCreation = Optional<
   | 'id'
   | 'address'
   | 'readingDay'
+  | 'readingDayMonth'
   | 'issueDay'
   | 'dueDay'
+  | 'graceDays'
   | 'roundingUnit'
   | 'refundUnusedRent'
   | 'bankBin'
@@ -52,8 +56,10 @@ export class BuildingModel
   declare name: string;
   declare address: string | null;
   declare readingDay: BillingDay | null;
+  declare readingDayMonth: ReadingDayMonth | null;
   declare issueDay: BillingDay | null;
   declare dueDay: BillingDay | null;
+  declare graceDays: number | null;
   declare roundingUnit: RoundingUnit | null;
   declare refundUnusedRent: boolean | null;
   declare bankBin: string | null;
@@ -75,8 +81,10 @@ export function initBuildingModel(sequelize: Sequelize) {
       name: { type: DataTypes.STRING, allowNull: false },
       address: { type: DataTypes.STRING, allowNull: true },
       readingDay: { type: DataTypes.SMALLINT, allowNull: true },
+      readingDayMonth: { type: DataTypes.STRING(4), allowNull: true },
       issueDay: { type: DataTypes.SMALLINT, allowNull: true },
       dueDay: { type: DataTypes.SMALLINT, allowNull: true },
+      graceDays: { type: DataTypes.SMALLINT, allowNull: true },
       roundingUnit: { type: DataTypes.INTEGER, allowNull: true },
       refundUnusedRent: { type: DataTypes.BOOLEAN, allowNull: true },
       bankBin: { type: DataTypes.STRING(6), allowNull: true },

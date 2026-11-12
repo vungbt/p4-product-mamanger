@@ -7,11 +7,15 @@ import { auditedTransaction } from '@/shared/audit.js';
 import { assertVersion } from '@/shared/input.js';
 import { findAccessibleBuilding } from '../buildings/buildings.service.js';
 
-export const settingsColumns = `reading_reminder AS "readingReminder", create_drafts AS "createDrafts",
+export const settingsColumns = `reading_reminder AS "readingReminder",
+ reading_reminder_before AS "readingReminderBefore",
+ reading_reminder_days_before AS "readingReminderDaysBefore", create_drafts AS "createDrafts",
  before_due AS "beforeDue", after_due AS "afterDue", tenant_reminders_disabled AS "tenantRemindersDisabled", version`;
 
 export const automationDefaults: StayAutomationSettings = {
   readingReminder: false,
+  readingReminderBefore: false,
+  readingReminderDaysBefore: 1,
   createDrafts: false,
   beforeDue: false,
   afterDue: false,
@@ -50,7 +54,8 @@ export async function updateAutomationSettings(
     assertVersion(before.version, input.version);
     const [after] = await sequelize.query<StayAutomationSettings>(
       `UPDATE building_automations SET
-      reading_reminder=:readingReminder, create_drafts=:createDrafts, before_due=:beforeDue,
+      reading_reminder=:readingReminder, reading_reminder_before=:readingReminderBefore,
+      reading_reminder_days_before=:readingReminderDaysBefore, create_drafts=:createDrafts, before_due=:beforeDue,
       after_due=:afterDue, tenant_reminders_disabled=:tenantRemindersDisabled, version=version+1
       WHERE building_id=:id RETURNING ${settingsColumns}`,
       { replacements: { id, ...input }, transaction, type: QueryTypes.SELECT },
