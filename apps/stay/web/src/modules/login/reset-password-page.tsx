@@ -1,11 +1,10 @@
 import { Button, Form, FormField, FormSubmit, InputPassword, useAppForm } from '@itclabs/react-ui';
-import { createStayAuthClient } from '@stay/sdk/auth';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { FormError } from '@/libraries/forms/page-states';
+import { getAuthClient } from '@/libraries/session/session';
 
-const auth = createStayAuthClient('/api');
 const schema = { password: v.pipe(v.string(), v.minLength(8, 'Mật khẩu tối thiểu 8 ký tự.')) };
 
 export default function ResetPasswordPage() {
@@ -17,7 +16,10 @@ export default function ResetPasswordPage() {
     defaultValues: { password: '' },
     onSubmit: async ({ value }) => {
       setError(null);
-      const result = await auth.resetPassword({ newPassword: value.password, token: token ?? '' });
+      const result = await getAuthClient().resetPassword({
+        newPassword: value.password,
+        token: token ?? '',
+      });
 
       if (result.error)
         setError('Link không hợp lệ hoặc đã hết hạn. Liên hệ chủ trọ để được hỗ trợ.');

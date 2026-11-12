@@ -5,6 +5,7 @@ import { GuestOnly, PageSpinner, RequireAbility, RequireAuth } from './route-gua
 
 const VerifyDocumentPage = lazy(() => import('@/modules/documents/verify-page'));
 const ResetPasswordPage = lazy(() => import('@/modules/login/reset-password-page'));
+const ForgotPasswordPage = lazy(() => import('@/modules/login/forgot-password-page'));
 const LoginPage = lazy(() => import('@/modules/login/page'));
 const AppLayout = lazy(() => import('@/modules/layout/app-layout'));
 const NotFoundPage = lazy(() => import('@/modules/errors/not-found-page'));
@@ -63,6 +64,7 @@ export default function AppRoutes() {
       </Route>
 
       <Route path="/reset-password" element={<LazyPage component={ResetPasswordPage} />} />
+      <Route path="/forgot-password" element={<LazyPage component={ForgotPasswordPage} />} />
       <Route element={<GuestOnly />}>
         <Route path={ROUTES.login} element={<LazyPage component={LoginPage} />} />
       </Route>
