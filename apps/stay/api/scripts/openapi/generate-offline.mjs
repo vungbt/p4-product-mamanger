@@ -378,7 +378,9 @@ try {
     content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiError' } } },
   };
   for (const [url, response] of Object.entries(FILE_RESPONSES)) {
-    spec.paths[url].post.responses['200'] = response;
+    const operation = spec.paths[url].post ?? spec.paths[url].get;
+
+    operation.responses['200'] = response;
   }
   for (const [url, response] of Object.entries(EVENT_STREAM_RESPONSES)) {
     spec.paths[url].get.responses['200'] = response;

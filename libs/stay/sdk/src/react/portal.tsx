@@ -39,6 +39,8 @@ export const portalKeys = {
   notices: () => ['stay-portal', 'notices'] as const,
   maintenance: () => ['stay-portal', 'maintenance'] as const,
   requests: () => ['stay-portal', 'requests'] as const,
+  documents: () => ['stay-portal', 'documents'] as const,
+  document: (id: string) => ['stay-portal', 'document', id] as const,
 };
 
 /** 401 (no session), 404 (invalid link/invoice) and 429 cannot succeed on retry. */
@@ -105,6 +107,20 @@ export function portalQueryOptions(sdk: StaySdk) {
         queryKey: portalKeys.requests(),
         queryFn: ({ signal }) => api.requests(signal),
       }),
+    documents: () =>
+      queryOptions({
+        ...base,
+        queryKey: portalKeys.documents(),
+        queryFn: ({ signal }) => api.documents(signal),
+      }),
+    document: (id: string) =>
+      queryOptions({
+        ...base,
+        queryKey: portalKeys.document(id),
+        queryFn: ({ signal }) => api.document(id, signal),
+        enabled: Boolean(id),
+        staleTime: 0,
+      }),
   };
 }
 
@@ -130,6 +146,10 @@ export function portalMutationOptions(sdk: StaySdk, client: QueryClient) {
     cancelRequest: () =>
       mutationOptions({ mutationFn: api.cancelRequest, retry: false, onSuccess: refresh }),
     uploadImage: () => mutationOptions({ mutationFn: api.uploadImage, retry: false }),
+    signDocument: () =>
+      mutationOptions({ mutationFn: api.signDocument, retry: false, onSuccess: refresh }),
+    rejectDocument: () =>
+      mutationOptions({ mutationFn: api.rejectDocument, retry: false, onSuccess: refresh }),
     signIn: () => mutationOptions({ mutationFn: api.signIn, retry: false, onSuccess: reset }),
     signOut: () =>
       mutationOptions({
@@ -138,6 +158,14 @@ export function portalMutationOptions(sdk: StaySdk, client: QueryClient) {
         onSettled: reset,
       }),
   };
+}
+
+export function usePortalDocuments() {
+  return useQuery(portalQueryOptions(usePortalSdk()).documents());
+}
+
+export function usePortalDocument(id: string) {
+  return useQuery(portalQueryOptions(usePortalSdk()).document(id));
 }
 
 export function usePortalLookup(token: string) {
@@ -207,6 +235,14 @@ export function usePortalCancelRequest() {
 /** Receipt / maintenance photo upload with a portal ticket; resolves to the file id. */
 export function usePortalUploadImage() {
   return useMutation(usePortalMutations().uploadImage());
+}
+
+export function usePortalSignDocument() {
+  return useMutation(usePortalMutations().signDocument());
+}
+
+export function usePortalRejectDocument() {
+  return useMutation(usePortalMutations().rejectDocument());
 }
 
 export function usePortalSignIn() {

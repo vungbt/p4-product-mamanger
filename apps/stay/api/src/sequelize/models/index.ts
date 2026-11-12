@@ -8,11 +8,21 @@ import {
   initBuildingServicePriceModel,
 } from './building-service-price.model.js';
 import { ContractModel, initContractModel } from './contract.model.js';
+import { ContractDocumentModel, initContractDocumentModel } from './contract-document.model.js';
 import { ContractEventModel, initContractEventModel } from './contract-event.model.js';
 import { ContractOccupantModel, initContractOccupantModel } from './contract-occupant.model.js';
 import { ContractServiceModel, initContractServiceModel } from './contract-service.model.js';
+import {
+  ContractTemplateModel,
+  ContractTemplateVersionModel,
+  initContractTemplateModel,
+  initContractTemplateVersionModel,
+} from './contract-template.model.js';
 import { ContractVehicleModel, initContractVehicleModel } from './contract-vehicle.model.js';
 import { DepositEntryModel, initDepositEntryModel } from './deposit-entry.model.js';
+import { DocumentEventModel, initDocumentEventModel } from './document-event.model.js';
+import { DocumentFileModel, initDocumentFileModel } from './document-file.model.js';
+import { DocumentSignerModel, initDocumentSignerModel } from './document-signer.model.js';
 import { DomainEventModel, initDomainEventModel } from './domain-event.model.js';
 import { ExpenseModel, initExpenseModel } from './expense.model.js';
 import { ExpenseCategoryModel, initExpenseCategoryModel } from './expense-category.model.js';
@@ -25,6 +35,7 @@ import {
   initInvoiceMeterReadingModel,
 } from './invoice-meter-reading.model.js';
 import { InvoiceSequenceModel, initInvoiceSequenceModel } from './invoice-sequence.model.js';
+import { initLandlordProfileModel, LandlordProfileModel } from './landlord-profile.model.js';
 import {
   initMaintenanceRequestModel,
   MaintenanceRequestModel,
@@ -89,6 +100,13 @@ initAnnouncementModel(sequelize);
 initPaymentClaimModel(sequelize);
 initMaintenanceRequestModel(sequelize);
 initTenantRequestModel(sequelize);
+initLandlordProfileModel(sequelize);
+initContractTemplateModel(sequelize);
+initContractTemplateVersionModel(sequelize);
+initDocumentFileModel(sequelize);
+initContractDocumentModel(sequelize);
+initDocumentSignerModel(sequelize);
+initDocumentEventModel(sequelize);
 
 BuildingMemberModel.belongsTo(BuildingModel, { foreignKey: 'buildingId', as: 'building' });
 BuildingMemberModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user' });
@@ -112,12 +130,18 @@ export {
   BuildingMemberModel,
   BuildingModel,
   BuildingServicePriceModel,
+  ContractDocumentModel,
   ContractEventModel,
   ContractModel,
   ContractOccupantModel,
   ContractServiceModel,
+  ContractTemplateModel,
+  ContractTemplateVersionModel,
   ContractVehicleModel,
   DepositEntryModel,
+  DocumentEventModel,
+  DocumentFileModel,
+  DocumentSignerModel,
   DomainEventModel,
   ExpenseCategoryModel,
   ExpenseModel,
@@ -127,6 +151,7 @@ export {
   InvoiceMeterReadingModel,
   InvoiceModel,
   InvoiceSequenceModel,
+  LandlordProfileModel,
   MaintenanceRequestModel,
   MeterModel,
   MeterReadingModel,

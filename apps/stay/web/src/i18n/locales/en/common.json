@@ -57,7 +57,11 @@
     "maintenance": "Maintenance",
     "maintenanceDetail": "Maintenance detail",
     "maintenanceNew": "Add maintenance job",
-    "maintenanceEdit": "Edit maintenance job"
+    "maintenanceEdit": "Edit maintenance job",
+    "landlord": "Landlord & signature",
+    "contractTemplates": "Contract templates",
+    "contractTemplate": "Edit template",
+    "contractDocument": "Document details"
   },
   "header": {
     "back": "Back",

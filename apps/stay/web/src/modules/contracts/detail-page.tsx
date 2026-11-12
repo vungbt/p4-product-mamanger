@@ -11,10 +11,13 @@ import { useCancelContract, useCancelNotice, useContract } from '@stay/sdk/react
 import type { ContractChangeKind } from '@stay/sdk/shared';
 import { ApiSdkError, getErrorMessage } from '@stay/sdk/shared';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useCanAccess, useCanOn } from '@/libraries/ability';
 import { displayDate, formatVnd } from '@/libraries/format';
+import { latestSearchParams } from '@/libraries/search-params';
 import { DepositLedger } from '@/modules/deposits/ledger';
+import { ContractDocuments } from '@/modules/documents/contract-documents';
 import { ContractInvoices } from '@/modules/invoices/contract-invoices';
 import { ContractRequests } from '@/modules/requests/contract-requests';
 import { useRoomBuilding } from '@/modules/rooms/use-room-building';
@@ -23,7 +26,7 @@ import { CONTRACT_LABELS, LoadError } from './contract-ui';
 import { NoticeDialog } from './notice-dialog';
 import { PortalLinksPanel } from './portal-links';
 
-const TABS = ['Tổng quan', 'Hoá đơn', 'Cọc', 'Yêu cầu', 'Cổng người thuê', 'Lịch sử'];
+const TABS = ['Tổng quan', 'Hoá đơn', 'Cọc', 'Yêu cầu', 'Cổng người thuê', 'Văn bản', 'Lịch sử'];
 const EVENT_LABELS: Record<string, string> = {
   ...CHANGE_LABELS,
   created: 'Tạo bản nháp',
@@ -38,6 +41,7 @@ const EVENT_LABELS: Record<string, string> = {
 type MenuAction = ContractChangeKind | 'notice' | 'cancel-notice' | 'settle';
 
 export default function ContractDetailPage() {
+  const { t } = useTranslation('documents');
   const { id = '' } = useParams();
   const query = useContract(id);
   const cancel = useCancelContract();
@@ -167,18 +171,29 @@ export default function ContractDetailPage() {
             aria-selected={tab === label}
             key={label}
             variant={tab === label ? 'primary' : 'secondary'}
-            onClick={() => setParams({ tab: label }, { replace: true })}
+            onClick={() =>
+              setParams(
+                () => {
+                  const next = latestSearchParams();
+                  next.set('tab', label);
+                  return next;
+                },
+                { replace: true },
+              )
+            }
           >
-            {label}
+            {label === 'Văn bản' ? t('documents') : label}
           </Button>
         ))}
       </div>
       <section
         role="tabpanel"
-        aria-label={tab ?? 'Tổng quan'}
+        aria-label={tab === 'Văn bản' ? t('documents') : (tab ?? 'Tổng quan')}
         className="grid gap-4 rounded-panel border border-line bg-surface p-4 sm:p-5"
       >
-        {tab === 'Tổng quan' ? (
+        {tab === 'Văn bản' ? (
+          <ContractDocuments contract={data} />
+        ) : tab === 'Tổng quan' ? (
           <>
             <h2 className="text-section font-semibold">Thông tin hợp đồng</h2>
             <Link to={`/rooms/${data.roomId}`} className="text-accent">

@@ -35,6 +35,12 @@ tags:
       phòng và thanh lý (ST-17).
   - name: deposits
     description: Sổ cọc bất biến; thu thêm, hoàn, mất cọc và cấn trừ thanh lý.
+  - name: documents
+    description: "Hợp đồng online (ST-30a): thông tin bên cho thuê và chữ ký mẫu, mẫu văn bản có phiên bản (nhập từ Word
+      .docx), văn bản điền từ snapshot hợp đồng, gửi ký, người thuê ký trong cổng (T-12), chủ trọ ký (xác nhận mật
+      khẩu), PDF cuối cùng bất biến kèm trang bằng chứng và SHA-256, phương án giấy, thay thế và trang kiểm tra công
+      khai `/verify/:code`. Chữ ký điện tử đơn giản (Luật Giao dịch điện tử 2023), không phải chữ ký số. Audit chỉ ghi
+      id/trạng thái, không ghi nội dung, CCCD hay chữ ký."
   - name: expenses
     description: Chi phí vận hành, danh mục chi phí và tổng theo kỳ. Ảnh hoá đơn lưu private.
   - name: invoices
@@ -9056,6 +9062,1557 @@ paths:
           $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/RateLimited"
+  /api/settings/landlord:
+    get:
+      tags:
+        - documents
+      operationId: get_api_settings_landlord
+      summary: Thông tin bên cho thuê
+      description: >-
+        manage Settings (chủ trọ). Hồ sơ của tài khoản đang đăng nhập; `version: 0` khi chưa lưu. `signatureImage` là
+        data URL PNG/JPG (riêng tư).
+
+
+        **Quyền:** `manage:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/LandlordProfile"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - documents
+      operationId: put_api_settings_landlord
+      summary: Lưu thông tin bên cho thuê
+      description: >-
+        CCCD 12 số, SĐT 10 số. `signatureImage`: data URL PNG/JPG ≤ 200 KB (vẽ hoặc tải ảnh), `null` để xoá, bỏ trống để
+        giữ. Audit chỉ ghi tên trường đã đổi. Gửi lại `version` (0 khi tạo).
+
+
+        **Quyền:** `manage:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idNumber:
+                  type: string
+                  maxLength: 20
+                phone:
+                  type: string
+                  maxLength: 20
+                signatureImage:
+                  type:
+                    - string
+                    - "null"
+                  description: data URL `data:image/png;base64,…` (PNG/JPG ≤ 200 KB)
+                fullName:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                idIssuedBy:
+                  type: string
+                  maxLength: 120
+                permanentAddress:
+                  type: string
+                  maxLength: 255
+                version:
+                  type: integer
+                  minimum: 0
+                birthDate:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+                idIssuedAt:
+                  type:
+                    - string
+                    - "null"
+                  format: date
+              required:
+                - fullName
+                - version
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/LandlordProfile"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contract-template-variables:
+    get:
+      tags:
+        - documents
+      operationId: get_api_contract_template_variables
+      summary: Biến của mẫu văn bản
+      description: |-
+        Nhóm, mô tả, ví dụ, bắt buộc hay không.
+
+        **Quyền:** `read:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TemplateVariable"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contract-templates:
+    get:
+      tags:
+        - documents
+      operationId: get_api_contract_templates
+      summary: Danh sách mẫu văn bản
+      description: |-
+        Mẫu dùng chung (`buildingId: null`) và mẫu của các toà được đọc; lọc `buildingId`, `kind`.
+
+        **Quyền:** `read:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: buildingId
+          in: query
+          schema:
+            type: string
+        - name: kind
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ContractTemplateSummary"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - documents
+      operationId: post_api_contract_templates
+      summary: Tạo mẫu văn bản
+      description: >-
+        manage Settings. `source`: `default` (Hợp đồng thuê phòng trọ mặc định), `blank`, `copy` (`copyFromId`) hoặc
+        `html` (`bodyHtml`, ví dụ sau khi nhập Word). HTML được lọc theo allowlist.
+
+
+        **Quyền:** `manage:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                source:
+                  type: string
+                  enum:
+                    - blank
+                    - copy
+                    - default
+                    - html
+                buildingId:
+                  type: string
+                  maxLength: 36
+                copyFromId:
+                  type: string
+                  minLength: 1
+                  maxLength: 36
+                bodyHtml:
+                  type: string
+                  minLength: 1
+                  maxLength: 400000
+                kind:
+                  type: string
+                  enum:
+                    - addendum
+                    - contract
+                    - handover
+                    - settlement
+                name:
+                  type: string
+                  maxLength: 160
+              required:
+                - source
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractTemplateDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contract-templates/import-docx:
+    post:
+      tags:
+        - documents
+      operationId: post_api_contract_templates_import_docx
+      summary: Nhập mẫu từ file Word
+      description: >-
+        manage Settings; multipart `file` (.docx ≤ 5 MB, kiểm tra chữ ký ZIP). Chuyển sang HTML của trình soạn (tiêu đề,
+        đoạn, bảng, đậm/nghiêng/gạch chân, danh sách, căn giữa/phải), bỏ ảnh và phần không hỗ trợ, tô vàng chỗ trống
+        (`……`, `....`, `___`, `[Họ tên]`). Không lưu file.
+
+
+        **Quyền:** `manage:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DocxImportResult"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contract-templates/{id}:
+    get:
+      tags:
+        - documents
+      operationId: get_api_contract_templates_id
+      summary: Chi tiết mẫu
+      description: |-
+        Nội dung phiên bản đang dùng và lịch sử phiên bản.
+
+        **Quyền:** `read:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractTemplateDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - documents
+      operationId: put_api_contract_templates_id
+      summary: Đổi tên / tắt mẫu
+      description: >-
+        Mẫu đã dùng không xoá được, chỉ tắt. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409
+        `version_conflict`.
+
+
+        **Quyền:** `manage:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 160
+                active:
+                  type: boolean
+                version:
+                  type: integer
+                  minimum: 1
+              required:
+                - name
+                - active
+                - version
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractTemplateDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contract-templates/{id}/versions:
+    post:
+      tags:
+        - documents
+      operationId: post_api_contract_templates_id_versions
+      summary: Lưu phiên bản mới
+      description: >-
+        Tạo phiên bản mới và đặt làm phiên bản đang dùng; văn bản đã tạo giữ phiên bản cũ. Gửi lại `version` đã đọc; dữ
+        liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+
+
+        **Quyền:** `manage:Settings`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bodyHtml:
+                  type: string
+                  minLength: 1
+                  maxLength: 400000
+                note:
+                  type: string
+                  maxLength: 255
+                version:
+                  type: integer
+                  minimum: 1
+              required:
+                - bodyHtml
+                - version
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractTemplateDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contract-templates/{id}/preview:
+    post:
+      tags:
+        - documents
+      operationId: post_api_contract_templates_id_preview
+      summary: Xem trước mẫu
+      description: >-
+        `bodyHtml` (nội dung chưa lưu) hoặc phiên bản đang dùng, điền dữ liệu mẫu hoặc `contractId`. Trả `missing` (biến
+        bắt buộc thiếu dữ liệu) và `unknown` (biến không hợp lệ).
+
+
+        **Quyền:** `read:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bodyHtml:
+                  type: string
+                  maxLength: 400000
+                contractId:
+                  type: string
+                  maxLength: 36
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/TemplatePreview"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contract-template-versions/{id}:
+    get:
+      tags:
+        - documents
+      operationId: get_api_contract_template_versions_id
+      summary: Một phiên bản mẫu
+      description: |-
+        Xem lại hoặc khôi phục (lưu thành phiên bản mới).
+
+        **Quyền:** `read:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractTemplateVersionDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/contracts/{id}/documents:
+    get:
+      tags:
+        - documents
+      operationId: get_api_contracts_id_documents
+      summary: Văn bản của hợp đồng
+      description: |-
+        Mới nhất trước; `expired` khi link ký quá 14 ngày.
+
+        **Quyền:** `read:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ContractDocumentSummary"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - documents
+      operationId: post_api_contracts_id_documents
+      summary: Tạo văn bản từ mẫu
+      description: >-
+        Điền phiên bản đang dùng của mẫu bằng snapshot dữ liệu hợp đồng (sửa hợp đồng sau đó không đổi văn bản). Biến
+        bắt buộc thiếu dữ liệu được đánh dấu và liệt kê ở `missing`; hợp đồng ended/cancelled trả 409.
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                templateId:
+                  type: string
+                  minLength: 1
+                  maxLength: 36
+                title:
+                  type: string
+                  maxLength: 200
+              required:
+                - templateId
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractDocumentDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/documents/{id}:
+    get:
+      tags:
+        - documents
+      operationId: get_api_documents_id
+      summary: Chi tiết văn bản
+      description: |-
+        Nội dung, người ký, sự kiện (IP, thiết bị) và mã băm.
+
+        **Quyền:** `read:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractDocumentDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    put:
+      tags:
+        - documents
+      operationId: put_api_documents_id
+      summary: Sửa bản nháp
+      description: >-
+        `bodyHtml` (đánh dấu đã sửa tay) hoặc `regenerate: true` (điền lại từ mẫu với dữ liệu mới). Chỉ bản nháp; đã gửi
+        hoặc đã có người ký trả 409 `document_locked`. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả
+        409 `version_conflict`.
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                regenerate:
+                  type: boolean
+                bodyHtml:
+                  type: string
+                  minLength: 1
+                  maxLength: 400000
+                version:
+                  type: integer
+                  minimum: 1
+              required:
+                - version
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractDocumentDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/documents/{id}/send:
+    post:
+      tags:
+        - documents
+      operationId: post_api_documents_id_send
+      summary: Gửi ký
+      description: >-
+        Thiếu dữ liệu bắt buộc trả 422 `document_missing_fields` (`extensions.missing`). Khoá nội dung (SHA-256), người
+        đại diện là người ký bắt buộc, `coSignerTenantIds` là người ở cùng ký tuỳ chọn; link ký trong cổng người thuê
+        hết hạn sau 14 ngày. Gửi lại gia hạn link.
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: submit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                coSignerTenantIds:
+                  type: array
+                  maxItems: 20
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 36
+                version:
+                  type: integer
+                  minimum: 1
+              required:
+                - version
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractDocumentDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/documents/{id}/owner-sign:
+    post:
+      tags:
+        - documents
+      operationId: post_api_documents_id_owner_sign
+      summary: Chủ trọ ký
+      description: >-
+        Chỉ bên cho thuê của văn bản; xác nhận lại mật khẩu (sai trả 422 `password_invalid`, 10 lần/phút), áp chữ ký
+        mẫu. Bản nháp → `owner_signed` (ký trước), `signed_by_tenant` → `completed` và sinh PDF cuối cùng.
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: confirm
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                version:
+                  type: integer
+                  minimum: 1
+              required:
+                - password
+                - version
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractDocumentDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/documents/{id}/cancel:
+    post:
+      tags:
+        - documents
+      operationId: post_api_documents_id_cancel
+      summary: Huỷ văn bản
+      description: >-
+        Văn bản chưa hoàn tất; link ký ngừng hoạt động. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả
+        409 `version_conflict`.
+
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: cancel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+                version:
+                  type: integer
+                  minimum: 1
+              required:
+                - reason
+                - version
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractDocumentDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/documents/{id}/paper:
+    post:
+      tags:
+        - documents
+      operationId: post_api_documents_id_paper
+      summary: Đánh dấu đã ký giấy
+      description: |-
+        multipart `file` (PDF/JPG/PNG ≤ 10 MB), `signedOn`, `version`. Văn bản chuyển `completed_paper`.
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: complete
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractDocumentDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/documents/{id}/supersede:
+    post:
+      tags:
+        - documents
+      operationId: post_api_documents_id_supersede
+      summary: Tạo văn bản thay thế
+      description: |-
+        Chỉ văn bản đã hoàn tất. Tạo bản nháp mới từ cùng mẫu; văn bản cũ chuyển `superseded` khi bản mới hoàn tất.
+
+        **Quyền:** `update:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContractDocumentDetail"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/documents/{id}/pdf:
+    get:
+      tags:
+        - documents
+      operationId: get_api_documents_id_pdf
+      summary: Tải PDF
+      description: |-
+        Bản hoàn tất: file đã lưu (khớp `pdfSha256`); chưa hoàn tất: render có chữ "BẢN NHÁP".
+
+        **Quyền:** `read:Contract`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "File PDF (attachment, `Cache-Control: private, no-store`)."
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/documents/{id}/scan:
+    get:
+      tags:
+        - documents
+      operationId: get_api_documents_id_scan
+      summary: Tải bản scan ký giấy
+      description: "**Quyền:** `read:Contract`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bản scan ký giấy (PDF/JPG/PNG).
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/documents:
+    get:
+      tags:
+        - documents
+      operationId: get_api_portal_documents
+      summary: Văn bản của tôi (T-13)
+      description: |-
+        Văn bản chờ mình ký lên đầu.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PortalDocumentSummary"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/documents/{id}:
+    get:
+      tags:
+        - documents
+      operationId: get_api_portal_documents_id
+      summary: Đọc văn bản (T-12)
+      description: |-
+        Chỉ người ký đọc được nội dung (có CCCD). Lần mở đầu tiên ghi sự kiện `viewed`.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalDocument"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/documents/{id}/sign:
+    post:
+      tags:
+        - documents
+      operationId: post_api_portal_documents_id_sign
+      summary: Ký văn bản
+      description: >-
+        `agree: true`, `fullName` khớp hồ sơ (không phân biệt hoa thường/khoảng trắng), `phoneLast4`, `method` `drawn`
+        (`signatureImage` data URL PNG) hoặc `typed`. Sai 5 lần khoá 15 phút (429). Link hết hạn trả 410.
+
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: confirm
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                  minLength: 1
+                  maxLength: 120
+                phoneLast4:
+                  type: string
+                  minLength: 1
+                  maxLength: 4
+                agree:
+                  type: boolean
+                method:
+                  type: string
+                  enum:
+                    - drawn
+                    - typed
+                signatureImage:
+                  type: string
+                  description: data URL `data:image/png;base64,…` (PNG/JPG ≤ 200 KB)
+              required:
+                - fullName
+                - phoneLast4
+                - agree
+                - method
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalDocument"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/documents/{id}/reject:
+    post:
+      tags:
+        - documents
+      operationId: post_api_portal_documents_id_reject
+      summary: Từ chối ký
+      description: |-
+        Lý do bắt buộc; văn bản chuyển `rejected`.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: reject
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+              required:
+                - reason
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PortalDocument"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/portal/documents/{id}/pdf:
+    get:
+      tags:
+        - documents
+      operationId: get_api_portal_documents_id_pdf
+      summary: Tải PDF đã hoàn tất
+      description: |-
+        Chỉ người ký của văn bản.
+
+        **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+      security:
+        - portalSession: []
+      x-audit-action: read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "File PDF (attachment, `Cache-Control: private, no-store`)."
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "401":
+          description: "Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30
+            ngày hoặc người ở đã rời."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/public/documents/verify/{code}:
+    get:
+      tags:
+        - documents
+      operationId: get_api_public_documents_verify_code
+      summary: Kiểm tra văn bản (công khai)
+      description: |-
+        **Công khai**, 30 lần/phút. Loại, toà, trạng thái, số người đã ký; không có nội dung, tên hay CCCD.
+
+        **Công khai.**
+      security: []
+      x-audit-action: read
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DocumentVerification"
+                  message:
+                    type: string
+                required:
+                  - data
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+    post:
+      tags:
+        - documents
+      operationId: post_api_public_documents_verify_code
+      summary: So khớp file PDF
+      description: |-
+        **Công khai**, 10 lần/phút. multipart `file`; so SHA-256 với PDF cuối cùng đã lưu.
+
+        **Công khai.**
+      security: []
+      x-audit-action: read
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DocumentFileCheck"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
   /api/portal/links/lookup:
     post:
       tags:
@@ -13817,6 +15374,229 @@ components:
       required:
         - impact
         - contract
+    ContractDocumentDetail:
+      type: object
+      properties:
+        templateId:
+          type:
+            - string
+            - "null"
+        templateName:
+          type:
+            - string
+            - "null"
+        templateVersion:
+          type:
+            - number
+            - "null"
+        bodyHtml:
+          type: string
+        missing:
+          type: array
+          items:
+            type: string
+        dataSha256:
+          type:
+            - string
+            - "null"
+        pdfSha256:
+          type:
+            - string
+            - "null"
+        hasPdf:
+          type: boolean
+        hasPaperScan:
+          type: boolean
+        cancelReason:
+          type:
+            - string
+            - "null"
+        supersedesId:
+          type:
+            - string
+            - "null"
+        supersededById:
+          type:
+            - string
+            - "null"
+        occupants:
+          type: array
+          items:
+            type: object
+            properties:
+              tenantId:
+                type: string
+              name:
+                type: string
+              primary:
+                type: boolean
+            required:
+              - tenantId
+              - name
+              - primary
+        signers:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentSigner"
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentEvent"
+        canOwnerSign:
+          type: boolean
+        id:
+          type: string
+        contractId:
+          type: string
+        buildingId:
+          type: string
+        kind:
+          type: string
+          enum:
+            - addendum
+            - contract
+            - handover
+            - settlement
+        code:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum:
+            - cancelled
+            - completed
+            - completed_paper
+            - draft
+            - expired
+            - owner_signed
+            - rejected
+            - sent
+            - signed_by_tenant
+            - superseded
+            - viewed
+        signingOrder:
+          type: string
+          enum:
+            - owner_first
+            - tenant_first
+        editedManually:
+          type: boolean
+        sentAt:
+          type:
+            - string
+            - "null"
+        completedAt:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        version:
+          type: number
+      required:
+        - templateId
+        - templateName
+        - templateVersion
+        - bodyHtml
+        - missing
+        - dataSha256
+        - pdfSha256
+        - hasPdf
+        - hasPaperScan
+        - cancelReason
+        - supersedesId
+        - supersededById
+        - occupants
+        - signers
+        - events
+        - canOwnerSign
+        - id
+        - contractId
+        - buildingId
+        - kind
+        - code
+        - title
+        - status
+        - signingOrder
+        - editedManually
+        - sentAt
+        - completedAt
+        - createdAt
+        - updatedAt
+        - version
+    ContractDocumentSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        contractId:
+          type: string
+        buildingId:
+          type: string
+        kind:
+          type: string
+          enum:
+            - addendum
+            - contract
+            - handover
+            - settlement
+        code:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum:
+            - cancelled
+            - completed
+            - completed_paper
+            - draft
+            - expired
+            - owner_signed
+            - rejected
+            - sent
+            - signed_by_tenant
+            - superseded
+            - viewed
+        signingOrder:
+          type: string
+          enum:
+            - owner_first
+            - tenant_first
+        editedManually:
+          type: boolean
+        sentAt:
+          type:
+            - string
+            - "null"
+        completedAt:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        version:
+          type: number
+      required:
+        - id
+        - contractId
+        - buildingId
+        - kind
+        - code
+        - title
+        - status
+        - signingOrder
+        - editedManually
+        - sentAt
+        - completedAt
+        - createdAt
+        - updatedAt
+        - version
     ContractEvent:
       type: object
       properties:
@@ -14177,6 +15957,165 @@ components:
         - ownerRefunds
         - tenantPays
         - replayed
+    ContractTemplateDetail:
+      type: object
+      properties:
+        activeVersionId:
+          type: string
+        bodyHtml:
+          type: string
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContractTemplateVersion"
+        id:
+          type: string
+        buildingId:
+          type:
+            - string
+            - "null"
+        buildingName:
+          type:
+            - string
+            - "null"
+        kind:
+          type: string
+          enum:
+            - addendum
+            - contract
+            - handover
+            - settlement
+        name:
+          type: string
+        active:
+          type: boolean
+        activeVersion:
+          type: number
+        updatedAt:
+          type: string
+        documentCount:
+          type: number
+        version:
+          type: number
+      required:
+        - activeVersionId
+        - bodyHtml
+        - versions
+        - id
+        - buildingId
+        - buildingName
+        - kind
+        - name
+        - active
+        - activeVersion
+        - updatedAt
+        - documentCount
+        - version
+    ContractTemplateSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        buildingId:
+          type:
+            - string
+            - "null"
+        buildingName:
+          type:
+            - string
+            - "null"
+        kind:
+          type: string
+          enum:
+            - addendum
+            - contract
+            - handover
+            - settlement
+        name:
+          type: string
+        active:
+          type: boolean
+        activeVersion:
+          type: number
+        updatedAt:
+          type: string
+        documentCount:
+          type: number
+        version:
+          type: number
+      required:
+        - id
+        - buildingId
+        - buildingName
+        - kind
+        - name
+        - active
+        - activeVersion
+        - updatedAt
+        - documentCount
+        - version
+    ContractTemplateVersion:
+      type: object
+      properties:
+        id:
+          type: string
+        version:
+          type: number
+        note:
+          type:
+            - string
+            - "null"
+        createdByName:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+        variablesUsed:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - version
+        - note
+        - createdByName
+        - createdAt
+        - variablesUsed
+    ContractTemplateVersionDetail:
+      type: object
+      properties:
+        templateId:
+          type: string
+        bodyHtml:
+          type: string
+        id:
+          type: string
+        version:
+          type: number
+        note:
+          type:
+            - string
+            - "null"
+        createdByName:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+        variablesUsed:
+          type: array
+          items:
+            type: string
+      required:
+        - templateId
+        - bodyHtml
+        - id
+        - version
+        - note
+        - createdByName
+        - createdAt
+        - variablesUsed
     ContractVehicle:
       type: object
       properties:
@@ -14361,6 +16300,202 @@ components:
         - refunded
         - forfeited
         - held
+    DocumentEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - cancelled
+            - completed
+            - created
+            - downloaded
+            - edited
+            - owner_signed
+            - paper
+            - rejected
+            - sent
+            - signed
+            - superseded
+            - verification_failed
+            - viewed
+        signerId:
+          type:
+            - string
+            - "null"
+        actorName:
+          type:
+            - string
+            - "null"
+        ip:
+          type:
+            - string
+            - "null"
+        userAgent:
+          type:
+            - string
+            - "null"
+        createdAt:
+          type: string
+      required:
+        - id
+        - type
+        - signerId
+        - actorName
+        - ip
+        - userAgent
+        - createdAt
+    DocumentFileCheck:
+      type: object
+      properties:
+        code:
+          type: string
+        matches:
+          type: boolean
+        sha256:
+          type: string
+      required:
+        - code
+        - matches
+        - sha256
+    DocumentSigner:
+      type: object
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum:
+            - owner
+            - tenant
+        tenantId:
+          type:
+            - string
+            - "null"
+        userId:
+          type:
+            - string
+            - "null"
+        name:
+          type: string
+        required:
+          type: boolean
+        status:
+          type: string
+          enum:
+            - pending
+            - rejected
+            - signed
+            - viewed
+        expiresAt:
+          type:
+            - string
+            - "null"
+        lockedUntil:
+          type:
+            - string
+            - "null"
+        viewedAt:
+          type:
+            - string
+            - "null"
+        signedAt:
+          type:
+            - string
+            - "null"
+        method:
+          type:
+            - string
+            - "null"
+          enum:
+            - drawn
+            - stored
+            - typed
+            - null
+        rejectReason:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - role
+        - tenantId
+        - userId
+        - name
+        - required
+        - status
+        - expiresAt
+        - lockedUntil
+        - viewedAt
+        - signedAt
+        - method
+        - rejectReason
+    DocumentVerification:
+      type: object
+      properties:
+        code:
+          type: string
+        kind:
+          type: string
+          enum:
+            - addendum
+            - contract
+            - handover
+            - settlement
+        buildingName:
+          type: string
+        status:
+          type: string
+          enum:
+            - cancelled
+            - completed
+            - completed_paper
+            - draft
+            - expired
+            - owner_signed
+            - rejected
+            - sent
+            - signed_by_tenant
+            - superseded
+            - viewed
+        signedCount:
+          type: number
+        signerCount:
+          type: number
+        completedAt:
+          type:
+            - string
+            - "null"
+        pdfSha256:
+          type:
+            - string
+            - "null"
+      required:
+        - code
+        - kind
+        - buildingName
+        - status
+        - signedCount
+        - signerCount
+        - completedAt
+        - pdfSha256
+    DocxImportResult:
+      type: object
+      properties:
+        bodyHtml:
+          type: string
+        blanks:
+          type: number
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+        - bodyHtml
+        - blanks
+        - warnings
     DuplicateTenantRef:
       type: object
       properties:
@@ -14777,6 +16912,56 @@ components:
           type: number
       required:
         - reason
+    LandlordProfile:
+      type: object
+      properties:
+        fullName:
+          type: string
+        birthDate:
+          type:
+            - string
+            - "null"
+        idNumber:
+          type:
+            - string
+            - "null"
+        idIssuedAt:
+          type:
+            - string
+            - "null"
+        idIssuedBy:
+          type:
+            - string
+            - "null"
+        permanentAddress:
+          type:
+            - string
+            - "null"
+        phone:
+          type:
+            - string
+            - "null"
+        signatureImage:
+          type:
+            - string
+            - "null"
+        signatureUpdatedAt:
+          type:
+            - string
+            - "null"
+        version:
+          type: number
+      required:
+        - fullName
+        - birthDate
+        - idNumber
+        - idIssuedAt
+        - idIssuedBy
+        - permanentAddress
+        - phone
+        - signatureImage
+        - signatureUpdatedAt
+        - version
     MaintenanceHistory:
       type: object
       properties:
@@ -15026,6 +17211,7 @@ components:
             type: string
             enum:
               - announcements
+              - documents
               - invoices
               - payments
               - reminders
@@ -15057,6 +17243,7 @@ components:
             type: string
             enum:
               - announcements
+              - documents
               - invoices
               - payments
               - reminders
@@ -15384,6 +17571,178 @@ components:
         - kind
         - unit
         - price
+    PortalDocument:
+      type: object
+      properties:
+        bodyHtml:
+          type:
+            - string
+            - "null"
+        myName:
+          type:
+            - string
+            - "null"
+        expiresAt:
+          type:
+            - string
+            - "null"
+        lockedUntil:
+          type:
+            - string
+            - "null"
+        hasPdf:
+          type: boolean
+        signers:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              role:
+                type: string
+                enum:
+                  - owner
+                  - tenant
+              status:
+                type: string
+                enum:
+                  - pending
+                  - rejected
+                  - signed
+                  - viewed
+              signedAt:
+                type:
+                  - string
+                  - "null"
+            required:
+              - name
+              - role
+              - status
+              - signedAt
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+            - addendum
+            - contract
+            - handover
+            - settlement
+        code:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum:
+            - cancelled
+            - completed
+            - completed_paper
+            - draft
+            - expired
+            - owner_signed
+            - rejected
+            - sent
+            - signed_by_tenant
+            - superseded
+            - viewed
+        myStatus:
+          type:
+            - string
+            - "null"
+          enum:
+            - pending
+            - rejected
+            - signed
+            - viewed
+            - null
+        awaitingMe:
+          type: boolean
+        sentAt:
+          type:
+            - string
+            - "null"
+        completedAt:
+          type:
+            - string
+            - "null"
+      required:
+        - bodyHtml
+        - myName
+        - expiresAt
+        - lockedUntil
+        - hasPdf
+        - signers
+        - id
+        - kind
+        - code
+        - title
+        - status
+        - myStatus
+        - awaitingMe
+        - sentAt
+        - completedAt
+    PortalDocumentSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum:
+            - addendum
+            - contract
+            - handover
+            - settlement
+        code:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum:
+            - cancelled
+            - completed
+            - completed_paper
+            - draft
+            - expired
+            - owner_signed
+            - rejected
+            - sent
+            - signed_by_tenant
+            - superseded
+            - viewed
+        myStatus:
+          type:
+            - string
+            - "null"
+          enum:
+            - pending
+            - rejected
+            - signed
+            - viewed
+            - null
+        awaitingMe:
+          type: boolean
+        sentAt:
+          type:
+            - string
+            - "null"
+        completedAt:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - kind
+        - code
+        - title
+        - status
+        - myStatus
+        - awaitingMe
+        - sentAt
+        - completedAt
     PortalInvoice:
       type: object
       properties:
@@ -15754,6 +18113,10 @@ components:
           enum:
             - announcement.created
             - automation
+            - document.completed
+            - document.rejected
+            - document.sent
+            - document.signed
             - drafts.ready
             - invoice.due_soon
             - invoice.issued
@@ -18049,6 +20412,10 @@ components:
           enum:
             - announcement.created
             - automation
+            - document.completed
+            - document.rejected
+            - document.sent
+            - document.signed
             - drafts.ready
             - invoice.due_soon
             - invoice.issued
@@ -19003,6 +21370,65 @@ components:
         - role
         - buildingIds
         - contractIds
+    TemplatePreview:
+      type: object
+      properties:
+        html:
+          type: string
+        missing:
+          type: array
+          items:
+            type: string
+        unknown:
+          type: array
+          items:
+            type: string
+      required:
+        - html
+        - missing
+        - unknown
+    TemplateVariable:
+      type: object
+      properties:
+        key:
+          type: string
+        group:
+          type: string
+          enum:
+            - billing
+            - document
+            - landlord
+            - money
+            - occupants
+            - payment
+            - room
+            - rules
+            - services
+            - tenant
+            - term
+            - vehicles
+        label:
+          type: string
+        description:
+          type: string
+        example:
+          type: string
+        required:
+          type: boolean
+        format:
+          type: string
+          enum:
+            - html
+            - table
+            - text
+      required:
+        - key
+        - group
+        - label
+        - description
+        - example
+        - required
+        - format
     TenantContractRef:
       type: object
       properties:

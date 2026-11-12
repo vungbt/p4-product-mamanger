@@ -1130,6 +1130,172 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/contract-template-variables': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Biến của mẫu văn bản
+     * @description Nhóm, mô tả, ví dụ, bắt buộc hay không.
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_contract_template_variables'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contract-template-versions/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Một phiên bản mẫu
+     * @description Xem lại hoặc khôi phục (lưu thành phiên bản mới).
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_contract_template_versions_id'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contract-templates': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Danh sách mẫu văn bản
+     * @description Mẫu dùng chung (`buildingId: null`) và mẫu của các toà được đọc; lọc `buildingId`, `kind`.
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_contract_templates'];
+    put?: never;
+    /**
+     * Tạo mẫu văn bản
+     * @description manage Settings. `source`: `default` (Hợp đồng thuê phòng trọ mặc định), `blank`, `copy` (`copyFromId`) hoặc `html` (`bodyHtml`, ví dụ sau khi nhập Word). HTML được lọc theo allowlist.
+     *
+     *     **Quyền:** `manage:Settings`.
+     */
+    post: operations['post_api_contract_templates'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contract-templates/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chi tiết mẫu
+     * @description Nội dung phiên bản đang dùng và lịch sử phiên bản.
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_contract_templates_id'];
+    /**
+     * Đổi tên / tắt mẫu
+     * @description Mẫu đã dùng không xoá được, chỉ tắt. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Settings`.
+     */
+    put: operations['put_api_contract_templates_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contract-templates/{id}/preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Xem trước mẫu
+     * @description `bodyHtml` (nội dung chưa lưu) hoặc phiên bản đang dùng, điền dữ liệu mẫu hoặc `contractId`. Trả `missing` (biến bắt buộc thiếu dữ liệu) và `unknown` (biến không hợp lệ).
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    post: operations['post_api_contract_templates_id_preview'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contract-templates/{id}/versions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Lưu phiên bản mới
+     * @description Tạo phiên bản mới và đặt làm phiên bản đang dùng; văn bản đã tạo giữ phiên bản cũ. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Settings`.
+     */
+    post: operations['post_api_contract_templates_id_versions'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contract-templates/import-docx': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Nhập mẫu từ file Word
+     * @description manage Settings; multipart `file` (.docx ≤ 5 MB, kiểm tra chữ ký ZIP). Chuyển sang HTML của trình soạn (tiêu đề, đoạn, bảng, đậm/nghiêng/gạch chân, danh sách, căn giữa/phải), bỏ ảnh và phần không hỗ trợ, tô vàng chỗ trống (`……`, `....`, `___`, `[Họ tên]`). Không lưu file.
+     *
+     *     **Quyền:** `manage:Settings`.
+     */
+    post: operations['post_api_contract_templates_import_docx'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/contracts': {
     parameters: {
       query?: never;
@@ -1266,6 +1432,34 @@ export interface paths {
      *     **Quyền:** `manage:Deposit`.
      */
     post: operations['post_api_contracts_id_deposits'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/contracts/{id}/documents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Văn bản của hợp đồng
+     * @description Mới nhất trước; `expired` khi link ký quá 14 ngày.
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_contracts_id_documents'];
+    put?: never;
+    /**
+     * Tạo văn bản từ mẫu
+     * @description Điền phiên bản đang dùng của mẫu bằng snapshot dữ liệu hợp đồng (sửa hợp đồng sau đó không đổi văn bản). Biến bắt buộc thiếu dữ liệu được đánh dấu và liệt kê ở `missing`; hợp đồng ended/cancelled trả 409.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_contracts_id_documents'];
     delete?: never;
     options?: never;
     head?: never;
@@ -1580,6 +1774,186 @@ export interface paths {
     get: operations['get_api_deposits'];
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/documents/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Chi tiết văn bản
+     * @description Nội dung, người ký, sự kiện (IP, thiết bị) và mã băm.
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_documents_id'];
+    /**
+     * Sửa bản nháp
+     * @description `bodyHtml` (đánh dấu đã sửa tay) hoặc `regenerate: true` (điền lại từ mẫu với dữ liệu mới). Chỉ bản nháp; đã gửi hoặc đã có người ký trả 409 `document_locked`. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    put: operations['put_api_documents_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/documents/{id}/cancel': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Huỷ văn bản
+     * @description Văn bản chưa hoàn tất; link ký ngừng hoạt động. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_documents_id_cancel'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/documents/{id}/owner-sign': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Chủ trọ ký
+     * @description Chỉ bên cho thuê của văn bản; xác nhận lại mật khẩu (sai trả 422 `password_invalid`, 10 lần/phút), áp chữ ký mẫu. Bản nháp → `owner_signed` (ký trước), `signed_by_tenant` → `completed` và sinh PDF cuối cùng.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_documents_id_owner_sign'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/documents/{id}/paper': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Đánh dấu đã ký giấy
+     * @description multipart `file` (PDF/JPG/PNG ≤ 10 MB), `signedOn`, `version`. Văn bản chuyển `completed_paper`.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_documents_id_paper'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/documents/{id}/pdf': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Tải PDF
+     * @description Bản hoàn tất: file đã lưu (khớp `pdfSha256`); chưa hoàn tất: render có chữ "BẢN NHÁP".
+     *
+     *     **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_documents_id_pdf'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/documents/{id}/scan': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Tải bản scan ký giấy
+     * @description **Quyền:** `read:Contract`.
+     */
+    get: operations['get_api_documents_id_scan'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/documents/{id}/send': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Gửi ký
+     * @description Thiếu dữ liệu bắt buộc trả 422 `document_missing_fields` (`extensions.missing`). Khoá nội dung (SHA-256), người đại diện là người ký bắt buộc, `coSignerTenantIds` là người ở cùng ký tuỳ chọn; link ký trong cổng người thuê hết hạn sau 14 ngày. Gửi lại gia hạn link.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_documents_id_send'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/documents/{id}/supersede': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Tạo văn bản thay thế
+     * @description Chỉ văn bản đã hoàn tất. Tạo bản nháp mới từ cùng mẫu; văn bản cũ chuyển `superseded` khi bản mới hoàn tất.
+     *
+     *     **Quyền:** `update:Contract`.
+     */
+    post: operations['post_api_documents_id_supersede'];
     delete?: never;
     options?: never;
     head?: never;
@@ -2390,6 +2764,116 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/portal/documents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Văn bản của tôi (T-13)
+     * @description Văn bản chờ mình ký lên đầu.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_documents'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/documents/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Đọc văn bản (T-12)
+     * @description Chỉ người ký đọc được nội dung (có CCCD). Lần mở đầu tiên ghi sự kiện `viewed`.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_documents_id'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/documents/{id}/pdf': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Tải PDF đã hoàn tất
+     * @description Chỉ người ký của văn bản.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_documents_id_pdf'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/documents/{id}/reject': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Từ chối ký
+     * @description Lý do bắt buộc; văn bản chuyển `rejected`.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_documents_id_reject'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/documents/{id}/sign': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Ký văn bản
+     * @description `agree: true`, `fullName` khớp hồ sơ (không phân biệt hoa thường/khoảng trắng), `phoneLast4`, `method` `drawn` (`signatureImage` data URL PNG) hoặc `typed`. Sai 5 lần khoá 15 phút (429). Link hết hạn trả 410.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_documents_id_sign'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/portal/invoices': {
     parameters: {
       query?: never;
@@ -2860,6 +3344,34 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/public/documents/verify/{code}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Kiểm tra văn bản (công khai)
+     * @description **Công khai**, 30 lần/phút. Loại, toà, trạng thái, số người đã ký; không có nội dung, tên hay CCCD.
+     *
+     *     **Công khai.**
+     */
+    get: operations['get_api_public_documents_verify_code'];
+    put?: never;
+    /**
+     * So khớp file PDF
+     * @description **Công khai**, 10 lần/phút. multipart `file`; so SHA-256 với PDF cuối cùng đã lưu.
+     *
+     *     **Công khai.**
+     */
+    post: operations['post_api_public_documents_verify_code'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/public/invoices/{token}': {
     parameters: {
       query?: never;
@@ -3251,6 +3763,34 @@ export interface paths {
      *     **Quyền:** `manage:Settings`.
      */
     put: operations['put_api_settings'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/settings/landlord': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Thông tin bên cho thuê
+     * @description manage Settings (chủ trọ). Hồ sơ của tài khoản đang đăng nhập; `version: 0` khi chưa lưu. `signatureImage` là data URL PNG/JPG (riêng tư).
+     *
+     *     **Quyền:** `manage:Settings`.
+     */
+    get: operations['get_api_settings_landlord'];
+    /**
+     * Lưu thông tin bên cho thuê
+     * @description CCCD 12 số, SĐT 10 số. `signatureImage`: data URL PNG/JPG ≤ 200 KB (vẽ hoặc tải ảnh), `null` để xoá, bỏ trống để giữ. Audit chỉ ghi tên trường đã đổi. Gửi lại `version` (0 khi tạo).
+     *
+     *     **Quyền:** `manage:Settings`.
+     */
+    put: operations['put_api_settings_landlord'];
     post?: never;
     delete?: never;
     options?: never;
@@ -3843,6 +4383,86 @@ export interface components {
       contract: components['schemas']['StayContract'] | null;
       impact: components['schemas']['ContractChangePreview'];
     };
+    ContractDocumentDetail: {
+      bodyHtml: string;
+      buildingId: string;
+      cancelReason: string | null;
+      canOwnerSign: boolean;
+      code: string;
+      completedAt: string | null;
+      contractId: string;
+      createdAt: string;
+      dataSha256: string | null;
+      editedManually: boolean;
+      events: components['schemas']['DocumentEvent'][];
+      hasPaperScan: boolean;
+      hasPdf: boolean;
+      id: string;
+      /** @enum {string} */
+      kind: 'addendum' | 'contract' | 'handover' | 'settlement';
+      missing: string[];
+      occupants: {
+        name: string;
+        primary: boolean;
+        tenantId: string;
+      }[];
+      pdfSha256: string | null;
+      sentAt: string | null;
+      signers: components['schemas']['DocumentSigner'][];
+      /** @enum {string} */
+      signingOrder: 'owner_first' | 'tenant_first';
+      /** @enum {string} */
+      status:
+        | 'cancelled'
+        | 'completed'
+        | 'completed_paper'
+        | 'draft'
+        | 'expired'
+        | 'owner_signed'
+        | 'rejected'
+        | 'sent'
+        | 'signed_by_tenant'
+        | 'superseded'
+        | 'viewed';
+      supersededById: string | null;
+      supersedesId: string | null;
+      templateId: string | null;
+      templateName: string | null;
+      templateVersion: number | null;
+      title: string;
+      updatedAt: string;
+      version: number;
+    };
+    ContractDocumentSummary: {
+      buildingId: string;
+      code: string;
+      completedAt: string | null;
+      contractId: string;
+      createdAt: string;
+      editedManually: boolean;
+      id: string;
+      /** @enum {string} */
+      kind: 'addendum' | 'contract' | 'handover' | 'settlement';
+      sentAt: string | null;
+      /** @enum {string} */
+      signingOrder: 'owner_first' | 'tenant_first';
+      /** @enum {string} */
+      status:
+        | 'cancelled'
+        | 'completed'
+        | 'completed_paper'
+        | 'draft'
+        | 'expired'
+        | 'owner_signed'
+        | 'rejected'
+        | 'sent'
+        | 'signed_by_tenant'
+        | 'superseded'
+        | 'viewed';
+      title: string;
+      updatedAt: string;
+      version: number;
+    };
     ContractEvent: {
       actorId: string;
       actorName: string;
@@ -3952,6 +4572,53 @@ export interface components {
       replayed: boolean;
       tenantPays: number;
     };
+    ContractTemplateDetail: {
+      active: boolean;
+      activeVersion: number;
+      activeVersionId: string;
+      bodyHtml: string;
+      buildingId: string | null;
+      buildingName: string | null;
+      documentCount: number;
+      id: string;
+      /** @enum {string} */
+      kind: 'addendum' | 'contract' | 'handover' | 'settlement';
+      name: string;
+      updatedAt: string;
+      version: number;
+      versions: components['schemas']['ContractTemplateVersion'][];
+    };
+    ContractTemplateSummary: {
+      active: boolean;
+      activeVersion: number;
+      buildingId: string | null;
+      buildingName: string | null;
+      documentCount: number;
+      id: string;
+      /** @enum {string} */
+      kind: 'addendum' | 'contract' | 'handover' | 'settlement';
+      name: string;
+      updatedAt: string;
+      version: number;
+    };
+    ContractTemplateVersion: {
+      createdAt: string;
+      createdByName: string | null;
+      id: string;
+      note: string | null;
+      variablesUsed: string[];
+      version: number;
+    };
+    ContractTemplateVersionDetail: {
+      bodyHtml: string;
+      createdAt: string;
+      createdByName: string | null;
+      id: string;
+      note: string | null;
+      templateId: string;
+      variablesUsed: string[];
+      version: number;
+    };
     ContractVehicle: {
       fromDate: string;
       plate: string;
@@ -4011,6 +4678,80 @@ export interface components {
       roomCode: string;
       /** @enum {string} */
       status: 'active' | 'cancelled' | 'draft' | 'ended' | 'ending';
+    };
+    DocumentEvent: {
+      actorName: string | null;
+      createdAt: string;
+      id: string;
+      ip: string | null;
+      signerId: string | null;
+      /** @enum {string} */
+      type:
+        | 'cancelled'
+        | 'completed'
+        | 'created'
+        | 'downloaded'
+        | 'edited'
+        | 'owner_signed'
+        | 'paper'
+        | 'rejected'
+        | 'sent'
+        | 'signed'
+        | 'superseded'
+        | 'verification_failed'
+        | 'viewed';
+      userAgent: string | null;
+    };
+    DocumentFileCheck: {
+      code: string;
+      matches: boolean;
+      sha256: string;
+    };
+    DocumentSigner: {
+      expiresAt: string | null;
+      id: string;
+      lockedUntil: string | null;
+      /** @enum {string|null} */
+      method: 'drawn' | 'stored' | 'typed' | null;
+      name: string;
+      rejectReason: string | null;
+      required: boolean;
+      /** @enum {string} */
+      role: 'owner' | 'tenant';
+      signedAt: string | null;
+      /** @enum {string} */
+      status: 'pending' | 'rejected' | 'signed' | 'viewed';
+      tenantId: string | null;
+      userId: string | null;
+      viewedAt: string | null;
+    };
+    DocumentVerification: {
+      buildingName: string;
+      code: string;
+      completedAt: string | null;
+      /** @enum {string} */
+      kind: 'addendum' | 'contract' | 'handover' | 'settlement';
+      pdfSha256: string | null;
+      signedCount: number;
+      signerCount: number;
+      /** @enum {string} */
+      status:
+        | 'cancelled'
+        | 'completed'
+        | 'completed_paper'
+        | 'draft'
+        | 'expired'
+        | 'owner_signed'
+        | 'rejected'
+        | 'sent'
+        | 'signed_by_tenant'
+        | 'superseded'
+        | 'viewed';
+    };
+    DocxImportResult: {
+      blanks: number;
+      bodyHtml: string;
+      warnings: string[];
     };
     DuplicateTenantRef: {
       /** @enum {string} */
@@ -4144,6 +4885,18 @@ export interface components {
       reason: string;
       version?: number;
     };
+    LandlordProfile: {
+      birthDate: string | null;
+      fullName: string;
+      idIssuedAt: string | null;
+      idIssuedBy: string | null;
+      idNumber: string | null;
+      permanentAddress: string | null;
+      phone: string | null;
+      signatureImage: string | null;
+      signatureUpdatedAt: string | null;
+      version: number;
+    };
     MaintenanceHistory: {
       at: string;
       /** @enum {string} */
@@ -4219,14 +4972,28 @@ export interface components {
     };
     NotificationPreferences: {
       email: boolean;
-      mutedGroups: ('announcements' | 'invoices' | 'payments' | 'reminders' | 'requests')[];
+      mutedGroups: (
+        | 'announcements'
+        | 'documents'
+        | 'invoices'
+        | 'payments'
+        | 'reminders'
+        | 'requests'
+      )[];
       push: boolean;
     };
     NotificationSettings: {
       email: boolean;
       emailAvailable: boolean;
       hasEmail: boolean;
-      mutedGroups: ('announcements' | 'invoices' | 'payments' | 'reminders' | 'requests')[];
+      mutedGroups: (
+        | 'announcements'
+        | 'documents'
+        | 'invoices'
+        | 'payments'
+        | 'reminders'
+        | 'requests'
+      )[];
       push: boolean;
       pushPublicKey: string | null;
       pushSubscriptions: number;
@@ -4339,6 +5106,69 @@ export interface components {
       name: string;
       price: number;
       unit: string;
+    };
+    PortalDocument: {
+      awaitingMe: boolean;
+      bodyHtml: string | null;
+      code: string;
+      completedAt: string | null;
+      expiresAt: string | null;
+      hasPdf: boolean;
+      id: string;
+      /** @enum {string} */
+      kind: 'addendum' | 'contract' | 'handover' | 'settlement';
+      lockedUntil: string | null;
+      myName: string | null;
+      /** @enum {string|null} */
+      myStatus: 'pending' | 'rejected' | 'signed' | 'viewed' | null;
+      sentAt: string | null;
+      signers: {
+        name: string;
+        /** @enum {string} */
+        role: 'owner' | 'tenant';
+        signedAt: string | null;
+        /** @enum {string} */
+        status: 'pending' | 'rejected' | 'signed' | 'viewed';
+      }[];
+      /** @enum {string} */
+      status:
+        | 'cancelled'
+        | 'completed'
+        | 'completed_paper'
+        | 'draft'
+        | 'expired'
+        | 'owner_signed'
+        | 'rejected'
+        | 'sent'
+        | 'signed_by_tenant'
+        | 'superseded'
+        | 'viewed';
+      title: string;
+    };
+    PortalDocumentSummary: {
+      awaitingMe: boolean;
+      code: string;
+      completedAt: string | null;
+      id: string;
+      /** @enum {string} */
+      kind: 'addendum' | 'contract' | 'handover' | 'settlement';
+      /** @enum {string|null} */
+      myStatus: 'pending' | 'rejected' | 'signed' | 'viewed' | null;
+      sentAt: string | null;
+      /** @enum {string} */
+      status:
+        | 'cancelled'
+        | 'completed'
+        | 'completed_paper'
+        | 'draft'
+        | 'expired'
+        | 'owner_signed'
+        | 'rejected'
+        | 'sent'
+        | 'signed_by_tenant'
+        | 'superseded'
+        | 'viewed';
+      title: string;
     };
     PortalInvoice: {
       buildingAddress: string | null;
@@ -4454,6 +5284,10 @@ export interface components {
       kind:
         | 'announcement.created'
         | 'automation'
+        | 'document.completed'
+        | 'document.rejected'
+        | 'document.sent'
+        | 'document.signed'
         | 'drafts.ready'
         | 'invoice.due_soon'
         | 'invoice.issued'
@@ -5196,6 +6030,10 @@ export interface components {
       kind:
         | 'announcement.created'
         | 'automation'
+        | 'document.completed'
+        | 'document.rejected'
+        | 'document.sent'
+        | 'document.signed'
         | 'drafts.ready'
         | 'invoice.due_soon'
         | 'invoice.issued'
@@ -5506,6 +6344,34 @@ export interface components {
       permissionGroups?: ('billing' | 'operations' | 'payments' | 'readings')[];
       /** @enum {string} */
       role: 'manager' | 'owner' | 'tenant';
+    };
+    TemplatePreview: {
+      html: string;
+      missing: string[];
+      unknown: string[];
+    };
+    TemplateVariable: {
+      description: string;
+      example: string;
+      /** @enum {string} */
+      format: 'html' | 'table' | 'text';
+      /** @enum {string} */
+      group:
+        | 'billing'
+        | 'document'
+        | 'landlord'
+        | 'money'
+        | 'occupants'
+        | 'payment'
+        | 'room'
+        | 'rules'
+        | 'services'
+        | 'tenant'
+        | 'term'
+        | 'vehicles';
+      key: string;
+      label: string;
+      required: boolean;
     };
     TenantContractRef: {
       code: string;
@@ -10174,6 +11040,312 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_contract_template_variables: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TemplateVariable'][];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_contract_template_versions_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractTemplateVersionDetail'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_contract_templates: {
+    parameters: {
+      query?: {
+        buildingId?: string;
+        kind?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractTemplateSummary'][];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contract_templates: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          bodyHtml?: string;
+          buildingId?: string;
+          copyFromId?: string;
+          /** @enum {string} */
+          kind?: 'addendum' | 'contract' | 'handover' | 'settlement';
+          name?: string;
+          /** @enum {string} */
+          source: 'blank' | 'copy' | 'default' | 'html';
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractTemplateDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_contract_templates_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractTemplateDetail'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_contract_templates_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          active: boolean;
+          name: string;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractTemplateDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contract_templates_id_preview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        'application/json': {
+          bodyHtml?: string;
+          contractId?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['TemplatePreview'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contract_templates_id_versions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          bodyHtml: string;
+          note?: string;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractTemplateDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contract_templates_import_docx: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'multipart/form-data': {
+          /** Format: binary */
+          file: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['DocxImportResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_contracts: {
     parameters: {
       query?: {
@@ -10480,6 +11652,73 @@ export interface operations {
           'application/json': components['schemas']['ApiError'];
         };
       };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_contracts_id_documents: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractDocumentSummary'][];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_contracts_id_documents: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          templateId: string;
+          title?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractDocumentDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -11103,6 +12342,310 @@ export interface operations {
       400: components['responses']['ValidationError'];
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_documents_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractDocumentDetail'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_documents_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          bodyHtml?: string;
+          regenerate?: boolean;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractDocumentDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_documents_id_cancel: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          reason: string;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractDocumentDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_documents_id_owner_sign: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          password: string;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractDocumentDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_documents_id_paper: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'multipart/form-data': {
+          /** Format: binary */
+          file: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractDocumentDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_documents_id_pdf: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description File PDF (attachment, `Cache-Control: private, no-store`). */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/pdf': string;
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_documents_id_scan: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Bản scan ký giấy (PDF/JPG/PNG). */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/pdf': string;
+          'image/jpeg': string;
+          'image/png': string;
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_documents_id_send: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          coSignerTenantIds?: string[];
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractDocumentDetail'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_documents_id_supersede: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['ContractDocumentDetail'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -12621,6 +14164,202 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_portal_documents: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalDocumentSummary'][];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_documents_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalDocument'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_documents_id_pdf: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description File PDF (attachment, `Cache-Control: private, no-store`). */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/pdf': string;
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_documents_id_reject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          reason: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalDocument'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_documents_id_sign: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          agree: boolean;
+          fullName: string;
+          /** @enum {string} */
+          method: 'drawn' | 'typed';
+          phoneLast4: string;
+          /** @description data URL `data:image/png;base64,…` (PNG/JPG ≤ 200 KB) */
+          signatureImage?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalDocument'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_portal_invoices: {
     parameters: {
       query?: never;
@@ -13547,6 +15286,69 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_public_documents_verify_code: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        code: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['DocumentVerification'];
+            message?: string;
+          };
+        };
+      };
+      404: components['responses']['NotFound'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_public_documents_verify_code: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        code: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'multipart/form-data': {
+          /** Format: binary */
+          file: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['DocumentFileCheck'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   get_api_public_invoices_token: {
     parameters: {
       query?: never;
@@ -14318,6 +16120,77 @@ export interface operations {
         content: {
           'application/json': {
             data: components['schemas']['StaySettings'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_settings_landlord: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['LandlordProfile'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_settings_landlord: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          /** Format: date */
+          birthDate?: string | null;
+          fullName: string;
+          /** Format: date */
+          idIssuedAt?: string | null;
+          idIssuedBy?: string;
+          idNumber?: string;
+          permanentAddress?: string;
+          phone?: string;
+          /** @description data URL `data:image/png;base64,…` (PNG/JPG ≤ 200 KB) */
+          signatureImage?: string | null;
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['LandlordProfile'];
             message?: string;
           };
         };

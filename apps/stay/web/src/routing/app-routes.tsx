@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import { appRoutes, ROUTES } from './route-configs';
 import { GuestOnly, PageSpinner, RequireAbility, RequireAuth } from './route-guards';
 
+const VerifyDocumentPage = lazy(() => import('@/modules/documents/verify-page'));
 const ResetPasswordPage = lazy(() => import('@/modules/login/reset-password-page'));
 const LoginPage = lazy(() => import('@/modules/login/page'));
 const AppLayout = lazy(() => import('@/modules/layout/app-layout'));
@@ -11,6 +12,8 @@ const PublicInvoicePage = lazy(() => import('@/modules/invoices/share/public-pag
 const PortalLayout = lazy(() => import('@/modules/portal/portal-layout'));
 const PortalEntryPage = lazy(() => import('@/modules/portal/entry-page'));
 const PortalSignedOutPage = lazy(() => import('@/modules/portal/signed-out-page'));
+const PortalDocumentsPage = lazy(() => import('@/modules/portal/documents-page'));
+const PortalDocumentPage = lazy(() => import('@/modules/portal/document-page'));
 const PortalHomePage = lazy(() => import('@/modules/portal/home-page'));
 const PortalInvoicesPage = lazy(() => import('@/modules/portal/invoices-page'));
 const PortalInvoicePage = lazy(() => import('@/modules/portal/invoice-page'));
@@ -35,6 +38,7 @@ function LazyPage({ component: Page }: { component: LazyExoticComponent<Componen
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/verify/:code" element={<LazyPage component={VerifyDocumentPage} />} />
       {/* T-01 shared invoice: public, outside the signed-in shell (works signed in or out). */}
       <Route path={ROUTES.publicInvoice} element={<LazyPage component={PublicInvoicePage} />} />
 
@@ -45,6 +49,8 @@ export default function AppRoutes() {
         <Route index element={<LazyPage component={PortalHomePage} />} />
         <Route path="invoices" element={<LazyPage component={PortalInvoicesPage} />} />
         <Route path="invoices/:id" element={<LazyPage component={PortalInvoicePage} />} />
+        <Route path="documents" element={<LazyPage component={PortalDocumentsPage} />} />
+        <Route path="documents/:id" element={<LazyPage component={PortalDocumentPage} />} />
         <Route path="contract" element={<LazyPage component={PortalContractPage} />} />
         <Route path="usage" element={<LazyPage component={PortalUsagePage} />} />
         <Route path="notices" element={<LazyPage component={PortalNoticesPage} />} />
