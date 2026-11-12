@@ -19,6 +19,7 @@ import {
 } from '@stay/shared';
 import { Op, Transaction, type WhereOptions } from 'sequelize';
 import { accessibleBuildingIds, canAccessRecord } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import type { ContractAttributes } from '@/sequelize/models/contract.model.js';
 import {
   ContractModel,
@@ -71,7 +72,8 @@ export function depositBalance(entries: Pick<DepositEntry, 'type' | 'amount'>[])
 }
 
 async function findContract(user: StayUser, id: string, transaction: Transaction, write = false) {
-  const row = await ContractModel.findByPk(id, {
+  const row = await ContractModel.findOne({
+    where: { [Op.and]: [{ id }, accessibleWhere(user, write ? 'manage' : 'read', 'Deposit')] },
     transaction,
     ...(write ? { lock: transaction.LOCK.UPDATE } : {}),
   });
@@ -130,6 +132,7 @@ export async function listDeposits(
     throw new NotFound();
   const ids = accessibleBuildingIds(user, 'read');
   const conditions: WhereOptions<ContractAttributes>[] = [
+    accessibleWhere(user, 'read', 'Deposit'),
     listSearch(ContractModel, query.q, ['code']),
   ];
 

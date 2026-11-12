@@ -43,6 +43,7 @@ import {
 } from '@stay/shared';
 import { Op, type Transaction, type WhereOptions } from 'sequelize';
 import { canAccessRecord, hasAccess } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import {
   BuildingModel,
   ContractModel,
@@ -125,7 +126,10 @@ export async function findInvoice(
   action: StayAction,
   transaction?: Transaction,
 ) {
-  const row = await InvoiceModel.findByPk(id, { transaction });
+  const row = await InvoiceModel.findOne({
+    where: { [Op.and]: [{ id }, accessibleWhere(user, action, 'Invoice')] },
+    transaction,
+  });
 
   if (
     !row ||
@@ -714,7 +718,10 @@ export async function listInvoices(
   const scope = readableScope(user);
   const now = today();
   const defaults = await billingDefaults();
-  const conditions: WhereOptions<InvoiceAttributes>[] = scope ? [scope] : [];
+  const conditions: WhereOptions<InvoiceAttributes>[] = [
+    accessibleWhere(user, 'read', 'Invoice'),
+    ...(scope ? [scope] : []),
+  ];
 
   if (query.buildingId) conditions.push({ buildingId: query.buildingId });
   if (query.contractId) conditions.push({ contractId: query.contractId });
@@ -936,7 +943,7 @@ export async function issueInvoices(user: StayUser, ids: string[]): Promise<Invo
   return auditedTransaction(async (transaction) => {
     const unique = [...new Set(ids)].sort();
     const found = await InvoiceModel.findAll({
-      where: { id: { [Op.in]: unique } },
+      where: { [Op.and]: [{ id: { [Op.in]: unique } }, accessibleWhere(user, 'issue', 'Invoice')] },
       transaction,
     });
 

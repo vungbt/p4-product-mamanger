@@ -1936,6 +1936,90 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/members': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Người quản lý theo toà
+     * @description **Quyền:** `manage:Member`.
+     */
+    get: operations['get_api_members'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/members/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Gán toà và quyền
+     * @description Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Member`.
+     */
+    put: operations['put_api_members_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/members/{id}/disable': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Khoá người quản lý và thu hồi mọi phiên
+     * @description **Quyền:** `manage:Member`.
+     */
+    post: operations['post_api_members_id_disable'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/members/invitations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Mời người quản lý
+     * @description Tạo tài khoản và xếp lời mời vào outbox; không nâng quyền tài khoản đã tồn tại.
+     *
+     *     **Quyền:** `manage:Member`.
+     */
+    post: operations['post_api_members_invitations'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/meters/{id}/replace': {
     parameters: {
       query?: never;
@@ -3398,7 +3482,7 @@ export interface components {
       /** @enum {string} */
       readingDayMonth: 'next' | 'same';
       refundUnusedRent: boolean;
-      roundingUnit: 1 | 1000 | 100;
+      roundingUnit: 1 | 100 | 1000;
     };
     BuildingPriceList: {
       buildingId: string;
@@ -3763,6 +3847,15 @@ export interface components {
     InvoiceVoidInput: {
       reason: string;
       version?: number;
+    };
+    MemberInput: {
+      buildingIds: string[];
+      permissionGroups: ('billing' | 'operations' | 'payments' | 'readings')[];
+    };
+    MemberInvitationInput: {
+      buildingIds: string[];
+      email: string;
+      permissionGroups: ('billing' | 'operations' | 'payments' | 'readings')[];
     };
     MeterReadingInput: {
       confirmHighConsumption?: boolean;
@@ -4463,7 +4556,7 @@ export interface components {
       /** @enum {string|null} */
       readingDayMonth: 'next' | 'same' | null;
       refundUnusedRent: boolean | null;
-      roundingUnit: (1 | 1000 | 100) | null;
+      roundingUnit: (1 | 100 | 1000) | null;
       rulesText: string | null;
       stats: components['schemas']['BuildingStats'];
       updatedAt: string;
@@ -4489,7 +4582,7 @@ export interface components {
       /** @enum {string|null} */
       readingDayMonth: 'next' | 'same' | null;
       refundUnusedRent: boolean | null;
-      roundingUnit: (1 | 1000 | 100) | null;
+      roundingUnit: (1 | 100 | 1000) | null;
       rulesText: string | null;
       stats: components['schemas']['BuildingStats'];
       updatedAt: string;
@@ -4674,6 +4767,17 @@ export interface components {
     };
     StayMe: {
       user: components['schemas']['StayUser'];
+    };
+    StayMember: {
+      /** @enum {string} */
+      accountStatus: 'active' | 'blocked';
+      buildingIds: string[];
+      buildingNames: string[];
+      displayName: string;
+      email: string;
+      id: string;
+      permissionGroups: ('billing' | 'operations' | 'payments' | 'readings')[];
+      version: number;
     };
     StayMeterReading: {
       id: string;
@@ -4898,7 +5002,7 @@ export interface components {
       /** @enum {string} */
       readingDayMonth: 'next' | 'same';
       refundUnusedRent: boolean;
-      roundingUnit: 1 | 1000 | 100;
+      roundingUnit: 1 | 100 | 1000;
       transferContentTemplate: string;
       version: number;
     };
@@ -4987,6 +5091,7 @@ export interface components {
       email: string;
       emailVerified: boolean;
       id: string;
+      permissionGroups?: ('billing' | 'operations' | 'payments' | 'readings')[];
       /** @enum {string} */
       role: 'manager' | 'owner' | 'tenant';
     };
@@ -11252,6 +11357,139 @@ export interface operations {
       };
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_members: {
+    parameters: {
+      query?: {
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'email' | 'displayName';
+        sortOrder?: 'asc' | 'desc';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMember'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_members_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MemberInput'] & {
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMember'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_members_id_disable: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMember'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_members_invitations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MemberInvitationInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMember'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };
   };

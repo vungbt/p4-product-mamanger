@@ -42,6 +42,8 @@ tags:
       hành (cấp mã, khoá chỉ số), void. Mọi số tiền tính bằng `@stay/billing` tại server; dòng hoá đơn là snapshot."
   - name: me
     description: Người dùng hiện tại và quyền CASL.
+  - name: members
+    description: "Người quản lý theo toà: mời qua email, gán toà/nhóm quyền và khoá tài khoản; chỉ chủ trọ."
   - name: operations
     description: Kiểm tra trạng thái dịch vụ.
   - name: overview
@@ -4089,6 +4091,224 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/members:
+    get:
+      tags:
+        - members
+      operationId: get_api_members
+      summary: Người quản lý theo toà
+      description: "**Quyền:** `manage:Member`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - email
+              - displayName
+            default: email
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayMember"
+                  message:
+                    type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/members/invitations:
+    post:
+      tags:
+        - members
+      operationId: post_api_members_invitations
+      summary: Mời người quản lý
+      description: |-
+        Tạo tài khoản và xếp lời mời vào outbox; không nâng quyền tài khoản đã tồn tại.
+
+        **Quyền:** `manage:Member`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberInvitationInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMember"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/members/{id}:
+    put:
+      tags:
+        - members
+      operationId: put_api_members_id
+      summary: Gán toà và quyền
+      description: |-
+        Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+
+        **Quyền:** `manage:Member`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/MemberInput"
+                - type: object
+                  required:
+                    - version
+                  properties:
+                    version:
+                      type: integer
+                      minimum: 0
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMember"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/members/{id}/disable:
+    post:
+      tags:
+        - members
+      operationId: post_api_members_id_disable
+      summary: Khoá người quản lý và thu hồi mọi phiên
+      description: "**Quyền:** `manage:Member`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMember"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/RateLimited"
   /api/settings:
@@ -12517,10 +12737,10 @@ components:
                 - 1
             - type: number
               enum:
-                - 1000
+                - 100
             - type: number
               enum:
-                - 100
+                - 1000
         refundUnusedRent:
           type: boolean
       required:
@@ -13668,6 +13888,47 @@ components:
           type: number
       required:
         - reason
+    MemberInput:
+      type: object
+      properties:
+        buildingIds:
+          type: array
+          items:
+            type: string
+        permissionGroups:
+          type: array
+          items:
+            type: string
+            enum:
+              - billing
+              - operations
+              - payments
+              - readings
+      required:
+        - buildingIds
+        - permissionGroups
+    MemberInvitationInput:
+      type: object
+      properties:
+        email:
+          type: string
+        buildingIds:
+          type: array
+          items:
+            type: string
+        permissionGroups:
+          type: array
+          items:
+            type: string
+            enum:
+              - billing
+              - operations
+              - payments
+              - readings
+      required:
+        - email
+        - buildingIds
+        - permissionGroups
     MeterReadingInput:
       type: object
       properties:
@@ -15757,10 +16018,10 @@ components:
                     - 1
                 - type: number
                   enum:
-                    - 1000
+                    - 100
                 - type: number
                   enum:
-                    - 100
+                    - 1000
             - type: "null"
         refundUnusedRent:
           type:
@@ -15869,10 +16130,10 @@ components:
                     - 1
                 - type: number
                   enum:
-                    - 1000
+                    - 100
                 - type: number
                   enum:
-                    - 100
+                    - 1000
             - type: "null"
         refundUnusedRent:
           type:
@@ -16511,6 +16772,48 @@ components:
           $ref: "#/components/schemas/StayUser"
       required:
         - user
+    StayMember:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        accountStatus:
+          type: string
+          enum:
+            - active
+            - blocked
+        buildingNames:
+          type: array
+          items:
+            type: string
+        version:
+          type: number
+        email:
+          type: string
+        buildingIds:
+          type: array
+          items:
+            type: string
+        permissionGroups:
+          type: array
+          items:
+            type: string
+            enum:
+              - billing
+              - operations
+              - payments
+              - readings
+      required:
+        - id
+        - displayName
+        - accountStatus
+        - buildingNames
+        - version
+        - email
+        - buildingIds
+        - permissionGroups
     StayMeterReading:
       type: object
       properties:
@@ -17184,10 +17487,10 @@ components:
                 - 1
             - type: number
               enum:
-                - 1000
+                - 100
             - type: number
               enum:
-                - 100
+                - 1000
         refundUnusedRent:
           type: boolean
       required:
@@ -17478,6 +17781,15 @@ components:
           type: array
           items:
             type: string
+        permissionGroups:
+          type: array
+          items:
+            type: string
+            enum:
+              - billing
+              - operations
+              - payments
+              - readings
       required:
         - id
         - email

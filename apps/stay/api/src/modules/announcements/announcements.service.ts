@@ -14,6 +14,7 @@ import type {
 } from '@stay/shared';
 import { Op, type Transaction, type WhereOptions } from 'sequelize';
 import { accessibleBuildingIds, canAccessRecord } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import type { AnnouncementAttributes } from '@/sequelize/models/announcement.model.js';
 import { AnnouncementModel, RoomModel, UserModel } from '@/sequelize/models/index.js';
 import { auditedTransaction, recordAudit } from '@/shared/audit.js';
@@ -87,7 +88,8 @@ function assertBuilding(user: StayUser, buildingId: string) {
 }
 
 async function findAnnouncement(user: StayUser, id: string, transaction: Transaction) {
-  const row = await AnnouncementModel.findByPk(id, {
+  const row = await AnnouncementModel.findOne({
+    where: { [Op.and]: [{ id }, accessibleWhere(user, 'update', 'Building')] },
     transaction,
     lock: transaction.LOCK.UPDATE,
   });
@@ -137,7 +139,9 @@ export async function listAnnouncements(
 ): Promise<{ data: StayAnnouncement[]; meta: PaginationMeta }> {
   if (query.buildingId) assertBuilding(user, query.buildingId);
   const scope = accessibleBuildingIds(user, 'update');
-  const conditions: WhereOptions<AnnouncementAttributes>[] = [];
+  const conditions: WhereOptions<AnnouncementAttributes>[] = [
+    accessibleWhere(user, 'update', 'Building'),
+  ];
   const now = new Date();
 
   if (scope !== 'all') conditions.push({ buildingId: { [Op.in]: scope } });

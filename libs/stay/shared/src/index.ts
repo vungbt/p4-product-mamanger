@@ -1,3 +1,4 @@
+export { rulesToCondition } from '@casl/ability/extra';
 export * from './ability.js';
 export * from './account.js';
 export * from './audit.js';
@@ -12,6 +13,7 @@ export * from './errors.js';
 export * from './expense.js';
 export * from './invoice.js';
 export * from './invoice-code.js';
+export * from './member.js';
 export * from './money.js';
 export * from './overview.js';
 export * from './payment.js';

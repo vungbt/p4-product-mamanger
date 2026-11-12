@@ -24,6 +24,8 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 - Mọi dữ liệu nghiệp vụ gắn \`buildingId\`; quyền kiểm tra theo toà.`;
 
 const TAG_DESCRIPTIONS = {
+  members:
+    'Người quản lý theo toà: mời qua email, gán toà/nhóm quyền và khoá tài khoản; chỉ chủ trọ.',
   automation:
     'Tự động hoá theo toà, chỉ tạo bản nháp; nhắc qua email và thông báo. Nhắc chủ trọ trước ngày chốt số `readingReminderDaysBefore` ngày (0 = tắt) và vào ngày chốt số, chỉ khi còn phòng thiếu chỉ số. Nhắc người thuê trước hạn 1 ngày và sau hạn 3 ngày, hoặc vào ngày đầu tiên quá hạn khi toà có `graceDays` > 0.',
   notifications: 'Thông báo nhân viên theo toà; trạng thái đã đọc riêng từng người.',
@@ -83,6 +85,13 @@ export const FILE_RESPONSES = {
 };
 
 const OPERATIONS = {
+  'GET /api/members': ['Người quản lý theo toà'],
+  'POST /api/members/invitations': [
+    'Mời người quản lý',
+    'Tạo tài khoản và xếp lời mời vào outbox; không nâng quyền tài khoản đã tồn tại.',
+  ],
+  'PUT /api/members/{id}': ['Gán toà và quyền', VERSION_NOTE],
+  'POST /api/members/{id}/disable': ['Khoá người quản lý và thu hồi mọi phiên'],
   'GET /api/buildings/{id}/automation': [
     'Cấu hình tự động hoá',
     'Chỉ toà được phép đọc. Mặc định tắt các job và tắt toàn bộ nhắc người thuê.',
@@ -662,6 +671,32 @@ const settlementBody = (name) => ({
   requestBody: { required: true, content: { 'application/json': { schema: { ref: name } } } },
 });
 const OVERRIDES = {
+  'GET /api/members': { list: true, response: { type: 'array', items: { ref: 'StayMember' } } },
+  'POST /api/members/invitations': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'MemberInvitationInput' } } },
+    },
+  },
+  'PUT /api/members/{id}': {
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            allOf: [
+              { ref: 'MemberInput' },
+              {
+                type: 'object',
+                required: ['version'],
+                properties: { version: { type: 'integer', minimum: 0 } },
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
   'GET /api/buildings/{id}/automation': { response: { ref: 'StayAutomationSettings' } },
   'PUT /api/buildings/{id}/automation': {
     response: { ref: 'StayAutomationSettings' },
@@ -1192,6 +1227,7 @@ export default {
     { file: 'libs/shared/src/index.ts', names: ['ApiError', 'PaginationMeta'] },
     'libs/stay/shared/src/ability.ts',
     'libs/stay/shared/src/account.ts',
+    'libs/stay/shared/src/member.ts',
     'libs/stay/shared/src/automation.ts',
     'libs/stay/shared/src/audit.ts',
     'libs/stay/shared/src/building.ts',

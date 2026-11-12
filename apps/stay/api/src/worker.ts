@@ -2,6 +2,7 @@ import { setTimeout } from 'node:timers/promises';
 import { logger } from '@p4/server-core';
 import { assertProductionConfig } from '@/configs/production.js';
 import { deliverAutomationMail, runAutomations } from '@/modules/automation/automation.jobs.js';
+import { deliverMemberInvitation } from '@/modules/members/members.jobs.js';
 import { sequelize } from '@/sequelize/models/index.js';
 
 let stopped = false;
@@ -23,7 +24,8 @@ async function main() {
           await runAutomations(new Date());
           lastSweep = Date.now();
         }
-        if (!(await deliverAutomationMail(new Date()))) await setTimeout(1000);
+        const invited = await deliverMemberInvitation(new Date());
+        if (!(await deliverAutomationMail(new Date())) && !invited) await setTimeout(1000);
       } catch {
         logger.error('[stay-worker] Automation sweep/delivery failed');
         await setTimeout(1000);

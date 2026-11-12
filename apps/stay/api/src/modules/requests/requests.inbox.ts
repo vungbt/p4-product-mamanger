@@ -22,7 +22,9 @@ import {
 } from '@stay/shared';
 import { Op, QueryTypes, type Transaction } from 'sequelize';
 import { canAccessRecord, hasAccess } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import {
+  BuildingModel,
   ContractModel,
   ContractOccupantModel,
   InvoiceModel,
@@ -226,11 +228,14 @@ async function inboxItem(ref: ItemRef, transaction?: Transaction): Promise<Inbox
 /* -------------------------------------------------------------------------- */
 
 /** Buildings where `user` may `action` `subject`: `'all'` for an unconditional rule. */
-function scopedBuildings(user: StayUser, action: StayAction, subject: StaySubject) {
+async function scopedBuildings(user: StayUser, action: StayAction, subject: StaySubject) {
   if (hasAccess(user, action, subject)) return 'all' as const;
-  return user.buildingIds.filter((buildingId) =>
-    canAccessRecord(user, action, subject, { buildingId }),
-  );
+  const rows = await BuildingModel.findAll({
+    attributes: ['id'],
+    where: accessibleWhere(user, action, subject, { buildingId: 'id' }),
+  });
+
+  return rows.map((row) => row.id);
 }
 
 /** SQL condition on `items.building_id` for a building scope (bound as `:<name>`). */
@@ -286,11 +291,11 @@ export async function listInbox(
   }
   const replacements: Record<string, unknown> = {};
   const scope = `((items.kind <> 'payment_claim' AND ${scopeSql(
-    scopedBuildings(user, 'read', 'Maintenance'),
+    await scopedBuildings(user, 'read', 'Maintenance'),
     'maintenanceBuildings',
     replacements,
   )}) OR (items.kind = 'payment_claim' AND ${scopeSql(
-    scopedBuildings(user, 'read', 'Payment'),
+    await scopedBuildings(user, 'read', 'Payment'),
     'paymentBuildings',
     replacements,
   )}))`;
@@ -369,12 +374,18 @@ type Handled =
 /** A maintenance report or tenant request by id, locked; out of scope → 404. */
 async function findHandled(user: StayUser, id: string, transaction: Transaction): Promise<Handled> {
   const lock = transaction.LOCK.UPDATE;
-  const maintenance = await MaintenanceRequestModel.findByPk(id, { transaction, lock });
+  const maintenance = await MaintenanceRequestModel.findOne({
+    where: { [Op.and]: [{ id }, accessibleWhere(user, 'update', 'Maintenance')] },
+    transaction,
+    lock,
+  });
   const found: Handled | null = maintenance
     ? { kind: 'maintenance', row: maintenance }
-    : await TenantRequestModel.findByPk(id, { transaction, lock }).then((row) =>
-        row ? { kind: 'tenant_request' as const, row } : null,
-      );
+    : await TenantRequestModel.findOne({
+        where: { [Op.and]: [{ id }, accessibleWhere(user, 'update', 'Maintenance')] },
+        transaction,
+        lock,
+      }).then((row) => (row ? { kind: 'tenant_request' as const, row } : null));
 
   if (
     !found ||

@@ -16,6 +16,7 @@ import type {
 } from '@stay/shared';
 import { Op, type Transaction, type WhereOptions } from 'sequelize';
 import { accessibleBuildingIds, canAccessRecord } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import type { BuildingAttributes } from '@/sequelize/models/building.model.js';
 import { BuildingModel } from '@/sequelize/models/index.js';
 import { auditedTransaction } from '@/shared/audit.js';
@@ -96,7 +97,9 @@ export async function listBuildings(
   query: BuildingListQuery,
 ): Promise<{ data: StayBuilding[]; meta: PaginationMeta }> {
   const scope = accessibleBuildingIds(user, 'read');
-  const conditions: WhereOptions<BuildingAttributes>[] = [];
+  const conditions: WhereOptions<BuildingAttributes>[] = [
+    accessibleWhere(user, 'read', 'Building', { buildingId: 'id' }),
+  ];
 
   if (scope !== 'all') conditions.push({ id: { [Op.in]: scope } });
   if (query.status === 'active') conditions.push({ archivedAt: { [Op.is]: null } });
@@ -133,7 +136,10 @@ export async function findAccessibleBuilding(
   transaction?: Transaction,
 ): Promise<BuildingModel> {
   const row = canAccessRecord(user, action, 'Building', { buildingId: id })
-    ? await BuildingModel.findByPk(id, {
+    ? await BuildingModel.findOne({
+        where: {
+          [Op.and]: [{ id }, accessibleWhere(user, action, 'Building', { buildingId: 'id' })],
+        },
         transaction,
         ...(transaction ? { lock: transaction.LOCK.UPDATE } : {}),
       })

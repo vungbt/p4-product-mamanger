@@ -274,7 +274,10 @@ Tổng: **3 màn chung, 39 màn chủ trọ/quản lý, 13 màn người thuê, 
 
 ### O-33 Thành viên
 - **Route** `/settings/members` · manage Member · ST-27
-- **Danh sách** người quản lý (email, toà được gán, nhóm quyền, trạng thái) · mời qua email · sửa toà/quyền · khoá tài khoản.
+- **Danh sách** người quản lý (email, toà được gán, nhóm quyền, trạng thái) · tìm email debounce 300ms trên URL · phân trang server · mời qua email · sửa toà/quyền · khoá tài khoản (xác nhận thu hồi mọi phiên).
+- **Form**: email (chuẩn hoá chữ thường, không trùng tài khoản hiện có), ít nhất một toà đang hoạt động; nhóm quyền áp dụng chung cho các toà được gán: Vận hành (phòng/người thuê/hợp đồng/cọc/chi phí/yêu cầu/thông báo theo các action hiện có), Chốt số, Thu tiền, Lập và phát hành hoá đơn. Bỏ chọn tất cả = chỉ xem. Các thao tác vốn chỉ dành cho owner (`manage`, sửa đơn giá, void, thanh lý) không được mở bằng nhóm quyền.
+- **Đồng thời**: sửa gửi `version`; bản cũ trả 409. Đổi toà/quyền có hiệu lực ở API ngay lần gọi tiếp theo, không cần đăng nhập lại. Khoá không xoá thành viên hoặc lịch sử.
+- **Lời mời**: tài khoản mới có mật khẩu ngẫu nhiên không công bố; outbox worker yêu cầu Better Auth gửi link đặt mật khẩu, mở `/reset-password`. Hạ tầng auth email hiện có chỉ ghi link ở local/CI; production chưa có mail transport, lời mời lỗi được thử lại rồi đưa dead letter.
 
 ### O-34 Tạm trú
 - **Route** `/residents` · read Tenant · ST-28

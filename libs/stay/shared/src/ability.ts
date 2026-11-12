@@ -57,6 +57,16 @@ export interface StayRecord {
   contractId?: string;
 }
 
+export const MANAGER_PERMISSION_GROUPS = ['operations', 'readings', 'payments', 'billing'] as const;
+export type ManagerPermissionGroup = (typeof MANAGER_PERMISSION_GROUPS)[number];
+
+export const MANAGER_PERMISSION_LABELS: Record<ManagerPermissionGroup, string> = {
+  operations: 'Quản lý phòng, người thuê, hợp đồng và vận hành',
+  readings: 'Chốt số điện nước',
+  payments: 'Thu tiền',
+  billing: 'Lập và phát hành hoá đơn',
+};
+
 /** What the ability needs to know about the signed-in user. */
 export interface StayAbilityUser {
   id: string;
@@ -65,6 +75,7 @@ export interface StayAbilityUser {
   buildingIds?: readonly string[];
   /** Contracts a tenant occupies. */
   contractIds?: readonly string[];
+  permissionGroups?: readonly ManagerPermissionGroup[];
 }
 
 export type StayAbility = KitAbility<StayAction, StaySubject, StayRecord>;
@@ -101,9 +112,22 @@ export const stayAbilityKit = createAbilityKit<
       // Settings, Member, `void` and `settle` stay with the owner.
       const assigned = { buildingId: { $in: [...(user.buildingIds ?? [])] } };
 
-      can(['read', 'update'], 'Building', assigned);
-      can(['read', 'create', 'update', 'delete'], MANAGER_SUBJECTS, assigned);
-      can('issue', 'Invoice', assigned);
+      can('read', ['Building', ...MANAGER_SUBJECTS], assigned);
+      const groups = user.permissionGroups ?? MANAGER_PERMISSION_GROUPS;
+
+      if (groups.includes('operations')) {
+        can('update', 'Building', assigned);
+        can(
+          ['create', 'update', 'delete'],
+          ['Room', 'Tenant', 'Contract', 'Deposit', 'Expense', 'Maintenance'],
+          assigned,
+        );
+      }
+      if (groups.includes('readings')) can(['create', 'update'], 'MeterReading', assigned);
+      if (groups.includes('payments')) can('create', 'Payment', assigned);
+      if (groups.includes('billing')) {
+        can(['create', 'update', 'delete', 'issue'], 'Invoice', assigned);
+      }
       can('read', ['Report', 'AuditLog'], assigned);
       return;
     }
