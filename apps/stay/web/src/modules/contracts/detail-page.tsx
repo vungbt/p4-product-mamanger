@@ -6,7 +6,9 @@ import {
   EmptyState,
   Icon,
   Skeleton,
+  Timeline,
 } from '@itclabs/react-ui';
+import { MediaGallery } from '@itclabs/react-ui/media-gallery';
 import { useCancelContract, useCancelNotice, useContract } from '@stay/sdk/react';
 import type { ContractChangeKind } from '@stay/sdk/shared';
 import { ApiSdkError, getErrorMessage } from '@stay/sdk/shared';
@@ -238,22 +240,30 @@ export default function ContractDetailPage() {
             <p>
               Điện nhận phòng: {data.initialElectric} · Nước nhận phòng: {data.initialWater}
             </p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {data.initialElectricPhotoUrl && (
-                <img
-                  src={data.initialElectricPhotoUrl}
-                  alt="Đồng hồ điện lúc nhận phòng"
-                  className="max-w-full rounded-control"
-                />
-              )}
-              {data.initialWaterPhotoUrl && (
-                <img
-                  src={data.initialWaterPhotoUrl}
-                  alt="Đồng hồ nước lúc nhận phòng"
-                  className="max-w-full rounded-control"
-                />
-              )}
-            </div>
+            <MediaGallery
+              items={[
+                ...(data.initialElectricPhotoUrl
+                  ? [
+                      {
+                        id: 'electricity',
+                        src: data.initialElectricPhotoUrl,
+                        alt: 'Đồng hồ điện lúc nhận phòng',
+                      },
+                    ]
+                  : []),
+                ...(data.initialWaterPhotoUrl
+                  ? [
+                      {
+                        id: 'water',
+                        src: data.initialWaterPhotoUrl,
+                        alt: 'Đồng hồ nước lúc nhận phòng',
+                      },
+                    ]
+                  : []),
+              ]}
+              fit="contain"
+              className="max-w-xl"
+            />
             {data.note && <p className="whitespace-pre-wrap">{data.note}</p>}
           </>
         ) : tab === 'Hoá đơn' ? (
@@ -267,25 +277,30 @@ export default function ContractDetailPage() {
         ) : tab === 'Lịch sử' ? (
           <>
             <h2 className="text-section font-semibold">Lịch sử</h2>
-            <ol className="grid gap-3">
-              {data.events.map((e) => (
-                <li key={e.id}>
-                  {EVENT_LABELS[e.type] ?? e.type} · {e.actorName} ·{' '}
-                  {new Intl.DateTimeFormat('vi-VN', {
-                    dateStyle: 'short',
-                    timeStyle: 'short',
-                    timeZone: 'Asia/Ho_Chi_Minh',
-                  }).format(new Date(e.createdAt))}
-                  {typeof e.payload.effectiveDate === 'string' && (
-                    <> · Hiệu lực {displayDate(e.payload.effectiveDate)}</>
-                  )}
-                  {typeof e.payload.rent === 'number' && <> · {formatVnd(e.payload.rent)}</>}
-                  {typeof e.payload.expectedMoveOutDate === 'string' && (
-                    <> · Dự kiến trả {displayDate(e.payload.expectedMoveOutDate)}</>
-                  )}
-                </li>
-              ))}
-            </ol>
+            <Timeline
+              showStatus={false}
+              items={data.events.map((e) => ({
+                id: e.id,
+                state: 'completed',
+                title: (
+                  <>
+                    {EVENT_LABELS[e.type] ?? e.type} · {e.actorName} ·{' '}
+                    {new Intl.DateTimeFormat('vi-VN', {
+                      dateStyle: 'short',
+                      timeStyle: 'short',
+                      timeZone: 'Asia/Ho_Chi_Minh',
+                    }).format(new Date(e.createdAt))}
+                    {typeof e.payload.effectiveDate === 'string' && (
+                      <> · Hiệu lực {displayDate(e.payload.effectiveDate)}</>
+                    )}
+                    {typeof e.payload.rent === 'number' && <> · {formatVnd(e.payload.rent)}</>}
+                    {typeof e.payload.expectedMoveOutDate === 'string' && (
+                      <> · Dự kiến trả {displayDate(e.payload.expectedMoveOutDate)}</>
+                    )}
+                  </>
+                ),
+              }))}
+            />
           </>
         ) : (
           <>

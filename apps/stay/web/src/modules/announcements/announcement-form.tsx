@@ -3,7 +3,11 @@ import {
   Checkbox,
   DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   RadioGroup,
@@ -149,58 +153,74 @@ export function AnnouncementDialog({
         className="grid min-w-0 gap-4"
         aria-label="Thông báo cho người thuê"
       >
-        <FormError message={error} />
-        <FormField name="title" label="Tiêu đề" required>
-          <Input maxLength={200} autoComplete="off" />
-        </FormField>
-        <FormField name="body" label="Nội dung" required>
-          <Textarea maxLength={5000} rows={4} />
-        </FormField>
-        <RadioGroup label="Gửi cho" options={TARGETS} value={target} onValueChange={setTarget} />
-        {target === 'rooms' ? (
-          <fieldset className="m-0 grid min-w-0 gap-2 border-0 p-0" aria-describedby="room-error">
-            <legend className="mb-1 font-medium">Phòng nhận thông báo</legend>
-            {rooms.isPending ? (
-              <LoadingRows rows={2} />
-            ) : (
-              <div className="grid max-h-56 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3">
-                {(rooms.data?.data ?? []).map((room) => (
-                  <Checkbox
-                    key={room.id}
-                    label={`Phòng ${room.code}`}
-                    checked={roomIds.has(room.id)}
-                    onCheckedChange={(value) => toggleRoom(room.id, value === true)}
-                  />
-                ))}
-              </div>
-            )}
-            {roomError ? (
-              <p id="room-error" role="alert" className="text-ui-sm text-danger-700">
-                {roomError}
-              </p>
+        <FormLayout size="full">
+          <FormSection>
+            <FormError message={error} />
+            <FormField name="title" label="Tiêu đề" required>
+              <Input maxLength={200} autoComplete="off" />
+            </FormField>
+            <FormField name="body" label="Nội dung" required>
+              <Textarea maxLength={5000} rows={4} />
+            </FormField>
+            <RadioGroup
+              label="Gửi cho"
+              options={TARGETS}
+              value={target}
+              onValueChange={setTarget}
+            />
+            {target === 'rooms' ? (
+              <fieldset
+                className="m-0 grid min-w-0 gap-2 border-0 p-0"
+                aria-describedby="room-error"
+              >
+                <legend className="mb-1 font-medium">Phòng nhận thông báo</legend>
+                {rooms.isPending ? (
+                  <LoadingRows rows={2} />
+                ) : (
+                  <FormGrid columns={2}>
+                    {(rooms.data?.data ?? []).map((room) => (
+                      <Checkbox
+                        key={room.id}
+                        label={`Phòng ${room.code}`}
+                        checked={roomIds.has(room.id)}
+                        onCheckedChange={(value) => toggleRoom(room.id, value === true)}
+                      />
+                    ))}
+                  </FormGrid>
+                )}
+                {roomError ? (
+                  <p id="room-error" role="alert" className="text-ui-sm text-danger-700">
+                    {roomError}
+                  </p>
+                ) : null}
+              </fieldset>
             ) : null}
-          </fieldset>
-        ) : null}
-        <Checkbox
-          label="Ghim lên trang chủ người thuê"
-          checked={pinned}
-          onCheckedChange={(value) => setPinned(value === true)}
-        />
-        <FormField name="expiresOn" label="Hết hạn hiển thị (ngày cuối còn hiện)" {...DATE_FIELD}>
-          <DatePicker minDate={todayIsoDate()} />
-        </FormField>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="secondary" disabled={busy} onClick={close}>
-            Huỷ
-          </Button>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button type="submit" loading={submitting}>
-                Lưu thông báo
-              </Button>
-            )}
-          </FormSubmit>
-        </div>
+            <Checkbox
+              label="Ghim lên trang chủ người thuê"
+              checked={pinned}
+              onCheckedChange={(value) => setPinned(value === true)}
+            />
+            <FormField
+              name="expiresOn"
+              label="Hết hạn hiển thị (ngày cuối còn hiện)"
+              {...DATE_FIELD}
+            >
+              <DatePicker minDate={todayIsoDate()} />
+            </FormField>
+          </FormSection>
+          <FormActions>
+            <Button variant="secondary" disabled={busy} onClick={close}>
+              Huỷ
+            </Button>
+            <FormSubmit form={form}>
+              {(submitting) => (
+                <Button type="submit" loading={submitting}>
+                  Lưu thông báo
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </Overlay>
   );

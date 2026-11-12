@@ -2,7 +2,11 @@ import {
   Alert,
   Button,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   NumberInput,
@@ -182,43 +186,51 @@ export function ServiceEditForm({
       aria-label={t('services.editTitle', { name: service.name })}
       data-testid="service-edit-form"
     >
-      {prompt}
-      {conflict ? <ConflictAlert onReload={onReload} /> : null}
-      <FormError message={formError} />
+      <FormLayout size="full">
+        <FormSection>
+          {prompt}
+          {conflict ? <ConflictAlert onReload={onReload} /> : null}
+          <FormError message={formError} />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <FormField name="name" label={t('services.name')} required className="mb-0">
-          <Input maxLength={120} autoFocus />
-        </FormField>
-        <FormField name="unit" label={t('services.unit')} required className="mb-0">
-          <Input maxLength={20} />
-        </FormField>
-        <FormField name="defaultPrice" label={t('services.defaultPrice')} required className="mb-0">
-          <NumberInput min={0} max={MAX_PRICE} step={1} endAddon="₫" inputMode="numeric" />
-        </FormField>
-      </div>
-      <DescriptionField length={editDescription.length} />
+          <FormGrid columns={3}>
+            <FormField name="name" label={t('services.name')} required className="mb-0">
+              <Input maxLength={120} autoFocus />
+            </FormField>
+            <FormField name="unit" label={t('services.unit')} required className="mb-0">
+              <Input maxLength={20} />
+            </FormField>
+            <FormField
+              name="defaultPrice"
+              label={t('services.defaultPrice')}
+              required
+              className="mb-0"
+            >
+              <NumberInput min={0} max={MAX_PRICE} step={1} endAddon="₫" inputMode="numeric" />
+            </FormField>
+          </FormGrid>
+          <DescriptionField length={editDescription.length} />
 
-      {price !== service.defaultPrice ? <PriceChangeWarning /> : null}
-
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button
-          variant="secondary"
-          onClick={() => {
-            form.reset();
-            onDone();
-          }}
-        >
-          {t('cancel')}
-        </Button>
-        <FormSubmit form={form}>
-          {(isSubmitting) => (
-            <Button type="submit" loading={isSubmitting}>
-              {isSubmitting ? t('saving') : t('save')}
-            </Button>
-          )}
-        </FormSubmit>
-      </div>
+          {price !== service.defaultPrice ? <PriceChangeWarning /> : null}
+        </FormSection>
+        <FormActions>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              form.reset();
+              onDone();
+            }}
+          >
+            {t('cancel')}
+          </Button>
+          <FormSubmit form={form}>
+            {(isSubmitting) => (
+              <Button type="submit" loading={isSubmitting}>
+                {isSubmitting ? t('saving') : t('save')}
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }
@@ -328,47 +340,55 @@ export function ServiceCreateForm({ onDone }: { onDone: () => void }) {
 
   return (
     <Form form={form} schema={schema} className="grid gap-4" data-testid="service-create-form">
-      {prompt}
-      <FormError message={formError} />
+      <FormLayout size="full">
+        <FormSection>
+          {prompt}
+          <FormError message={formError} />
 
-      <FormField name="name" label={t('services.name')} required className="mb-0">
-        <Input maxLength={120} autoFocus />
-      </FormField>
-      <FormField name="kind" label={t('services.kind')} required className="mb-0">
-        <Select options={kindOptions} placeholder={t('services.kindPlaceholder')} />
-      </FormField>
-      <DescriptionField length={createDescription.length} />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <FormField name="unit" label={t('services.unit')} required className="mb-0">
-          <Input maxLength={20} />
-        </FormField>
-        <FormField name="defaultPrice" label={t('services.defaultPrice')} required className="mb-0">
-          <NumberInput min={0} max={MAX_PRICE} step={1} endAddon="₫" inputMode="numeric" />
-        </FormField>
-      </div>
-      <FormField name="active" className="mb-0">
-        <Switch label={t('services.activeLabel')} />
-      </FormField>
-      <p className="text-ui-sm text-muted">{t('services.meteredRule')}</p>
-
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button
-          variant="secondary"
-          onClick={() => {
-            form.reset();
-            onDone();
-          }}
-        >
-          {t('cancel')}
-        </Button>
-        <FormSubmit form={form}>
-          {(isSubmitting) => (
-            <Button type="submit" loading={isSubmitting}>
-              {isSubmitting ? t('saving') : t('services.add')}
-            </Button>
-          )}
-        </FormSubmit>
-      </div>
+          <FormField name="name" label={t('services.name')} required className="mb-0">
+            <Input maxLength={120} autoFocus />
+          </FormField>
+          <FormField name="kind" label={t('services.kind')} required className="mb-0">
+            <Select options={kindOptions} placeholder={t('services.kindPlaceholder')} />
+          </FormField>
+          <DescriptionField length={createDescription.length} />
+          <FormGrid columns={2}>
+            <FormField name="unit" label={t('services.unit')} required className="mb-0">
+              <Input maxLength={20} />
+            </FormField>
+            <FormField
+              name="defaultPrice"
+              label={t('services.defaultPrice')}
+              required
+              className="mb-0"
+            >
+              <NumberInput min={0} max={MAX_PRICE} step={1} endAddon="₫" inputMode="numeric" />
+            </FormField>
+          </FormGrid>
+          <FormField name="active" className="mb-0">
+            <Switch label={t('services.activeLabel')} />
+          </FormField>
+          <p className="text-ui-sm text-muted">{t('services.meteredRule')}</p>
+        </FormSection>
+        <FormActions>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              form.reset();
+              onDone();
+            }}
+          >
+            {t('cancel')}
+          </Button>
+          <FormSubmit form={form}>
+            {(isSubmitting) => (
+              <Button type="submit" loading={isSubmitting}>
+                {isSubmitting ? t('saving') : t('services.add')}
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }

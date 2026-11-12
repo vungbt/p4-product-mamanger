@@ -12,8 +12,10 @@ import {
   NumberInput,
   Select,
   Textarea,
+  Timeline,
   useAppForm,
 } from '@itclabs/react-ui';
+import { MediaGallery } from '@itclabs/react-ui/media-gallery';
 import {
   useMaintenanceCategories,
   useMaintenanceDetail,
@@ -102,19 +104,13 @@ function JobDetail({ job }: { job: StayMaintenance }) {
           {job.roomCode} · {t(`sources.${job.source}`)} · {t(`statuses.${job.status}`)}
         </p>
         <p className="whitespace-pre-wrap break-words">{job.description}</p>
-        <div className="flex flex-wrap gap-3">
-          {job.photos.map((photo) =>
-            photo.url ? (
-              <a href={photo.url} key={photo.fileId} target="_blank" rel="noreferrer">
-                <img
-                  className="size-32 rounded-control object-cover"
-                  src={photo.url}
-                  alt={t('photo')}
-                />
-              </a>
-            ) : null,
+        <MediaGallery
+          items={job.photos.flatMap((photo) =>
+            photo.url ? [{ id: photo.fileId, src: photo.url, alt: t('photo') }] : [],
           )}
-        </div>
+          fit="contain"
+          className="max-w-xl"
+        />
       </section>
       <section
         aria-labelledby="maintenance-history-title"
@@ -123,13 +119,18 @@ function JobDetail({ job }: { job: StayMaintenance }) {
         <h2 id="maintenance-history-title" className="font-semibold">
           {t('history')}
         </h2>
-        <ol className="grid gap-2">
-          {job.history.map((entry, index) => (
-            <li key={`${entry.at}-${index}`}>
-              {date(entry.at)} · {t(`statuses.${entry.status}`)}
-            </li>
-          ))}
-        </ol>
+        <Timeline
+          showStatus={false}
+          items={job.history.map((entry, index) => ({
+            id: `${entry.at}-${index}`,
+            state: 'completed',
+            title: (
+              <>
+                {date(entry.at)} · {t(`statuses.${entry.status}`)}
+              </>
+            ),
+          }))}
+        />
       </section>
       {job.source === 'tenant' ? (
         <section className="grid gap-3">

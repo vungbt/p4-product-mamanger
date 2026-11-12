@@ -4,7 +4,11 @@ import {
   DatePicker,
   Dialog,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   NumberInput,
@@ -82,33 +86,41 @@ export function ReplacementDialog({
       description="Tiêu thụ kỳ này gồm hai đoạn: đồng hồ cũ và đồng hồ mới."
     >
       <Form form={form} schema={schema} className="grid gap-3">
-        <FormError message={error} />
-        <FormField name="finalReading" label="Số cuối đồng hồ cũ" required>
-          <NumberInput
-            min={meter.current?.reading ?? meter.previous}
-            max={METER_READING_MAX}
-            inputMode="numeric"
-          />
-        </FormField>
-        <FormField name="initialReading" label="Số đầu đồng hồ mới" required>
-          <NumberInput min={0} max={METER_READING_MAX} inputMode="numeric" />
-        </FormField>
-        <FormField name="replacedOn" label="Ngày thay" required {...DATE_FIELD}>
-          <DatePicker clearable={false} />
-        </FormField>
-        <FormField name="serial" label="Seri mới">
-          <Input maxLength={40} />
-        </FormField>
-        <FormField name="confirmHighConsumption" binding="checked" label="Xác nhận cảnh báo">
-          <Checkbox label="Xác nhận nếu tiêu thụ khi thay đồng hồ hơn 2 lần trung bình." />
-        </FormField>
-        <FormSubmit form={form}>
-          {(saving) => (
-            <Button type="submit" loading={saving}>
-              Thay đồng hồ
-            </Button>
-          )}
-        </FormSubmit>
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              <FormError message={error} />
+              <FormField name="finalReading" label="Số cuối đồng hồ cũ" required>
+                <NumberInput
+                  min={meter.current?.reading ?? meter.previous}
+                  max={METER_READING_MAX}
+                  inputMode="numeric"
+                />
+              </FormField>
+              <FormField name="initialReading" label="Số đầu đồng hồ mới" required>
+                <NumberInput min={0} max={METER_READING_MAX} inputMode="numeric" />
+              </FormField>
+              <FormField name="replacedOn" label="Ngày thay" required {...DATE_FIELD}>
+                <DatePicker clearable={false} />
+              </FormField>
+              <FormField name="serial" label="Seri mới">
+                <Input maxLength={40} />
+              </FormField>
+              <FormField name="confirmHighConsumption" binding="checked" label="Xác nhận cảnh báo">
+                <Checkbox label="Xác nhận nếu tiêu thụ khi thay đồng hồ hơn 2 lần trung bình." />
+              </FormField>
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <FormSubmit form={form}>
+              {(saving) => (
+                <Button type="submit" loading={saving}>
+                  Thay đồng hồ
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </Dialog>
   );

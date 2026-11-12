@@ -2,7 +2,12 @@ import {
   Alert,
   Button,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormGridItem,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Icon,
   Input,
@@ -402,160 +407,167 @@ function BuildingForm({
 
   return (
     <Form form={form} schema={schema} className="grid max-w-4xl gap-5" data-testid="building-form">
-      {prompt}
-      {archived ? <Alert tone="warning">{t('form.archivedNotice')}</Alert> : null}
-      {conflict ? <ConflictAlert onReload={onReload} /> : null}
-      <FormError message={formError} />
+      <FormLayout size="full">
+        <FormSection>
+          {prompt}
+          {archived ? <Alert tone="warning">{t('form.archivedNotice')}</Alert> : null}
+          {conflict ? <ConflictAlert onReload={onReload} /> : null}
+          <FormError message={formError} />
 
-      <Section title={t('form.generalTitle')}>
-        <div className="grid gap-4 md:grid-cols-3">
-          <FormField
-            name="code"
-            label={t('form.code')}
-            required
-            className="mb-0"
-            mapOnChange={codeText}
-          >
-            <Input
-              maxLength={6}
-              autoCapitalize="characters"
-              disabled={building?.codeLocked}
-              hint={
-                building?.codeLocked
-                  ? t('form.codeLocked')
-                  : t(building ? 'form.codeHint' : 'form.codeSuggestHint')
-              }
-            />
-          </FormField>
-          <FormField name="name" label={t('form.name')} required className="mb-0 md:col-span-2">
-            <Input maxLength={120} />
-          </FormField>
-        </div>
-        <FormField name="address" label={t('form.address')} className="mb-0">
-          <Input maxLength={255} autoComplete="street-address" />
-        </FormField>
-      </Section>
-
-      <Section title={t('form.billingTitle')} description={t('form.billingDescription')}>
-        <div className="grid gap-4 md:grid-cols-3">
-          <FormField name="readingDayMonth" label={ts('billing.readingDayMonth')} className="mb-0">
-            <Select options={monthOptions} hint={ts('billing.readingDayMonthHint')} />
-          </FormField>
-          <FormField name="readingDay" label={ts('billing.readingDay')} className="mb-0">
-            <Select options={dayOptions(settings?.readingDay)} />
-          </FormField>
-          <FormField name="issueDay" label={ts('billing.issueDay')} className="mb-0">
-            <Select options={dayOptions(settings?.issueDay)} />
-          </FormField>
-          <FormField name="dueDay" label={ts('billing.dueDay')} className="mb-0">
-            <Select options={dayOptions(settings?.dueDay)} />
-          </FormField>
-          <FormField
-            name="graceDays"
-            label={ts('billing.graceDays')}
-            className="mb-0 md:col-span-2"
-          >
-            <Select options={graceOptions} hint={ts('billing.graceDaysHint')} />
-          </FormField>
-          <FormField name="roundingUnit" label={ts('billing.roundingUnit')} className="mb-0">
-            <Select options={roundingOptions} />
-          </FormField>
-          <FormField
-            name="refundUnusedRent"
-            label={ts('billing.refundUnusedRent')}
-            className="mb-0 md:col-span-2"
-          >
-            <Select options={refundOptions} />
-          </FormField>
-          <FormField
-            name="moveOutFee"
-            label={ts('billing.moveOutFee')}
-            className="mb-0 md:col-span-3"
-          >
-            <NumberInput
-              min={0}
-              max={MOVE_OUT_FEE_MAX}
-              step={1000}
-              endAddon="₫"
-              placeholder={
-                settings
-                  ? t('form.systemValue', { value: formatVnd(settings.moveOutFee) })
-                  : t('form.system')
-              }
-              hint={t('form.moveOutFeeHint')}
-            />
-          </FormField>
-        </div>
-        {effective ? (
-          <Alert tone="info" data-testid="building-billing-preview">
-            {ts('billing.preview', billingPreview(effective))}
-          </Alert>
-        ) : null}
-      </Section>
-
-      <Section title={t('form.bankTitle')} description={t('form.bankDescription')}>
-        <div className="grid gap-4 lg:grid-cols-3">
-          <div className="grid content-start gap-4 lg:col-span-2">
-            <FormField
-              name="bankBin"
-              label={t('form.bank')}
-              className="mb-0"
-              mapValue={(value) => value || null}
-              mapOnChange={(value) => value ?? ''}
-            >
-              <Select
-                options={BANK_OPTIONS}
-                searchable
-                clearable
-                placeholder={t('form.bankPlaceholder')}
-                data-testid="bank-select"
-              />
-            </FormField>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField name="bankAccount" label={t('form.bankAccount')} className="mb-0">
-                <Input maxLength={24} inputMode="numeric" autoComplete="off" />
-              </FormField>
+          <Section title={t('form.generalTitle')}>
+            <FormGrid columns={3}>
               <FormField
-                name="bankAccountName"
-                label={t('form.bankAccountName')}
+                name="code"
+                label={t('form.code')}
+                required
                 className="mb-0"
-                mapOnChange={accountNameText}
+                mapOnChange={codeText}
               >
-                <Input maxLength={50} autoComplete="off" hint={t('form.bankAccountNameHint')} />
+                <Input
+                  maxLength={6}
+                  autoCapitalize="characters"
+                  disabled={building?.codeLocked}
+                  hint={
+                    building?.codeLocked
+                      ? t('form.codeLocked')
+                      : t(building ? 'form.codeHint' : 'form.codeSuggestHint')
+                  }
+                />
               </FormField>
-            </div>
-          </div>
-          <VietQrPreview
-            bin={values.bankBin}
-            account={values.bankAccount}
-            accountName={values.bankAccountName}
-          />
-        </div>
-      </Section>
+              <FormGridItem span="full">
+                <FormField name="name" label={t('form.name')} required className="mb-0">
+                  <Input maxLength={120} />
+                </FormField>
+              </FormGridItem>
+            </FormGrid>
+            <FormField name="address" label={t('form.address')} className="mb-0">
+              <Input maxLength={255} autoComplete="street-address" />
+            </FormField>
+          </Section>
 
-      <Section title={t('form.tenantTitle')} description={t('form.tenantDescription')}>
-        <FormField name="contactPhone" label={t('form.contactPhone')} className="mb-0">
-          <Input type="tel" inputMode="tel" maxLength={20} autoComplete="tel" />
-        </FormField>
-        <FormField name="rulesText" label={t('form.rulesText')} className="mb-0">
-          <Textarea rows={5} maxLength={5000} />
-        </FormField>
-      </Section>
+          <Section title={t('form.billingTitle')} description={t('form.billingDescription')}>
+            <FormGrid columns={3}>
+              <FormField
+                name="readingDayMonth"
+                label={ts('billing.readingDayMonth')}
+                className="mb-0"
+              >
+                <Select options={monthOptions} hint={ts('billing.readingDayMonthHint')} />
+              </FormField>
+              <FormField name="readingDay" label={ts('billing.readingDay')} className="mb-0">
+                <Select options={dayOptions(settings?.readingDay)} />
+              </FormField>
+              <FormField name="issueDay" label={ts('billing.issueDay')} className="mb-0">
+                <Select options={dayOptions(settings?.issueDay)} />
+              </FormField>
+              <FormField name="dueDay" label={ts('billing.dueDay')} className="mb-0">
+                <Select options={dayOptions(settings?.dueDay)} />
+              </FormField>
+              <FormGridItem span="full">
+                <FormField name="graceDays" label={ts('billing.graceDays')} className="mb-0">
+                  <Select options={graceOptions} hint={ts('billing.graceDaysHint')} />
+                </FormField>
+              </FormGridItem>
+              <FormField name="roundingUnit" label={ts('billing.roundingUnit')} className="mb-0">
+                <Select options={roundingOptions} />
+              </FormField>
+              <FormGridItem span="full">
+                <FormField
+                  name="refundUnusedRent"
+                  label={ts('billing.refundUnusedRent')}
+                  className="mb-0"
+                >
+                  <Select options={refundOptions} />
+                </FormField>
+              </FormGridItem>
+              <FormGridItem span="full">
+                <FormField name="moveOutFee" label={ts('billing.moveOutFee')} className="mb-0">
+                  <NumberInput
+                    min={0}
+                    max={MOVE_OUT_FEE_MAX}
+                    step={1000}
+                    endAddon="₫"
+                    placeholder={
+                      settings
+                        ? t('form.systemValue', { value: formatVnd(settings.moveOutFee) })
+                        : t('form.system')
+                    }
+                    hint={t('form.moveOutFeeHint')}
+                  />
+                </FormField>
+              </FormGridItem>
+            </FormGrid>
+            {effective ? (
+              <Alert tone="info" data-testid="building-billing-preview">
+                {ts('billing.preview', billingPreview(effective))}
+              </Alert>
+            ) : null}
+          </Section>
 
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button variant="secondary" onClick={cancel}>
-          {t('cancel')}
-        </Button>
-        {archived ? null : (
-          <FormSubmit form={form}>
-            {(isSubmitting) => (
-              <Button type="submit" loading={isSubmitting}>
-                {isSubmitting ? t('saving') : building ? t('save') : t('form.create')}
-              </Button>
-            )}
-          </FormSubmit>
-        )}
-      </div>
+          <Section title={t('form.bankTitle')} description={t('form.bankDescription')}>
+            <FormGrid columns={3}>
+              <div className="grid content-start gap-4 lg:col-span-2">
+                <FormField
+                  name="bankBin"
+                  label={t('form.bank')}
+                  className="mb-0"
+                  mapValue={(value) => value || null}
+                  mapOnChange={(value) => value ?? ''}
+                >
+                  <Select
+                    options={BANK_OPTIONS}
+                    searchable
+                    clearable
+                    placeholder={t('form.bankPlaceholder')}
+                    data-testid="bank-select"
+                  />
+                </FormField>
+                <FormGrid columns={2}>
+                  <FormField name="bankAccount" label={t('form.bankAccount')} className="mb-0">
+                    <Input maxLength={24} inputMode="numeric" autoComplete="off" />
+                  </FormField>
+                  <FormField
+                    name="bankAccountName"
+                    label={t('form.bankAccountName')}
+                    className="mb-0"
+                    mapOnChange={accountNameText}
+                  >
+                    <Input maxLength={50} autoComplete="off" hint={t('form.bankAccountNameHint')} />
+                  </FormField>
+                </FormGrid>
+              </div>
+              <VietQrPreview
+                bin={values.bankBin}
+                account={values.bankAccount}
+                accountName={values.bankAccountName}
+              />
+            </FormGrid>
+          </Section>
+
+          <Section title={t('form.tenantTitle')} description={t('form.tenantDescription')}>
+            <FormField name="contactPhone" label={t('form.contactPhone')} className="mb-0">
+              <Input type="tel" inputMode="tel" maxLength={20} autoComplete="tel" />
+            </FormField>
+            <FormField name="rulesText" label={t('form.rulesText')} className="mb-0">
+              <Textarea rows={5} maxLength={5000} />
+            </FormField>
+          </Section>
+        </FormSection>
+        <FormActions>
+          <Button variant="secondary" onClick={cancel}>
+            {t('cancel')}
+          </Button>
+          {archived ? null : (
+            <FormSubmit form={form}>
+              {(isSubmitting) => (
+                <Button type="submit" loading={isSubmitting}>
+                  {isSubmitting ? t('saving') : building ? t('save') : t('form.create')}
+                </Button>
+              )}
+            </FormSubmit>
+          )}
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }

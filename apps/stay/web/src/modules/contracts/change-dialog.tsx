@@ -6,6 +6,9 @@ import {
   Drawer,
   Form,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   Input,
   NumberInput,
   Select,
@@ -210,177 +213,178 @@ export function ContractChangeDialog({
         className="grid min-w-0 gap-4"
         aria-label={CHANGE_LABELS[kind]}
       >
-        {prompt}
-        <FormField name="effectiveDate" label="Ngày hiệu lực" required {...DATE_FIELD}>
-          <DatePicker
-            minDate={contract.startDate}
-            {...(contract.endDate ? { maxDate: contract.endDate } : {})}
-            clearable={false}
-          />
-        </FormField>
-        {kind === 'renew' && (
-          <FormField name="endDate" label="Ngày kết thúc mới" required {...DATE_FIELD}>
-            <DatePicker clearable={false} />
-          </FormField>
-        )}
-        {['renew', 'rent-change', 'room-change'].includes(kind) && (
-          <FormField name="rent" label="Giá thuê mới" required={kind !== 'renew'}>
-            <NumberInput min={0} max={1_000_000_000} endAddon="₫" />
-          </FormField>
-        )}
-        {kind === 'occupants' && (
-          <>
-            <FormField name="tenantId" label="Người thuê có sẵn">
-              <Select
-                searchMode="server"
-                onSearchChange={setTenantSearch}
-                options={(tenants.data?.data ?? []).map((t) => ({
-                  value: t.id,
-                  label: t.fullName,
-                }))}
-                placeholder="Chọn hoặc tạo mới bên dưới"
-                clearable
+        <FormLayout size="full">
+          <FormGrid columns={1}>
+            {prompt}
+            <FormField name="effectiveDate" label="Ngày hiệu lực" required {...DATE_FIELD}>
+              <DatePicker
+                minDate={contract.startDate}
+                {...(contract.endDate ? { maxDate: contract.endDate } : {})}
+                clearable={false}
               />
             </FormField>
-            {!values.tenantId && (
+            {kind === 'renew' && (
+              <FormField name="endDate" label="Ngày kết thúc mới" required {...DATE_FIELD}>
+                <DatePicker clearable={false} />
+              </FormField>
+            )}
+            {['renew', 'rent-change', 'room-change'].includes(kind) && (
+              <FormField name="rent" label="Giá thuê mới" required={kind !== 'renew'}>
+                <NumberInput min={0} max={1_000_000_000} endAddon="₫" />
+              </FormField>
+            )}
+            {kind === 'occupants' && (
               <>
-                <FormField name="fullName" label="Họ tên" required>
-                  <Input maxLength={120} />
+                <FormField name="tenantId" label="Người thuê có sẵn">
+                  <Select
+                    searchMode="server"
+                    onSearchChange={setTenantSearch}
+                    options={(tenants.data?.data ?? []).map((t) => ({
+                      value: t.id,
+                      label: t.fullName,
+                    }))}
+                    placeholder="Chọn hoặc tạo mới bên dưới"
+                    clearable
+                  />
                 </FormField>
-                <FormField name="phone" label="Số điện thoại" required>
-                  <Input inputMode="tel" maxLength={10} />
+                {!values.tenantId && (
+                  <>
+                    <FormField name="fullName" label="Họ tên" required>
+                      <Input maxLength={120} />
+                    </FormField>
+                    <FormField name="phone" label="Số điện thoại" required>
+                      <Input inputMode="tel" maxLength={10} />
+                    </FormField>
+                  </>
+                )}
+              </>
+            )}
+            {kind === 'leave' && (
+              <>
+                <FormField name="occupantId" label="Người rời đi" required>
+                  <Select options={people} />
+                </FormField>
+                <FormField name="newPrimaryTenantId" label="Người đại diện mới">
+                  <Select options={people.filter((p) => p.value !== values.occupantId)} />
                 </FormField>
               </>
             )}
-          </>
-        )}
-        {kind === 'leave' && (
-          <>
-            <FormField name="occupantId" label="Người rời đi" required>
-              <Select options={people} />
-            </FormField>
-            <FormField name="newPrimaryTenantId" label="Người đại diện mới">
-              <Select options={people.filter((p) => p.value !== values.occupantId)} />
-            </FormField>
-          </>
-        )}
-        {kind === 'vehicles' && (
-          <>
-            <FormField name="vehicleTenantId" label="Người sở hữu xe">
-              <Select options={people} />
-            </FormField>
-            <FormField name="vehicleId" label="Xe" required>
-              <Select
-                options={(vehicleTenant.data?.vehicles ?? []).map((c) => ({
-                  value: c.id,
-                  label: c.plate,
-                }))}
-              />
-            </FormField>
-          </>
-        )}
-        {kind === 'services' && (
-          <FormField name="serviceId" label="Dịch vụ" required>
-            <Select
-              options={(services.data ?? [])
-                .filter((s) => s.active)
-                .map((s) => ({
-                  value: s.id,
-                  label: s.description ? `${s.name} (${s.description})` : s.name,
-                }))}
-            />
-          </FormField>
-        )}
-        {['vehicles', 'services'].includes(kind) && (
-          <FormField name="enabled" label="Thao tác" required>
-            <Select
-              options={[
-                { value: 'true', label: 'Thêm / bật' },
-                { value: 'false', label: 'Bớt / tắt' },
-              ]}
-            />
-          </FormField>
-        )}
-        {kind === 'room-change' && (
-          <>
-            <FormField name="roomId" label="Phòng mới" required>
-              <Select
-                searchMode="server"
-                onSearchChange={setRoomSearch}
-                options={(rooms.data?.data ?? [])
-                  .filter((r) => r.id !== contract.roomId)
-                  .map((r) => ({ value: r.id, label: r.code }))}
-              />
-            </FormField>
-            <FormField name="closingElectric" label="Điện cuối phòng cũ" required>
-              <NumberInput min={0} />
-            </FormField>
-            <FormField name="closingWater" label="Nước cuối phòng cũ" required>
-              <NumberInput min={0} />
-            </FormField>
-            <FormField name="initialElectric" label="Điện đầu phòng mới" required>
-              <NumberInput min={0} />
-            </FormField>
-            <FormField name="initialWater" label="Nước đầu phòng mới" required>
-              <NumberInput min={0} />
-            </FormField>
-          </>
-        )}
-        <section
-          aria-label="Ảnh hưởng tới hoá đơn"
-          className="grid gap-2 rounded-control bg-canvas p-3"
-        >
-          <h3 className="font-semibold">Ảnh hưởng tới hoá đơn</h3>
-          {preview.isFetching ? (
-            <p>Đang kiểm tra…</p>
-          ) : preview.data ? (
-            <>
-              <p>{preview.data.impact.description}</p>
-              {preview.data.impact.warnings.map((w) => (
-                <p key={w} role="alert">
-                  {w}
+            {kind === 'vehicles' && (
+              <>
+                <FormField name="vehicleTenantId" label="Người sở hữu xe">
+                  <Select options={people} />
+                </FormField>
+                <FormField name="vehicleId" label="Xe" required>
+                  <Select
+                    options={(vehicleTenant.data?.vehicles ?? []).map((c) => ({
+                      value: c.id,
+                      label: c.plate,
+                    }))}
+                  />
+                </FormField>
+              </>
+            )}
+            {kind === 'services' && (
+              <FormField name="serviceId" label="Dịch vụ" required>
+                <Select
+                  options={(services.data ?? [])
+                    .filter((s) => s.active)
+                    .map((s) => ({
+                      value: s.id,
+                      label: s.description ? `${s.name} (${s.description})` : s.name,
+                    }))}
+                />
+              </FormField>
+            )}
+            {['vehicles', 'services'].includes(kind) && (
+              <FormField name="enabled" label="Thao tác" required>
+                <Select
+                  options={[
+                    { value: 'true', label: 'Thêm / bật' },
+                    { value: 'false', label: 'Bớt / tắt' },
+                  ]}
+                />
+              </FormField>
+            )}
+            {kind === 'room-change' && (
+              <>
+                <FormField name="roomId" label="Phòng mới" required>
+                  <Select
+                    searchMode="server"
+                    onSearchChange={setRoomSearch}
+                    options={(rooms.data?.data ?? [])
+                      .filter((r) => r.id !== contract.roomId)
+                      .map((r) => ({ value: r.id, label: r.code }))}
+                  />
+                </FormField>
+                <FormField name="closingElectric" label="Điện cuối phòng cũ" required>
+                  <NumberInput min={0} />
+                </FormField>
+                <FormField name="closingWater" label="Nước cuối phòng cũ" required>
+                  <NumberInput min={0} />
+                </FormField>
+                <FormField name="initialElectric" label="Điện đầu phòng mới" required>
+                  <NumberInput min={0} />
+                </FormField>
+                <FormField name="initialWater" label="Nước đầu phòng mới" required>
+                  <NumberInput min={0} />
+                </FormField>
+              </>
+            )}
+            <FormSection variant="card" aria-label="Ảnh hưởng tới hoá đơn">
+              <h3 className="font-semibold">Ảnh hưởng tới hoá đơn</h3>
+              {preview.isFetching ? (
+                <p>Đang kiểm tra…</p>
+              ) : preview.data ? (
+                <>
+                  <p>{preview.data.impact.description}</p>
+                  {preview.data.impact.warnings.map((w) => (
+                    <p key={w} role="alert">
+                      {w}
+                    </p>
+                  ))}
+                </>
+              ) : (
+                <p role={preview.error ? 'alert' : undefined}>
+                  {conflict
+                    ? 'Dữ liệu đã thay đổi, tải lại?'
+                    : preview.error
+                      ? getErrorMessage(preview.error, 'Kiểm tra lại dữ liệu thay đổi.')
+                      : 'Điền thông tin để xem ảnh hưởng.'}
                 </p>
-              ))}
-            </>
-          ) : (
-            <p role={preview.error ? 'alert' : undefined}>
-              {conflict
-                ? 'Dữ liệu đã thay đổi, tải lại?'
-                : preview.error
-                  ? getErrorMessage(preview.error, 'Kiểm tra lại dữ liệu thay đổi.')
-                  : 'Điền thông tin để xem ảnh hưởng.'}
-            </p>
-          )}
-        </section>
-        {conflict && (
-          <Button
-            variant="secondary"
-            onClick={() => {
-              change.reset();
-              setError(null);
-              void detail.refetch();
-            }}
-          >
-            Tải lại dữ liệu hợp đồng
-          </Button>
-        )}
-        {error && (
-          <p role="alert" className="text-danger-700">
-            {error}
-          </p>
-        )}
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={close}>
-            Huỷ
-          </Button>
-          <Button
-            type="submit"
-            loading={change.isPending}
-            disabled={!preview.data || preview.isFetching || Boolean(preview.error)}
-          >
-            Lưu thay đổi
-          </Button>
-        </div>
+              )}
+            </FormSection>
+            {conflict && (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  change.reset();
+                  setError(null);
+                  void detail.refetch();
+                }}
+              >
+                Tải lại dữ liệu hợp đồng
+              </Button>
+            )}
+            {error && (
+              <p role="alert" className="text-danger-700">
+                {error}
+              </p>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" onClick={close}>
+                Huỷ
+              </Button>
+              <Button
+                type="submit"
+                loading={change.isPending}
+                disabled={!preview.data || preview.isFetching || Boolean(preview.error)}
+              >
+                Lưu thay đổi
+              </Button>
+            </div>
+          </FormGrid>
+        </FormLayout>
       </Form>
       <AlertDialog
         open={confirmClose}

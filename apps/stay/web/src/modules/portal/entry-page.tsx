@@ -1,4 +1,15 @@
-import { Button, Form, FormField, FormSubmit, Input, useAppForm } from '@itclabs/react-ui';
+import {
+  Button,
+  Form,
+  FormActions,
+  FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
+  FormSubmit,
+  Input,
+  useAppForm,
+} from '@itclabs/react-ui';
 import { PortalSdkProvider, usePortalLookup, usePortalSignIn } from '@stay/sdk/react';
 import { ApiSdkError } from '@stay/sdk/shared';
 import { useEffect, useState } from 'react';
@@ -74,17 +85,25 @@ function EntryForm({ token }: { token: string }) {
           </p>
         </div>
         <Form noValidate form={form} schema={schema} className="grid gap-4" aria-label="Vào cổng">
-          <FormError message={error} />
-          <FormField name="phoneLast4" label="4 số cuối số điện thoại" required>
-            <Input inputMode="numeric" autoComplete="off" maxLength={4} />
-          </FormField>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button type="submit" loading={submitting}>
-                Vào cổng
-              </Button>
-            )}
-          </FormSubmit>
+          <FormLayout size="full">
+            <FormSection>
+              <FormGrid columns={1}>
+                <FormError message={error} />
+                <FormField name="phoneLast4" label="4 số cuối số điện thoại" required>
+                  <Input inputMode="numeric" autoComplete="off" maxLength={4} />
+                </FormField>
+              </FormGrid>
+            </FormSection>
+            <FormActions>
+              <FormSubmit form={form}>
+                {(submitting) => (
+                  <Button type="submit" loading={submitting}>
+                    Vào cổng
+                  </Button>
+                )}
+              </FormSubmit>
+            </FormActions>
+          </FormLayout>
         </Form>
       </div>
     </main>

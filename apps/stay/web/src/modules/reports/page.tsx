@@ -1,5 +1,6 @@
 import {
   Button,
+  EmptyState,
   Icon,
   KpiCard,
   KpiGrid,
@@ -155,7 +156,13 @@ function RevenueContent({ data }: { data: RevenueReport }) {
       data-from={data.from}
       data-to={data.to}
     >
-      {empty ? <p>Chưa có hoá đơn, khoản thu hoặc chi phí trong khoảng này.</p> : null}
+      {empty ? (
+        <EmptyState
+          size="compact"
+          appearance="plain"
+          title={<>Chưa có hoá đơn, khoản thu hoặc chi phí trong khoảng này.</>}
+        />
+      ) : null}
       <KpiGrid aria-label="Tổng cả khoảng">
         <KpiCard
           label="Phải thu"
@@ -266,7 +273,7 @@ function RoomsContent({ data }: { data: RoomsReport }) {
         ngày có người / ngày phòng tồn tại trong năm, gồm ngày trả phòng.
       </p>
       {!data.rooms.length ? (
-        <p>Chưa có phòng.</p>
+        <EmptyState size="compact" appearance="plain" title={<>Chưa có phòng.</>} />
       ) : (
         <ScrollTable label="Báo cáo theo phòng">
           <thead>
@@ -334,7 +341,11 @@ function UtilitiesContent({ data }: { data: UtilitiesReport }) {
           !m.waterExpenses &&
           !m.combinedExpenses,
       ) ? (
-        <p>Chưa có dữ liệu điện nước trong khoảng này.</p>
+        <EmptyState
+          size="compact"
+          appearance="plain"
+          title={<>Chưa có dữ liệu điện nước trong khoảng này.</>}
+        />
       ) : null}
       <ScrollTable label="Báo cáo điện nước">
         <thead>

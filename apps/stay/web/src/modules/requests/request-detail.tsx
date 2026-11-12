@@ -2,7 +2,11 @@ import {
   Button,
   DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   NumberInput,
@@ -10,6 +14,7 @@ import {
   Textarea,
   useAppForm,
 } from '@itclabs/react-ui';
+import { MediaGallery } from '@itclabs/react-ui/media-gallery';
 import { toast } from '@itclabs/react-ui/toast';
 import {
   useAcceptRequest,
@@ -62,9 +67,12 @@ function Photo({ url, alt }: { url: string | null; alt: string }) {
   if (!url) return <p className="text-ui-sm text-muted">Không xem được ảnh.</p>;
 
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="block min-w-0">
-      <img src={url} alt={alt} className="max-h-72 max-w-full rounded-control border border-line" />
-    </a>
+    <MediaGallery
+      items={[{ id: url, src: url, alt }]}
+      thumbnails="none"
+      fit="contain"
+      className="max-w-sm"
+    />
   );
 }
 
@@ -159,14 +167,14 @@ type FormProps = {
   onCancel: () => void;
 };
 
-function FormActions({ onCancel, children }: { onCancel: () => void; children: ReactNode }) {
+function RequestActions({ onCancel, children }: { onCancel: () => void; children: ReactNode }) {
   return (
-    <div className="flex flex-wrap justify-end gap-2">
+    <FormActions className="flex flex-wrap justify-end gap-2">
       <Button variant="secondary" onClick={onCancel}>
         Quay lại
       </Button>
       {children}
-    </div>
+    </FormActions>
   );
 }
 
@@ -203,19 +211,25 @@ function ReplyForm({ item, onDone, onCancel }: FormProps) {
       className="grid min-w-0 gap-3"
       aria-label="Trả lời người thuê"
     >
-      <FormError message={error} />
-      <FormField name="message" label="Nội dung trả lời" required>
-        <Textarea maxLength={2000} rows={3} />
-      </FormField>
-      <FormActions onCancel={onCancel}>
-        <FormSubmit form={form}>
-          {(submitting) => (
-            <Button type="submit" loading={submitting}>
-              Gửi trả lời
-            </Button>
-          )}
-        </FormSubmit>
-      </FormActions>
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            <FormError message={error} />
+            <FormField name="message" label="Nội dung trả lời" required>
+              <Textarea maxLength={2000} rows={3} />
+            </FormField>
+          </FormGrid>
+        </FormSection>
+        <RequestActions onCancel={onCancel}>
+          <FormSubmit form={form}>
+            {(submitting) => (
+              <Button type="submit" loading={submitting}>
+                Gửi trả lời
+              </Button>
+            )}
+          </FormSubmit>
+        </RequestActions>
+      </FormLayout>
     </Form>
   );
 }
@@ -256,19 +270,25 @@ function RejectForm({ item, onDone, onCancel }: FormProps) {
       className="grid min-w-0 gap-3"
       aria-label="Từ chối"
     >
-      <FormError message={error} />
-      <FormField name="reason" label="Lý do" required>
-        <Textarea maxLength={2000} rows={3} />
-      </FormField>
-      <FormActions onCancel={onCancel}>
-        <FormSubmit form={form}>
-          {(submitting) => (
-            <Button type="submit" variant="danger" loading={submitting}>
-              Xác nhận từ chối
-            </Button>
-          )}
-        </FormSubmit>
-      </FormActions>
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            <FormError message={error} />
+            <FormField name="reason" label="Lý do" required>
+              <Textarea maxLength={2000} rows={3} />
+            </FormField>
+          </FormGrid>
+        </FormSection>
+        <RequestActions onCancel={onCancel}>
+          <FormSubmit form={form}>
+            {(submitting) => (
+              <Button type="submit" variant="danger" loading={submitting}>
+                Xác nhận từ chối
+              </Button>
+            )}
+          </FormSubmit>
+        </RequestActions>
+      </FormLayout>
     </Form>
   );
 }
@@ -344,58 +364,67 @@ function AcceptForm({ item, onDone, onCancel }: FormProps) {
       className="grid min-w-0 gap-3"
       aria-label="Duyệt yêu cầu"
     >
-      <FormError message={error} />
-      {type && type !== 'other' ? (
-        <p className="text-ui-sm text-muted">
-          Duyệt sẽ thay đổi hợp đồng như thao tác trong chi tiết hợp đồng, theo ngày trong yêu cầu
-          (hoặc ngày hiệu lực bên dưới).
-        </p>
-      ) : null}
-      {type === 'remove_occupant' ? (
-        <>
-          <FormField name="tenantId" label="Người ở rời đi">
-            <Select
-              placeholder="Theo tên trong yêu cầu"
-              options={occupants.map((row) => ({ value: row.tenantId, label: row.fullName }))}
-            />
-          </FormField>
-          <FormField name="newPrimaryTenantId" label="Người đại diện mới (khi đại diện rời đi)">
-            <Select
-              placeholder="Không đổi"
-              options={occupants.map((row) => ({ value: row.tenantId, label: row.fullName }))}
-            />
-          </FormField>
-        </>
-      ) : null}
-      {type === 'remove_vehicle' ? (
-        <FormField name="vehicleId" label="Xe cần bớt">
-          <Select
-            placeholder="Theo biển số trong yêu cầu"
-            options={vehicles.map((row) => ({ value: row.vehicleId, label: row.plate }))}
-          />
-        </FormField>
-      ) : null}
-      {type && type !== 'other' ? (
-        <FormField
-          name="effectiveDate"
-          label="Ngày hiệu lực (để trống = theo yêu cầu)"
-          {...DATE_FIELD}
-        >
-          <DatePicker />
-        </FormField>
-      ) : null}
-      <FormField name="reply" label="Trả lời người thuê">
-        <Textarea maxLength={2000} rows={2} />
-      </FormField>
-      <FormActions onCancel={onCancel}>
-        <FormSubmit form={form}>
-          {(submitting) => (
-            <Button type="submit" loading={submitting}>
-              Xác nhận duyệt
-            </Button>
-          )}
-        </FormSubmit>
-      </FormActions>
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            <FormError message={error} />
+            {type && type !== 'other' ? (
+              <p className="text-ui-sm text-muted">
+                Duyệt sẽ thay đổi hợp đồng như thao tác trong chi tiết hợp đồng, theo ngày trong yêu
+                cầu (hoặc ngày hiệu lực bên dưới).
+              </p>
+            ) : null}
+            {type === 'remove_occupant' ? (
+              <>
+                <FormField name="tenantId" label="Người ở rời đi">
+                  <Select
+                    placeholder="Theo tên trong yêu cầu"
+                    options={occupants.map((row) => ({ value: row.tenantId, label: row.fullName }))}
+                  />
+                </FormField>
+                <FormField
+                  name="newPrimaryTenantId"
+                  label="Người đại diện mới (khi đại diện rời đi)"
+                >
+                  <Select
+                    placeholder="Không đổi"
+                    options={occupants.map((row) => ({ value: row.tenantId, label: row.fullName }))}
+                  />
+                </FormField>
+              </>
+            ) : null}
+            {type === 'remove_vehicle' ? (
+              <FormField name="vehicleId" label="Xe cần bớt">
+                <Select
+                  placeholder="Theo biển số trong yêu cầu"
+                  options={vehicles.map((row) => ({ value: row.vehicleId, label: row.plate }))}
+                />
+              </FormField>
+            ) : null}
+            {type && type !== 'other' ? (
+              <FormField
+                name="effectiveDate"
+                label="Ngày hiệu lực (để trống = theo yêu cầu)"
+                {...DATE_FIELD}
+              >
+                <DatePicker />
+              </FormField>
+            ) : null}
+            <FormField name="reply" label="Trả lời người thuê">
+              <Textarea maxLength={2000} rows={2} />
+            </FormField>
+          </FormGrid>
+        </FormSection>
+        <RequestActions onCancel={onCancel}>
+          <FormSubmit form={form}>
+            {(submitting) => (
+              <Button type="submit" loading={submitting}>
+                Xác nhận duyệt
+              </Button>
+            )}
+          </FormSubmit>
+        </RequestActions>
+      </FormLayout>
     </Form>
   );
 }
@@ -467,36 +496,42 @@ function ClaimForm({ item, onDone, onCancel }: FormProps) {
       className="grid min-w-0 gap-3"
       aria-label="Xác nhận chuyển khoản"
     >
-      <FormError message={error} />
-      <p data-testid="claim-confirm-summary">
-        Ghi khoản thu chuyển khoản cho hoá đơn <strong>{claim.invoiceCode ?? ''}</strong> (còn{' '}
-        {formatVnd(remaining)}). Người thuê báo đã chuyển <strong>{formatVnd(claim.amount)}</strong>
-        .
-      </p>
-      <FormField name="amount" label="Số tiền nhận được" required>
-        <NumberInput
-          min={1}
-          max={remaining || undefined}
-          step={1}
-          inputMode="numeric"
-          endAddon="₫"
-        />
-      </FormField>
-      <FormField name="paidOn" label="Ngày nhận tiền" required {...DATE_FIELD}>
-        <DatePicker maxDate={todayIsoDate()} clearable={false} />
-      </FormField>
-      <FormField name="reference" label="Mã giao dịch">
-        <Input maxLength={120} autoComplete="off" />
-      </FormField>
-      <FormActions onCancel={onCancel}>
-        <FormSubmit form={form}>
-          {(submitting) => (
-            <Button type="submit" loading={submitting}>
-              Xác nhận
-            </Button>
-          )}
-        </FormSubmit>
-      </FormActions>
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            <FormError message={error} />
+            <p data-testid="claim-confirm-summary">
+              Ghi khoản thu chuyển khoản cho hoá đơn <strong>{claim.invoiceCode ?? ''}</strong> (còn{' '}
+              {formatVnd(remaining)}). Người thuê báo đã chuyển{' '}
+              <strong>{formatVnd(claim.amount)}</strong>.
+            </p>
+            <FormField name="amount" label="Số tiền nhận được" required>
+              <NumberInput
+                min={1}
+                max={remaining || undefined}
+                step={1}
+                inputMode="numeric"
+                endAddon="₫"
+              />
+            </FormField>
+            <FormField name="paidOn" label="Ngày nhận tiền" required {...DATE_FIELD}>
+              <DatePicker maxDate={todayIsoDate()} clearable={false} />
+            </FormField>
+            <FormField name="reference" label="Mã giao dịch">
+              <Input maxLength={120} autoComplete="off" />
+            </FormField>
+          </FormGrid>
+        </FormSection>
+        <RequestActions onCancel={onCancel}>
+          <FormSubmit form={form}>
+            {(submitting) => (
+              <Button type="submit" loading={submitting}>
+                Xác nhận
+              </Button>
+            )}
+          </FormSubmit>
+        </RequestActions>
+      </FormLayout>
     </Form>
   );
 }

@@ -4,7 +4,12 @@ import {
   Button,
   DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormGridItem,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   Select,
@@ -30,6 +35,7 @@ import {
   type CccdQrData,
   normalizeIdNumber,
   normalizePhone,
+  STAY_UPLOAD_MAX_BYTES,
   STAY_UPLOAD_MIME_TYPES,
   TENANT_GENDERS,
 } from '@stay/shared';
@@ -91,33 +97,44 @@ function DocumentPicker({
   label,
   state,
   onPick,
+  onRemove,
 }: {
   side: DocumentSide;
   label: string;
   state: UploadState | undefined;
   onPick: (side: DocumentSide, file: File) => void;
+  onRemove: (side: DocumentSide) => void;
 }) {
   const { t } = useTranslation();
+
+  const uploadForm = useAppForm({ defaultValues: { uploadFiles: [] as File[] } });
 
   const inputId = `document-${side}`;
 
   return (
     <div className="grid gap-1.5">
-      <label htmlFor={inputId} className="text-ui-sm font-medium text-ink">
-        {label}
-      </label>
-      <input
-        id={inputId}
-        type="file"
-        accept={STAY_UPLOAD_MIME_TYPES.join(',')}
-        className="text-ui-sm text-muted file:mr-3 file:rounded-control file:border file:border-line file:bg-surface file:px-3 file:py-2 file:text-ink"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
+      <uploadForm.AppField
+        name="uploadFiles"
+        listeners={{
+          onChange: ({ value: files }) => {
+            const file = files[0];
 
-          if (file) onPick(side, file);
+            if (file) onPick(side, file);
+            else onRemove(side);
+          },
         }}
-        data-testid={`document-input-${side}`}
-      />
+      >
+        {(field) => (
+          <field.UploadField
+            id={inputId}
+            accept={STAY_UPLOAD_MIME_TYPES.join(',')}
+            data-testid={`document-input-${side}`}
+            label={label}
+            maxBytes={STAY_UPLOAD_MAX_BYTES}
+            disabled={state?.status === 'uploading'}
+          />
+        )}
+      </uploadForm.AppField>
       {state ? (
         <p
           className={
@@ -327,157 +344,178 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
 
   return (
     <Form form={form} schema={schema} className="grid max-w-4xl gap-5" data-testid="tenant-form">
-      {conflict ? (
-        <Alert
-          tone="warning"
-          role="alert"
-          title={t('tenants.form.conflict')}
-          action={
-            <Button variant="secondary" size="sm" onClick={onReload}>
-              {t('tenants.form.reload')}
-            </Button>
-          }
-        />
-      ) : formError ? (
-        <Alert tone="danger" role="alert" data-testid="tenant-form-error">
-          {formError}
-        </Alert>
-      ) : null}
-
-      <section className="grid gap-4 rounded-panel border border-line bg-surface p-4 sm:grid-cols-2 sm:p-5">
-        <div className="grid gap-3 sm:col-span-2">
-          <div>
-            <CccdScanButton onScanned={applyScan} />
-          </div>
-          {scanned ? (
-            <Alert tone="success" role="status" data-testid="cccd-scan-filled">
-              {scanned.length
-                ? t('tenants.scan.filled', {
-                    fields: scanned.map((field) => t(`tenants.fields.${field}`)).join(', '),
-                  })
-                : t('tenants.scan.filledNone')}
+      <FormLayout size="full">
+        <FormGrid columns={1}>
+          {conflict ? (
+            <Alert
+              tone="warning"
+              role="alert"
+              title={t('tenants.form.conflict')}
+              action={
+                <Button variant="secondary" size="sm" onClick={onReload}>
+                  {t('tenants.form.reload')}
+                </Button>
+              }
+            />
+          ) : formError ? (
+            <Alert tone="danger" role="alert" data-testid="tenant-form-error">
+              {formError}
             </Alert>
           ) : null}
-        </div>
-        <FormField name="fullName" label={t('tenants.fields.fullName')} required className="mb-0">
-          <Input autoComplete="off" error={error('fullName')} onChange={clearError('fullName')} />
-        </FormField>
-        <FormField name="phone" label={t('tenants.fields.phone')} required className="mb-0">
-          <Input
-            type="tel"
-            inputMode="tel"
-            placeholder="0901234567"
-            error={error('phone')}
-            onChange={clearError('phone')}
-          />
-        </FormField>
-      </section>
 
-      <section className="grid gap-4 rounded-panel border border-line bg-surface p-4 sm:grid-cols-2 sm:p-5">
-        <h2 className="text-section font-semibold text-ink sm:col-span-2">
-          {t('tenants.form.optional')}
-        </h2>
-        <FormField name="email" label={t('tenants.fields.email')} className="mb-0">
-          <Input
-            type="email"
-            inputMode="email"
-            error={error('email')}
-            onChange={clearError('email')}
-          />
-        </FormField>
-        <FormField name="idNumber" label={t('tenants.fields.idNumber')} className="mb-0">
-          <Input
-            inputMode="numeric"
-            placeholder={tenant?.idNumberMasked ?? '001234567890'}
-            hint={tenant?.idNumberMasked ? t('tenants.form.idNumberKeep') : undefined}
-            error={idNumberError}
-            onChange={clearError('idNumber')}
-          />
-        </FormField>
-        <FormField
-          name="idIssuedAt"
-          label={t('tenants.fields.idIssuedAt')}
-          className="mb-0"
-          {...DATE_FIELD}
-        >
-          <DatePicker error={error('idIssuedAt')} onValueChange={clearError('idIssuedAt')} />
-        </FormField>
-        <FormField
-          name="birthDate"
-          label={t('tenants.fields.birthDate')}
-          className="mb-0"
-          {...DATE_FIELD}
-        >
-          <DatePicker error={error('birthDate')} onValueChange={clearError('birthDate')} />
-        </FormField>
-        <FormField name="gender" label={t('tenants.fields.gender')} className="mb-0">
-          <Select options={genderOptions} clearable placeholder={t('tenants.form.choose')} />
-        </FormField>
-        <FormField name="occupation" label={t('tenants.fields.occupation')} className="mb-0">
-          <Input error={error('occupation')} onChange={clearError('occupation')} />
-        </FormField>
-        <FormField name="hometown" label={t('tenants.fields.hometown')} className="mb-0">
-          <Input error={error('hometown')} onChange={clearError('hometown')} />
-        </FormField>
-        <FormField
-          name="permanentAddress"
-          label={t('tenants.fields.permanentAddress')}
-          className="mb-0"
-        >
-          <Input error={error('permanentAddress')} onChange={clearError('permanentAddress')} />
-        </FormField>
-        <FormField name="note" label={t('tenants.fields.note')} className="mb-0 sm:col-span-2">
-          <Textarea rows={3} error={error('note')} onChange={clearError('note')} />
-        </FormField>
-      </section>
+          <FormSection variant="card">
+            <FormGrid columns={2}>
+              <FormGridItem span="full">
+                <div className="grid gap-3">
+                  <div>
+                    <CccdScanButton onScanned={applyScan} />
+                  </div>
+                  {scanned ? (
+                    <Alert tone="success" role="status" data-testid="cccd-scan-filled">
+                      {scanned.length
+                        ? t('tenants.scan.filled', {
+                            fields: scanned.map((field) => t(`tenants.fields.${field}`)).join(', '),
+                          })
+                        : t('tenants.scan.filledNone')}
+                    </Alert>
+                  ) : null}
+                </div>
+              </FormGridItem>
+              <FormField
+                name="fullName"
+                label={t('tenants.fields.fullName')}
+                required
+                className="mb-0"
+              >
+                <Input
+                  autoComplete="off"
+                  error={error('fullName')}
+                  onChange={clearError('fullName')}
+                />
+              </FormField>
+              <FormField name="phone" label={t('tenants.fields.phone')} required className="mb-0">
+                <Input
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="0901234567"
+                  error={error('phone')}
+                  onChange={clearError('phone')}
+                />
+              </FormField>
+            </FormGrid>
+          </FormSection>
 
-      <section className="grid gap-4 rounded-panel border border-line bg-surface p-4 sm:grid-cols-2 sm:p-5">
-        <h2 className="text-section font-semibold text-ink sm:col-span-2">
-          {t('tenants.documents.title')}
-        </h2>
-        <DocumentPicker
-          side="id_front"
-          label={t('tenants.documents.front')}
-          state={uploads.id_front}
-          onPick={(side, file) => void pick(side, file)}
-        />
-        <DocumentPicker
-          side="id_back"
-          label={t('tenants.documents.back')}
-          state={uploads.id_back}
-          onPick={(side, file) => void pick(side, file)}
-        />
-      </section>
+          <FormSection title={t('tenants.form.optional')} variant="card">
+            <FormGrid columns={2}>
+              <FormField name="email" label={t('tenants.fields.email')} className="mb-0">
+                <Input
+                  type="email"
+                  inputMode="email"
+                  error={error('email')}
+                  onChange={clearError('email')}
+                />
+              </FormField>
+              <FormField name="idNumber" label={t('tenants.fields.idNumber')} className="mb-0">
+                <Input
+                  inputMode="numeric"
+                  placeholder={tenant?.idNumberMasked ?? '001234567890'}
+                  hint={tenant?.idNumberMasked ? t('tenants.form.idNumberKeep') : undefined}
+                  error={idNumberError}
+                  onChange={clearError('idNumber')}
+                />
+              </FormField>
+              <FormField
+                name="idIssuedAt"
+                label={t('tenants.fields.idIssuedAt')}
+                className="mb-0"
+                {...DATE_FIELD}
+              >
+                <DatePicker error={error('idIssuedAt')} onValueChange={clearError('idIssuedAt')} />
+              </FormField>
+              <FormField
+                name="birthDate"
+                label={t('tenants.fields.birthDate')}
+                className="mb-0"
+                {...DATE_FIELD}
+              >
+                <DatePicker error={error('birthDate')} onValueChange={clearError('birthDate')} />
+              </FormField>
+              <FormField name="gender" label={t('tenants.fields.gender')} className="mb-0">
+                <Select options={genderOptions} clearable placeholder={t('tenants.form.choose')} />
+              </FormField>
+              <FormField name="occupation" label={t('tenants.fields.occupation')} className="mb-0">
+                <Input error={error('occupation')} onChange={clearError('occupation')} />
+              </FormField>
+              <FormField name="hometown" label={t('tenants.fields.hometown')} className="mb-0">
+                <Input error={error('hometown')} onChange={clearError('hometown')} />
+              </FormField>
+              <FormField
+                name="permanentAddress"
+                label={t('tenants.fields.permanentAddress')}
+                className="mb-0"
+              >
+                <Input
+                  error={error('permanentAddress')}
+                  onChange={clearError('permanentAddress')}
+                />
+              </FormField>
+              <FormGridItem span="full">
+                <FormField name="note" label={t('tenants.fields.note')} className="mb-0">
+                  <Textarea rows={3} error={error('note')} onChange={clearError('note')} />
+                </FormField>
+              </FormGridItem>
+            </FormGrid>
+          </FormSection>
 
-      <div className="flex flex-wrap gap-2">
-        <FormSubmit form={form}>
-          {(isSubmitting) => (
-            <Button type="submit" loading={isSubmitting} disabled={uploading}>
-              {isSubmitting ? t('common.saving') : t('common.save')}
+          <FormSection title={t('tenants.documents.title')} variant="card">
+            <FormGrid columns={2}>
+              <DocumentPicker
+                side="id_front"
+                label={t('tenants.documents.front')}
+                state={uploads.id_front}
+                onPick={(side, file) => void pick(side, file)}
+                onRemove={(side) => setUploads((current) => ({ ...current, [side]: undefined }))}
+              />
+              <DocumentPicker
+                side="id_back"
+                label={t('tenants.documents.back')}
+                state={uploads.id_back}
+                onPick={(side, file) => void pick(side, file)}
+                onRemove={(side) => setUploads((current) => ({ ...current, [side]: undefined }))}
+              />
+            </FormGrid>
+          </FormSection>
+        </FormGrid>
+        <FormActions>
+          {pendingChanges ? (
+            <AlertDialog
+              title={t('tenants.form.leaveTitle')}
+              description={t('tenants.form.leaveDescription')}
+              confirmLabel={t('tenants.form.leave')}
+              cancelLabel={t('tenants.form.stay')}
+              confirmVariant="danger"
+              onConfirm={() => navigate(cancelTarget)}
+              trigger={
+                <Button type="button" variant="ghost">
+                  {t('common.cancel')}
+                </Button>
+              }
+              triggerAsChild
+            />
+          ) : (
+            <Button type="button" variant="ghost" onClick={() => navigate(cancelTarget)}>
+              {t('common.cancel')}
             </Button>
           )}
-        </FormSubmit>
-        {pendingChanges ? (
-          <AlertDialog
-            title={t('tenants.form.leaveTitle')}
-            description={t('tenants.form.leaveDescription')}
-            confirmLabel={t('tenants.form.leave')}
-            cancelLabel={t('tenants.form.stay')}
-            confirmVariant="danger"
-            onConfirm={() => navigate(cancelTarget)}
-            trigger={
-              <Button type="button" variant="ghost">
-                {t('common.cancel')}
+          <FormSubmit form={form}>
+            {(isSubmitting) => (
+              <Button type="submit" loading={isSubmitting} disabled={uploading}>
+                {isSubmitting ? t('common.saving') : t('common.save')}
               </Button>
-            }
-            triggerAsChild
-          />
-        ) : (
-          <Button type="button" variant="ghost" onClick={() => navigate(cancelTarget)}>
-            {t('common.cancel')}
-          </Button>
-        )}
-      </div>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }

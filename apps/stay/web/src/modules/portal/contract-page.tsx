@@ -1,3 +1,4 @@
+import { EmptyState } from '@itclabs/react-ui';
 import { usePortalContract } from '@stay/sdk/react';
 import type { ContractStatus, VehicleType } from '@stay/shared';
 import type { ReactNode } from 'react';
@@ -98,7 +99,7 @@ export default function PortalContractPage() {
             </PortalSection>
             <PortalSection title="Xe đăng ký">
               {data.vehicles.length === 0 ? (
-                <p className="text-muted">Không có xe đăng ký.</p>
+                <EmptyState size="compact" appearance="plain" title={<>Không có xe đăng ký.</>} />
               ) : (
                 <ul className="grid gap-1">
                   {data.vehicles.map((vehicle, index) => (

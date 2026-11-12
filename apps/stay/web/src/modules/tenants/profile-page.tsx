@@ -1,4 +1,5 @@
 import { Alert, AlertDialog, Button, EmptyState, Icon, Tag } from '@itclabs/react-ui';
+import { MediaGallery } from '@itclabs/react-ui/media-gallery';
 import { toast } from '@itclabs/react-ui/toast';
 import { useArchiveTenant, useRevealTenantIdNumber, useTenant } from '@stay/sdk/react';
 import { ApiSdkError, type components, getErrorMessage } from '@stay/sdk/shared';
@@ -61,15 +62,14 @@ function IdNumberBlock({ tenant }: { tenant: TenantDetail }) {
   const image = (document: typeof front, label: string) => (
     <figure className="grid gap-1">
       {document?.url ? (
-        <img
-          src={document.url}
-          alt={label}
-          className="aspect-[3/2] w-full rounded-control border border-line object-cover"
+        <MediaGallery
+          items={[{ id: document.fileId, src: document.url, alt: label }]}
+          aspectRatio="3 / 2"
+          thumbnails="none"
+          fit="contain"
         />
       ) : (
-        <div className="flex aspect-[3/2] w-full items-center justify-center rounded-control border border-dashed border-line text-ui-sm text-muted">
-          {t('tenants.documents.none')}
-        </div>
+        <EmptyState size="compact" title={t('tenants.documents.none')} />
       )}
       <figcaption className="text-ui-sm text-muted">{label}</figcaption>
     </figure>

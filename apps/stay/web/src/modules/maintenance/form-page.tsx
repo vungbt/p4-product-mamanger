@@ -12,6 +12,7 @@ import {
   Textarea,
   useAppForm,
 } from '@itclabs/react-ui';
+import { MediaGallery } from '@itclabs/react-ui/media-gallery';
 import {
   useMaintenanceDetail,
   useMaintenanceMutations,
@@ -73,6 +74,7 @@ function JobForm({ buildingId, job }: { buildingId: string; job?: StayMaintenanc
 
   const form = useAppForm({
     defaultValues: {
+      uploadFiles: [] as File[],
       roomId: job?.roomId ?? '',
       title: job?.title ?? '',
       description: job?.description ?? '',
@@ -165,16 +167,26 @@ function JobForm({ buildingId, job }: { buildingId: string; job?: StayMaintenanc
               <FormField name="description" label={t('jobDescription')}>
                 <Textarea maxLength={2000} rows={4} />
               </FormField>
-              <label htmlFor="maintenance-photos" className="grid gap-2">
-                {t('photos')}
-                <Input
-                  id="maintenance-photos"
-                  type="file"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(event) => setFiles([...(event.target.files ?? [])])}
-                />
-              </label>
+
+              <form.AppField
+                name="uploadFiles"
+                listeners={{
+                  onChange: ({ value: files }) => {
+                    setFiles(files);
+                  },
+                }}
+              >
+                {(field) => (
+                  <field.UploadField
+                    id="maintenance-photos"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp"
+                    label={t('photos')}
+                    maxBytes={10485760}
+                    maxFiles={MAINTENANCE_MAX_PHOTOS}
+                  />
+                )}
+              </form.AppField>
               {files.map((file) => (
                 <p key={file.name}>{file.name}</p>
               ))}
@@ -184,10 +196,10 @@ function JobForm({ buildingId, job }: { buildingId: string; job?: StayMaintenanc
                   .map((photo) => (
                     <li key={photo.fileId}>
                       {photo.url ? (
-                        <img
-                          src={photo.url}
-                          alt={t('photo')}
-                          className="size-24 rounded-control object-cover"
+                        <MediaGallery
+                          items={[{ id: photo.fileId, src: photo.url, alt: t('photo') }]}
+                          thumbnails="none"
+                          className="w-24"
                         />
                       ) : null}
                       <Button

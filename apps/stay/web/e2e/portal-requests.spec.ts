@@ -124,6 +124,7 @@ for (const width of [1280, 375]) {
     );
     await claimForm
       .getByLabel('Ảnh biên lai')
+      .and(page.locator('input[type="file"]'))
       .setInputFiles({ name: 'bien-lai.png', mimeType: 'image/png', buffer: PNG });
     await claimForm.getByRole('button', { name: 'Gửi xác nhận', exact: true }).click();
     await expect(claimForm).toBeHidden();

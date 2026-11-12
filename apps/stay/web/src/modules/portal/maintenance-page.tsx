@@ -1,4 +1,5 @@
 import { Button, EmptyState, Tag } from '@itclabs/react-ui';
+import { MediaGallery } from '@itclabs/react-ui/media-gallery';
 import { toast } from '@itclabs/react-ui/toast';
 import { usePortalCancelMaintenance, usePortalMaintenance } from '@stay/sdk/react';
 import { getErrorMessage } from '@stay/sdk/shared';
@@ -46,21 +47,15 @@ function MaintenanceCard({ item }: { item: PortalMaintenance }) {
         <p className="whitespace-pre-wrap break-words">{item.description}</p>
       ) : null}
       {item.photos.length > 0 ? (
-        <ul className="flex flex-wrap gap-2">
-          {item.photos.map((photo, index) =>
-            photo.url ? (
-              <li key={photo.fileId}>
-                <a href={photo.url} target="_blank" rel="noreferrer">
-                  <img
-                    src={photo.url}
-                    alt={`Ảnh ${index + 1} của báo hỏng`}
-                    className="size-16 rounded-control border border-line object-cover"
-                  />
-                </a>
-              </li>
-            ) : null,
+        <MediaGallery
+          items={item.photos.flatMap((photo, index) =>
+            photo.url
+              ? [{ id: photo.fileId, src: photo.url, alt: `Ảnh ${index + 1} của báo hỏng` }]
+              : [],
           )}
-        </ul>
+          fit="contain"
+          className="max-w-sm"
+        />
       ) : null}
       {item.reply ? (
         <div className="rounded-control bg-canvas p-3" data-testid="portal-maintenance-reply">

@@ -1,4 +1,15 @@
-import { Button, Form, FormField, FormSubmit, Textarea, useAppForm } from '@itclabs/react-ui';
+import {
+  Button,
+  Form,
+  FormActions,
+  FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
+  FormSubmit,
+  Textarea,
+  useAppForm,
+} from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useReversePayment } from '@stay/sdk/react';
 import type { StayPayment } from '@stay/shared';
@@ -74,22 +85,28 @@ export function ReversePaymentDialog({
         className="grid min-w-0 gap-4"
         aria-label="Huỷ bút toán thu"
       >
-        <FormError message={error} />
-        <FormField name="reason" label="Lý do huỷ" required>
-          <Textarea maxLength={2000} />
-        </FormField>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="secondary" disabled={reverse.isPending} onClick={close}>
-            Quay lại
-          </Button>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button type="submit" variant="danger" loading={submitting}>
-                Huỷ bút toán
-              </Button>
-            )}
-          </FormSubmit>
-        </div>
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              <FormError message={error} />
+              <FormField name="reason" label="Lý do huỷ" required>
+                <Textarea maxLength={2000} />
+              </FormField>
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <Button variant="secondary" disabled={reverse.isPending} onClick={close}>
+              Quay lại
+            </Button>
+            <FormSubmit form={form}>
+              {(submitting) => (
+                <Button type="submit" variant="danger" loading={submitting}>
+                  Huỷ bút toán
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </Overlay>
   );

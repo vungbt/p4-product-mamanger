@@ -2,7 +2,11 @@ import {
   Button,
   DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   NumberInput,
@@ -250,78 +254,84 @@ function PaymentForm({
 
   return (
     <Form noValidate form={form} schema={schema} className="grid min-w-0 gap-4" aria-label={TITLE}>
-      <FormError message={error} />
-      {invoices.length > 1 ? (
-        <FormField name="invoiceId" label="Hoá đơn" required>
-          <Select
-            options={invoices.map((invoice) => ({
-              value: invoice.id,
-              label: invoiceLabel(invoice),
-            }))}
-          />
-        </FormField>
-      ) : null}
-      <dl
-        className="grid grid-cols-2 gap-x-3 gap-y-1 rounded-control border border-line bg-canvas p-3 text-ui-sm"
-        data-testid="payment-invoice"
-      >
-        <dt className="text-muted">Hoá đơn</dt>
-        <dd className="text-right font-semibold break-all">{selected.code ?? 'Nháp'}</dd>
-        <dt className="text-muted">Phòng · kỳ</dt>
-        <dd className="text-right">
-          {selected.roomCode} · {displayPeriod(selected.period)}
-        </dd>
-        <dt className="text-muted">Hạn</dt>
-        <dd className="text-right">{displayDate(selected.dueOn)}</dd>
-        <dt className="text-muted">Còn lại</dt>
-        <dd className="text-right font-bold" data-testid="payment-remaining">
-          {formatVnd(selected.remaining)}
-        </dd>
-      </dl>
-      <FormField name="amount" label="Số tiền" required>
-        <NumberInput
-          min={1}
-          max={Number.MAX_SAFE_INTEGER}
-          step={1}
-          inputMode="numeric"
-          endAddon="₫"
-        />
-      </FormField>
-      <FormField name="method" label="Phương thức" required>
-        <Select options={MANUAL_PAYMENT_METHOD_OPTIONS} />
-      </FormField>
-      <FormField name="paidOn" label="Ngày thu" required {...DATE_FIELD}>
-        <DatePicker maxDate={todayIsoDate()} clearable={false} />
-      </FormField>
-      <FormField name="reference" label="Mã giao dịch">
-        <Input maxLength={120} autoComplete="off" />
-      </FormField>
-      <FormField name="note" label="Ghi chú">
-        <Textarea maxLength={2000} rows={2} />
-      </FormField>
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button variant="secondary" disabled={record.isPending} onClick={close}>
-          Huỷ
-        </Button>
-        <Button
-          variant="secondary"
-          disabled={record.isPending}
-          onClick={payInFull}
-          aria-describedby="payment-full-hint"
-        >
-          Thu đủ
-        </Button>
-        <FormSubmit form={form}>
-          {(submitting) => (
-            <Button type="submit" loading={submitting}>
-              Ghi khoản thu
-            </Button>
-          )}
-        </FormSubmit>
-      </div>
-      <p id="payment-full-hint" className="text-ui-sm text-muted">
-        "Thu đủ" ghi ngay số còn lại {formatVnd(selected.remaining)}.
-      </p>
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            <FormError message={error} />
+            {invoices.length > 1 ? (
+              <FormField name="invoiceId" label="Hoá đơn" required>
+                <Select
+                  options={invoices.map((invoice) => ({
+                    value: invoice.id,
+                    label: invoiceLabel(invoice),
+                  }))}
+                />
+              </FormField>
+            ) : null}
+            <dl
+              className="grid grid-cols-2 gap-x-3 gap-y-1 rounded-control border border-line bg-canvas p-3 text-ui-sm"
+              data-testid="payment-invoice"
+            >
+              <dt className="text-muted">Hoá đơn</dt>
+              <dd className="text-right font-semibold break-all">{selected.code ?? 'Nháp'}</dd>
+              <dt className="text-muted">Phòng · kỳ</dt>
+              <dd className="text-right">
+                {selected.roomCode} · {displayPeriod(selected.period)}
+              </dd>
+              <dt className="text-muted">Hạn</dt>
+              <dd className="text-right">{displayDate(selected.dueOn)}</dd>
+              <dt className="text-muted">Còn lại</dt>
+              <dd className="text-right font-bold" data-testid="payment-remaining">
+                {formatVnd(selected.remaining)}
+              </dd>
+            </dl>
+            <FormField name="amount" label="Số tiền" required>
+              <NumberInput
+                min={1}
+                max={Number.MAX_SAFE_INTEGER}
+                step={1}
+                inputMode="numeric"
+                endAddon="₫"
+              />
+            </FormField>
+            <FormField name="method" label="Phương thức" required>
+              <Select options={MANUAL_PAYMENT_METHOD_OPTIONS} />
+            </FormField>
+            <FormField name="paidOn" label="Ngày thu" required {...DATE_FIELD}>
+              <DatePicker maxDate={todayIsoDate()} clearable={false} />
+            </FormField>
+            <FormField name="reference" label="Mã giao dịch">
+              <Input maxLength={120} autoComplete="off" />
+            </FormField>
+            <FormField name="note" label="Ghi chú">
+              <Textarea maxLength={2000} rows={2} />
+            </FormField>
+            <FormActions>
+              <Button variant="secondary" disabled={record.isPending} onClick={close}>
+                Huỷ
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={record.isPending}
+                onClick={payInFull}
+                aria-describedby="payment-full-hint"
+              >
+                Thu đủ
+              </Button>
+              <FormSubmit form={form}>
+                {(submitting) => (
+                  <Button type="submit" loading={submitting}>
+                    Ghi khoản thu
+                  </Button>
+                )}
+              </FormSubmit>
+            </FormActions>
+            <p id="payment-full-hint" className="text-ui-sm text-muted">
+              "Thu đủ" ghi ngay số còn lại {formatVnd(selected.remaining)}.
+            </p>
+          </FormGrid>
+        </FormSection>
+      </FormLayout>
     </Form>
   );
 }

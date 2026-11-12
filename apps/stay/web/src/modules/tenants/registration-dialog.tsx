@@ -2,7 +2,11 @@ import {
   Button,
   DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Textarea,
   useAppForm,
@@ -81,25 +85,31 @@ export function RegistrationDialog({
         className="grid min-w-0 gap-4"
         aria-label="Khai báo tạm trú"
       >
-        <FormError message={error} />
-        <FormField name="registeredOn" label="Ngày khai báo" required {...DATE_FIELD}>
-          <DatePicker minDate={resident.arrivalDate} maxDate={today} clearable={false} />
-        </FormField>
-        <FormField name="note" label="Ghi chú">
-          <Textarea maxLength={2000} />
-        </FormField>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="secondary" disabled={registration.isPending} onClick={close}>
-            Huỷ
-          </Button>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button type="submit" loading={submitting}>
-                Lưu khai báo
-              </Button>
-            )}
-          </FormSubmit>
-        </div>
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              <FormError message={error} />
+              <FormField name="registeredOn" label="Ngày khai báo" required {...DATE_FIELD}>
+                <DatePicker minDate={resident.arrivalDate} maxDate={today} clearable={false} />
+              </FormField>
+              <FormField name="note" label="Ghi chú">
+                <Textarea maxLength={2000} />
+              </FormField>
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <Button variant="secondary" disabled={registration.isPending} onClick={close}>
+              Huỷ
+            </Button>
+            <FormSubmit form={form}>
+              {(submitting) => (
+                <Button type="submit" loading={submitting}>
+                  Lưu khai báo
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </Overlay>
   );

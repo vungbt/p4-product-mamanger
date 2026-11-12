@@ -1,4 +1,4 @@
-import { Skeleton } from '@itclabs/react-ui';
+import { EmptyState, Skeleton } from '@itclabs/react-ui';
 import { useDepositLedger } from '@stay/sdk/react';
 import type { ContractStatus } from '@stay/shared';
 import { displayDate, formatVnd } from '@/libraries/format';
@@ -39,7 +39,7 @@ export function DepositLedger({
         {formatVnd(query.data.balance.forfeited)} · Cấn trừ: {formatVnd(query.data.balance.applied)}
       </p>
       {!query.data.entries.length ? (
-        <p className="text-muted">Chưa có bút toán cọc.</p>
+        <EmptyState size="compact" appearance="plain" title={<>Chưa có bút toán cọc.</>} />
       ) : (
         <div className="relative overflow-x-auto">
           <table className="w-full text-left" aria-label="Lịch sử bút toán cọc">

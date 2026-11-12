@@ -4,7 +4,11 @@ import {
   DatePicker,
   Dialog,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Textarea,
   useAppForm,
@@ -140,25 +144,40 @@ export function MaintenanceDialog({ room, onClose, onReload }: MaintenanceDialog
     >
       {turningOn ? (
         <Form form={form} schema={schema} className="grid gap-4" noValidate>
-          {errorAlert}
-          <FormField name="reason" label={t('rooms.maintenance.reason')} required className="mb-0">
-            <Textarea rows={3} placeholder={t('rooms.maintenance.reasonPlaceholder')} />
-          </FormField>
-          <FormField name="until" label={t('rooms.maintenance.until')} className="mb-0">
-            <DatePicker minDate={today} clearable placeholder={t('rooms.maintenance.untilEmpty')} />
-          </FormField>
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button variant="secondary" onClick={close}>
-              {t('rooms.form.cancel')}
-            </Button>
-            <FormSubmit form={form}>
-              {(isSubmitting) => (
-                <Button type="submit" loading={isSubmitting}>
-                  {t('rooms.maintenance.confirmOn')}
-                </Button>
-              )}
-            </FormSubmit>
-          </div>
+          <FormLayout size="full">
+            <FormSection>
+              <FormGrid columns={1}>
+                {errorAlert}
+                <FormField
+                  name="reason"
+                  label={t('rooms.maintenance.reason')}
+                  required
+                  className="mb-0"
+                >
+                  <Textarea rows={3} placeholder={t('rooms.maintenance.reasonPlaceholder')} />
+                </FormField>
+                <FormField name="until" label={t('rooms.maintenance.until')} className="mb-0">
+                  <DatePicker
+                    minDate={today}
+                    clearable
+                    placeholder={t('rooms.maintenance.untilEmpty')}
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
+            <FormActions>
+              <Button variant="secondary" onClick={close}>
+                {t('rooms.form.cancel')}
+              </Button>
+              <FormSubmit form={form}>
+                {(isSubmitting) => (
+                  <Button type="submit" loading={isSubmitting}>
+                    {t('rooms.maintenance.confirmOn')}
+                  </Button>
+                )}
+              </FormSubmit>
+            </FormActions>
+          </FormLayout>
         </Form>
       ) : (
         <div className="grid gap-4">

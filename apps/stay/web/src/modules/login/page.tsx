@@ -3,7 +3,11 @@ import {
   Button,
   Checkbox,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   InputPassword,
@@ -70,59 +74,66 @@ export default function LoginPage() {
 
         <div className="rounded-panel border border-line bg-surface p-5 shadow-panel sm:p-6">
           <Form form={form} schema={schema} className="grid gap-4" noValidate>
-            {formError ? (
-              <Alert tone="danger" role="alert" data-testid="login-error">
-                {formError}
-              </Alert>
-            ) : expired ? (
-              <Alert tone="info">{t('auth.sessionExpired')}</Alert>
-            ) : null}
+            <FormLayout size="full">
+              <FormSection>
+                <FormGrid columns={1}>
+                  {formError ? (
+                    <Alert tone="danger" role="alert" data-testid="login-error">
+                      {formError}
+                    </Alert>
+                  ) : expired ? (
+                    <Alert tone="info">{t('auth.sessionExpired')}</Alert>
+                  ) : null}
 
-            <FormField name="email" label={t('auth.email')} required className="mb-0">
-              <Input
-                type="email"
-                icon="mail"
-                inputMode="email"
-                autoComplete="username"
-                placeholder={t('auth.emailPlaceholder')}
-                autoFocus={!savedEmail}
-              />
-            </FormField>
+                  <FormField name="email" label={t('auth.email')} required className="mb-0">
+                    <Input
+                      type="email"
+                      icon="mail"
+                      inputMode="email"
+                      autoComplete="username"
+                      placeholder={t('auth.emailPlaceholder')}
+                      autoFocus={!savedEmail}
+                    />
+                  </FormField>
 
-            <FormField name="password" label={t('auth.password')} required className="mb-0">
-              <InputPassword
-                icon="key"
-                autoComplete="current-password"
-                placeholder={t('auth.passwordPlaceholder')}
-                showLabel={t('auth.showPassword')}
-                hideLabel={t('auth.hidePassword')}
-                autoFocus={Boolean(savedEmail)}
-              />
-            </FormField>
+                  <FormField name="password" label={t('auth.password')} required className="mb-0">
+                    <InputPassword
+                      icon="key"
+                      autoComplete="current-password"
+                      placeholder={t('auth.passwordPlaceholder')}
+                      showLabel={t('auth.showPassword')}
+                      hideLabel={t('auth.hidePassword')}
+                      autoFocus={Boolean(savedEmail)}
+                    />
+                  </FormField>
 
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <Checkbox
-                checked={remember}
-                onCheckedChange={(checked) => setRemember(checked === true)}
-                label={t('auth.rememberEmail')}
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-accent"
-                onClick={() => toast.info(t('auth.forgotPasswordSoon'))}
-              >
-                {t('auth.forgotPassword')}
-              </Button>
-            </div>
-
-            <FormSubmit form={form}>
-              {(isSubmitting) => (
-                <Button type="submit" size="lg" loading={isSubmitting} className="w-full">
-                  {isSubmitting ? t('auth.submitting') : t('auth.submit')}
-                </Button>
-              )}
-            </FormSubmit>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Checkbox
+                      checked={remember}
+                      onCheckedChange={(checked) => setRemember(checked === true)}
+                      label={t('auth.rememberEmail')}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-accent"
+                      onClick={() => toast.info(t('auth.forgotPasswordSoon'))}
+                    >
+                      {t('auth.forgotPassword')}
+                    </Button>
+                  </div>
+                </FormGrid>
+              </FormSection>
+              <FormActions>
+                <FormSubmit form={form}>
+                  {(isSubmitting) => (
+                    <Button type="submit" size="lg" loading={isSubmitting} className="w-full">
+                      {isSubmitting ? t('auth.submitting') : t('auth.submit')}
+                    </Button>
+                  )}
+                </FormSubmit>
+              </FormActions>
+            </FormLayout>
           </Form>
         </div>
 

@@ -1,4 +1,4 @@
-import { Button, IconButton, Popover } from '@itclabs/react-ui';
+import { Button, EmptyState, IconButton, Popover } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import {
   NOTIFICATION_STREAMS,
@@ -79,7 +79,9 @@ export default function NotificationsBell() {
             </p>
           ) : null}
           {query.isPending ? <p>Đang tải…</p> : null}
-          {query.data?.items.length === 0 ? <p className="text-muted">Chưa có thông báo</p> : null}
+          {query.data?.items.length === 0 ? (
+            <EmptyState size="compact" appearance="plain" title={<>Chưa có thông báo</>} />
+          ) : null}
           <ul className="grid max-h-80 min-w-0 gap-3 overflow-y-auto">
             {query.data?.items.map((item) => (
               <li key={item.id} className="grid min-w-0 gap-1 border-b border-line pb-3">

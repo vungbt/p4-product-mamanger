@@ -3,7 +3,11 @@ import {
   Button,
   Checkbox,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   Icon,
   Input,
   useAppForm,
@@ -17,7 +21,6 @@ import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { DocumentBody } from '@/libraries/document-body';
-import { FormActions, FormGrid, FormLayout, FormSection } from '@/libraries/forms/layout';
 import { FormError } from '@/libraries/forms/page-states';
 import { useFormValue } from '@/libraries/forms/use-form-value';
 import { SignaturePad } from '@/libraries/signature-pad';
@@ -160,7 +163,7 @@ function SigningDocument({ data }: { data: PortalDocument }) {
             }}
           >
             <FormLayout>
-              <FormSection title={t('sign.title')}>
+              <FormSection variant="card" title={t('sign.title')}>
                 <FormGrid>
                   <FormField name="fullName" label={t('sign.fullName')} required>
                     <Input autoComplete="name" hint={t('sign.fullNameHint')} />
@@ -193,16 +196,16 @@ function SigningDocument({ data }: { data: PortalDocument }) {
                     {t('sign.typedPreview', { name: typedName })}
                   </p>
                 )}
-                <FormActions>
-                  <Button
-                    type="submit"
-                    loading={sign.isPending}
-                    disabled={!read || !agree || locked || (method === 'drawn' && !signature)}
-                  >
-                    {t('sign.submit')}
-                  </Button>
-                </FormActions>
               </FormSection>
+              <FormActions>
+                <Button
+                  type="submit"
+                  loading={sign.isPending}
+                  disabled={!read || !agree || locked || (method === 'drawn' && !signature)}
+                >
+                  {t('sign.submit')}
+                </Button>
+              </FormActions>
             </FormLayout>
           </Form>
           <Button variant="danger" onClick={() => setRejecting(!rejecting)}>
@@ -214,18 +217,18 @@ function SigningDocument({ data }: { data: PortalDocument }) {
               schema={{ reason: v.pipe(v.string(), v.trim(), v.minLength(1, t('sign.required'))) }}
             >
               <FormLayout>
-                <FormSection title={t('reject.title')}>
+                <FormSection variant="card" title={t('reject.title')}>
                   <FormGrid>
                     <FormField name="reason" label={t('reject.reason')} required>
                       <Input maxLength={1000} />
                     </FormField>
                   </FormGrid>
-                  <FormActions>
-                    <Button type="submit" loading={reject.isPending}>
-                      {t('reject.submit')}
-                    </Button>
-                  </FormActions>
                 </FormSection>
+                <FormActions>
+                  <Button type="submit" loading={reject.isPending}>
+                    {t('reject.submit')}
+                  </Button>
+                </FormActions>
               </FormLayout>
             </Form>
           )}
@@ -255,7 +258,7 @@ function SigningDocument({ data }: { data: PortalDocument }) {
           {t('detail.download')}
         </a>
       )}
-      <FormSection title={t('detail.signers')}>
+      <FormSection variant="card" title={t('detail.signers')}>
         <ul className="grid gap-2">
           {data.signers.map((signer, index) => (
             <li key={`${signer.role}-${index}`}>

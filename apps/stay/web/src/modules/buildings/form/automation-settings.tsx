@@ -2,7 +2,11 @@ import {
   Alert,
   Button,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Select,
   Switch,
@@ -76,36 +80,48 @@ function AutomationForm({ id, settings }: { id: string; settings: StayAutomation
       className="grid gap-4"
       data-testid="automation-settings"
     >
-      <h2 className="text-section font-semibold">Tự động hoá kỳ thu</h2>
-      <p className="text-ui-sm text-muted">
-        Theo giờ Việt Nam. Chỉ tạo hoá đơn nháp, chủ trọ kiểm tra và phát hành. Email chưa được kết
-        nối; thông báo vẫn có trong chuông.
-      </p>
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-        <FormField name="readingReminderBefore" className="mb-0">
-          <Switch label="Nhắc chủ trọ trước ngày chốt số" />
-        </FormField>
-        <FormField name="readingReminderDaysBefore" label="Nhắc chốt số trước" className="mb-0">
-          <Select options={DAYS_BEFORE_OPTIONS} />
-        </FormField>
-      </div>
-      <p className="-mt-2 text-ui-sm text-muted">
-        Nhắc trước và nhắc đúng ngày chốt số chỉ gửi khi còn phòng chưa nhập đủ chỉ số. Khi toà có
-        ngày ân hạn, nhắc quá hạn gửi vào ngày đầu tiên quá hạn thay vì sau hạn 3 ngày.
-      </p>
-      {fields.map(([name, label]) => (
-        <FormField key={name} name={name}>
-          <Switch label={label} />
-        </FormField>
-      ))}
-      {error ? <Alert tone="danger">{error}</Alert> : null}
-      <FormSubmit form={form}>
-        {(pending) => (
-          <Button type="submit" loading={pending}>
-            Lưu tự động hoá
-          </Button>
-        )}
-      </FormSubmit>
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            <h2 className="text-section font-semibold">Tự động hoá kỳ thu</h2>
+            <p className="text-ui-sm text-muted">
+              Theo giờ Việt Nam. Chỉ tạo hoá đơn nháp, chủ trọ kiểm tra và phát hành. Email chưa
+              được kết nối; thông báo vẫn có trong chuông.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+              <FormField name="readingReminderBefore" className="mb-0">
+                <Switch label="Nhắc chủ trọ trước ngày chốt số" />
+              </FormField>
+              <FormField
+                name="readingReminderDaysBefore"
+                label="Nhắc chốt số trước"
+                className="mb-0"
+              >
+                <Select options={DAYS_BEFORE_OPTIONS} />
+              </FormField>
+            </div>
+            <p className="-mt-2 text-ui-sm text-muted">
+              Nhắc trước và nhắc đúng ngày chốt số chỉ gửi khi còn phòng chưa nhập đủ chỉ số. Khi
+              toà có ngày ân hạn, nhắc quá hạn gửi vào ngày đầu tiên quá hạn thay vì sau hạn 3 ngày.
+            </p>
+            {fields.map(([name, label]) => (
+              <FormField key={name} name={name}>
+                <Switch label={label} />
+              </FormField>
+            ))}
+            {error ? <Alert tone="danger">{error}</Alert> : null}
+          </FormGrid>
+        </FormSection>
+        <FormActions>
+          <FormSubmit form={form}>
+            {(pending) => (
+              <Button type="submit" loading={pending}>
+                Lưu tự động hoá
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }

@@ -2,8 +2,11 @@ import {
   Button,
   Checkbox,
   Form,
+  FormGrid,
+  FormLayout,
+  FormSection,
   IconButton,
-  Input,
+  NumberInput,
   Tag,
   type TagTone,
   useAppForm,
@@ -253,7 +256,7 @@ export function ReadingRoomCard({
           if (
             event.key !== 'Enter' ||
             !(event.target instanceof HTMLInputElement) ||
-            event.target.type !== 'number'
+            !event.target.hasAttribute('data-reading-input')
           )
             return;
           event.preventDefault();
@@ -263,18 +266,24 @@ export function ReadingRoomCard({
           inputs[inputs.indexOf(event.target) + 1]?.focus();
         }}
       >
-        {room.meters.map((meter) => (
-          <MeterRow
-            key={meter.meterId}
-            meter={meter}
-            roomCode={room.code}
-            draft={draftFor(meter)}
-            busy={{ saving, uploading, online }}
-            onChange={(patch) => change(meter, patch)}
-            onPhoto={(file) => void upload(meter, file)}
-            onReplace={() => setReplacing(meter)}
-          />
-        ))}
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              {room.meters.map((meter) => (
+                <MeterRow
+                  key={meter.meterId}
+                  meter={meter}
+                  roomCode={room.code}
+                  draft={draftFor(meter)}
+                  busy={{ saving, uploading, online }}
+                  onChange={(patch) => change(meter, patch)}
+                  onPhoto={(file) => void upload(meter, file)}
+                  onReplace={() => setReplacing(meter)}
+                />
+              ))}
+            </FormGrid>
+          </FormSection>
+        </FormLayout>
       </Form>
       {hasError ? (
         <Button
@@ -336,7 +345,7 @@ function MeterRow({
   onPhoto: (file: File) => void;
   onReplace: () => void;
 }) {
-  const photoInput = useRef<HTMLInputElement>(null);
+  const uploadForm = useAppForm({ defaultValues: { uploadFiles: [] as File[] } });
 
   const label = meter.kind === 'electricity' ? 'Điện' : 'Nước';
   const name = label.toLowerCase();
@@ -350,18 +359,17 @@ function MeterRow({
 
   return (
     <div className="grid min-w-0 gap-1.5 border-t border-line pt-3 first:border-t-0 first:pt-0">
-      <div className="flex min-w-0 items-start gap-2">
+      <div className="flex min-w-0 flex-wrap items-start gap-2">
         <div className="flex h-control-md w-20 shrink-0 flex-col justify-center">
           <p className="text-ui-sm font-semibold text-ink">{label}</p>
           <p className="text-ui-sm text-muted">Cũ {meter.previous}</p>
         </div>
-        <Input
-          type="number"
+        <NumberInput
           inputMode="numeric"
           min={meter.previous}
           max={METER_READING_MAX}
           step={1}
-          value={draft.value}
+          value={draft.value === '' ? null : Number(draft.value)}
           placeholder={locked ? 'Đã khoá' : 'Số mới'}
           disabled={locked || busy.uploading}
           data-reading-input
@@ -369,28 +377,31 @@ function MeterRow({
           endAddon={unit}
           rootClassName="min-w-0 flex-1"
           error={error || draft.error}
-          onChange={(event) => onChange({ value: event.target.value, confirmed: false })}
+          onValueChange={(value) =>
+            onChange({ value: value === null ? '' : String(value), confirmed: false })
+          }
         />
-        <IconButton
-          icon="camera"
-          variant={hasPhoto ? 'secondary' : 'ghost'}
-          label={`${hasPhoto ? 'Đổi' : 'Thêm'} ảnh đồng hồ ${name} (tuỳ chọn)`}
-          disabled={locked || !busy.online || busy.saving || busy.uploading}
-          onClick={() => photoInput.current?.click()}
-        />
-        <input
-          ref={photoInput}
-          type="file"
-          hidden
-          tabIndex={-1}
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
 
-            event.target.value = '';
-            if (file) onPhoto(file);
+        <uploadForm.AppField
+          name="uploadFiles"
+          listeners={{
+            onChange: ({ value: files }) => {
+              const file = files[0];
+              if (file) onPhoto(file);
+              else onChange({ photoFileId: null });
+            },
           }}
-        />
+        >
+          {(field) => (
+            <field.UploadField
+              disabled={locked || !busy.online || busy.saving || busy.uploading}
+              accept="image/jpeg,image/png,image/webp"
+              label={`${hasPhoto ? 'Đổi' : 'Thêm'} ảnh đồng hồ ${name} (tuỳ chọn)`}
+              maxBytes={10485760}
+              className="w-full order-last"
+            />
+          )}
+        </uploadForm.AppField>
         <IconButton
           icon="wrench"
           variant="ghost"

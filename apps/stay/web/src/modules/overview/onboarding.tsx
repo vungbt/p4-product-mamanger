@@ -1,4 +1,4 @@
-import { Icon, type IconName } from '@itclabs/react-ui';
+import { Icon, type IconName, Stepper } from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { type AbilityCheck, canOpen, useAbility } from '@/libraries/ability';
@@ -46,9 +46,19 @@ export function OnboardingSteps({ empty }: { empty: boolean }) {
         {t(empty ? 'overview.onboardingDescription' : 'overview.onboardingSetupDescription')}
       </p>
 
-      <ol className="mt-5 grid gap-3 md:grid-cols-3">
-        {steps.map((step, index) => (
-          <li key={step.key} className="min-w-0">
+      <Stepper
+        aria-label={t('overview.onboardingTitle')}
+        currentStep=""
+        className="mt-5 grid gap-3 md:grid-cols-3"
+        classNames={{
+          step: 'items-start',
+          indicator: 'mt-4',
+          separator: 'hidden',
+          label: 'min-w-0 flex-1',
+        }}
+        steps={steps.map((step, index) => ({
+          id: step.key,
+          label: (
             <Link
               to={step.href}
               data-testid={`onboarding-step-${step.key}`}
@@ -69,9 +79,9 @@ export function OnboardingSteps({ empty }: { empty: boolean }) {
                 </span>
               </span>
             </Link>
-          </li>
-        ))}
-      </ol>
+          ),
+        }))}
+      />
     </section>
   );
 }

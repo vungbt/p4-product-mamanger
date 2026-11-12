@@ -2,9 +2,12 @@ import {
   Button,
   DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
-  Input,
   NumberInput,
   Select,
   Textarea,
@@ -77,6 +80,7 @@ export function ExpenseForm({
 
   const form = useAppForm({
     defaultValues: {
+      uploadFiles: [] as File[],
       amount: expense?.amount ?? (null as number | null),
       categoryId: expense?.categoryId ?? '',
       spentOn: expense?.spentOn ?? todayIsoDate(),
@@ -150,82 +154,96 @@ export function ExpenseForm({
       className="grid gap-4 rounded-panel border border-line bg-surface p-4"
       aria-label={expense ? 'Sửa chi phí' : 'Thêm chi phí'}
     >
-      {prompt}
-      <h2 className="font-semibold">{expense ? 'Sửa chi phí' : 'Thêm chi phí'}</h2>
-      <FormError message={error} />
-      {conflict ? <ConflictAlert onReload={onReload} /> : null}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <FormField name="amount" label="Số tiền" required>
-          <NumberInput
-            min={1}
-            max={Number.MAX_SAFE_INTEGER}
-            step={1}
-            endAddon="₫"
-            inputMode="numeric"
-          />
-        </FormField>
-        <FormField name="categoryId" label="Danh mục" required>
-          <Select
-            options={categories
-              .filter((category) => category.active || category.id === expense?.categoryId)
-              .map((category) => ({ value: category.id, label: category.name }))}
-          />
-        </FormField>
-        <FormField name="spentOn" label="Ngày chi" required {...DATE_FIELD}>
-          <DatePicker clearable={false} />
-        </FormField>
-        <FormField name="roomId" label="Phòng" mapOnChange={(value) => value ?? ''}>
-          <Select
-            clearable
-            options={[
-              { value: '', label: 'Cả toà' },
-              ...rooms.map((room) => ({ value: room.id, label: room.code })),
-            ]}
-          />
-        </FormField>
-      </div>
-      <FormField name="note" label="Ghi chú">
-        <Textarea maxLength={2000} />
-      </FormField>
-      <FormField name="receiptFileId" label="Ảnh hoá đơn">
-        {() => (
-          <Input
-            aria-label="Ảnh hoá đơn"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-          />
-        )}
-      </FormField>
-      {expense?.receipt ? (
-        <a
-          className="text-accent underline"
-          href={expense.receipt.url}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Xem ảnh hoá đơn hiện tại
-        </a>
-      ) : null}
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button
-          variant="secondary"
-          onClick={() => {
-            form.reset();
-            setFile(null);
-            onDone();
-          }}
-        >
-          Huỷ
-        </Button>
-        <FormSubmit form={form}>
-          {(submitting) => (
-            <Button type="submit" loading={submitting}>
-              Lưu chi phí
-            </Button>
-          )}
-        </FormSubmit>
-      </div>
+      <FormLayout size="full">
+        <FormSection title={expense ? 'Sửa chi phí' : 'Thêm chi phí'}>
+          {prompt}
+
+          <FormError message={error} />
+          {conflict ? <ConflictAlert onReload={onReload} /> : null}
+          <FormGrid columns={2}>
+            <FormField name="amount" label="Số tiền" required>
+              <NumberInput
+                min={1}
+                max={Number.MAX_SAFE_INTEGER}
+                step={1}
+                endAddon="₫"
+                inputMode="numeric"
+              />
+            </FormField>
+            <FormField name="categoryId" label="Danh mục" required>
+              <Select
+                options={categories
+                  .filter((category) => category.active || category.id === expense?.categoryId)
+                  .map((category) => ({ value: category.id, label: category.name }))}
+              />
+            </FormField>
+            <FormField name="spentOn" label="Ngày chi" required {...DATE_FIELD}>
+              <DatePicker clearable={false} />
+            </FormField>
+            <FormField name="roomId" label="Phòng" mapOnChange={(value) => value ?? ''}>
+              <Select
+                clearable
+                options={[
+                  { value: '', label: 'Cả toà' },
+                  ...rooms.map((room) => ({ value: room.id, label: room.code })),
+                ]}
+              />
+            </FormField>
+          </FormGrid>
+          <FormField name="note" label="Ghi chú">
+            <Textarea maxLength={2000} />
+          </FormField>
+          <FormField name="receiptFileId">
+            {() => (
+              <form.AppField
+                name="uploadFiles"
+                listeners={{
+                  onChange: ({ value: files }) => {
+                    setFile(files[0] ?? null);
+                  },
+                }}
+              >
+                {(field) => (
+                  <field.UploadField
+                    label="Ảnh hoá đơn"
+                    accept="image/jpeg,image/png,image/webp"
+                    maxBytes={10485760}
+                  />
+                )}
+              </form.AppField>
+            )}
+          </FormField>
+          {expense?.receipt ? (
+            <a
+              className="text-accent underline"
+              href={expense.receipt.url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Xem ảnh hoá đơn hiện tại
+            </a>
+          ) : null}
+        </FormSection>
+        <FormActions>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              form.reset();
+              setFile(null);
+              onDone();
+            }}
+          >
+            Huỷ
+          </Button>
+          <FormSubmit form={form}>
+            {(submitting) => (
+              <Button type="submit" loading={submitting}>
+                Lưu chi phí
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }

@@ -6,6 +6,7 @@ import {
   cn,
   DataTable,
   type DataTableState,
+  EmptyState,
   Icon,
   KpiCard,
   KpiGrid,
@@ -151,7 +152,11 @@ function BillingRun({ buildingId, period }: { buildingId: string; period: string
             {data.rows.length ? (
               <PreviewRows rows={data.rows} />
             ) : (
-              <p className="text-muted">Không có hợp đồng nào cần lập hoá đơn trong kỳ này.</p>
+              <EmptyState
+                size="compact"
+                appearance="plain"
+                title={<>Không có hợp đồng nào cần lập hoá đơn trong kỳ này.</>}
+              />
             )}
           </>
         ) : null}
@@ -369,7 +374,13 @@ function Drafts({ buildingId, period }: { buildingId: string; period: string }) 
   if (query.isPending) return <LoadingRows rows={2} />;
   if (query.isError) return <LoadError error={query.error} onRetry={() => void query.refetch()} />;
   if (!drafts.length)
-    return <p className="text-muted">Chưa có bản nháp kỳ {displayPeriod(period)}.</p>;
+    return (
+      <EmptyState
+        size="compact"
+        appearance="plain"
+        title={<>Chưa có bản nháp kỳ {displayPeriod(period)}.</>}
+      />
+    );
 
   return (
     <div className="grid min-w-0 gap-3">

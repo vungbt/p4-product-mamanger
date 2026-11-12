@@ -11,6 +11,7 @@ import {
   Pagination,
   Select,
   Tag,
+  Timeline,
   Tooltip,
 } from '@itclabs/react-ui';
 import { useAuditLogs } from '@stay/sdk/react';
@@ -136,7 +137,7 @@ function AuditItem({ entry, onOpen }: { entry: AuditEntry; onOpen: () => void })
   const sentence = `${actor} ${verb.label.toLowerCase()} ${resourceLabel(entry.resourceType)} ${target.name}`;
 
   return (
-    <li className="flex min-w-0 items-start gap-3 px-4 py-3" data-testid="audit-entry">
+    <div className="flex min-w-0 items-start gap-3" data-testid="audit-entry">
       <Avatar alt="" fallback={initials(actor)} size="sm" className="mt-0.5 shrink-0" />
       <div className="grid min-w-0 flex-1 gap-1">
         <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-ink">
@@ -181,7 +182,7 @@ function AuditItem({ entry, onOpen }: { entry: AuditEntry; onOpen: () => void })
         label={`${t('audit.details')}: ${sentence}`}
         onClick={onOpen}
       />
-    </li>
+    </div>
   );
 }
 
@@ -420,15 +421,16 @@ export default function AuditPage() {
                   {dayLabel(group.key)}
                   <span className="font-normal"> · {group.entries.length} thay đổi</span>
                 </h2>
-                <ol className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
-                  {group.entries.map((entry) => (
-                    <AuditItem
-                      key={entry.id}
-                      entry={entry}
-                      onOpen={() => update({ entry: entry.id }, false)}
-                    />
-                  ))}
-                </ol>
+                <Timeline
+                  showStatus={false}
+                  items={group.entries.map((entry) => ({
+                    id: entry.id,
+                    state: 'completed',
+                    title: (
+                      <AuditItem entry={entry} onOpen={() => update({ entry: entry.id }, false)} />
+                    ),
+                  }))}
+                />
               </section>
             ))}
           </section>

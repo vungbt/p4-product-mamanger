@@ -2,7 +2,11 @@ import {
   Button,
   Checkbox,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   useAppForm,
@@ -95,84 +99,90 @@ export function MemberDialog({
         className="grid gap-4"
         aria-label="Người quản lý"
       >
-        <FormError message={error} />
-        <FormField name="email" label="Email" required>
-          <Input type="email" disabled={Boolean(member)} autoComplete="email" />
-        </FormField>
-        <form.Field name="buildingIds">
-          {(field) => (
-            <fieldset className="grid gap-2">
-              <legend>Toà được gán</legend>
-              {buildings.isPending ? (
-                <LoadingRows rows={2} />
-              ) : buildings.isError ? (
-                <Button variant="secondary" onClick={() => void buildings.refetch()}>
-                  Thử tải lại toà
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              <FormError message={error} />
+              <FormField name="email" label="Email" required>
+                <Input type="email" disabled={Boolean(member)} autoComplete="email" />
+              </FormField>
+              <form.Field name="buildingIds">
+                {(field) => (
+                  <fieldset className="grid gap-2">
+                    <legend>Toà được gán</legend>
+                    {buildings.isPending ? (
+                      <LoadingRows rows={2} />
+                    ) : buildings.isError ? (
+                      <Button variant="secondary" onClick={() => void buildings.refetch()}>
+                        Thử tải lại toà
+                      </Button>
+                    ) : (
+                      (buildings.data?.data ?? []).map((building) => (
+                        <Checkbox
+                          key={building.id}
+                          label={building.name}
+                          checked={field.state.value.includes(building.id)}
+                          onCheckedChange={(checked) =>
+                            field.handleChange(
+                              checked === true
+                                ? [...field.state.value, building.id]
+                                : field.state.value.filter((id) => id !== building.id),
+                            )
+                          }
+                        />
+                      ))
+                    )}
+                    {field.state.meta.errors.length ? (
+                      <p role="alert" className="text-danger-700">
+                        Chọn ít nhất một toà đang hoạt động.
+                      </p>
+                    ) : null}
+                  </fieldset>
+                )}
+              </form.Field>
+              <form.Field name="permissionGroups">
+                {(field) => (
+                  <fieldset className="grid gap-2">
+                    <legend>Nhóm quyền (bỏ chọn tất cả = chỉ xem)</legend>
+                    {MANAGER_PERMISSION_GROUPS.map((group) => (
+                      <Checkbox
+                        key={group}
+                        label={MANAGER_PERMISSION_LABELS[group]}
+                        checked={field.state.value.includes(group)}
+                        onCheckedChange={(checked) =>
+                          field.handleChange(
+                            checked === true
+                              ? [...field.state.value, group]
+                              : field.state.value.filter((item) => item !== group),
+                          )
+                        }
+                      />
+                    ))}
+                  </fieldset>
+                )}
+              </form.Field>
+              <p className="text-ui-sm text-muted">
+                Không được sửa đơn giá toà, cấu hình hệ thống, void hoá đơn hoặc thanh lý hợp đồng.
+              </p>
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <Button variant="secondary" disabled={busy} onClick={close}>
+              Huỷ
+            </Button>
+            <FormSubmit form={form}>
+              {(submitting) => (
+                <Button
+                  type="submit"
+                  loading={submitting}
+                  disabled={buildings.isPending || buildings.isError}
+                >
+                  {member ? 'Lưu' : 'Gửi lời mời'}
                 </Button>
-              ) : (
-                (buildings.data?.data ?? []).map((building) => (
-                  <Checkbox
-                    key={building.id}
-                    label={building.name}
-                    checked={field.state.value.includes(building.id)}
-                    onCheckedChange={(checked) =>
-                      field.handleChange(
-                        checked === true
-                          ? [...field.state.value, building.id]
-                          : field.state.value.filter((id) => id !== building.id),
-                      )
-                    }
-                  />
-                ))
               )}
-              {field.state.meta.errors.length ? (
-                <p role="alert" className="text-danger-700">
-                  Chọn ít nhất một toà đang hoạt động.
-                </p>
-              ) : null}
-            </fieldset>
-          )}
-        </form.Field>
-        <form.Field name="permissionGroups">
-          {(field) => (
-            <fieldset className="grid gap-2">
-              <legend>Nhóm quyền (bỏ chọn tất cả = chỉ xem)</legend>
-              {MANAGER_PERMISSION_GROUPS.map((group) => (
-                <Checkbox
-                  key={group}
-                  label={MANAGER_PERMISSION_LABELS[group]}
-                  checked={field.state.value.includes(group)}
-                  onCheckedChange={(checked) =>
-                    field.handleChange(
-                      checked === true
-                        ? [...field.state.value, group]
-                        : field.state.value.filter((item) => item !== group),
-                    )
-                  }
-                />
-              ))}
-            </fieldset>
-          )}
-        </form.Field>
-        <p className="text-ui-sm text-muted">
-          Không được sửa đơn giá toà, cấu hình hệ thống, void hoá đơn hoặc thanh lý hợp đồng.
-        </p>
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" disabled={busy} onClick={close}>
-            Huỷ
-          </Button>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button
-                type="submit"
-                loading={submitting}
-                disabled={buildings.isPending || buildings.isError}
-              >
-                {member ? 'Lưu' : 'Gửi lời mời'}
-              </Button>
-            )}
-          </FormSubmit>
-        </div>
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </Overlay>
   );

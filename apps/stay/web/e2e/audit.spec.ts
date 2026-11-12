@@ -153,15 +153,29 @@ test('empty, error and retry states', async ({ page }) => {
 });
 
 // Only this role-switching test fixtures identity and capabilities.
-test('manager can open audit; tenant has no audit menu or access', async ({ page }) => {
-  await mockApi(page, 'manager');
-  await page.goto('/audit');
-  await expect(page.getByRole('heading', { name: 'Lịch sử thay đổi' })).toBeVisible();
-  await page.unrouteAll({ behavior: 'wait' });
-  await mockApi(page, 'tenant');
-  await page.reload();
-  await expect(
-    page.getByRole('heading', { name: 'Bạn không có quyền xem trang này' }),
-  ).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Lịch sử thay đổi' })).toHaveCount(0);
+test('manager can open audit; tenant has no audit menu or access', async ({ browser, baseURL }) => {
+  for (const role of ['manager', 'tenant'] as const) {
+    const context = await browser.newContext({
+      baseURL,
+      locale: 'vi-VN',
+      storageState: { cookies: [], origins: [] },
+    });
+
+    try {
+      const page = await context.newPage();
+
+      await mockApi(page, role);
+      await page.goto('/audit');
+      if (role === 'manager') {
+        await expect(page.getByRole('heading', { name: 'Lịch sử thay đổi' })).toBeVisible();
+      } else {
+        await expect(
+          page.getByRole('heading', { name: 'Bạn không có quyền xem trang này' }),
+        ).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Lịch sử thay đổi' })).toHaveCount(0);
+      }
+    } finally {
+      await context.close();
+    }
+  }
 });

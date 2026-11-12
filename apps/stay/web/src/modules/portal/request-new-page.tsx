@@ -2,7 +2,11 @@ import {
   Button,
   DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   Select,
@@ -217,61 +221,67 @@ function RequestForm({ type }: { type: TenantRequestType }) {
       className="grid min-w-0 gap-4"
       aria-label={REQUEST_TYPE_LABELS[type]}
     >
-      <FormError message={error} />
-      {config.fields.includes('fullName') ? (
-        <FormField name="fullName" label={label('fullName')} required>
-          <Input maxLength={120} autoComplete="off" />
-        </FormField>
-      ) : null}
-      {config.fields.includes('phone') ? (
-        <FormField name="phone" label={label('phone')} required>
-          <Input type="tel" inputMode="tel" maxLength={20} autoComplete="off" />
-        </FormField>
-      ) : null}
-      {config.fields.includes('plate') ? (
-        <FormField name="plate" label={label('plate')} required>
-          <Input maxLength={20} autoComplete="off" placeholder="59X1-234.56" />
-        </FormField>
-      ) : null}
-      {config.fields.includes('vehicleType') ? (
-        <FormField name="vehicleType" label={label('vehicleType')} required>
-          <Select
-            options={VEHICLE_TYPES.map((value) => ({
-              value,
-              label: VEHICLE_TYPE_LABELS[value],
-            }))}
-          />
-        </FormField>
-      ) : null}
-      {config.fields.includes('date') ? (
-        <FormField name="date" label={label('date')} required {...DATE_FIELD}>
-          <DatePicker
-            {...(type === 'move_out' ? { minDate: todayIsoDate() } : {})}
-            clearable={false}
-          />
-        </FormField>
-      ) : null}
-      {config.fields.includes('text') ? (
-        <FormField name="text" label={label('text')} required={type === 'other'}>
-          <Textarea maxLength={2000} rows={3} />
-        </FormField>
-      ) : null}
-      <p className="text-ui-sm text-muted">
-        Đây là đề nghị: hợp đồng chỉ thay đổi khi chủ trọ duyệt. Mỗi phòng gửi tối đa 10 yêu cầu mỗi
-        ngày.
-      </p>
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button variant="secondary" onClick={() => navigate(portalPaths.requests)}>
-          Huỷ
-        </Button>
-        <FormSubmit form={form}>
-          {(submitting) => (
-            <Button type="submit" loading={submitting}>
-              Gửi yêu cầu
-            </Button>
-          )}
-        </FormSubmit>
-      </div>
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            <FormError message={error} />
+            {config.fields.includes('fullName') ? (
+              <FormField name="fullName" label={label('fullName')} required>
+                <Input maxLength={120} autoComplete="off" />
+              </FormField>
+            ) : null}
+            {config.fields.includes('phone') ? (
+              <FormField name="phone" label={label('phone')} required>
+                <Input type="tel" inputMode="tel" maxLength={20} autoComplete="off" />
+              </FormField>
+            ) : null}
+            {config.fields.includes('plate') ? (
+              <FormField name="plate" label={label('plate')} required>
+                <Input maxLength={20} autoComplete="off" placeholder="59X1-234.56" />
+              </FormField>
+            ) : null}
+            {config.fields.includes('vehicleType') ? (
+              <FormField name="vehicleType" label={label('vehicleType')} required>
+                <Select
+                  options={VEHICLE_TYPES.map((value) => ({
+                    value,
+                    label: VEHICLE_TYPE_LABELS[value],
+                  }))}
+                />
+              </FormField>
+            ) : null}
+            {config.fields.includes('date') ? (
+              <FormField name="date" label={label('date')} required {...DATE_FIELD}>
+                <DatePicker
+                  {...(type === 'move_out' ? { minDate: todayIsoDate() } : {})}
+                  clearable={false}
+                />
+              </FormField>
+            ) : null}
+            {config.fields.includes('text') ? (
+              <FormField name="text" label={label('text')} required={type === 'other'}>
+                <Textarea maxLength={2000} rows={3} />
+              </FormField>
+            ) : null}
+            <p className="text-ui-sm text-muted">
+              Đây là đề nghị: hợp đồng chỉ thay đổi khi chủ trọ duyệt. Mỗi phòng gửi tối đa 10 yêu
+              cầu mỗi ngày.
+            </p>
+          </FormGrid>
+        </FormSection>
+        <FormActions>
+          <Button variant="secondary" onClick={() => navigate(portalPaths.requests)}>
+            Huỷ
+          </Button>
+          <FormSubmit form={form}>
+            {(submitting) => (
+              <Button type="submit" loading={submitting}>
+                Gửi yêu cầu
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }

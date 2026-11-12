@@ -1,4 +1,4 @@
-import { cn } from '@itclabs/react-ui';
+import { cn, Tag, type TagTone } from '@itclabs/react-ui';
 import type { components } from '@stay/sdk/shared';
 import { ROOM_STATUS_FILTERS, type RoomStatus } from '@stay/shared';
 import { useTranslation } from 'react-i18next';
@@ -23,24 +23,21 @@ export function isRoomStatus(value: unknown): value is RoomStatus {
   return ROOM_STATUSES_IN_ORDER.some((status) => status === value);
 }
 
-/** Status label with its colour dot; the colour is never the only cue. */
+/** Kit status tag; the label keeps status understandable without colour. */
 export function RoomStatusBadge({ status, className }: { status: RoomStatus; className?: string }) {
   const { t } = useTranslation();
 
-  const style = ROOM_STATUS_STYLES[status];
+  const tone: Record<RoomStatus, TagTone> = {
+    vacant: 'neutral',
+    reserved: 'warning',
+    occupied: 'success',
+    maintenance: 'warning',
+  };
 
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 text-ui-sm font-medium',
-        style.text,
-        className,
-      )}
-      data-status={status}
-    >
-      <span aria-hidden className={cn('size-2 shrink-0 rounded-full', style.accent)} />
+    <Tag tone={tone[status]} size="sm" className={className} data-status={status}>
       {t(`rooms.status.${status}`)}
-    </span>
+    </Tag>
   );
 }
 

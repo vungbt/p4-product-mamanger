@@ -1,4 +1,4 @@
-import { Alert, Button, cn, Tag, type TagTone } from '@itclabs/react-ui';
+import { Alert, Button, cn, FormSection, Tag, type TagTone, UploadField } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useCommitTenantImport, usePreviewTenantImport, useStaySdk } from '@stay/sdk/react';
 import { type components, createTenantApi, getErrorMessage } from '@stay/sdk/shared';
@@ -39,16 +39,17 @@ function Step({
   children: React.ReactNode;
 }) {
   return (
-    <section
-      aria-labelledby={`import-step-${index}`}
-      className="grid gap-3 rounded-panel border border-line bg-surface p-4 sm:p-5"
+    <FormSection
+      variant="card"
+      title={
+        <span id={`import-step-${index}`}>
+          <span className="mr-2 text-muted">{index}.</span>
+          {title}
+        </span>
+      }
     >
-      <h2 id={`import-step-${index}`} className="text-section font-semibold text-ink">
-        <span className="mr-2 text-muted">{index}.</span>
-        {title}
-      </h2>
       {children}
-    </section>
+    </FormSection>
   );
 }
 
@@ -201,16 +202,14 @@ export default function TenantImportPage() {
       </Step>
 
       <Step index={2} title={t('tenants.import.fileStep')}>
-        <label htmlFor="import-file" className="text-ui-sm font-medium text-ink">
-          {t('tenants.import.file')}
-        </label>
-        <input
+        <UploadField
+          value={file ? [file] : []}
           id="import-file"
-          type="file"
           accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          className="text-ui-sm text-muted file:mr-3 file:rounded-control file:border file:border-line file:bg-surface file:px-3 file:py-2 file:text-ink"
-          onChange={(event) => {
-            setFile(event.target.files?.[0] ?? null);
+          label={t('tenants.import.file')}
+          maxBytes={Number.MAX_SAFE_INTEGER}
+          onValueChange={(files) => {
+            setFile(files[0] ?? null);
             setData(null);
             setResult(null);
           }}

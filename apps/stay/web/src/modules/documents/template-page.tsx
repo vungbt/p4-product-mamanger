@@ -2,7 +2,11 @@ import {
   Alert,
   Button,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   Icon,
   Input,
   Select,
@@ -27,7 +31,6 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { DocumentBody } from '@/libraries/document-body';
-import { FormActions, FormGrid, FormLayout, FormSection } from '@/libraries/forms/layout';
 import { FormError, LoadError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
@@ -54,8 +57,13 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
   const [insert, setInsert] = useState<{ text: string; sequence: number }>();
   const old = useContractTemplateVersion(versionId);
 
+  const importForm = useAppForm({ defaultValues: { uploadFiles: [] as File[] } });
+
   const form = useAppForm({
-    defaultValues: { name: template.name, note: '' },
+    defaultValues: {
+      name: template.name,
+      note: '',
+    },
     onSubmit: async ({ value }) => {
       setError(null);
       try {
@@ -95,7 +103,7 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
         {prompt}
         <FormError message={error} />
         {!desktop && <Alert tone="info">{t('mobile')}</Alert>}
-        <FormSection title={t('template')}>
+        <FormSection variant="card" title={t('template')}>
           <FormGrid>
             <FormField name="name" label={t('name')} required>
               <Input disabled={!desktop} maxLength={160} />
@@ -105,32 +113,41 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
             </FormField>
           </FormGrid>
           {desktop && (
-            <Input
-              label={t('import')}
-              type="file"
-              accept=".docx"
-              disabled={importWord.isPending}
-              onChange={async (event) => {
-                const file = event.target.files?.[0];
+            <importForm.AppField
+              name="uploadFiles"
+              listeners={{
+                onChange: ({ value: files }) => {
+                  void (async (files) => {
+                    const file = files[0];
 
-                if (!file) return;
-                if (file.size > 5_242_880) {
-                  setError(t('fileTooLarge'));
-                  return;
-                }
-                try {
-                  const result = await importWord.mutateAsync(file);
+                    if (!file) return;
+                    if (file.size > 5_242_880) {
+                      setError(t('fileTooLarge'));
+                      return;
+                    }
+                    try {
+                      const result = await importWord.mutateAsync(file);
 
-                  setBody(result.bodyHtml);
-                  setNotice(
-                    [t('importHint', { count: result.blanks }), ...result.warnings].join(' '),
-                  );
-                } catch (cause) {
-                  setError(getErrorMessage(cause, t('failed')));
-                }
-                event.target.value = '';
+                      setBody(result.bodyHtml);
+                      setNotice(
+                        [t('importHint', { count: result.blanks }), ...result.warnings].join(' '),
+                      );
+                    } catch (cause) {
+                      setError(getErrorMessage(cause, t('failed')));
+                    }
+                  })(files);
+                },
               }}
-            />
+            >
+              {(field) => (
+                <field.UploadField
+                  label={t('import')}
+                  accept=".docx"
+                  disabled={importWord.isPending}
+                  maxBytes={5242880}
+                />
+              )}
+            </importForm.AppField>
           )}
           {notice && <Alert tone="warning">{notice}</Alert>}
           {unknown.length > 0 && (
@@ -138,7 +155,7 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
               {t('unknown')}: {unknown.join(', ')}
             </Alert>
           )}
-          <div className="grid min-w-0 gap-4 lg:grid-cols-3">
+          <FormGrid columns={3}>
             <div className="min-w-0 lg:col-span-2">
               <DocumentEditor value={body} onChange={setBody} insert={insert} readOnly={!desktop} />
             </div>
@@ -174,9 +191,9 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
                 )}
               </aside>
             )}
-          </div>
+          </FormGrid>
         </FormSection>
-        <FormSection title={t('preview')}>
+        <FormSection variant="card" title={t('preview')}>
           <Select
             label={t('contract')}
             value={contractId}
@@ -220,7 +237,7 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
             </>
           )}
         </FormSection>
-        <FormSection title={t('history')}>
+        <FormSection variant="card" title={t('history')}>
           <Select
             label={t('readVersion')}
             value={versionId ?? ''}

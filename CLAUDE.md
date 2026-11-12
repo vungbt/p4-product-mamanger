@@ -12,6 +12,13 @@
 - Use `toast` from `@itclabs/react-ui/toast`; the root mounts `ToastProvider`.
 - Register additional named glyph imports in `apps/web/src/libraries/ui-theme.ts`; avoid importing the full icon catalog.
 
+## Forms
+
+- Keep `Form` / `useAppForm` and Valibot validation. Inside each form, use the published `FormLayout` for the content width, `FormSection` for related fields (`variant="card"` for panels), and `FormGrid columns={1 | 2 | 3}` for responsive field rows. Use `FormGridItem span="full"` for notes or full-width content; avoid viewport-based column spans.
+- Put submit/cancel controls in `FormActions` after the sections, secondary actions first and the primary action last. Autosaved meter readings have no submit bar. Keep wizard navigation and dialog actions at the bottom.
+- File fields use `form.AppField` and its `field.UploadField`, with `File[]` values; standalone file operations use kit `UploadField`. Keep file selection separate from persisted file IDs and explicit API payloads. Private upload tickets, upload purposes, byte/type/count limits and saved previews remain owned by the feature. Use the kit's `DatePicker`, `MonthPicker`, `NumberInput` and `InputPassword` for those controls.
+- Preserve labels and test IDs. The kit upload test ID names the wrapper; its native file input has the `-input` suffix. When selecting by label in Playwright, intersect with `input[type="file"]` to distinguish it from the labelled kit trigger.
+
 ## Styling
 
 - Follow the [official theming guide](https://react-ui-one-rose.vercel.app/?path=/docs/guides-theming--docs) and `docs/design/p4-theme.md`. Fixed branding lives in CSS on `:root`; use `UIProvider.theme.tokens` only for runtime branding, never duplicate a token in both sources.

@@ -45,6 +45,7 @@ for (const width of [1280, 375]) {
     await form.getByRole('textbox', { name: 'Mô tả', exact: true }).fill('Thay vòi nước');
     await form
       .getByLabel('Ảnh (tối đa 5)')
+      .and(page.locator('input[type="file"]'))
       .setInputFiles({ name: 'repair.png', mimeType: 'image/png', buffer: PNG });
     await form.getByRole('button', { name: 'Lưu bảo trì', exact: true }).click();
     await expect(page).toHaveURL(/\/maintenance\/[0-9a-f-]+$/);

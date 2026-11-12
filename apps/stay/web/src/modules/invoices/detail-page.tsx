@@ -267,7 +267,7 @@ function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () =
             ))}
           </ul>
         ) : (
-          <p className="text-muted">Chưa có thanh toán.</p>
+          <EmptyState size="compact" appearance="plain" title={<>Chưa có thanh toán.</>} />
         )}
       </section>
 

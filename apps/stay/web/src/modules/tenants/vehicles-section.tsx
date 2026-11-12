@@ -2,8 +2,13 @@ import {
   Alert,
   AlertDialog,
   Button,
+  EmptyState,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Icon,
   IconButton,
@@ -68,36 +73,40 @@ function VehicleForm({
 
   return (
     <Form form={form} schema={schema} className="grid gap-3" data-testid="vehicle-form">
-      {generalError ? (
-        <Alert tone="danger" role="alert">
-          {generalError}
-        </Alert>
-      ) : null}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <FormField name="plate" label={t('tenants.vehicles.plate')} required className="mb-0">
-          <Input placeholder="59-X1 123.45" autoCapitalize="characters" error={plateError} />
-        </FormField>
-        <FormField name="type" label={t('tenants.vehicles.type')} className="mb-0">
-          <Select options={typeOptions} />
-        </FormField>
-        <FormField name="note" label={t('tenants.fields.note')} className="mb-0">
-          <Input />
-        </FormField>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <FormSubmit form={form}>
-          {(isSubmitting) => (
-            <Button type="submit" size="sm" loading={isSubmitting}>
-              {submitLabel}
+      <FormLayout size="full">
+        <FormSection>
+          {generalError ? (
+            <Alert tone="danger" role="alert">
+              {generalError}
+            </Alert>
+          ) : null}
+          <FormGrid columns={3}>
+            <FormField name="plate" label={t('tenants.vehicles.plate')} required className="mb-0">
+              <Input placeholder="59-X1 123.45" autoCapitalize="characters" error={plateError} />
+            </FormField>
+            <FormField name="type" label={t('tenants.vehicles.type')} className="mb-0">
+              <Select options={typeOptions} />
+            </FormField>
+            <FormField name="note" label={t('tenants.fields.note')} className="mb-0">
+              <Input />
+            </FormField>
+          </FormGrid>
+        </FormSection>
+        <FormActions>
+          {onCancel ? (
+            <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+              {t('common.cancel')}
             </Button>
-          )}
-        </FormSubmit>
-        {onCancel ? (
-          <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-            {t('common.cancel')}
-          </Button>
-        ) : null}
-      </div>
+          ) : null}
+          <FormSubmit form={form}>
+            {(isSubmitting) => (
+              <Button type="submit" size="sm" loading={isSubmitting}>
+                {submitLabel}
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }
@@ -153,7 +162,7 @@ export function VehiclesSection({
       </div>
 
       {vehicles.length === 0 && !adding ? (
-        <p className="text-ui-sm text-muted">{t('tenants.vehicles.empty')}</p>
+        <EmptyState size="compact" appearance="plain" title={t('tenants.vehicles.empty')} />
       ) : null}
 
       <ul className="grid gap-2">
