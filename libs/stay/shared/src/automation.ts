@@ -1,3 +1,5 @@
+import type { NotificationKind } from './notification.js';
+
 /** Upper bound of `readingReminderDaysBefore`. */
 export const READING_REMINDER_DAYS_MAX = 10;
 
@@ -19,6 +21,7 @@ export interface StayAutomationSettings {
 export interface StayNotification {
   id: string;
   buildingId: string;
+  kind: NotificationKind;
   title: string;
   body: string;
   path: string;

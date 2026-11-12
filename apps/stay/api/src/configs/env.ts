@@ -88,4 +88,27 @@ export const env = {
   webUrl: process.env.STAY_WEB_URL?.replace(/\/$/, '') || undefined,
   /** Server URL shown in the API reference; defaults to the current origin. */
   publicApiUrl: process.env.STAY_PUBLIC_API_URL,
+  /** SMTP for notification emails (worker). Without a host, email is disabled. */
+  smtp: {
+    host: process.env.STAY_SMTP_HOST?.trim() || '',
+    port: Number(process.env.STAY_SMTP_PORT) || 1025,
+    secure: ['true', '1'].includes((process.env.STAY_SMTP_SECURE ?? '').trim().toLowerCase()),
+    user: process.env.STAY_SMTP_USER?.trim() || '',
+    password: process.env.STAY_SMTP_PASSWORD || '',
+    from: process.env.STAY_MAIL_FROM?.trim() || 'no-reply@stay.local',
+  },
+  /** Web Push (VAPID). Without both keys, browser notifications are disabled. */
+  webPush: {
+    publicKey: process.env.STAY_VAPID_PUBLIC_KEY?.trim() || '',
+    privateKey: process.env.STAY_VAPID_PRIVATE_KEY?.trim() || '',
+    subject:
+      process.env.STAY_VAPID_SUBJECT?.trim() ||
+      `mailto:${process.env.STAY_MAIL_FROM?.trim() || 'no-reply@stay.local'}`,
+  },
 };
+
+/** Email channel configured (SMTP host set). */
+export const emailEnabled = () => Boolean(env.smtp.host);
+
+/** Browser push configured (both VAPID keys set). */
+export const pushEnabled = () => Boolean(env.webPush.publicKey && env.webPush.privateKey);

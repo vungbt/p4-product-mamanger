@@ -2310,6 +2310,62 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/me/notification-settings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Cài đặt nhận thông báo
+     * @description Kênh email/trình duyệt và nhóm sự kiện bị tắt của người dùng hiện tại (mặc định bật hết), kèm `emailAvailable`, `pushPublicKey` (VAPID, null khi chưa cấu hình) và số thiết bị đã đăng ký.
+     *
+     *     **Yêu cầu đăng nhập.**
+     */
+    get: operations['get_api_me_notification_settings'];
+    /**
+     * Lưu cài đặt nhận thông báo
+     * @description `{ email, push, mutedGroups }`. Thông báo trong ứng dụng luôn được ghi; cài đặt chỉ áp dụng cho email và thông báo trình duyệt. Có audit.
+     *
+     *     **Yêu cầu đăng nhập.**
+     */
+    put: operations['put_api_me_notification_settings'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/me/push-subscriptions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Đăng ký thông báo trình duyệt
+     * @description `PushSubscription.toJSON()` của trình duyệt. Endpoint phải thuộc dịch vụ push của trình duyệt (HTTPS). Idempotent theo endpoint; cùng trình duyệt đăng nhập người khác thì chuyển sang người đó.
+     *
+     *     **Yêu cầu đăng nhập.**
+     */
+    post: operations['post_api_me_push_subscriptions'];
+    /**
+     * Huỷ đăng ký thông báo trình duyệt
+     * @description `{ endpoint }`; chỉ xoá endpoint của chính người dùng. Không có thì không làm gì.
+     *
+     *     **Yêu cầu đăng nhập.**
+     */
+    delete: operations['delete_api_me_push_subscriptions'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/meters/{id}/replace': {
     parameters: {
       query?: never;
@@ -2370,6 +2426,28 @@ export interface paths {
      *     **Quyền:** `read:Building`.
      */
     post: operations['post_api_notifications_id_read'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/notifications/stream': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Luồng thông báo (SSE)
+     * @description Server-Sent Events của thông báo nhân viên mới trong các toà được phép đọc (đánh thức bằng Postgres NOTIFY sau commit). Client giữ polling `GET /api/notifications` làm dự phòng.
+     *
+     *     **Quyền:** `read:Building`.
+     */
+    get: operations['get_api_notifications_stream'];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -2800,6 +2878,100 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/portal/notification-settings': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Cài đặt nhận thông báo (người thuê)
+     * @description Như `/api/me/notification-settings`, theo người thuê của phiên. Email chỉ gửi khi hồ sơ có email.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_notification_settings'];
+    /**
+     * Lưu cài đặt nhận thông báo (người thuê)
+     * @description Có audit.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    put: operations['put_api_portal_notification_settings'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/notifications': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Thông báo của người thuê
+     * @description 50 thông báo mới nhất của hợp đồng trong phiên (cả hợp đồng hoặc riêng người ở này) và `unreadCount`.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_notifications'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/notifications/{id}/read': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Người thuê đánh dấu đã đọc
+     * @description Idempotent; thông báo của hợp đồng khác → 404.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_notifications_id_read'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/notifications/stream': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Luồng thông báo người thuê (SSE)
+     * @description Server-Sent Events chỉ của hợp đồng trong phiên cổng; không bao giờ nhận thông báo của hợp đồng/người khác.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    get: operations['get_api_portal_notifications_stream'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/portal/payment-claims/{id}/cancel': {
     parameters: {
       query?: never;
@@ -2817,6 +2989,34 @@ export interface paths {
      */
     post: operations['post_api_portal_payment_claims_id_cancel'];
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portal/push-subscriptions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Người thuê đăng ký thông báo trình duyệt
+     * @description Gắn với link cổng của phiên: thu hồi link thì dừng gửi, xoá link thì xoá đăng ký.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    post: operations['post_api_portal_push_subscriptions'];
+    /**
+     * Người thuê huỷ đăng ký thông báo trình duyệt
+     * @description `{ endpoint }` của link trong phiên.
+     *
+     *     **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
+     */
+    delete: operations['delete_api_portal_push_subscriptions'];
     options?: never;
     head?: never;
     patch?: never;
@@ -3938,7 +4138,7 @@ export interface components {
       /** @enum {string} */
       readingDayMonth: 'next' | 'same';
       refundUnusedRent: boolean;
-      roundingUnit: 1 | 1000 | 100;
+      roundingUnit: 1 | 100 | 1000;
     };
     BuildingPriceList: {
       buildingId: string;
@@ -4557,6 +4757,20 @@ export interface components {
       expectedMoveOutDate: string;
       reason?: string | null;
     };
+    NotificationPreferences: {
+      email: boolean;
+      mutedGroups: ('announcements' | 'invoices' | 'payments' | 'reminders' | 'requests')[];
+      push: boolean;
+    };
+    NotificationSettings: {
+      email: boolean;
+      emailAvailable: boolean;
+      hasEmail: boolean;
+      mutedGroups: ('announcements' | 'invoices' | 'payments' | 'reminders' | 'requests')[];
+      push: boolean;
+      pushPublicKey: string | null;
+      pushSubscriptions: number;
+    };
     OtherRequestPayload: {
       message: string;
     };
@@ -4835,6 +5049,34 @@ export interface components {
       contactPhone: string | null;
       rulesText: string | null;
     };
+    PortalNotification: {
+      body: string;
+      createdAt: string;
+      id: string;
+      /** @enum {string} */
+      kind:
+        | 'announcement.created'
+        | 'automation'
+        | 'drafts.ready'
+        | 'invoice.due_soon'
+        | 'invoice.issued'
+        | 'invoice.overdue'
+        | 'maintenance.created'
+        | 'payment.recorded'
+        | 'payment_claim.created'
+        | 'payment_claim.rejected'
+        | 'reading.reminder'
+        | 'reminder.unreachable'
+        | 'request.updated'
+        | 'tenant_request.created';
+      path: string;
+      readAt: string | null;
+      title: string;
+    };
+    PortalNotifications: {
+      items: components['schemas']['PortalNotification'][];
+      unreadCount: number;
+    };
     PortalOccupant: {
       isPrimary: boolean;
       isSelf: boolean;
@@ -4985,6 +5227,17 @@ export interface components {
       bankBin: string;
       bankName: string | null;
       bankShortName: string | null;
+    };
+    PushSubscriptionInput: {
+      endpoint: string;
+      keys: {
+        auth: string;
+        p256dh: string;
+      };
+    };
+    PushSubscriptionResult: {
+      endpoint: string;
+      subscribed: boolean;
     };
     ReadingBulkResult: {
       results: components['schemas']['ReadingSaveResult'][];
@@ -5279,7 +5532,7 @@ export interface components {
       /** @enum {string|null} */
       readingDayMonth: 'next' | 'same' | null;
       refundUnusedRent: boolean | null;
-      roundingUnit: (1 | 1000 | 100) | null;
+      roundingUnit: (1 | 100 | 1000) | null;
       rulesText: string | null;
       stats: components['schemas']['BuildingStats'];
       updatedAt: string;
@@ -5305,7 +5558,7 @@ export interface components {
       /** @enum {string|null} */
       readingDayMonth: 'next' | 'same' | null;
       refundUnusedRent: boolean | null;
-      roundingUnit: (1 | 1000 | 100) | null;
+      roundingUnit: (1 | 100 | 1000) | null;
       rulesText: string | null;
       stats: components['schemas']['BuildingStats'];
       updatedAt: string;
@@ -5511,6 +5764,22 @@ export interface components {
       buildingId: string;
       createdAt: string;
       id: string;
+      /** @enum {string} */
+      kind:
+        | 'announcement.created'
+        | 'automation'
+        | 'drafts.ready'
+        | 'invoice.due_soon'
+        | 'invoice.issued'
+        | 'invoice.overdue'
+        | 'maintenance.created'
+        | 'payment.recorded'
+        | 'payment_claim.created'
+        | 'payment_claim.rejected'
+        | 'reading.reminder'
+        | 'reminder.unreachable'
+        | 'request.updated'
+        | 'tenant_request.created';
       path: string;
       readAt: string | null;
       title: string;
@@ -5714,7 +5983,7 @@ export interface components {
       /** @enum {string} */
       readingDayMonth: 'next' | 'same';
       refundUnusedRent: boolean;
-      roundingUnit: 1 | 1000 | 100;
+      roundingUnit: 1 | 100 | 1000;
       transferContentTemplate: string;
       version: number;
     };
@@ -12776,6 +13045,130 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_me_notification_settings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['NotificationSettings'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_me_notification_settings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['NotificationPreferences'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['NotificationSettings'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_me_push_subscriptions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PushSubscriptionInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PushSubscriptionResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  delete_api_me_push_subscriptions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          endpoint: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PushSubscriptionResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   post_api_meters_id_replace: {
     parameters: {
       query?: never;
@@ -12870,6 +13263,29 @@ export interface operations {
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_notifications_stream: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Luồng `text/event-stream`: `event: ready` khi mở, `event: notification` với `data` là `NotificationStreamEvent` (JSON), comment `: ping` mỗi 25 giây. Server đóng luồng sau 10 phút; EventSource tự kết nối lại. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'text/event-stream': string;
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -13655,6 +14071,180 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_portal_notification_settings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['NotificationSettings'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_portal_notification_settings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['NotificationPreferences'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['NotificationSettings'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_notifications: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PortalNotifications'];
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_notifications_id_read: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              id: string;
+            };
+            message?: string;
+          };
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  get_api_portal_notifications_stream: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Luồng `text/event-stream`: `event: ready` khi mở, `event: notification` với `data` là `NotificationStreamEvent` (JSON), comment `: ping` mỗi 25 giây. Server đóng luồng sau 10 phút; EventSource tự kết nối lại. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'text/event-stream': string;
+        };
+      };
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      429: components['responses']['RateLimited'];
+    };
+  };
   post_api_portal_payment_claims_id_cancel: {
     parameters: {
       query?: never;
@@ -13688,6 +14278,86 @@ export interface operations {
         };
       };
       404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_portal_push_subscriptions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PushSubscriptionInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PushSubscriptionResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  delete_api_portal_push_subscriptions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          endpoint: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['PushSubscriptionResult'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      /** @description Không có phiên cổng hợp lệ (`portal_session_invalid`): hết hạn, link bị thu hồi, hợp đồng kết thúc quá 30 ngày hoặc người ở đã rời. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ApiError'];
+        };
+      };
       409: components['responses']['Conflict'];
       429: components['responses']['RateLimited'];
     };

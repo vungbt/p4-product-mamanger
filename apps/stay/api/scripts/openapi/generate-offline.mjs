@@ -6,7 +6,7 @@ import { readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
-import { FILE_RESPONSES } from './config.mjs';
+import { EVENT_STREAM_RESPONSES, FILE_RESPONSES } from './config.mjs';
 
 const directory = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(directory, '../../../../..');
@@ -370,6 +370,9 @@ try {
     const operation = spec.paths[url].post ?? spec.paths[url].get;
 
     operation.responses['200'] = response;
+  }
+  for (const [url, response] of Object.entries(EVENT_STREAM_RESPONSES)) {
+    spec.paths[url].get.responses['200'] = response;
   }
   for (const name of ['revenue', 'rooms', 'utilities', 'exports']) {
     const operation = spec.paths[`/api/reports/${name}`][name === 'exports' ? 'post' : 'get'];

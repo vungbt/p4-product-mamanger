@@ -45,12 +45,14 @@
     "mammoth": "1.13.0",
     "multer": "catalog:",
     "pdfmake": "0.3.12",
+    "nodemailer": "10.0.12",
     "pg": "catalog:",
     "pg-hstore": "catalog:",
     "sanitize-html": "2.18.1",
     "sequelize": "catalog:",
     "sequelize-cli": "catalog:",
     "unzipper": "catalog:",
+    "web-push": "3.6.7",
     "yaml": "catalog:"
   },
   "devDependencies": {
@@ -61,9 +63,11 @@
     "@types/multer": "catalog:",
     "@types/node": "catalog:",
     "@types/pdfmake": "0.3.3",
+    "@types/nodemailer": "8.0.2",
     "@types/pg": "catalog:",
     "@types/sanitize-html": "2.16.2",
     "@types/unzipper": "catalog:",
+    "@types/web-push": "3.6.4",
     "tsc-alias": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"

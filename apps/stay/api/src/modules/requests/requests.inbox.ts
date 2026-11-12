@@ -39,6 +39,10 @@ import { auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { changeContract } from '../contracts/contracts.changes.js';
 import { contractVehiclesAt } from '../contracts/contracts.resolvers.js';
 import { giveNotice } from '../contracts/contracts.settlement.js';
+import {
+  notifyPaymentClaimRejected,
+  notifyRequestHandled,
+} from '../notifications/notifications.events.js';
 import { insertPayment } from '../payments/payments.service.js';
 import {
   claimInboxStatus,
@@ -603,6 +607,7 @@ export async function acceptRequest(
         { replied: Boolean(input.reply) },
         transaction,
       );
+      await notifyRequestHandled(handled, 'accepted', input.reply, transaction);
     } else {
       if (handled.row.status !== 'new') conflict('request_not_pending');
       const result = await applyRequest(user, handled.row, input, transaction);
@@ -612,6 +617,7 @@ export async function acceptRequest(
         { transaction },
       );
       await auditHandled('accepted', handled, before, result, transaction);
+      await notifyRequestHandled(handled, 'accepted', input.reply, transaction);
     }
     return inboxItem({ kind: handled.kind, id: handled.row.id }, transaction);
   });
@@ -649,6 +655,7 @@ export async function rejectRequest(
       );
     }
     await auditHandled('rejected', handled, before, {}, transaction);
+    await notifyRequestHandled(handled, 'rejected', input.reason, transaction);
     return inboxItem({ kind: handled.kind, id: handled.row.id }, transaction);
   });
 }
@@ -670,6 +677,7 @@ export async function replyRequest(
       );
     else await handled.row.update({ reply: input.message }, { transaction });
     await auditHandled('replied', handled, handled.row.status, {}, transaction);
+    await notifyRequestHandled(handled, 'replied', input.message, transaction);
     return inboxItem({ kind: handled.kind, id: handled.row.id }, transaction);
   });
 }
@@ -781,6 +789,7 @@ export async function rejectClaim(
       { transaction },
     );
     await auditClaim('rejected', row, {}, transaction);
+    await notifyPaymentClaimRejected(row, transaction);
     return inboxItem({ kind: 'payment_claim', id }, transaction);
   });
 }

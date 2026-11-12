@@ -30,12 +30,13 @@ export function useUpdateAutomationSettings(id: string) {
   });
 }
 
-export function useNotifications() {
+/** Polls every 30 s by default; the web lowers polling while the SSE stream is connected. */
+export function useNotifications(options: { refetchInterval?: number | false } = {}) {
   const sdk = useStaySdk();
 
   return useQuery({
     queryKey: ['stay', 'notifications'],
-    refetchInterval: 30_000,
+    refetchInterval: options.refetchInterval ?? 30_000,
     queryFn: async ({ signal }) => unwrap(await sdk.GET('/api/notifications', { signal })).data,
   });
 }

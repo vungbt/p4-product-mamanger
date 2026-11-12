@@ -21,6 +21,7 @@ export * from './documents.js';
 export * from './expenses.js';
 export * from './invoices.js';
 export { meKeys, useCapabilities, useMe } from './me.js';
+export * from './notifications.js';
 export { overviewKeys, overviewQueryOptions, useBuildingOverview } from './overview.js';
 export * from './payments.js';
 export * from './portal.js';
