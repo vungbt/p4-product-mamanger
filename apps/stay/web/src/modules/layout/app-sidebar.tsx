@@ -63,12 +63,8 @@ export default function AppSidebar() {
       groupLabel="caps"
       groupDividers
       header={{
-        // The kit draws the rounded accent square; the mark letter goes inside.
-        logo: (
-          <span aria-hidden className="text-control font-bold">
-            {BRAND.mark}
-          </span>
-        ),
+        // The kit draws the rounded accent square; the logo (with its own background) fills it.
+        logo: <img src={BRAND.logo} alt="" className="size-full" draggable={false} />,
         title: BRAND.name,
         subtitle: t('app.tagline'),
         href: ROUTES.overview,
