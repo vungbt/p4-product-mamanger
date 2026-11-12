@@ -9,6 +9,7 @@ Tên cột dưới đây là đề xuất; chốt lại trong migration của ta
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
 | `users`, `auth_*` | Better Auth; `role` (`owner`, `manager`, `tenant`) | Cookie prefix `stay`. MVP chỉ dùng `owner` (ST-03) |
+| `users` (ST-27 bổ sung) | `permission_groups` (text[], chung cho các toà), `version` | Nhóm quyền cho quản lý; `account_status=blocked` thu hồi phiên bằng trigger hiện có |
 | `building_members` | `building_id`, `user_id`, `role` | Phân quyền người quản lý theo toà (ST-27). Owner không cần dòng ở đây |
 | `audit_logs`, `domain_events`, `job_leases` | Như P4 | Dùng lại thiết kế từ `libs/server-core` (ST-01) |
 | `system_settings` | `key`, `value` (JSONB), `version` | Giá trị mặc định: kỳ thu, làm tròn, hoàn tiền phòng (ST-06) |

@@ -88,3 +88,27 @@ test('serialized rules rebuild the same ability on clients', () => {
     }
   }
 });
+
+test('permission groups restrict writes and never permit building prices, void or settlement', () => {
+  const ability = kit.defineAbilityFor({ ...manager, permissionGroups: ['readings', 'payments'] });
+  const record = { buildingId: 'b-1' };
+
+  assert.ok(kit.canOn(ability, 'update', 'MeterReading', record));
+  assert.ok(kit.canOn(ability, 'create', 'Payment', record));
+  for (const [action, subject] of [
+    ['update', 'Building'],
+    ['create', 'Invoice'],
+    ['issue', 'Invoice'],
+    ['update', 'Contract'],
+    ['void', 'Invoice'],
+    ['settle', 'Contract'],
+  ])
+    assert.equal(kit.canOn(ability, action, subject, record), false, `${action} ${subject}`);
+  const readOnly = kit.defineAbilityFor({ ...manager, permissionGroups: [] });
+
+  for (const subject of STAY_SUBJECTS) {
+    for (const action of STAY_ACTIONS.filter((value) => value !== 'read'))
+      assert.equal(kit.canOn(readOnly, action, subject, record), false, `${action} ${subject}`);
+  }
+  assert.equal(kit.canOn(ability, 'update', 'MeterReading', { buildingId: 'b-3' }), false);
+});

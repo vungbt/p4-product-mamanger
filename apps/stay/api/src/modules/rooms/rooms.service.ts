@@ -22,6 +22,7 @@ import {
 } from '@stay/shared';
 import { literal, Op, type Transaction, type WhereOptions } from 'sequelize';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import {
   BuildingModel,
   MeterModel,
@@ -227,7 +228,8 @@ export async function findAccessibleRoom(
   action: 'read' | 'manage',
   transaction?: Transaction,
 ): Promise<RoomModel> {
-  const row = await RoomModel.findByPk(id, {
+  const row = await RoomModel.findOne({
+    where: { [Op.and]: [{ id }, accessibleWhere(user, action, 'Room')] },
     transaction,
     ...(transaction ? { lock: transaction.LOCK.UPDATE } : {}),
   });
@@ -267,6 +269,7 @@ export async function listRooms(
 ): Promise<{ data: StayRoom[]; meta: PaginationMeta }> {
   const building = await findRoomBuilding(user, buildingId, 'read');
   const conditions: WhereOptions<RoomAttributes>[] = [
+    accessibleWhere(user, 'read', 'Room'),
     { buildingId: building.id, archivedAt: { [Op.is]: null } },
     query.q
       ? {
@@ -313,7 +316,11 @@ export async function roomSummary(user: StayUser, buildingId: string): Promise<R
   const building = await findRoomBuilding(user, buildingId, 'read');
   const rows = await RoomModel.findAll({
     attributes: ['id', 'floor', 'maintenance'],
-    where: { buildingId: building.id, archivedAt: { [Op.is]: null } },
+    where: {
+      [Op.and]: [accessibleWhere(user, 'read', 'Room')],
+      buildingId: building.id,
+      archivedAt: { [Op.is]: null },
+    },
   });
   const occupancies = await roomOccupancies(rows.map((row) => row.id));
   const counts: RoomStatusCounts = { vacant: 0, reserved: 0, occupied: 0, maintenance: 0 };

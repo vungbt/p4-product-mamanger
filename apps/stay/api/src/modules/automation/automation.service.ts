@@ -1,8 +1,9 @@
 import { NotFound, setAuditChanges } from '@p4/server-core';
 import type { StayAutomationSettings, StayNotifications, StayUser } from '@stay/shared';
 import { QueryTypes } from 'sequelize';
-import { accessibleBuildingIds } from '@/middlewares/ability.middleware.js';
-import { sequelize } from '@/sequelize/models/index.js';
+import { hasAccess } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
+import { BuildingModel, sequelize } from '@/sequelize/models/index.js';
 import { auditedTransaction } from '@/shared/audit.js';
 import { assertVersion } from '@/shared/input.js';
 import { findAccessibleBuilding } from '../buildings/buildings.service.js';
@@ -67,7 +68,14 @@ export async function updateAutomationSettings(
 }
 
 export async function listNotifications(user: StayUser): Promise<StayNotifications> {
-  const ids = accessibleBuildingIds(user, 'read');
+  const ids = hasAccess(user, 'read', 'Building')
+    ? 'all'
+    : (
+        await BuildingModel.findAll({
+          attributes: ['id'],
+          where: accessibleWhere(user, 'read', 'Building', { buildingId: 'id' }),
+        })
+      ).map((row) => row.id);
   if (ids !== 'all' && !ids.length) return { items: [], unreadCount: 0 };
   // Staff notifications only; tenant notifications are read in the portal.
   const scope = `AND n.audience='staff' ${ids === 'all' ? '' : 'AND n.building_id IN (:ids)'}`;

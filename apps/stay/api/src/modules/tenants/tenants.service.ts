@@ -21,6 +21,7 @@ import {
 } from '@stay/shared';
 import { cast, col, Op, type Transaction, type WhereOptions, where } from 'sequelize';
 import { canAccessRecord, hasAccess } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import {
   BuildingModel,
   FileModel,
@@ -180,7 +181,10 @@ export async function listTenants(
   query: TenantListQuery,
 ): Promise<{ data: StayTenant[]; meta: PaginationMeta }> {
   const scope = tenantBuildingScope(user, 'read');
-  const conditions: WhereOptions<TenantAttributes>[] = [searchWhere(query.q)];
+  const conditions: WhereOptions<TenantAttributes>[] = [
+    accessibleWhere(user, 'read', 'Tenant'),
+    searchWhere(query.q),
+  ];
 
   if (scope !== 'all') conditions.push({ buildingId: { [Op.in]: scope } });
   if (query.buildingId) conditions.push({ buildingId: query.buildingId });
@@ -214,7 +218,8 @@ export async function findAccessibleTenant(
   action: StayAction,
   transaction?: Transaction,
 ): Promise<TenantModel> {
-  const row = await TenantModel.findByPk(id, {
+  const row = await TenantModel.findOne({
+    where: { [Op.and]: [{ id }, accessibleWhere(user, action, 'Tenant')] },
     transaction,
     ...(transaction ? { lock: transaction.LOCK.UPDATE } : {}),
   });

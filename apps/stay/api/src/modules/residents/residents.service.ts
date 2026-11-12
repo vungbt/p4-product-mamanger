@@ -14,8 +14,9 @@ import {
   type StayUser,
 } from '@stay/shared';
 import ExcelJS from 'exceljs';
-import { QueryTypes, Transaction } from 'sequelize';
+import { Op, QueryTypes, Transaction } from 'sequelize';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import { BuildingModel, sequelize } from '@/sequelize/models/index.js';
 import { auditedTransaction, recordAudit } from '@/shared/audit.js';
 
@@ -34,7 +35,18 @@ export function residentDate(value: unknown, field = 'date'): string {
 
 async function accessibleBuilding(user: StayUser, buildingId: string, transaction: Transaction) {
   if (!canAccessRecord(user, 'read', 'Tenant', { buildingId })) throw new NotFound();
-  if (!(await BuildingModel.findByPk(buildingId, { transaction }))) throw new NotFound();
+  if (
+    !(await BuildingModel.findOne({
+      where: {
+        [Op.and]: [
+          { id: buildingId },
+          accessibleWhere(user, 'read', 'Tenant', { buildingId: 'id' }),
+        ],
+      },
+      transaction,
+    }))
+  )
+    throw new NotFound();
 }
 
 // from_date inclusive, to_date exclusive; room changes do not duplicate occupant stays.

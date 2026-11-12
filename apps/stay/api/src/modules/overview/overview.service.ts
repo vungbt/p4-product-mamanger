@@ -18,8 +18,9 @@ import {
   type StayOverview,
   type StayUser,
 } from '@stay/shared';
-import { QueryTypes, Transaction } from 'sequelize';
+import { Op, QueryTypes, Transaction } from 'sequelize';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import { BuildingModel, sequelize } from '@/sequelize/models/index.js';
 import { READING_PROGRESS_CTE } from '../readings/readings.service.js';
 import { buildingReceivableTotals } from '../receivables/receivables.service.js';
@@ -233,7 +234,12 @@ export async function overviewBuilding(
   transaction: Transaction,
 ) {
   if (!canAccessRecord(user, 'read', 'Report', { buildingId })) throw new NotFound();
-  const building = await BuildingModel.findByPk(buildingId, { transaction });
+  const building = await BuildingModel.findOne({
+    where: {
+      [Op.and]: [{ id: buildingId }, accessibleWhere(user, 'read', 'Report', { buildingId: 'id' })],
+    },
+    transaction,
+  });
 
   if (!building) throw new NotFound();
   return building;

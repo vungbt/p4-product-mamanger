@@ -22,6 +22,7 @@ export async function loadActiveUser(id: string): Promise<StayUser | undefined> 
 
   return {
     ...selectFields(row, ['id', 'email', 'displayName', 'avatarUrl', 'emailVerified', 'role']),
+    permissionGroups: row.permissionGroups,
     buildingIds: memberships.map((member) => member.buildingId),
     // Tenant contracts arrive with the tenant portal (ST-25).
     contractIds: [],

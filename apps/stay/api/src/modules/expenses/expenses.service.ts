@@ -17,6 +17,7 @@ import {
 } from '@stay/shared';
 import { Op, Transaction, UniqueConstraintError, type WhereOptions } from 'sequelize';
 import { accessibleBuildingIds, canAccessRecord } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import type { ExpenseAttributes } from '@/sequelize/models/expense.model.js';
 import type { ExpenseCategoryAttributes } from '@/sequelize/models/expense-category.model.js';
 import {
@@ -112,6 +113,7 @@ export async function listExpenses(
 }> {
   const ids = accessibleBuildingIds(user, 'read');
   const conditions: WhereOptions<ExpenseAttributes>[] = [
+    accessibleWhere(user, 'read', 'Expense'),
     listSearch(ExpenseModel, query.q, ['note']),
   ];
 
@@ -157,7 +159,11 @@ export async function listExpenses(
 }
 
 async function findExpense(user: StayUser, id: string, transaction: Transaction) {
-  const row = await ExpenseModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
+  const row = await ExpenseModel.findOne({
+    where: { [Op.and]: [{ id }, accessibleWhere(user, 'update', 'Expense')] },
+    transaction,
+    lock: transaction.LOCK.UPDATE,
+  });
 
   if (!row || !canAccessRecord(user, 'manage', 'Expense', { buildingId: row.buildingId }))
     throw new NotFound();

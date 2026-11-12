@@ -20,6 +20,7 @@ import {
 } from '@stay/shared';
 import { Op, QueryTypes, type Transaction } from 'sequelize';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import {
   BuildingModel,
   ContractModel,
@@ -71,7 +72,15 @@ export async function readingBuilding(
 ) {
   if (!canAccessRecord(user, write ? 'update' : 'read', 'MeterReading', { buildingId }))
     throw new NotFound();
-  const building = await BuildingModel.findByPk(buildingId, { transaction });
+  const building = await BuildingModel.findOne({
+    where: {
+      [Op.and]: [
+        { id: buildingId },
+        accessibleWhere(user, write ? 'update' : 'read', 'MeterReading', { buildingId: 'id' }),
+      ],
+    },
+    transaction,
+  });
   if (!building) throw new NotFound();
   if (write && building.archivedAt)
     throw new BaseError('building_archived', 409, 'building_archived');
