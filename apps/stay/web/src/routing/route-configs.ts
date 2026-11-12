@@ -92,7 +92,7 @@ export const appRoutes: StayRoute[] = [
     component: lazy(() => import('@/modules/documents/landlord-page')),
     ability: { action: 'manage', subject: 'Settings' },
     parent: 'settings',
-    hideInMenu: false,
+    hideInMenu: true,
   },
   {
     path: '/settings/contract-templates',
@@ -101,7 +101,7 @@ export const appRoutes: StayRoute[] = [
     component: lazy(() => import('@/modules/documents/templates-page')),
     ability: { action: 'manage', subject: 'Settings' },
     parent: 'settings',
-    hideInMenu: false,
+    hideInMenu: true,
   },
   {
     path: '/settings/contract-templates/:id',

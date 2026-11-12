@@ -99,7 +99,11 @@ export function DocumentEditor({
         'aria-label': t('body'),
       },
     },
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    // Only edits made while the editor has focus (typing, paste, toolbar, variable picker) count:
+    // normalisation on load (e.g. table fixing) must not mark a saved draft as edited.
+    onUpdate: ({ editor }) => {
+      if (editor.isFocused) onChange(editor.getHTML());
+    },
   });
 
   useEffect(() => {
