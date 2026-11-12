@@ -4264,8 +4264,9 @@ paths:
       operationId: post_api_services
       summary: Thêm dịch vụ
       description: >-
-        Tên không trùng (không phân biệt hoa thường); đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và một
-        `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.
+        Tên không trùng (không phân biệt hoa thường); `description` tuỳ chọn, tối đa 500 ký tự, được chụp vào dòng hoá
+        đơn (`meta.serviceDescription`) khi lập bản nháp; đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và
+        một `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.
 
 
         **Quyền:** `manage:Settings`.
@@ -4284,6 +4285,11 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 120
+                description:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 500
                 kind:
                   type: string
                   enum:
@@ -4342,8 +4348,9 @@ paths:
       operationId: put_api_services_id
       summary: Sửa dịch vụ
       description: >-
-        Sửa tên, đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn
-        đã phát hành. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+        Sửa tên, mô tả (`description`), đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Hoá đơn đã phát hành giữ mô tả đã
+        chụp. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn đã phát hành. Gửi lại `version` đã đọc; dữ
+        liệu đã bị người khác sửa thì trả 409 `version_conflict`.
 
 
         **Quyền:** `manage:Settings`.
@@ -4368,6 +4375,11 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 120
+                description:
+                  type:
+                    - string
+                    - "null"
+                  maxLength: 500
                 unit:
                   type: string
                   minLength: 1
@@ -12564,6 +12576,10 @@ components:
           type: string
         name:
           type: string
+        description:
+          type:
+            - string
+            - "null"
         kind:
           type: string
           enum:
@@ -12597,6 +12613,7 @@ components:
         - serviceId
         - code
         - name
+        - description
         - kind
         - unit
         - active
@@ -14067,6 +14084,10 @@ components:
       properties:
         name:
           type: string
+        description:
+          type:
+            - string
+            - "null"
         kind:
           type: string
           enum:
@@ -14081,6 +14102,7 @@ components:
           type: number
       required:
         - name
+        - description
         - kind
         - unit
         - price
@@ -14834,6 +14856,8 @@ components:
     PublicInvoiceLineMeta:
       type: object
       properties:
+        serviceDescription:
+          type: string
         coveredFrom:
           type: string
         coveredTo:
@@ -16352,6 +16376,8 @@ components:
           type: string
         serviceKind:
           type: string
+        serviceDescription:
+          type: string
         coveredFrom:
           type: string
         coveredTo:
@@ -17098,6 +17124,10 @@ components:
           type: string
         name:
           type: string
+        description:
+          type:
+            - string
+            - "null"
         kind:
           type: string
           enum:
@@ -17120,6 +17150,7 @@ components:
         - id
         - code
         - name
+        - description
         - kind
         - unit
         - defaultPrice

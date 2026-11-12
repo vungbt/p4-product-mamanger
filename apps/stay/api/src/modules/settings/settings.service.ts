@@ -32,6 +32,8 @@ export type SettingsInput = Omit<StaySettings, 'version'>;
 
 export interface ServiceInput {
   name: string;
+  /** `undefined` on update keeps the stored description. */
+  description?: string | null;
   unit: string;
   defaultPrice: number;
   sortOrder?: number;
@@ -202,6 +204,7 @@ const serviceFields = [
   'id',
   'code',
   'name',
+  'description',
   'kind',
   'unit',
   'defaultPrice',
@@ -294,6 +297,7 @@ export async function createService(input: NewServiceInput): Promise<StayService
       {
         code: await uniqueServiceCode(input.name),
         name: input.name,
+        description: input.description ?? null,
         kind: input.kind,
         unit: input.unit,
         defaultPrice: input.defaultPrice,
@@ -325,6 +329,7 @@ export async function updateService(
     await row.update(
       {
         name: input.name,
+        description: input.description === undefined ? row.description : input.description,
         unit: input.unit,
         defaultPrice: input.defaultPrice,
         active: input.active,

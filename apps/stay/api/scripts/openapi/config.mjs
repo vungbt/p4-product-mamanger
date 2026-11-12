@@ -434,11 +434,11 @@ const OPERATIONS = {
   ],
   'POST /api/services': [
     'Thêm dịch vụ',
-    'Tên không trùng (không phân biệt hoa thường); đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và một `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.',
+    'Tên không trùng (không phân biệt hoa thường); `description` tuỳ chọn, tối đa 500 ký tự, được chụp vào dòng hoá đơn (`meta.serviceDescription`) khi lập bản nháp; đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và một `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.',
   ],
   'PUT /api/services/{id}': [
     'Sửa dịch vụ',
-    `Sửa tên, đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn đã phát hành. ${VERSION_NOTE}`,
+    `Sửa tên, mô tả (\`description\`), đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Hoá đơn đã phát hành giữ mô tả đã chụp. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn đã phát hành. ${VERSION_NOTE}`,
   ],
   'GET /api/buildings': [
     'Danh sách toà',
@@ -587,6 +587,11 @@ const buildingFields = {
     schema: { type: 'string', minLength: 1, maxLength: 6, pattern: '^[A-Za-z0-9]{1,6}$' },
     required: true,
   },
+};
+
+// Optional note under the service name, copied to invoice lines; empty or `null` = none.
+const serviceFields = {
+  description: { schema: { type: ['string', 'null'], maxLength: 500 } },
 };
 
 // Area in m², at most two decimals; `null` when unknown.
@@ -1049,6 +1054,8 @@ const OVERRIDES = {
       graceDays: { schema: { type: 'integer', minimum: 0, maximum: 31, default: 0 } },
     },
   },
+  'POST /api/services': { fields: serviceFields },
+  'PUT /api/services/{id}': { fields: serviceFields },
   'POST /api/buildings': { fields: buildingFields },
   'PUT /api/buildings/{id}': { fields: buildingFields },
   'POST /api/buildings/{buildingId}/rooms': { fields: { ...roomFields, ...initialReadings } },

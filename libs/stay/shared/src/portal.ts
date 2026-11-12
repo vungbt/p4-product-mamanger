@@ -188,6 +188,8 @@ export interface PortalMe {
 /** A service of the contract with the price in force today. */
 export interface PortalContractService {
   name: string;
+  /** Optional service description (e.g. "Thang máy, máy giặt, rác"). */
+  description: string | null;
   kind: ServiceKind;
   unit: string;
   price: number;

@@ -291,6 +291,7 @@ export async function sharePeriodInvoices(
 
 function publicMeta(meta: StayInvoiceLineMeta): PublicInvoiceLine['meta'] {
   return {
+    ...(meta.serviceDescription ? { serviceDescription: meta.serviceDescription } : {}),
     ...(meta.coveredFrom ? { coveredFrom: meta.coveredFrom } : {}),
     ...(meta.coveredTo ? { coveredTo: meta.coveredTo } : {}),
     ...(meta.startReading !== undefined ? { startReading: meta.startReading } : {}),

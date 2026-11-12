@@ -15,6 +15,7 @@
     "readingDay": "Meter reading day",
     "issueDay": "Issue day",
     "dueDay": "Due day",
+    "description": "Description",
     "readingDayMonth": "Reading day month",
     "graceDays": "Grace days",
     "readingReminderDaysBefore": "Reminder days before",

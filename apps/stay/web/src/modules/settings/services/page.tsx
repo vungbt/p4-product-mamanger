@@ -73,6 +73,7 @@ export default function ServicesPage() {
       id: service.id,
       body: {
         name: service.name,
+        description: service.description,
         unit: service.unit,
         defaultPrice: service.defaultPrice,
         sortOrder: change.sortOrder,
@@ -220,6 +221,14 @@ export default function ServicesPage() {
                       <span className="block break-words font-semibold text-ink lg:truncate">
                         {service.name}
                       </span>
+                      {service.description ? (
+                        <span
+                          className="block break-words text-ui-sm text-muted"
+                          data-testid="service-description"
+                        >
+                          {service.description}
+                        </span>
+                      ) : null}
                       <span className="block text-ui-sm text-muted lg:hidden">
                         {t(`services.kinds.${service.kind}`)} · {service.unit}
                       </span>

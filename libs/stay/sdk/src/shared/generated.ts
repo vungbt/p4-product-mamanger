@@ -2819,7 +2819,7 @@ export interface paths {
     put?: never;
     /**
      * Thêm dịch vụ
-     * @description Tên không trùng (không phân biệt hoa thường); đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và một `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.
+     * @description Tên không trùng (không phân biệt hoa thường); `description` tuỳ chọn, tối đa 500 ký tự, được chụp vào dòng hoá đơn (`meta.serviceDescription`) khi lập bản nháp; đơn giá số nguyên VND ≥ 0. Chỉ một dịch vụ `electricity` và một `water` đang bật. `code` sinh từ tên; `kind` không đổi được sau khi tạo.
      *
      *     **Quyền:** `manage:Settings`.
      */
@@ -2840,7 +2840,7 @@ export interface paths {
     get?: never;
     /**
      * Sửa dịch vụ
-     * @description Sửa tên, đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn đã phát hành. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     * @description Sửa tên, mô tả (`description`), đơn vị, đơn giá mặc định, thứ tự, bật/tắt. Hoá đơn đã phát hành giữ mô tả đã chụp. Không xoá dịch vụ: chỉ tắt. Đổi giá không ảnh hưởng hoá đơn đã phát hành. Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
      *
      *     **Quyền:** `manage:Settings`.
      */
@@ -3416,6 +3416,7 @@ export interface components {
       active: boolean;
       code: string;
       defaultPrice: number;
+      description: string | null;
       effectiveFrom: string | null;
       history: components['schemas']['BuildingPriceOverride'][];
       /** @enum {string} */
@@ -3905,6 +3906,7 @@ export interface components {
       vehicles: components['schemas']['PortalVehicle'][];
     };
     PortalContractService: {
+      description: string | null;
       /** @enum {string} */
       kind: 'electricity' | 'per_person' | 'per_room' | 'per_vehicle' | 'water';
       name: string;
@@ -4158,6 +4160,7 @@ export interface components {
         endReading: number;
         startReading: number;
       }[];
+      serviceDescription?: string;
       startReading?: number;
     };
     PublicInvoicePayee: {
@@ -4631,6 +4634,7 @@ export interface components {
       roomId?: string;
       segments?: components['schemas']['StayInvoiceMeterSegment'][];
       serviceCode?: string;
+      serviceDescription?: string;
       serviceKind?: string;
       sourceEventId?: string;
       sourceInvoiceId?: string;
@@ -4877,6 +4881,7 @@ export interface components {
       active: boolean;
       code: string;
       defaultPrice: number;
+      description: string | null;
       id: string;
       /** @enum {string} */
       kind: 'electricity' | 'per_person' | 'per_room' | 'per_vehicle' | 'water';
@@ -12903,6 +12908,7 @@ export interface operations {
         'application/json': {
           active?: boolean;
           defaultPrice: number;
+          description?: string | null;
           /** @enum {string} */
           kind: 'electricity' | 'per_person' | 'per_room' | 'per_vehicle' | 'water';
           name: string;
@@ -12945,6 +12951,7 @@ export interface operations {
         'application/json': {
           active: boolean;
           defaultPrice: number;
+          description?: string | null;
           name: string;
           sortOrder: number;
           unit: string;

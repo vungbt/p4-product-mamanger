@@ -279,6 +279,7 @@ export async function portalContractView(portal: PortalPrincipal): Promise<Porta
     dueDay: building.dueDay ?? defaults.dueDay,
     services: definitions.map((service) => ({
       name: service.name,
+      description: service.description,
       kind: service.kind,
       unit: service.unit,
       price: resolveBuildingPrice(

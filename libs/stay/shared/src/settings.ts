@@ -15,6 +15,9 @@ export const BILLING_DAY_MAX_FIXED = 28;
 export const ROUNDING_UNITS = [1, 100, 1000] as const;
 export type RoundingUnit = (typeof ROUNDING_UNITS)[number];
 
+/** Maximum length of a service description. */
+export const SERVICE_DESCRIPTION_MAX = 500;
+
 /** Placeholder replaced by the invoice code in the bank transfer content. */
 export const TRANSFER_CONTENT_INVOICE_CODE = '{invoiceCode}';
 
@@ -105,6 +108,8 @@ export interface StayService {
   /** Stable machine code (`electricity`, `internet`…), generated from the name when created. */
   code: string;
   name: string;
+  /** Optional note shown under the name (e.g. "Thang máy, máy giặt, rác"), at most 500 characters. */
+  description: string | null;
   /** How the service is billed; immutable after creation. */
   kind: ServiceKind;
   unit: string;

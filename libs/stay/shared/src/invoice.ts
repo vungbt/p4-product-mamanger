@@ -17,6 +17,8 @@ export interface StayInvoiceMeterSegment {
 export interface StayInvoiceLineMeta {
   serviceCode?: string;
   serviceKind?: string;
+  /** Service description at draft time (e.g. "Thang máy, máy giặt, rác"); never changes once issued. */
+  serviceDescription?: string;
   /** Prorated rent/service: first and last day billed (inclusive). */
   coveredFrom?: string;
   coveredTo?: string;
@@ -247,6 +249,8 @@ export interface InvoicePeriodShareResult {
 
 /** Calculation details a tenant may see (no internal ids, reasons or references). */
 export interface PublicInvoiceLineMeta {
+  /** Service description snapshot of the line. */
+  serviceDescription?: string;
   coveredFrom?: string;
   coveredTo?: string;
   startReading?: number;

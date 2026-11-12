@@ -81,7 +81,15 @@ export async function getBuildingPrices(
     const resolved = resolveBuildingPrice(service.defaultPrice, history, date);
 
     return {
-      ...selectFields(service, ['code', 'name', 'kind', 'unit', 'active', 'defaultPrice']),
+      ...selectFields(service, [
+        'code',
+        'name',
+        'description',
+        'kind',
+        'unit',
+        'active',
+        'defaultPrice',
+      ]),
       serviceId: service.id,
       ...resolved,
       history: history.map(overrideDto),

@@ -66,6 +66,8 @@ export interface BuildingServicePrice {
   serviceId: string;
   code: string;
   name: string;
+  /** Optional service description (e.g. "Thang máy, máy giặt, rác"). */
+  description: string | null;
   kind: ServiceKind;
   unit: string;
   active: boolean;

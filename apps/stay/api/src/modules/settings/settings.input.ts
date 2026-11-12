@@ -9,6 +9,7 @@ import {
   READING_DAY_MONTHS,
   type ReadingDayMonth,
   type RoundingUnit,
+  SERVICE_DESCRIPTION_MAX,
   SERVICE_KINDS,
 } from '@stay/shared';
 import type { FormBody } from '@/shared/input.js';
@@ -97,6 +98,11 @@ export function readSettingsInput(body: FormBody): SettingsInput & { version: nu
   return input;
 }
 
+/** Optional `description` (≤ 500 characters); empty, `null` or omitted = `null`. */
+function readServiceDescription(body: FormBody): string | null {
+  return body.optionalText('description', SERVICE_DESCRIPTION_MAX) || null;
+}
+
 async function checkServiceName(body: FormBody, name: string, exceptId?: string) {
   if (name && !body.errors.name)
     body.check('name', !(await serviceNameTaken(name, exceptId)), 'unique_value');
@@ -106,6 +112,7 @@ async function checkServiceName(body: FormBody, name: string, exceptId?: string)
 export async function readNewServiceInput(body: FormBody): Promise<NewServiceInput> {
   const input = {
     name: body.text('name', 120),
+    description: readServiceDescription(body),
     kind: body.enum('kind', SERVICE_KINDS),
     unit: body.text('unit', 20),
     defaultPrice: body.integer('defaultPrice', 0, MAX_PRICE),
@@ -127,6 +134,8 @@ export async function readServiceInput(
 ): Promise<ServiceInput & { version: number }> {
   const input = {
     name: body.text('name', 120),
+    // Omitted by older clients (toggle, reorder): keep the stored description.
+    description: 'description' in body.data ? readServiceDescription(body) : undefined,
     unit: body.text('unit', 20),
     defaultPrice: body.integer('defaultPrice', 0, MAX_PRICE),
     sortOrder: body.integer('sortOrder', 0, MAX_SORT_ORDER),

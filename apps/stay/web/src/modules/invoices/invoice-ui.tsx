@@ -153,14 +153,22 @@ function descriptionParams(params: Record<string, string | number>) {
   );
 }
 
+/**
+ * Line text, e.g. "Dịch vụ chung 11/2026 (Thang máy, máy giặt, rác)": the service description
+ * snapshotted on the line (`meta.serviceDescription`) follows in brackets.
+ */
 export function useLineDescription() {
   const { t } = useTranslation('invoices');
 
-  return (line: InvoiceLineView) =>
-    t(line.description.key, {
+  return (line: InvoiceLineView) => {
+    const text = t(line.description.key, {
       ...descriptionParams(line.description.params),
       defaultValue: line.type,
     });
+    const note = line.meta.serviceDescription;
+
+    return note ? `${text} (${note})` : text;
+  };
 }
 
 /** How a line was computed, e.g. "(1.250 − 1.130) kWh × 3.500 ₫" or "3.000.000 ₫ × 20/30 ngày". */
