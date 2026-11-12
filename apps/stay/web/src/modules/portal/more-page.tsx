@@ -5,12 +5,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ContactLinks, PortalSection, portalPaths } from './portal-ui';
 
 const LINKS: { to: string; label: string; icon: IconName }[] = [
+  { to: portalPaths.notifications, label: 'Thông báo của tôi', icon: 'bell' },
   { to: portalPaths.usage, label: 'Điện nước', icon: 'bolt' },
   { to: portalPaths.requests, label: 'Yêu cầu gửi chủ trọ', icon: 'messages' },
   { to: portalPaths.notices, label: 'Thông báo và nội quy', icon: 'megaphone' },
 ];
 
-/** "Thêm": điện nước, yêu cầu, thông báo & nội quy, liên hệ, đăng xuất. */
+/** "Thêm": thông báo, điện nước, yêu cầu, thông báo & nội quy, liên hệ, đăng xuất. */
 export default function PortalMorePage() {
   const me = usePortalMe();
   const signOut = usePortalSignOut();

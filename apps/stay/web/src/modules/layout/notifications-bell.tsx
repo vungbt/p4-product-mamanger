@@ -1,14 +1,46 @@
 import { Button, IconButton, Popover } from '@itclabs/react-ui';
-import { useMarkNotificationRead, useNotifications } from '@stay/sdk/react';
+import { toast } from '@itclabs/react-ui/toast';
+import {
+  NOTIFICATION_STREAMS,
+  notificationKeys,
+  useMarkNotificationRead,
+  useNotificationSettings,
+  useNotifications,
+  usePushSubscription,
+} from '@stay/sdk/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { useAutoPush } from '@/libraries/notifications/use-auto-push';
+import {
+  POLL_CONNECTED_MS,
+  POLL_FALLBACK_MS,
+  useNotificationStream,
+} from '@/libraries/notifications/use-notification-stream';
+import { ROUTES } from '@/routing/route-configs';
 
+/**
+ * Header bell: live via Server-Sent Events (polling every 30 s when the stream is down). After
+ * sign-in it asks once for browser notification permission (see `useAutoPush`).
+ */
 export default function NotificationsBell() {
-  const query = useNotifications();
+  const client = useQueryClient();
+  const live = useNotificationStream(NOTIFICATION_STREAMS.staff, {
+    onReady: () => void client.invalidateQueries({ queryKey: notificationKeys.list() }),
+    onEvent: (event) => {
+      void client.invalidateQueries({ queryKey: notificationKeys.list() });
+      toast.info(event.title, { description: event.body });
+    },
+  });
+  const query = useNotifications({ refetchInterval: live ? POLL_CONNECTED_MS : POLL_FALLBACK_MS });
+  const settings = useNotificationSettings();
+  const push = usePushSubscription();
   const { selectBuilding } = useActiveBuilding();
   const markRead = useMarkNotificationRead();
   const [open, setOpen] = useState(false);
+
+  useAutoPush('staff', settings.data, (subscription) => push.subscribe.mutateAsync(subscription));
 
   return (
     <Popover
@@ -28,7 +60,16 @@ export default function NotificationsBell() {
       className="w-80 max-w-full"
       content={
         <div className="grid min-w-0 gap-3" data-testid="notifications-dropdown">
-          <h2 className="font-semibold">Thông báo · {query.data?.unreadCount ?? 0} chưa đọc</h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-semibold">Thông báo · {query.data?.unreadCount ?? 0} chưa đọc</h2>
+            <Link
+              to={ROUTES.notificationSettings}
+              onClick={() => setOpen(false)}
+              className="text-ui-sm text-accent"
+            >
+              Cài đặt
+            </Link>
+          </div>
           {query.isError ? (
             <p role="alert">
               Không thể tải thông báo.{' '}

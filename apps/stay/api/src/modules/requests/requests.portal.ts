@@ -28,6 +28,11 @@ import { auditedTransaction, recordAudit } from '@/shared/audit.js';
 import type { PortalPrincipal } from '@/types/express.js';
 import { contractFactsAt } from '../contracts/contracts.resolvers.js';
 import { isTenantVisible } from '../invoices/invoices.share.js';
+import {
+  notifyMaintenanceCreated,
+  notifyPaymentClaimCreated,
+  notifyTenantRequestCreated,
+} from '../notifications/notifications.events.js';
 import { portalReferenceDate } from '../portal/portal.access.js';
 import { attachablePortalFile } from '../uploads/uploads.service.js';
 import {
@@ -217,6 +222,7 @@ export async function createPaymentClaim(
       },
       transaction,
     );
+    await notifyPaymentClaimCreated(row, invoice, transaction);
     return portalClaimDto(row, portal.tenantId);
   });
 }
@@ -332,6 +338,7 @@ export async function createPortalMaintenance(
       },
       transaction,
     );
+    await notifyMaintenanceCreated(row, transaction);
     const [dto] = await maintenanceDtos([row], portal.tenantId);
 
     if (!dto) throw new NotFound();
@@ -452,6 +459,7 @@ export async function createPortalRequest(
       { requestId: row.id, type: row.type },
       transaction,
     );
+    await notifyTenantRequestCreated(row, transaction);
     return requestDto(row);
   });
 }

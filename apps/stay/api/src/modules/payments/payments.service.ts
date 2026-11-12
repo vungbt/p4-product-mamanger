@@ -21,6 +21,7 @@ import { auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { runIdempotent } from '@/shared/persistence.js';
 import type { ModelOrder } from '@/types/database.js';
 import { applyInvoicePaidTotal } from '../invoices/invoices.service.js';
+import { notifyPaymentRecorded } from '../notifications/notifications.events.js';
 import { paymentDtos } from './payments.dto.js';
 
 export type PaymentSortField = 'paidOn' | 'amount' | 'createdAt';
@@ -180,6 +181,13 @@ export async function insertPayment(
 
   await applyInvoicePaidTotal(invoice, paid + input.amount, transaction);
   await auditPayment('recorded', payment, invoice, before, transaction);
+  await notifyPaymentRecorded(
+    invoice,
+    input.amount,
+    input.paidOn,
+    remaining - input.amount,
+    transaction,
+  );
   return payment;
 }
 
