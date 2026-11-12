@@ -1,13 +1,17 @@
 import { type AppLocale, createI18n } from '@p4/i18n';
 import enBuildings from './locales/en/buildings.json';
 import en from './locales/en/common.json';
+import enDocuments from './locales/en/documents.json';
 import enForms from './locales/en/forms.json';
 import enInvoices from './locales/en/invoices.json';
+import enPortalDocuments from './locales/en/portal-documents.json';
 import enSettings from './locales/en/settings.json';
 import viBuildings from './locales/vi/buildings.json';
 import vi from './locales/vi/common.json';
+import viDocuments from './locales/vi/documents.json';
 import viForms from './locales/vi/forms.json';
 import viInvoices from './locales/vi/invoices.json';
+import viPortalDocuments from './locales/vi/portal-documents.json';
 import viSettings from './locales/vi/settings.json';
 
 export const LOCALE_STORAGE_KEY = 'stay_locale';
@@ -26,6 +30,8 @@ const i18n = createI18n({
   resources: {
     vi: {
       common: vi,
+      documents: viDocuments,
+      portalDocuments: viPortalDocuments,
       forms: viForms,
       settings: viSettings,
       buildings: viBuildings,
@@ -33,6 +39,8 @@ const i18n = createI18n({
     },
     en: {
       common: en,
+      documents: enDocuments,
+      portalDocuments: enPortalDocuments,
       forms: enForms,
       settings: enSettings,
       buildings: enBuildings,

@@ -1,6 +1,6 @@
 import { createStaySdk, type StaySdk } from '../shared/client.js';
 import { ApiSdkError, unwrap } from '../shared/errors.js';
-import type { components } from '../shared/generated.js';
+import type { components, operations } from '../shared/generated.js';
 
 /**
  * Tenant portal (ST-25) client, separate from the staff client: it authenticates only with the
@@ -19,6 +19,8 @@ export type PaymentClaimRequest = components['schemas']['PaymentClaimInput'];
 export type PortalMaintenanceRequest = components['schemas']['PortalMaintenanceInput'];
 export type TenantRequestRequest = components['schemas']['TenantRequestInput'];
 export type PortalUploadPurpose = components['schemas']['PortalUploadInput']['purpose'];
+export type PortalSignDocumentRequest =
+  operations['post_api_portal_documents_id_sign']['requestBody']['content']['application/json'];
 
 export interface PaymentClaimCommand {
   invoiceId: string;
@@ -80,6 +82,23 @@ export function createPortalApi(
       unwrap(await sdk.POST('/api/portal/requests', { body })).data,
     cancelRequest: async (id: string) =>
       unwrap(await sdk.POST('/api/portal/requests/{id}/cancel', { params: { path: { id } } })).data,
+    /** T-13: documents of the contract, the ones waiting for my signature first. */
+    documents: async (signal?: AbortSignal) =>
+      unwrap(await sdk.GET('/api/portal/documents', { signal })).data,
+    /** T-12: the body (signers only); the first open records `viewed`. */
+    document: async (id: string, signal?: AbortSignal) =>
+      unwrap(await sdk.GET('/api/portal/documents/{id}', { params: { path: { id } }, signal }))
+        .data,
+    signDocument: async ({ id, body }: { id: string; body: PortalSignDocumentRequest }) =>
+      unwrap(await sdk.POST('/api/portal/documents/{id}/sign', { params: { path: { id } }, body }))
+        .data,
+    rejectDocument: async ({ id, reason }: { id: string; reason: string }) =>
+      unwrap(
+        await sdk.POST('/api/portal/documents/{id}/reject', {
+          params: { path: { id } },
+          body: { reason },
+        }),
+      ).data,
     /**
      * Uploads one private image with a portal ticket (receipt or maintenance photo) and returns
      * the verified file id. The file goes straight to `uploadUrl` without cookies.
@@ -117,6 +136,10 @@ export function createPortalApi(
 }
 
 export type PortalApi = ReturnType<typeof createPortalApi>;
+
+/** Same-origin download URL of a completed document's PDF (portal cookie). */
+export const portalDocumentPdfPath = (id: string) =>
+  `/api/portal/documents/${encodeURIComponent(id)}/pdf`;
 
 /** No valid portal session: expired, link revoked, contract ended over 30 days or occupant left. */
 export function isPortalSessionError(error: unknown): boolean {
