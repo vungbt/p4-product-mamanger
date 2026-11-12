@@ -49,8 +49,13 @@ function summaryOf(
     status,
     myStatus: mine?.status ?? null,
     awaitingMe:
-      (status === 'sent' || status === 'viewed') &&
-      Boolean(mine && mine.status !== 'signed' && mine.status !== 'rejected'),
+      (status === 'sent' || status === 'viewed' || status === 'signed_by_tenant') &&
+      Boolean(
+        mine &&
+          mine.status !== 'signed' &&
+          mine.status !== 'rejected' &&
+          (!mine.expiresAt || mine.expiresAt > new Date()),
+      ),
     sentAt: row.sentAt?.toISOString() ?? null,
     completedAt: row.completedAt?.toISOString() ?? null,
   };

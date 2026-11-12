@@ -58,7 +58,7 @@
     "rejected": "Bạn đã từ chối văn bản này.",
     "closed": "Văn bản không còn chờ ký.",
     "expired": "Link ký đã hết hạn. Liên hệ chủ trọ để gửi lại.",
-    "legal": "Đây là chữ ký điện tử đơn giản theo Luật Giao dịch điện tử 2023, có giá trị làm bằng chứng. Bạn có thể yêu cầu ký bản giấy với chủ trọ."
+    "legal": "Đây là chữ ký điện tử đơn giản theo Luật Giao dịch điện tử 2023, có giá trị làm bằng chứng; không phải chữ ký số. Bạn có thể yêu cầu ký bản giấy với chủ trọ."
   },
   "sign": {
     "title": "Ký văn bản",

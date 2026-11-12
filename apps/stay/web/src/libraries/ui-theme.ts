@@ -1,4 +1,6 @@
+import { defineTheme } from '@itclabs/react-ui';
 import {
+  ArchiveIcon,
   ArrowLeftIcon,
   BellIcon,
   BoldIcon,
@@ -12,9 +14,6 @@ import {
   ClipboardTextIcon,
   CopyIcon,
   CreditCardIcon,
-  defineTheme } from '@itclabs/react-ui';
-import {
-  ArchiveIcon,
   DeleteIcon,
   DownloadIcon,
   EditIcon,

@@ -18,8 +18,7 @@ export const documentKeys = {
     ['stay', 'documents', 'templates', query ?? {}] as const,
   template: (id: string) => ['stay', 'documents', 'template', id] as const,
   templateVersion: (id: string) => ['stay', 'documents', 'template-version', id] as const,
-  contractDocuments: (contractId: string) =>
-    ['stay', 'documents', 'contract', contractId] as const,
+  contractDocuments: (contractId: string) => ['stay', 'documents', 'contract', contractId] as const,
   document: (id: string) => ['stay', 'documents', 'document', id] as const,
 };
 
@@ -28,7 +27,10 @@ export function documentQueryOptions(sdk: StaySdk) {
 
   return {
     landlord: () =>
-      queryOptions({ queryKey: documentKeys.landlord, queryFn: ({ signal }) => api.landlord(signal) }),
+      queryOptions({
+        queryKey: documentKeys.landlord,
+        queryFn: ({ signal }) => api.landlord(signal),
+      }),
     variables: () =>
       queryOptions({
         queryKey: documentKeys.variables,
@@ -88,11 +90,14 @@ export function documentMutationOptions(sdk: StaySdk, client: QueryClient) {
       mutationOptions({ mutationFn: api.updateDocument, retry: false, onSuccess: refresh }),
     sendDocument: () =>
       mutationOptions({ mutationFn: api.sendDocument, retry: false, onSuccess: refresh }),
-    ownerSign: () => mutationOptions({ mutationFn: api.ownerSign, retry: false, onSuccess: refresh }),
+    ownerSign: () =>
+      mutationOptions({ mutationFn: api.ownerSign, retry: false, onSuccess: refresh }),
     cancelDocument: () =>
       mutationOptions({ mutationFn: api.cancelDocument, retry: false, onSuccess: refresh }),
-    markPaper: () => mutationOptions({ mutationFn: api.markPaper, retry: false, onSuccess: refresh }),
-    supersede: () => mutationOptions({ mutationFn: api.supersede, retry: false, onSuccess: refresh }),
+    markPaper: () =>
+      mutationOptions({ mutationFn: api.markPaper, retry: false, onSuccess: refresh }),
+    supersede: () =>
+      mutationOptions({ mutationFn: api.supersede, retry: false, onSuccess: refresh }),
   };
 }
 

@@ -58,7 +58,7 @@
     "rejected": "You rejected this document.",
     "closed": "The document is no longer awaiting signatures.",
     "expired": "The signing link expired. Ask the landlord to send it again.",
-    "legal": "This is a simple electronic signature under the 2023 Law on Electronic Transactions and serves as evidence. You may ask the landlord for a paper copy to sign."
+    "legal": "This is a simple electronic signature under the 2023 Law on Electronic Transactions, serving as evidence. It is not a certified digital signature. You may request a paper copy to sign."
   },
   "sign": {
     "title": "Sign the document",

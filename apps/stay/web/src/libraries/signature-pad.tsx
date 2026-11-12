@@ -1,5 +1,6 @@
 import { Button, cn } from '@itclabs/react-ui';
 import { type PointerEvent, useEffect, useId, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type SignaturePadProps = {
   /** Current signature as a PNG/JPEG data URL, `null` when empty. */
@@ -27,6 +28,7 @@ function inkColor(element: HTMLElement): string {
  * it. Keyboard users get the typed-name option of the signing form instead.
  */
 export function SignaturePad({ value, onChange, label, hint, disabled }: SignaturePadProps) {
+  const { t } = useTranslation('documents');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const last = useRef<{ x: number; y: number } | null>(null);
@@ -149,7 +151,7 @@ export function SignaturePad({ value, onChange, label, hint, disabled }: Signatu
         ) : null}
         {!value && !inked ? (
           <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-ui-sm text-muted">
-            Ký vào đây
+            {t('drawHere')}
           </span>
         ) : null}
       </div>
@@ -161,13 +163,8 @@ export function SignaturePad({ value, onChange, label, hint, disabled }: Signatu
         ) : (
           <span />
         )}
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={disabled || (!value && !inked)}
-          onClick={clear}
-        >
-          Xoá, vẽ lại
+        <Button size="sm" variant="ghost" disabled={disabled || (!value && !inked)} onClick={clear}>
+          {t('clearSignature')}
         </Button>
       </div>
     </div>

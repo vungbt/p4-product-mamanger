@@ -143,7 +143,7 @@ const OPERATIONS = {
   ],
   'PUT /api/contract-templates/{id}': [
     'Đổi tên / tắt mẫu',
-    'Mẫu đã dùng không xoá được, chỉ tắt. ' + VERSION_NOTE,
+    `Mẫu đã dùng không xoá được, chỉ tắt. ${VERSION_NOTE}`,
   ],
   'POST /api/contract-templates/{id}/versions': [
     'Lưu phiên bản mới',
@@ -185,7 +185,7 @@ const OPERATIONS = {
   ],
   'POST /api/documents/{id}/cancel': [
     'Huỷ văn bản',
-    'Văn bản chưa hoàn tất; link ký ngừng hoạt động. ' + VERSION_NOTE,
+    `Văn bản chưa hoàn tất; link ký ngừng hoạt động. ${VERSION_NOTE}`,
   ],
   'POST /api/documents/{id}/paper': [
     'Đánh dấu đã ký giấy',

@@ -4,8 +4,10 @@ import {
   type ContractDocumentModel,
   DocumentEventModel,
   type DocumentSignerModel,
+  DocumentSignerModel as SignerModel,
 } from '@/sequelize/models/index.js';
 import { enqueueEvent } from '@/shared/persistence.js';
+import { publishNotification } from '../notifications/notifications.publish.js';
 
 /** Who did it and from where (evidence page): staff user or a portal signer. */
 export interface EventActor {
@@ -53,6 +55,50 @@ export async function publishDocumentEvent(
     },
     transaction,
   );
+  // Persist notification + dispatch outbox in the same transaction as the document change.
+  // Only selected signers receive the sent notification; unrelated occupants cannot read it.
+  if (type === 'sent') {
+    const signers = await SignerModel.findAll({
+      where: { documentId: document.id, role: 'tenant' },
+      transaction,
+    });
+
+    for (const recipient of signers) {
+      if (recipient.status === 'signed') continue;
+      await publishNotification(
+        {
+          buildingId: document.buildingId,
+          kind: 'document.sent',
+          title: 'Văn bản chờ bạn ký',
+          body: `Văn bản ${document.code} đã được gửi. Vui lòng đọc và ký xác nhận.`,
+          path: `/p/documents/${document.id}`,
+          audience: 'tenant',
+          contractId: document.contractId,
+          tenantId: recipient.tenantId,
+        },
+        transaction,
+      );
+    }
+  } else if (type !== 'signed' || signer?.role === 'tenant') {
+    const message = {
+      signed: ['Người thuê đã ký văn bản', 'Người thuê đã ký xác nhận'] as const,
+      completed: ['Văn bản đã hoàn tất', 'Văn bản đã đủ chữ ký; có thể tải PDF'] as const,
+      rejected: ['Người thuê từ chối văn bản', 'Vui lòng xem lý do từ chối trong văn bản'] as const,
+    }[type];
+
+    await publishNotification(
+      {
+        buildingId: document.buildingId,
+        kind: `document.${type}`,
+        title: message[0],
+        body: `${message[1]}: ${document.code}.`,
+        path: `/contracts/${document.contractId}/documents/${document.id}`,
+        audience: 'staff',
+        contractId: document.contractId,
+      },
+      transaction,
+    );
+  }
 }
 
 /** Appends one row to the evidence log (append-only table). */

@@ -16497,6 +16497,7 @@ components:
             type: string
             enum:
               - announcements
+              - documents
               - invoices
               - payments
               - reminders
@@ -16528,6 +16529,7 @@ components:
             type: string
             enum:
               - announcements
+              - documents
               - invoices
               - payments
               - reminders
@@ -17397,6 +17399,10 @@ components:
           enum:
             - announcement.created
             - automation
+            - document.completed
+            - document.rejected
+            - document.sent
+            - document.signed
             - drafts.ready
             - invoice.due_soon
             - invoice.issued
@@ -19572,6 +19578,10 @@ components:
           enum:
             - announcement.created
             - automation
+            - document.completed
+            - document.rejected
+            - document.sent
+            - document.signed
             - drafts.ready
             - invoice.due_soon
             - invoice.issued

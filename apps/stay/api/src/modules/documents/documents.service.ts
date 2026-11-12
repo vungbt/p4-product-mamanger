@@ -357,11 +357,7 @@ export async function createDocument(
     throw conflict('contract_closed');
   const template = await ContractTemplateModel.findByPk(input.templateId, { transaction });
 
-  if (
-    !template ||
-    !template.active ||
-    (template.buildingId && template.buildingId !== contract.buildingId)
-  )
+  if (!template?.active || (template.buildingId && template.buildingId !== contract.buildingId))
     throw new NotFound('template_not_found');
   const document = await insertDocument(
     user,

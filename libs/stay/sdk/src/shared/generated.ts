@@ -4759,14 +4759,28 @@ export interface components {
     };
     NotificationPreferences: {
       email: boolean;
-      mutedGroups: ('announcements' | 'invoices' | 'payments' | 'reminders' | 'requests')[];
+      mutedGroups: (
+        | 'announcements'
+        | 'documents'
+        | 'invoices'
+        | 'payments'
+        | 'reminders'
+        | 'requests'
+      )[];
       push: boolean;
     };
     NotificationSettings: {
       email: boolean;
       emailAvailable: boolean;
       hasEmail: boolean;
-      mutedGroups: ('announcements' | 'invoices' | 'payments' | 'reminders' | 'requests')[];
+      mutedGroups: (
+        | 'announcements'
+        | 'documents'
+        | 'invoices'
+        | 'payments'
+        | 'reminders'
+        | 'requests'
+      )[];
       push: boolean;
       pushPublicKey: string | null;
       pushSubscriptions: number;
@@ -5057,6 +5071,10 @@ export interface components {
       kind:
         | 'announcement.created'
         | 'automation'
+        | 'document.completed'
+        | 'document.rejected'
+        | 'document.sent'
+        | 'document.signed'
         | 'drafts.ready'
         | 'invoice.due_soon'
         | 'invoice.issued'
@@ -5768,6 +5786,10 @@ export interface components {
       kind:
         | 'announcement.created'
         | 'automation'
+        | 'document.completed'
+        | 'document.rejected'
+        | 'document.sent'
+        | 'document.signed'
         | 'drafts.ready'
         | 'invoice.due_soon'
         | 'invoice.issued'

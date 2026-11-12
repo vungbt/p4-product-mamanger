@@ -8,11 +8,16 @@ export const NOTIFICATION_GROUPS = [
   'reminders',
   'requests',
   'announcements',
+  'documents',
 ] as const;
 
 export type NotificationGroup = (typeof NOTIFICATION_GROUPS)[number];
 
 export const NOTIFICATION_KINDS = [
+  'document.sent',
+  'document.signed',
+  'document.completed',
+  'document.rejected',
   // Staff (owner and managers of the building)
   'payment_claim.created',
   'maintenance.created',
@@ -34,6 +39,10 @@ export const NOTIFICATION_KINDS = [
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 export const NOTIFICATION_KIND_GROUPS: Record<NotificationKind, NotificationGroup> = {
+  'document.sent': 'documents',
+  'document.signed': 'documents',
+  'document.completed': 'documents',
+  'document.rejected': 'documents',
   'payment_claim.created': 'payments',
   'maintenance.created': 'requests',
   'tenant_request.created': 'requests',
@@ -52,6 +61,7 @@ export const NOTIFICATION_KIND_GROUPS: Record<NotificationKind, NotificationGrou
 
 /** Groups that only reach staff or only reach tenants (the settings show the relevant ones). */
 export const STAFF_NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
+  'documents',
   'payments',
   'requests',
   'reminders',
@@ -62,6 +72,7 @@ export const TENANT_NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
   'reminders',
   'requests',
   'announcements',
+  'documents',
 ];
 
 /**

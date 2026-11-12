@@ -53,7 +53,11 @@
       "monthly": "Hằng tháng",
       "rental": "Cho thuê",
       "management": "Quản lý"
-    }
+    },
+    "landlord": "Bên cho thuê & chữ ký",
+    "contractTemplates": "Mẫu hợp đồng",
+    "contractTemplate": "Soạn mẫu",
+    "contractDocument": "Chi tiết văn bản"
   },
   "header": {
     "back": "Quay lại",

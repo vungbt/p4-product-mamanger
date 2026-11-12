@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { createHash, randomInt, randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { after, before, describe, test } from 'node:test';
+import { QueryTypes } from 'sequelize';
 import { AuditLogModel, sequelize } from '../dist/sequelize/models/index.js';
 
 const base = process.env.STAY_TEST_API_URL;
@@ -351,6 +352,88 @@ describe('ST-30a online contracts', { skip: !base }, () => {
     assert.match(sent.dataSha256, /^[0-9a-f]{64}$/);
   });
 
+  test('document notifications target selected tenants and staff, and roll back with failed writes', async () => {
+    const { contract, tenants } = await leased([
+      { fullName: 'Nguyễn Văn Thông', idNumber: randomIdNumber() },
+      { fullName: 'Trần Thị Báo', idNumber: randomIdNumber() },
+    ]);
+    let document = await newDocument(contract);
+    const portalPath = `/p/documents/${document.id}`;
+    const staffPath = `/contracts/${contract.id}/documents/${document.id}`;
+    const notifications = () =>
+      sequelize.query(
+        `SELECT kind,audience,tenant_id AS "tenantId",contract_id AS "contractId",path FROM notifications
+       WHERE contract_id=:contractId ORDER BY created_at,id`,
+        { replacements: { contractId: contract.id }, type: QueryTypes.SELECT },
+      );
+
+    failed(
+      await call(owner, 'POST', `/documents/${document.id}/send`, {
+        version: document.version + 10,
+      }),
+      409,
+    );
+    assert.deepEqual(await notifications(), []);
+    document = ok(
+      await call(owner, 'POST', `/documents/${document.id}/send`, { version: document.version }),
+    );
+    const sent = (await notifications()).filter((row) => row.kind === 'document.sent');
+
+    assert.equal(sent.length, 1);
+    assert.deepEqual(sent[0], {
+      kind: 'document.sent',
+      audience: 'tenant',
+      tenantId: tenants[0].id,
+      contractId: contract.id,
+      path: portalPath,
+    });
+    const portalRows = ok(await call(tenants[0].cookie, 'GET', '/portal/notifications'));
+
+    assert.ok(portalRows.items.some((row) => row.path === portalPath));
+    const otherRows = ok(await call(tenants[1].cookie, 'GET', '/portal/notifications'));
+
+    assert.ok(!otherRows.items.some((row) => row.path === portalPath));
+    failed(
+      await call(tenants[0].cookie, 'POST', `/portal/documents/${document.id}/sign`, {
+        fullName: 'Wrong name',
+        phoneLast4: tenants[0].phone.slice(-4),
+        agree: true,
+        method: 'typed',
+      }),
+      422,
+    );
+    assert.equal((await notifications()).length, 1);
+    ok(
+      await call(tenants[0].cookie, 'POST', `/portal/documents/${document.id}/sign`, {
+        fullName: tenants[0].fullName,
+        phoneLast4: tenants[0].phone.slice(-4),
+        agree: true,
+        method: 'typed',
+      }),
+    );
+    document = ok(await call(owner, 'GET', `/documents/${document.id}`));
+    ok(
+      await call(owner, 'POST', `/documents/${document.id}/owner-sign`, {
+        password: OWNER_PASSWORD,
+        version: document.version,
+      }),
+    );
+    const staff = (await notifications()).filter((row) => row.audience === 'staff');
+
+    assert.deepEqual(staff.map((row) => row.kind).sort(), [
+      'document.completed',
+      'document.signed',
+    ]);
+    assert.ok(staff.every((row) => row.path === staffPath && row.tenantId === null));
+    const [dispatches] = await sequelize.query(
+      `SELECT count(*)::int AS count FROM domain_events WHERE type='stay.notification.dispatch'
+       AND payload->>'notificationId' IN (SELECT id::text FROM notifications WHERE contract_id=:contractId)`,
+      { replacements: { contractId: contract.id }, type: QueryTypes.SELECT },
+    );
+
+    assert.equal(dispatches.count, 3);
+  });
+
   test('send → tenants sign in the portal → owner signs → final PDF + evidence + verify', async () => {
     const { contract, tenants } = await leased([
       { fullName: 'Trần Thị Bình', idNumber: randomIdNumber() },
@@ -431,6 +514,13 @@ describe('ST-30a online contracts', { skip: !base }, () => {
 
     assert.equal(signed.status, 'signed_by_tenant');
     assert.equal(signed.myStatus, 'signed');
+    // The optional co-signer remains actionable in T-12/T-13 after the primary signed.
+    const optionalDocument = ok(
+      await call(other.cookie, 'GET', `/portal/documents/${document.id}`),
+    );
+
+    assert.equal(optionalDocument.awaitingMe, true);
+    assert.equal(optionalDocument.status, 'signed_by_tenant');
     // The optional co-signer may still sign before the owner (typed signature).
     ok(
       await call(other.cookie, 'POST', `/portal/documents/${document.id}/sign`, {

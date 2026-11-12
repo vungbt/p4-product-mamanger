@@ -2,7 +2,10 @@ import type { StaySdk } from './client.js';
 import { ApiSdkError, unwrap } from './errors.js';
 import type { paths } from './generated.js';
 
-type JsonBody<Path extends keyof paths, Method extends 'post' | 'put'> = paths[Path][Method] extends {
+type JsonBody<
+  Path extends keyof paths,
+  Method extends 'post' | 'put',
+> = paths[Path][Method] extends {
   requestBody?: { content: { 'application/json': infer Body } };
 }
   ? Body
@@ -11,7 +14,10 @@ type JsonBody<Path extends keyof paths, Method extends 'post' | 'put'> = paths[P
 export type LandlordProfileInput = JsonBody<'/api/settings/landlord', 'put'>;
 export type ContractTemplateCreateInput = JsonBody<'/api/contract-templates', 'post'>;
 export type ContractTemplateUpdateInput = JsonBody<'/api/contract-templates/{id}', 'put'>;
-export type ContractTemplateVersionInput = JsonBody<'/api/contract-templates/{id}/versions', 'post'>;
+export type ContractTemplateVersionInput = JsonBody<
+  '/api/contract-templates/{id}/versions',
+  'post'
+>;
 export type ContractTemplatePreviewInput = JsonBody<'/api/contract-templates/{id}/preview', 'post'>;
 export type ContractTemplateListQuery = NonNullable<
   paths['/api/contract-templates']['get']['parameters']['query']
@@ -21,7 +27,11 @@ export type DocumentUpdateInput = JsonBody<'/api/documents/{id}', 'put'>;
 export type DocumentSendInput = JsonBody<'/api/documents/{id}/send', 'post'>;
 export type DocumentOwnerSignInput = JsonBody<'/api/documents/{id}/owner-sign', 'post'>;
 export type DocumentCancelInput = JsonBody<'/api/documents/{id}/cancel', 'post'>;
-export type DocumentPaperInput = { file: Blob & { name?: string }; signedOn: string; version: number };
+export type DocumentPaperInput = {
+  file: Blob & { name?: string };
+  signedOn: string;
+  version: number;
+};
 
 const path = (id: string) => ({ params: { path: { id } } });
 
@@ -68,7 +78,13 @@ export function createDocumentApi(sdk: StaySdk) {
     },
     documents: async (contractId: string, signal?: AbortSignal) =>
       unwrap(await sdk.GET('/api/contracts/{id}/documents', { ...path(contractId), signal })).data,
-    createDocument: async ({ contractId, body }: { contractId: string; body: DocumentCreateInput }) =>
+    createDocument: async ({
+      contractId,
+      body,
+    }: {
+      contractId: string;
+      body: DocumentCreateInput;
+    }) =>
       unwrap(await sdk.POST('/api/contracts/{id}/documents', { ...path(contractId), body })).data,
     document: async (id: string, signal?: AbortSignal) =>
       unwrap(await sdk.GET('/api/documents/{id}', { ...path(id), signal })).data,

@@ -15,7 +15,7 @@ export function DocumentBody({
   label?: string;
 }) {
   return (
-    <div
+    <section
       aria-label={label}
       className={cn(
         'pod-rich-text min-w-0 break-words text-ink',
@@ -27,7 +27,6 @@ export function DocumentBody({
         '[&_[data-missing]]:font-semibold [&_[data-missing]]:text-danger-700',
         className,
       )}
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: API-sanitized allowlist HTML.
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

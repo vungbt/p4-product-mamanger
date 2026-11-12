@@ -1,7 +1,8 @@
 import { Button } from '@itclabs/react-ui';
-import { usePortalInvoice, usePortalMe } from '@stay/sdk/react';
+import { usePortalDocuments, usePortalInvoice, usePortalMe } from '@stay/sdk/react';
 import type { PortalInvoiceSummary, PortalOpenRequests } from '@stay/shared';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { displayDate, formatVnd } from '@/libraries/format';
 import { displayPeriod, INVOICE_KIND_LABELS } from '@/modules/invoices/invoice-ui';
@@ -108,7 +109,11 @@ function OpenRequests({ open }: { open: PortalOpenRequests }) {
 
 /** T-03 `/p`: current invoice and payment, debt, notices, open requests, contact. */
 export default function PortalHomePage() {
+  const { t } = useTranslation('portalDocuments');
+  const documents = usePortalDocuments();
   const me = usePortalMe();
+
+  const awaiting = (documents.data ?? []).filter((row) => row.awaitingMe);
 
   return (
     <PortalQuery query={me}>
@@ -160,6 +165,20 @@ export default function PortalHomePage() {
             </PortalSection>
           ) : null}
 
+          {awaiting.length > 0 && (
+            <PortalSection title={t('home.title')} testId="portal-awaiting-documents">
+              <p>{t('home.awaiting', { count: awaiting.length })}</p>
+              {awaiting.map((document) => (
+                <Link
+                  key={document.id}
+                  className="font-semibold text-accent"
+                  to={`/p/documents/${document.id}`}
+                >
+                  {document.title} · {t('home.open')}
+                </Link>
+              ))}
+            </PortalSection>
+          )}
           <OpenRequests open={data.openRequests} />
 
           <PortalSection title="Liên hệ chủ trọ">

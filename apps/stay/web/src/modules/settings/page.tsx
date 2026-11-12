@@ -6,13 +6,33 @@ import { ScreenHeader } from '@/libraries/screen-header';
 import { ROUTES } from '@/routing/route-configs';
 
 type SettingsLink = {
-  key: 'services' | 'billing' | 'buildings' | 'members' | 'expenseCategories' | 'announcements';
+  key:
+    | 'landlord'
+    | 'contractTemplates'
+    | 'services'
+    | 'billing'
+    | 'buildings'
+    | 'members'
+    | 'expenseCategories'
+    | 'announcements';
   icon: IconName;
   href: string;
   ability: AbilityCheck;
 };
 
 const LINKS: SettingsLink[] = [
+  {
+    key: 'landlord',
+    icon: 'penTool',
+    href: '/settings/landlord',
+    ability: { action: 'manage', subject: 'Settings' },
+  },
+  {
+    key: 'contractTemplates',
+    icon: 'fileCheck',
+    href: '/settings/contract-templates',
+    ability: { action: 'manage', subject: 'Settings' },
+  },
   {
     key: 'expenseCategories',
     icon: 'creditCard',
