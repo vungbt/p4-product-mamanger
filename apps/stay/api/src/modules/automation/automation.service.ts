@@ -1,7 +1,6 @@
-import { randomUUID } from 'node:crypto';
 import { NotFound, setAuditChanges } from '@p4/server-core';
 import type { StayAutomationSettings, StayNotifications, StayUser } from '@stay/shared';
-import { QueryTypes, type Transaction } from 'sequelize';
+import { QueryTypes } from 'sequelize';
 import { accessibleBuildingIds } from '@/middlewares/ability.middleware.js';
 import { sequelize } from '@/sequelize/models/index.js';
 import { auditedTransaction } from '@/shared/audit.js';
@@ -62,27 +61,15 @@ export async function updateAutomationSettings(
   });
 }
 
-export async function notify(
-  buildingId: string,
-  title: string,
-  body: string,
-  path: string,
-  transaction: Transaction,
-) {
-  await sequelize.query(
-    'INSERT INTO notifications(id,building_id,title,body,path) VALUES (:id,:buildingId,:title,:body,:path)',
-    { replacements: { id: randomUUID(), buildingId, title, body, path }, transaction },
-  );
-}
-
 export async function listNotifications(user: StayUser): Promise<StayNotifications> {
   const ids = accessibleBuildingIds(user, 'read');
   if (ids !== 'all' && !ids.length) return { items: [], unreadCount: 0 };
-  const scope = ids === 'all' ? '' : 'AND n.building_id IN (:ids)';
+  // Staff notifications only; tenant notifications are read in the portal.
+  const scope = `AND n.audience='staff' ${ids === 'all' ? '' : 'AND n.building_id IN (:ids)'}`;
   const replacements = { userId: user.id, ids };
   // A bounded recent list, with an independent total for all unread records.
   const items = await sequelize.query<StayNotifications['items'][number]>(
-    `SELECT n.id,n.building_id AS "buildingId",n.title,n.body,n.path,
+    `SELECT n.id,n.building_id AS "buildingId",n.kind,n.title,n.body,n.path,
     to_char(n.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "createdAt",
     to_char(r.read_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "readAt"
     FROM notifications n LEFT JOIN notification_reads r ON r.notification_id=n.id AND r.user_id=:userId
@@ -100,7 +87,7 @@ export async function listNotifications(user: StayUser): Promise<StayNotificatio
 export async function markNotificationRead(user: StayUser, id: string): Promise<{ id: string }> {
   return auditedTransaction(async (transaction) => {
     const [row] = await sequelize.query<{ buildingId: string }>(
-      'SELECT building_id AS "buildingId" FROM notifications WHERE id=:id',
+      `SELECT building_id AS "buildingId" FROM notifications WHERE id=:id AND audience='staff'`,
       { replacements: { id }, transaction, type: QueryTypes.SELECT },
     );
     if (!row) throw new NotFound('notification_not_found');

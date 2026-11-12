@@ -4,6 +4,7 @@ import { createApp } from '@/app.js';
 import { authPool } from '@/configs/better-auth.js';
 import { env } from '@/configs/env.js';
 import { assertProductionConfig } from '@/configs/production.js';
+import { closeNotificationListener } from '@/modules/notifications/notifications.stream.js';
 import { sequelize } from '@/sequelize/models/index.js';
 
 async function main() {
@@ -19,6 +20,8 @@ async function main() {
 
   const shutdown = (signal: string) => {
     logger.info(`${signal} received — shutting down`);
+    // Open SSE streams would keep `server.close()` waiting.
+    void closeNotificationListener();
     server.close(async () => {
       try {
         await authPool.end();

@@ -1,27 +1,34 @@
 import { randomUUID } from 'node:crypto';
-import { createOutbox, logger, requestStore } from '@p4/server-core';
+import { logger, requestStore } from '@p4/server-core';
 import type { JsonValue } from '@p4/shared';
 import { billingDate } from '@stay/billing';
 import {
   addDays,
   addMonths,
   isoDateInTimeZone,
+  type NotificationKind,
   type StayAutomationSettings,
   type StayUser,
 } from '@stay/shared';
 import { Op, QueryTypes, type Transaction } from 'sequelize';
+import { emailEnabled } from '@/configs/env.js';
 import {
   BuildingModel,
   DomainEventModel,
   InvoiceModel,
   sequelize,
-  UserModel,
 } from '@/sequelize/models/index.js';
 import { auditedCommand, auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { createDrafts } from '../invoices/invoices.service.js';
 import { shareInvoice } from '../invoices/invoices.share.js';
+import {
+  displayDate,
+  formatVnd,
+  publishNotification,
+} from '../notifications/notifications.publish.js';
+import { smtpTransport } from '../notifications/notifications.transports.js';
 import { billingDefaults } from '../settings/settings.service.js';
-import { automationDefaults, notify, settingsColumns } from './automation.service.js';
+import { automationDefaults, settingsColumns } from './automation.service.js';
 
 export type AutomationKind = 'reading' | 'drafts' | 'before_due' | 'after_due';
 
@@ -45,45 +52,44 @@ const system: StayUser = {
   buildingIds: [],
   contractIds: [],
 };
-const { enqueueEvent } = createOutbox({
-  insertEvent: (row, transaction) => DomainEventModel.create(row, { transaction }),
-});
-
-async function mail(
-  run: Run,
-  to: string,
-  subject: string,
-  text: string,
-  transaction: Transaction,
-  invoiceId?: string,
-) {
-  await enqueueEvent(
-    {
-      type: 'stay.automation.mail',
-      aggregateType: 'automation',
-      aggregateId: run.id,
-      payload: { to, subject, text, ...(invoiceId ? { invoiceId } : {}) },
-    },
-    transaction,
-  );
-}
-
+/** Staff notice (in-app, plus email/push per preferences) of an automation run. */
 async function ownerNotice(
   run: Run,
   title: string,
   body: string,
   path: string,
   transaction: Transaction,
-  email = false,
 ) {
-  await notify(run.buildingId, title, body, path, transaction);
-  if (email) {
-    for (const owner of await UserModel.findAll({
-      where: { role: 'owner', accountStatus: 'active' },
-      transaction,
-    }))
-      await mail(run, owner.email, title, body, transaction);
-  }
+  const kind: NotificationKind = run.kind.startsWith('reading')
+    ? 'reading.reminder'
+    : run.kind === 'drafts'
+      ? 'drafts.ready'
+      : 'reminder.unreachable';
+
+  await publishNotification(
+    {
+      buildingId: run.buildingId,
+      kind,
+      title,
+      body,
+      path,
+      audience: 'staff',
+      guard: { automationRunId: run.id },
+    },
+    transaction,
+  );
+}
+
+/** Whether a tenant can be reached outside the app: email on file or a subscribed portal. */
+async function reachable(contractId: string, email: string | null, transaction: Transaction) {
+  if (email) return true;
+  const [row] = await sequelize.query<{ count: number }>(
+    `SELECT count(*)::integer AS count FROM push_subscriptions s
+    JOIN tenant_portal_links l ON l.id=s.portal_link_id WHERE l.contract_id=:id AND l.revoked_at IS NULL`,
+    { replacements: { id: contractId }, transaction, type: QueryTypes.SELECT },
+  );
+
+  return (row?.count ?? 0) > 0;
 }
 
 function enabled(settings: StayAutomationSettings, kind: AutomationKind) {
@@ -113,7 +119,6 @@ async function executeRun(run: Run, now: Date, transaction: Transaction) {
       `Chốt chỉ số kỳ ${addMonths(run.period, -1)} — ${building.name}`,
       `/readings?period=${addMonths(run.period, -1)}`,
       transaction,
-      true,
     );
   } else if (run.kind === 'drafts') {
     const result = await createDrafts(system, building.id, run.period, `automation:${run.id}`);
@@ -153,22 +158,31 @@ async function executeRun(run: Run, now: Date, transaction: Transaction) {
           type: QueryTypes.SELECT,
         },
       );
-      if (!tenant?.email) {
+      if (!tenant || !(await reachable(invoice.contractId, tenant.email, transaction))) {
         unreachable.push(
           `${invoice.code ?? invoice.id}: ${tenant?.fullName ?? 'Không có người đại diện'}`,
         );
         continue;
       }
-      const link = await shareInvoice(system, invoice.id, undefined);
-      await mail(
-        run,
-        tenant.email,
-        run.kind === 'before_due'
-          ? 'Nhắc thanh toán hoá đơn ngày mai'
-          : 'Hoá đơn đã quá hạn 3 ngày',
-        `Hoá đơn ${invoice.code}: còn ${invoice.total - invoice.paidTotal} VND. ${link.url}`,
+      // Email carries a fresh public link (QR for the remaining amount); push opens the portal.
+      const link = tenant.email ? await shareInvoice(system, invoice.id, undefined) : null;
+
+      await publishNotification(
+        {
+          buildingId: building.id,
+          kind: run.kind === 'before_due' ? 'invoice.due_soon' : 'invoice.overdue',
+          title:
+            run.kind === 'before_due'
+              ? 'Nhắc thanh toán hoá đơn ngày mai'
+              : 'Hoá đơn đã quá hạn thanh toán',
+          body: `Hoá đơn ${invoice.code}: còn ${formatVnd(invoice.total - invoice.paidTotal)}, hạn thanh toán ${displayDate(invoice.dueOn)}.`,
+          path: `/p/invoices/${invoice.id}`,
+          audience: 'tenant',
+          contractId: invoice.contractId,
+          ...(link ? { emailLink: link.url } : {}),
+          guard: { automationRunId: run.id, unpaidInvoiceId: invoice.id },
+        },
         transaction,
-        invoice.id,
       );
     }
     if (unreachable.length)
@@ -288,17 +302,54 @@ export interface AutomationMailer {
   send(id: string, payload: JsonValue): Promise<void>;
 }
 
-/** No SMTP package is installed. Never log addresses, invoice links or mail bodies. */
+/** Without SMTP: logs the event id only, never recipients, invoice links or bodies. */
 export const logMailer: AutomationMailer = {
   async send(id) {
     process.stdout.write(`[stay-mail:log] ${id}\n`);
   },
 };
 
+/**
+ * Legacy `stay.automation.mail` events queued before notification channels existed: plain text
+ * through SMTP when configured. New reminders use `publishNotification`.
+ */
+export const legacyMailer: AutomationMailer = {
+  async send(id, payload) {
+    if (!emailEnabled()) return logMailer.send(id, payload);
+    const fields = payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
+    const text = (key: string) => (typeof fields[key] === 'string' ? String(fields[key]) : '');
+
+    if (!text('to')) return;
+    await smtpTransport.send({
+      id,
+      to: text('to'),
+      subject: text('subject'),
+      text: text('text'),
+      html: `<p>${text('text').replaceAll('&', '&amp;').replaceAll('<', '&lt;')}</p>`,
+    });
+  },
+};
+
+/** Re-checked before delivery: archived building or switch turned off → suppressed. */
+export async function automationRunAllowed(runId: string): Promise<boolean> {
+  const [permission] = await sequelize.query<{ allowed: boolean }>(
+    `SELECT
+    b.archived_at IS NULL AND CASE r.kind WHEN 'reading' THEN a.reading_reminder
+    WHEN 'drafts' THEN a.create_drafts
+    WHEN 'before_due' THEN NOT a.tenant_reminders_disabled AND a.before_due
+    WHEN 'after_due' THEN NOT a.tenant_reminders_disabled AND a.after_due ELSE false END AS allowed
+    FROM automation_runs r JOIN buildings b ON b.id=r.building_id
+    JOIN building_automations a ON a.building_id=r.building_id WHERE r.id=:id`,
+    { replacements: { id: runId }, type: QueryTypes.SELECT },
+  );
+
+  return Boolean(permission?.allowed);
+}
+
 /** P4's outbox claim pattern, scoped to Stay automation events. */
 export async function deliverAutomationMail(
   now: Date,
-  mailer: AutomationMailer = logMailer,
+  mailer: AutomationMailer = legacyMailer,
 ): Promise<boolean> {
   const event = await sequelize.transaction(async (transaction) => {
     const row = await DomainEventModel.findOne({
@@ -341,15 +392,7 @@ export async function deliverAutomationMail(
   if (!event) return false;
   try {
     // Re-check opt-out after queueing: an owner may disable reminders while mail waits.
-    const [permission] = await sequelize.query<{ allowed: boolean }>(
-      `SELECT
-      b.archived_at IS NULL AND CASE r.kind WHEN 'reading' THEN a.reading_reminder
-      WHEN 'before_due' THEN NOT a.tenant_reminders_disabled AND a.before_due
-      WHEN 'after_due' THEN NOT a.tenant_reminders_disabled AND a.after_due ELSE false END AS allowed
-      FROM automation_runs r JOIN buildings b ON b.id=r.building_id
-      JOIN building_automations a ON a.building_id=r.building_id WHERE r.id=:id`,
-      { replacements: { id: event.aggregateId }, type: QueryTypes.SELECT },
-    );
+    const allowed = await automationRunAllowed(event.aggregateId);
     const payload = event.payload;
     const invoiceId =
       payload &&
@@ -364,7 +407,7 @@ export async function deliverAutomationMail(
       (invoice &&
         (invoice.status === 'issued' || invoice.status === 'partially_paid') &&
         invoice.paidTotal < invoice.total);
-    if (permission?.allowed && unpaid) await mailer.send(event.id, event.payload);
+    if (allowed && unpaid) await mailer.send(event.id, event.payload);
     await DomainEventModel.update(
       {
         status: 'delivered',

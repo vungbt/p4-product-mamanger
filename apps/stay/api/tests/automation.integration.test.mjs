@@ -4,10 +4,8 @@ import { randomUUID } from 'node:crypto';
 import { after, before, describe, test } from 'node:test';
 import bcrypt from 'bcryptjs';
 import { QueryTypes } from 'sequelize';
-import {
-  deliverAutomationMail,
-  runAutomations,
-} from '../dist/modules/automation/automation.jobs.js';
+import { runAutomations } from '../dist/modules/automation/automation.jobs.js';
+import { deliverNotifications } from '../dist/modules/notifications/notifications.delivery.js';
 import { DomainEventModel, InvoiceModel, sequelize } from '../dist/sequelize/models/index.js';
 
 const base = process.env.STAY_TEST_API_URL;
@@ -53,16 +51,22 @@ describe('ST-26 automation', { skip: !process.env.CI || !base }, () => {
       type: QueryTypes.SELECT,
     });
   const notices = () =>
-    sequelize.query('SELECT * FROM notifications WHERE building_id=:id ORDER BY created_at,id', {
-      replacements: { id: building.id },
-      type: QueryTypes.SELECT,
-    });
-  const emails = async () => {
-    const ids = (await runs()).map((row) => row.id);
-    return ids.length
-      ? DomainEventModel.findAll({ where: { aggregateId: ids, type: 'stay.automation.mail' } })
+    sequelize.query(
+      `SELECT * FROM notifications WHERE building_id=:id AND audience='staff' ORDER BY created_at,id`,
+      { replacements: { id: building.id }, type: QueryTypes.SELECT },
+    );
+  /** Tenant reminders: in-app rows of the building's contracts (email/push go through the outbox). */
+  const reminders = () =>
+    sequelize.query(
+      `SELECT * FROM notifications WHERE building_id=:id AND audience='tenant' ORDER BY created_at,id`,
+      { replacements: { id: building.id }, type: QueryTypes.SELECT },
+    );
+  const dispatches = async (rows) =>
+    rows.length
+      ? DomainEventModel.findAll({
+          where: { aggregateId: rows.map((row) => row.id), type: 'stay.notification.dispatch' },
+        })
       : [];
-  };
   async function manager(assigned, index) {
     const id = randomUUID();
     const email = `automation-${index}-${suffix.toLowerCase()}@stay.local`;
@@ -175,31 +179,44 @@ describe('ST-26 automation', { skip: !process.env.CI || !base }, () => {
     const readingRuns = (await runs()).filter((row) => row.kind === 'reading');
     assert.equal(readingRuns.length, 1);
     assert.equal(readingRuns[0].period, '2042-12');
-    assert.equal((await notices()).filter((row) => row.title === 'Đến ngày chốt số').length, 1);
-    assert.ok((await emails()).length >= 1);
+    const reading = (await notices()).filter((row) => row.title === 'Đến ngày chốt số');
+    assert.equal(reading.length, 1);
+    assert.equal(reading[0].kind, 'reading.reminder');
+    // Email/push to owner and managers are queued in the same transaction (outbox).
+    assert.equal((await dispatches(reading)).length, 1);
   });
 
   test('master switch and individual toggles suppress tenant reminders', async () => {
     await set({ beforeDue: true, afterDue: true, tenantRemindersDisabled: true });
-    const count = (await emails()).length;
+    const count = (await reminders()).length;
     await runAutomations(at('2042-11-04'));
     await runAutomations(at('2042-11-08'));
-    assert.equal((await emails()).length, count);
+    assert.equal((await reminders()).length, count);
     assert.equal((await runs()).filter((row) => row.kind.endsWith('_due')).length, 0);
     await set({ tenantRemindersDisabled: false, beforeDue: false, afterDue: false });
     await runAutomations(at('2042-11-04'));
     await runAutomations(at('2042-11-08'));
-    assert.equal((await emails()).length, count);
+    assert.equal((await reminders()).length, count);
   });
 
   test('each invoice/kind reminds once, creates public link, owner sees unreachable tenants', async () => {
     await set({ beforeDue: true, afterDue: true });
-    const count = (await emails()).length;
+    const count = (await reminders()).length;
     for (const date of ['2042-11-04', '2042-11-08']) {
       await runAutomations(at(date));
       await runAutomations(at(date));
     }
-    assert.equal((await emails()).length, count + 2);
+    const sent = await reminders();
+    assert.equal(sent.length, count + 2);
+    assert.deepEqual(
+      sent.slice(count).map((row) => row.kind),
+      ['invoice.due_soon', 'invoice.overdue'],
+    );
+    assert.ok(
+      sent.slice(count).every((row) => row.contract_id === ready.contract.id && !row.tenant_id),
+    );
+    // Due reminders state the remaining amount.
+    assert.match(sent.at(-1).body, /còn 3\.000\.000 ₫/);
     const unreadable = (await notices()).filter(
       (row) => row.title === 'Không thể gửi nhắc thanh toán',
     );
@@ -209,10 +226,9 @@ describe('ST-26 automation', { skip: !process.env.CI || !base }, () => {
       where: { contractId: ready.contract.id, period: '2042-11' },
     });
     assert.ok(invoice.shareTokenHash);
-    const reminder = (await emails()).find(
-      (row) => row.payload.to === ready.tenant.email && row.payload.subject.includes('quá hạn'),
-    );
-    const url = reminder.payload.text.split(' ').at(-1);
+    const [reminder] = await dispatches([sent.at(-1)]);
+    const url = reminder.payload.emailLink;
+    assert.equal(reminder.payload.guard.unpaidInvoiceId, invoice.id);
     const publicResult = await fetch(`${base}/api/public/invoices/${url.split('/').at(-1)}`);
     assert.equal(publicResult.status, 200);
   });
@@ -258,35 +274,25 @@ describe('ST-26 automation', { skip: !process.env.CI || !base }, () => {
     );
   });
 
-  test('outbox delivery uses injected fake transport, retries; never real mail', async () => {
-    const sent = new Set();
-    const deliveryDate = at('2044-01-01');
-    assert.equal(
-      await deliverAutomationMail(deliveryDate, {
-        async send() {
-          throw new Error('simulated provider failure');
+  test('reminder email reaches the primary occupant through fake transports, once', async () => {
+    const mails = [];
+    const transports = {
+      email: {
+        async send(message) {
+          mails.push(message);
         },
-      }),
-      true,
-    );
-    const failed = (await emails()).find((row) => row.lastErrorCode === 'mail_delivery_failed');
-    assert.ok(failed);
-    assert.equal(failed.status, 'pending');
-    assert.equal(failed.attempts, 1);
-    const transport = {
-      async send(id) {
-        assert.ok(!sent.has(id));
-        sent.add(id);
       },
+      push: null,
     };
-    while (await deliverAutomationMail(at('2044-01-02'), transport)) {
+    while (await deliverNotifications(at('2044-01-02'), transports)) {
       /* drain */
     }
-    const events = await emails();
-    assert.ok(events.every((row) => row.status === 'delivered'));
-    assert.ok(events.every((row) => sent.has(row.id)));
-    const count = sent.size;
-    assert.equal(await deliverAutomationMail(at('2044-01-02'), transport), false);
-    assert.equal(sent.size, count);
+    // Invoice issued + due reminders of READY; NOEMAIL has no email and no browser subscription.
+    const sent = (await reminders()).filter((row) => row.contract_id === ready.contract.id);
+    const ours = mails.filter((mail) => mail.to === ready.tenant.email);
+    assert.equal(ours.length, sent.length);
+    assert.ok(ours.every((mail) => mail.subject.startsWith(`[Automation ${suffix}]`)));
+    assert.ok(ours.some((mail) => mail.text.includes('/i/')));
+    assert.equal(await deliverNotifications(at('2044-01-02'), transports), false);
   });
 });

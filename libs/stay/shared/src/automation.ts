@@ -1,3 +1,5 @@
+import type { NotificationKind } from './notification.js';
+
 /** Automations are opt-in for each building. 409 on a stale version. */
 export interface StayAutomationSettings {
   readingReminder: boolean;
@@ -11,6 +13,7 @@ export interface StayAutomationSettings {
 export interface StayNotification {
   id: string;
   buildingId: string;
+  kind: NotificationKind;
   title: string;
   body: string;
   path: string;
