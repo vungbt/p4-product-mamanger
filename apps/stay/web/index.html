@@ -7,9 +7,12 @@
     <!-- Private app; shared invoice links (/i/:token) must never be indexed. Crawlers that do not
          run JS (Zalo/Messenger previews) only see this generic document. -->
     <meta name="robots" content="noindex, nofollow" />
-    <!-- Brand colour and favicon are set from the theme tokens at startup (src/brand.tsx). -->
-    <meta name="theme-color" content="#ffffff" />
-    <link rel="icon" type="image/svg+xml" href="data:," />
+    <!-- The theme colour is refined from the theme tokens at startup (src/brand.tsx). -->
+    <meta name="theme-color" content="#0e7066" />
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
   </head>
   <body>
     <div id="root"></div>

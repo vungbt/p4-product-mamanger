@@ -25,6 +25,8 @@ self.addEventListener('push', (event) => {
       body: typeof data.body === 'string' ? data.body : '',
       tag: typeof data.tag === 'string' ? data.tag : undefined,
       lang: 'vi',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/favicon-32.png',
       data: { url },
     }),
   );
