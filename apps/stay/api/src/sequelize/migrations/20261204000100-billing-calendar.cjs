@@ -26,6 +26,13 @@ module.exports = {
         ALTER TABLE automation_runs DROP CONSTRAINT automation_runs_kind_check;
         ALTER TABLE automation_runs ADD CONSTRAINT automation_runs_kind_check
           CHECK (kind IN ('reading_before', 'reading', 'drafts', 'before_due', 'after_due'));
+
+        -- Next-month reading days date readings after the consumption month; the service checks
+        -- the exact window, the database keeps a coarse bound (the period month and the next).
+        ALTER TABLE meter_readings DROP CONSTRAINT meter_readings_check;
+        ALTER TABLE meter_readings ADD CONSTRAINT meter_readings_read_on_window
+          CHECK (read_on >= to_date(period || '-01', 'YYYY-MM-DD')
+            AND read_on < to_date(period || '-01', 'YYYY-MM-DD') + interval '2 months');
       `,
         { transaction },
       );
@@ -35,6 +42,9 @@ module.exports = {
     await q.sequelize.transaction(async (transaction) => {
       await q.sequelize.query(
         `
+        ALTER TABLE meter_readings DROP CONSTRAINT meter_readings_read_on_window;
+        ALTER TABLE meter_readings ADD CONSTRAINT meter_readings_check
+          CHECK (to_char(read_on, 'YYYY-MM') = period);
         DELETE FROM automation_runs WHERE kind = 'reading_before';
         ALTER TABLE automation_runs DROP CONSTRAINT automation_runs_kind_check;
         ALTER TABLE automation_runs ADD CONSTRAINT automation_runs_kind_check
