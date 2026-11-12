@@ -27,9 +27,11 @@ import {
   type ContractVersionInput,
   isoDateInTimeZone,
   type MeterKind,
+  MOVE_OUT_FEE_REASON,
   periodOfIsoDate,
   type SettlementDraftInvoice,
   type SettlementReading,
+  type SettlementSurchargeInput,
   type StayAction,
   type StayContract,
   type StayUser,
@@ -396,6 +398,18 @@ function billingFailure(error: unknown): never {
 
 const sumOf = (lines: { amount: number }[]) => lines.reduce((sum, line) => sum + line.amount, 0);
 
+/**
+ * Surcharges of the settlement: as sent, or — when the request omits them — the building's
+ * move-out facility depreciation fee as one "Khấu hao cơ sở vật chất" line (none when 0).
+ */
+function settlementSurcharges(
+  input: ContractSettlementInput,
+  moveOutFee: number,
+): SettlementSurchargeInput[] {
+  if (input.surcharges) return input.surcharges;
+  return moveOutFee > 0 ? [{ amount: moveOutFee, reason: MOVE_OUT_FEE_REASON }] : [];
+}
+
 async function settlementPlan(
   contract: ContractModel,
   input: ContractSettlementInput,
@@ -481,8 +495,10 @@ async function settlementPlan(
   });
   const depositHeld = depositBalance(deposits).held;
   const fixed = await fixedInputs(context, contract, moveOutDate, transaction);
-  const refundUnusedRent = building.refundUnusedRent ?? (await billingDefaults()).refundUnusedRent;
-  const surcharges: ManualLineInput[] = (input.surcharges ?? []).map((item) => ({
+  const defaults = await billingDefaults(transaction);
+  const refundUnusedRent = building.refundUnusedRent ?? defaults.refundUnusedRent;
+  const moveOutFee = building.moveOutFee ?? defaults.moveOutFee;
+  const surcharges: ManualLineInput[] = settlementSurcharges(input, moveOutFee).map((item) => ({
     type: 'surcharge',
     amount: item.amount,
     reason: item.reason,
@@ -537,6 +553,7 @@ async function settlementPlan(
     moveOutDate,
     period: settlement.period,
     refundUnusedRent,
+    moveOutFee,
     readings: utilities.map((utility) => utility.summary),
     lines,
     subtotal: settlement.subtotal,
@@ -767,10 +784,9 @@ export async function settleContract(
           electricPhotoFileId: input.electricPhotoFileId ?? null,
           waterPhotoFileId: input.waterPhotoFileId ?? null,
           refundMethod: input.refundMethod ?? 'cash',
-          surcharges: (input.surcharges ?? []).map((item) => ({
-            amount: item.amount,
-            reason: item.reason,
-          })),
+          // `null` (omitted) adds the building's move-out fee: not the same request as `[]`.
+          surcharges:
+            input.surcharges?.map((item) => ({ amount: item.amount, reason: item.reason })) ?? null,
         },
       },
       (tx) => settleOnce(user, id, input, tx),

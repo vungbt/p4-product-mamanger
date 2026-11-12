@@ -18,6 +18,7 @@
     "description": "Description",
     "readingDayMonth": "Reading day month",
     "graceDays": "Grace days",
+    "moveOutFee": "Move-out depreciation fee",
     "readingReminderDaysBefore": "Reminder days before",
     "roundingUnit": "Rounding unit",
     "refundUnusedRent": "Refund unused rent",

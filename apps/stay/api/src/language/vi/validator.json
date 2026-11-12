@@ -18,6 +18,7 @@
     "description": "Mô tả",
     "readingDayMonth": "Chốt số vào",
     "graceDays": "Số ngày ân hạn",
+    "moveOutFee": "Phí khấu hao cơ sở vật chất khi trả phòng",
     "readingReminderDaysBefore": "Số ngày nhắc trước",
     "roundingUnit": "Đơn vị làm tròn",
     "refundUnusedRent": "Hoàn tiền phòng khi trả sớm",

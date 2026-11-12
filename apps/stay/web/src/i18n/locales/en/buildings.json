@@ -87,7 +87,8 @@
     "tenantDescription": "Displayed in the tenant portal.",
     "contactPhone": "Contact phone",
     "phoneFormat": "10–11 digits starting with 0.",
-    "rulesText": "House rules"
+    "rulesText": "House rules",
+    "moveOutFeeHint": "Empty = system setting; 0 = no fee on move-out."
   },
   "prices": {
     "title": "Building prices",

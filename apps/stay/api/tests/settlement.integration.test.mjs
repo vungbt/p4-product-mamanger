@@ -111,9 +111,12 @@ describe('ST-17 move-out notice and settlement', { skip: !base }, () => {
     return signIn(email, 'settle-password-123');
   }
 
-  /** A building with the rules.md default prices pinned (other suites cannot change them). */
-  async function newBuilding(refundUnusedRent = false) {
-    const letter = 'QRSTUVWXJKLMN'[letters++];
+  /**
+   * A building with the rules.md default prices pinned (other suites cannot change them). The
+   * move-out fee is off unless `options` says otherwise (`{}` follows the system setting).
+   */
+  async function newBuilding(refundUnusedRent = false, options = { moveOutFee: 0 }) {
+    const letter = 'QRSTUVWXJKLMNEFG'[letters++];
     const building = ok(
       await call(owner, 'POST', '/buildings', {
         code: `${letter}${suffix}`,
@@ -123,6 +126,7 @@ describe('ST-17 move-out notice and settlement', { skip: !base }, () => {
         dueDay: 5,
         roundingUnit: 1000,
         refundUnusedRent,
+        ...options,
       }),
       201,
     );
@@ -784,6 +788,104 @@ describe('ST-17 move-out notice and settlement', { skip: !base }, () => {
       'contract_has_draft_invoices',
     );
     assert.equal((await detail(`/contracts/${setup.contract.id}`)).status, 'active');
+  });
+
+  test('move-out fee: system default, building override, 0 off, editable/removable, deposit offset', async () => {
+    const system = ok(await call(owner, 'GET', '/settings'));
+
+    assert.equal(system.moveOutFee, 300000, 'migration default');
+    const defaulted = await newBuilding(false, {});
+    const overridden = await newBuilding(false, { moveOutFee: 450000 });
+    const disabled = await newBuilding(false, { moveOutFee: 0 });
+
+    assert.equal(defaulted.moveOutFee, null);
+    assert.equal((await detail(`/buildings/${defaulted.id}`)).billing.moveOutFee, 300000);
+    assert.equal((await detail(`/buildings/${overridden.id}`)).billing.moveOutFee, 450000);
+    failed(
+      await call(owner, 'POST', '/buildings', {
+        code: `Z${suffix}`,
+        name: `Settlement fee ${suffix}`,
+        moveOutFee: -1,
+      }),
+      400,
+    );
+
+    const setup = await newContract(defaulted, '2025-01-01', 5000000);
+
+    await closing(setup, '2025-01', 1100, 75);
+    const february = await monthly(setup, '2025-02');
+
+    await payInFull(setup.moveIn.id);
+    await payInFull(february.id);
+    const body = { moveOutDate: '2025-02-28', finalElectric: 1150, finalWater: 78 };
+    const fee = (preview) => preview.lines.filter((line) => line.type === 'surcharge');
+
+    // Removed by the owner: an explicit empty list adds nothing.
+    const removed = ok(await preview(setup.contract, { ...body, surcharges: [] }));
+
+    assert.deepEqual(fee(removed), []);
+    assert.equal(removed.moveOutFee, 300000);
+    // Edited by the owner: the amount and reason sent are used as is.
+    const edited = ok(
+      await preview(setup.contract, {
+        ...body,
+        surcharges: [{ amount: 200000, reason: 'Khấu hao (đã giảm)' }],
+      }),
+    );
+
+    assert.deepEqual(
+      fee(edited).map((line) => [line.amount, line.meta.reason]),
+      [[200000, 'Khấu hao (đã giảm)']],
+    );
+
+    // Omitted: the system default (300.000đ) is added and offset against the deposit.
+    const { computed, result } = await previewAndSettle(setup, body);
+
+    assert.deepEqual(
+      fee(computed).map((line) => [line.amount, line.meta.reason, line.description.params.reason]),
+      [[300000, 'Khấu hao cơ sở vật chất', 'Khấu hao cơ sở vật chất']],
+    );
+    assert.equal(computed.surchargeTotal, 300000);
+    // 175.000 electricity + 60.000 water + 300.000 depreciation.
+    assert.equal(computed.total, 535000);
+    assert.equal(computed.depositApplied, 535000);
+    assert.equal(computed.depositRefunded, 4465000);
+    assert.equal(computed.ownerRefunds, 4465000);
+    assert.equal(result.invoice.status, 'paid');
+    // Snapshot: changing the system default later does not touch the issued line.
+    const settings = ok(await call(owner, 'GET', '/settings'));
+
+    ok(await call(owner, 'PUT', '/settings', { ...settings, moveOutFee: 123000 }));
+    try {
+      const stored = await detail(`/invoices/${result.invoice.id}`);
+
+      assert.deepEqual(
+        stored.lines.filter((line) => line.type === 'surcharge').map((line) => line.amount),
+        [300000],
+      );
+    } finally {
+      const current = ok(await call(owner, 'GET', '/settings'));
+
+      ok(await call(owner, 'PUT', '/settings', { ...current, moveOutFee: settings.moveOutFee }));
+    }
+
+    // Building override, and 0 disables the line.
+    const other = await newContract(overridden, '2025-10-01', 0);
+    const overrideBody = { moveOutDate: '2025-10-31', finalElectric: 1010, finalWater: 71 };
+    const fromOverride = ok(await preview(other.contract, overrideBody));
+
+    assert.equal(fromOverride.moveOutFee, 450000);
+    assert.deepEqual(
+      fee(fromOverride).map((line) => line.amount),
+      [450000],
+    );
+    assert.equal(fromOverride.tenantPays, fromOverride.amountDue);
+    const off = await newContract(disabled, '2025-10-01', 0);
+    const fromDisabled = ok(await preview(off.contract, overrideBody));
+
+    assert.equal(fromDisabled.moveOutFee, 0);
+    assert.deepEqual(fee(fromDisabled), []);
+    assert.equal(fromDisabled.surchargeTotal, 0);
   });
 
   test('validation: future move-out, before start, missing or lower readings, surcharge reason', async () => {

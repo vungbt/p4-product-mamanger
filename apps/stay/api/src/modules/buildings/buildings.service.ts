@@ -41,6 +41,7 @@ export type BuildingInput = Pick<
   | 'issueDay'
   | 'dueDay'
   | 'graceDays'
+  | 'moveOutFee'
   | 'roundingUnit'
   | 'refundUnusedRent'
   | 'bankBin'
@@ -60,6 +61,7 @@ const buildingFields = [
   'issueDay',
   'dueDay',
   'graceDays',
+  'moveOutFee',
   'roundingUnit',
   'refundUnusedRent',
   'bankBin',

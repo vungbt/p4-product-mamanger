@@ -1531,7 +1531,7 @@ export interface paths {
     put?: never;
     /**
      * Xem trước thanh lý
-     * @description Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu; nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.
+     * @description Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu (không gửi `surcharges` → tự thêm dòng "Khấu hao cơ sở vật chất" bằng `moveOutFee` của toà, 0 = không thêm; gửi mảng, kể cả rỗng, → dùng đúng danh sách đó); nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.
      *
      *     **Quyền:** `read:Contract`.
      */
@@ -3394,6 +3394,7 @@ export interface components {
       dueDay: number;
       graceDays: number;
       issueDay: number;
+      moveOutFee: number;
       readingDay: number;
       /** @enum {string} */
       readingDayMonth: 'next' | 'same';
@@ -3522,7 +3523,7 @@ export interface components {
       moveOutDate: string;
       /** @enum {string} */
       refundMethod?: 'bank_transfer' | 'cash' | 'other';
-      surcharges?: components['schemas']['SettlementSurchargeInput'][];
+      surcharges?: components['schemas']['SettlementSurchargeInput'][] | null;
       version: number;
       waterPhotoFileId?: string | null;
     };
@@ -3531,7 +3532,7 @@ export interface components {
       finalElectric?: number | null;
       finalWater?: number | null;
       moveOutDate: string;
-      surcharges?: components['schemas']['SettlementSurchargeInput'][];
+      surcharges?: components['schemas']['SettlementSurchargeInput'][] | null;
       waterPhotoFileId?: string | null;
     };
     ContractSettlementPreview: {
@@ -3543,6 +3544,7 @@ export interface components {
       depositRefunded: number;
       lines: components['schemas']['SettlementLine'][];
       moveOutDate: string;
+      moveOutFee: number;
       outstandingInvoices: components['schemas']['SettlementOutstandingInvoice'][];
       outstandingTotal: number;
       ownerRefunds: number;
@@ -4458,6 +4460,7 @@ export interface components {
       graceDays: number | null;
       id: string;
       issueDay: number | null;
+      moveOutFee: number | null;
       name: string;
       readingDay: number | null;
       /** @enum {string|null} */
@@ -4484,6 +4487,7 @@ export interface components {
       graceDays: number | null;
       id: string;
       issueDay: number | null;
+      moveOutFee: number | null;
       name: string;
       readingDay: number | null;
       /** @enum {string|null} */
@@ -4894,6 +4898,7 @@ export interface components {
       dueDay: number;
       graceDays: number;
       issueDay: number;
+      moveOutFee: number;
       readingDay: number;
       /** @enum {string} */
       readingDayMonth: 'next' | 'same';
@@ -8804,6 +8809,7 @@ export interface operations {
           dueDay?: number | null;
           graceDays?: number | null;
           issueDay?: number | null;
+          moveOutFee?: number | null;
           name: string;
           readingDay?: number | null;
           /** @enum {string|null} */
@@ -9455,6 +9461,7 @@ export interface operations {
           dueDay?: number | null;
           graceDays?: number | null;
           issueDay?: number | null;
+          moveOutFee?: number | null;
           name: string;
           readingDay?: number | null;
           /** @enum {string|null} */
@@ -13020,6 +13027,8 @@ export interface operations {
           /** @default 0 */
           graceDays?: number;
           issueDay: number;
+          /** @default 300000 */
+          moveOutFee?: number;
           readingDay: number;
           /**
            * @default same

@@ -6,6 +6,7 @@ import {
   GRACE_DAYS_MAX,
   isBillingDay,
   isRoundingUnit,
+  MOVE_OUT_FEE_MAX,
   READING_DAY_MONTHS,
   type ReadingDayMonth,
   type RoundingUnit,
@@ -48,6 +49,11 @@ export function readGraceDays(body: FormBody): number {
   return body.integer('graceDays', 0, GRACE_DAYS_MAX);
 }
 
+/** `moveOutFee`: move-out facility depreciation fee, 0–100.000.000 VND (0 = off). */
+export function readMoveOutFee(body: FormBody): number {
+  return body.integer('moveOutFee', 0, MOVE_OUT_FEE_MAX);
+}
+
 /**
  * Cross-field cycle rules (`billingCycleErrors`) on the effective values. Fields with an own
  * error, and fields the request leaves to the system (`own[field] === false`), are skipped.
@@ -77,7 +83,7 @@ export function checkBillingCycle(
   if (errors.graceDays) body.invalid('graceDays', errors.graceDays);
 }
 
-/** Body of `PUT /api/settings`. `readingDayMonth`/`graceDays` omitted = `same`/0. */
+/** Body of `PUT /api/settings`. `readingDayMonth`/`graceDays`/`moveOutFee` omitted = their defaults. */
 export function readSettingsInput(body: FormBody): SettingsInput & { version: number } {
   const input = {
     readingDay: checkBillingDay(body, 'readingDay', body.integer('readingDay', 1, 31)),
@@ -89,6 +95,9 @@ export function readSettingsInput(body: FormBody): SettingsInput & { version: nu
     graceDays: body.isEmpty('graceDays') ? DEFAULT_BILLING_SETTINGS.graceDays : readGraceDays(body),
     roundingUnit: checkRoundingUnit(body, body.integer('roundingUnit', 1, 1000)),
     refundUnusedRent: body.boolean('refundUnusedRent'),
+    moveOutFee: body.isEmpty('moveOutFee')
+      ? DEFAULT_BILLING_SETTINGS.moveOutFee
+      : readMoveOutFee(body),
     transferContentTemplate: body.text('transferContentTemplate', 50),
     version: body.integer('version', 1),
   };

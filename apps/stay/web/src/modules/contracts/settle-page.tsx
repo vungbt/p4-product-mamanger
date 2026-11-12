@@ -15,7 +15,13 @@ import {
   Textarea,
   useAppForm,
 } from '@itclabs/react-ui';
-import { useContract, useSettleContract, useSettlementPreview, useStaySdk } from '@stay/sdk/react';
+import {
+  useBuilding,
+  useContract,
+  useSettleContract,
+  useSettlementPreview,
+  useStaySdk,
+} from '@stay/sdk/react';
 import {
   ApiSdkError,
   type ContractSettlementInput,
@@ -24,7 +30,12 @@ import {
   createUploadApi,
   getErrorMessage,
 } from '@stay/sdk/shared';
-import type { InvoiceShareLink, ManualPaymentMethod, StayContract } from '@stay/shared';
+import {
+  type InvoiceShareLink,
+  type ManualPaymentMethod,
+  MOVE_OUT_FEE_REASON,
+  type StayContract,
+} from '@stay/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import * as v from 'valibot';
@@ -111,6 +122,7 @@ function draftInvoices(error: unknown): { invoiceId: string; period: string }[] 
 export default function ContractSettlePage() {
   const { id = '' } = useParams();
   const query = useContract(id);
+  const building = useBuilding(query.data?.buildingId ?? '');
   const [result, setResult] = useState<ContractSettlementResult | null>(null);
 
   if (result) return <SettlementDone result={result} />;
@@ -148,14 +160,28 @@ export default function ContractSettlePage() {
       </div>
     );
 
-  return <SettlementForm contract={contract} onDone={setResult} />;
+  // The building's move-out depreciation fee is prefilled as the first surcharge.
+  if (building.isPending) return <Skeleton className="h-64" />;
+  if (!building.data)
+    return <LoadError error={building.error} retry={() => void building.refetch()} />;
+
+  return (
+    <SettlementForm
+      contract={contract}
+      moveOutFee={building.data.billing.moveOutFee}
+      onDone={setResult}
+    />
+  );
 }
 
 function SettlementForm({
   contract,
+  moveOutFee,
   onDone,
 }: {
   contract: StayContract;
+  /** Building setting in force (0 = off): the prefilled depreciation surcharge. */
+  moveOutFee: number;
   onDone: (result: ContractSettlementResult) => void;
 }) {
   const sdk = useStaySdk();
@@ -199,7 +225,9 @@ function SettlementForm({
       finalWater: null as number | null,
       electricPhotoFileId: '',
       waterPhotoFileId: '',
-      surcharges: [] as Surcharge[],
+      surcharges: (moveOutFee > 0
+        ? [{ amount: moveOutFee, reason: MOVE_OUT_FEE_REASON }]
+        : []) as Surcharge[],
       refundMethod: 'cash' as ManualPaymentMethod,
     },
     listeners: clearServerErrorOnChange,
@@ -376,6 +404,12 @@ function SettlementForm({
           <p className="text-ui-sm text-muted">
             Hư hỏng, dọn dẹp…: mỗi dòng có số tiền và lý do. Bỏ qua nếu không có.
           </p>
+          {moveOutFee > 0 ? (
+            <p className="text-ui-sm text-muted" data-testid="settle-move-out-fee">
+              Phí khấu hao cơ sở vật chất của toà ({formatVnd(moveOutFee)}) đã được thêm sẵn; sửa số
+              tiền hoặc xoá dòng nếu không thu.
+            </p>
+          ) : null}
           {values.surcharges.map((_, index) => (
             <fieldset
               // Rows are addressed by position, like their field names.

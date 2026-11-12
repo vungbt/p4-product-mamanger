@@ -3892,10 +3892,12 @@ paths:
       description: >-
         Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của
         `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền
-        phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu; nợ
-        cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá
-        và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá
-        đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.
+        phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu
+        (không gửi `surcharges` → tự thêm dòng "Khấu hao cơ sở vật chất" bằng `moveOutFee` của toà, 0 = không thêm; gửi
+        mảng, kể cả rỗng, → dùng đúng danh sách đó); nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn)
+        hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409
+        `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi
+        đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.
 
 
         **Quyền:** `read:Contract`.
@@ -4183,6 +4185,11 @@ paths:
                     - 1000
                 refundUnusedRent:
                   type: boolean
+                moveOutFee:
+                  type: integer
+                  minimum: 0
+                  maximum: 100000000
+                  default: 300000
                 transferContentTemplate:
                   type: string
                   minLength: 1
@@ -4586,6 +4593,12 @@ paths:
                     - "null"
                   minimum: 0
                   maximum: 31
+                moveOutFee:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 0
+                  maximum: 100000000
                 roundingUnit:
                   type:
                     - integer
@@ -4771,6 +4784,12 @@ paths:
                     - "null"
                   minimum: 0
                   maximum: 31
+                moveOutFee:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 0
+                  maximum: 100000000
                 roundingUnit:
                   type:
                     - integer
@@ -12523,6 +12542,8 @@ components:
                 - 100
         refundUnusedRent:
           type: boolean
+        moveOutFee:
+          type: number
       required:
         - readingDay
         - readingDayMonth
@@ -12531,6 +12552,7 @@ components:
         - graceDays
         - roundingUnit
         - refundUnusedRent
+        - moveOutFee
     BuildingPriceList:
       type: object
       properties:
@@ -12919,7 +12941,9 @@ components:
             - string
             - "null"
         surcharges:
-          type: array
+          type:
+            - array
+            - "null"
           items:
             $ref: "#/components/schemas/SettlementSurchargeInput"
       required:
@@ -12947,7 +12971,9 @@ components:
             - string
             - "null"
         surcharges:
-          type: array
+          type:
+            - array
+            - "null"
           items:
             $ref: "#/components/schemas/SettlementSurchargeInput"
       required:
@@ -12969,6 +12995,8 @@ components:
           type: string
         refundUnusedRent:
           type: boolean
+        moveOutFee:
+          type: number
         readings:
           type: array
           items:
@@ -13021,6 +13049,7 @@ components:
         - moveOutDate
         - period
         - refundUnusedRent
+        - moveOutFee
         - readings
         - lines
         - subtotal
@@ -15766,6 +15795,10 @@ components:
           type:
             - boolean
             - "null"
+        moveOutFee:
+          type:
+            - number
+            - "null"
         bankBin:
           type:
             - string
@@ -15810,6 +15843,7 @@ components:
         - graceDays
         - roundingUnit
         - refundUnusedRent
+        - moveOutFee
         - bankBin
         - bankAccount
         - bankAccountName
@@ -15878,6 +15912,10 @@ components:
           type:
             - boolean
             - "null"
+        moveOutFee:
+          type:
+            - number
+            - "null"
         bankBin:
           type:
             - string
@@ -15924,6 +15962,7 @@ components:
         - graceDays
         - roundingUnit
         - refundUnusedRent
+        - moveOutFee
         - bankBin
         - bankAccount
         - bankAccountName
@@ -17190,6 +17229,8 @@ components:
                 - 100
         refundUnusedRent:
           type: boolean
+        moveOutFee:
+          type: number
       required:
         - transferContentTemplate
         - version
@@ -17200,6 +17241,7 @@ components:
         - graceDays
         - roundingUnit
         - refundUnusedRent
+        - moveOutFee
     StayTenant:
       type: object
       properties:

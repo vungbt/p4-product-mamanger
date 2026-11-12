@@ -32,6 +32,12 @@ export type ReadingDayMonth = (typeof READING_DAY_MONTHS)[number];
 /** Days after the due date before an invoice counts as overdue (`graceDays`), 0–31. */
 export const GRACE_DAYS_MAX = 31;
 
+/** Largest move-out facility depreciation fee (`moveOutFee`), VND. */
+export const MOVE_OUT_FEE_MAX = 100_000_000;
+
+/** Label and default reason of the settlement surcharge added for `moveOutFee`. */
+export const MOVE_OUT_FEE_REASON = 'Khấu hao cơ sở vật chất';
+
 /** System billing defaults (rules.md "Giá trị mặc định"); buildings may override each one. */
 export const DEFAULT_BILLING_SETTINGS = {
   readingDay: BILLING_DAY_END_OF_MONTH,
@@ -41,6 +47,7 @@ export const DEFAULT_BILLING_SETTINGS = {
   graceDays: 0,
   roundingUnit: 1000,
   refundUnusedRent: false,
+  moveOutFee: 300_000,
   transferContentTemplate: TRANSFER_CONTENT_INVOICE_CODE,
 } as const satisfies Omit<StaySettings, 'version'>;
 
@@ -62,6 +69,15 @@ export function isGraceDays(value: unknown): value is number {
     Number.isSafeInteger(value) &&
     value >= 0 &&
     value <= GRACE_DAYS_MAX
+  );
+}
+
+export function isMoveOutFee(value: unknown): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isSafeInteger(value) &&
+    value >= 0 &&
+    value <= MOVE_OUT_FEE_MAX
   );
 }
 
@@ -92,6 +108,11 @@ export interface BillingSettings {
   roundingUnit: RoundingUnit;
   /** Refund prepaid rent/services of unused days on early move-out. */
   refundUnusedRent: boolean;
+  /**
+   * Facility depreciation fee (VND) charged on move-out: added as a settlement surcharge
+   * ("Khấu hao cơ sở vật chất") the owner can edit or remove. 0 = off.
+   */
+  moveOutFee: number;
 }
 
 /** `GET /api/settings`: system billing defaults (`system_settings` key `billing`). */
