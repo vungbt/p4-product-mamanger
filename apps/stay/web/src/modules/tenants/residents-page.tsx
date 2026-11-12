@@ -4,6 +4,8 @@ import {
   DataTable,
   DatePicker,
   EmptyState,
+  Icon,
+  IconButton,
   Input,
   Pagination,
   Switch,
@@ -42,15 +44,14 @@ function ResidentId({ resident }: { resident: StayResident }) {
         {full ?? (resident.idNumber ? maskIdNumber(resident.idNumber) : '—')}
       </span>
       {resident.idNumber ? (
-        <Button
+        <IconButton
+          icon={full ? 'eyeOff' : 'view'}
           size="sm"
           variant="ghost"
-          aria-label={`${full ? 'Ẩn' : 'Hiện'} CCCD ${resident.fullName}`}
+          label={`${full ? 'Ẩn' : 'Hiện'} CCCD ${resident.fullName}`}
           loading={reveal.isPending}
           onClick={() => (full ? setFull(null) : void show())}
-        >
-          {full ? 'Ẩn' : 'Hiện'}
-        </Button>
+        />
       ) : null}
     </span>
   );
@@ -151,9 +152,14 @@ export default function ResidentsPage() {
 
   const action = (resident: StayResident) =>
     canManage && !resident.registeredOn ? (
-      <Button size="sm" variant="secondary" onClick={() => setEditing(resident)}>
-        Đánh dấu đã khai báo
-      </Button>
+      <IconButton
+        icon="clipboardCheck"
+        variant="ghost"
+        size="sm"
+        label="Đánh dấu đã khai báo"
+        title={`Đánh dấu ${resident.fullName} đã khai báo`}
+        onClick={() => setEditing(resident)}
+      />
     ) : null;
   const columns: ColumnDef<StayResident, unknown>[] = [
     {
@@ -206,18 +212,20 @@ export default function ResidentsPage() {
       <ScreenHeader
         title="Tạm trú"
         description="Người đang ở theo ngày đã chọn và tình trạng khai báo tạm trú."
-        action={
+      />
+      <FilterBar
+        actions={
           <Button
             variant="secondary"
             disabled={!buildingId}
             loading={exportFile.isPending}
             onClick={() => void download()}
           >
+            <Icon name="download" className="size-4" aria-hidden />
             Xuất Excel
           </Button>
         }
-      />
-      <FilterBar>
+      >
         <DatePicker
           label="Ngày đang ở"
           value={date || null}

@@ -1,10 +1,11 @@
-import { AlertDialog, Button, EmptyState } from '@itclabs/react-ui';
+import { AlertDialog, Button, EmptyState, Icon } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useInvoices, useSharePeriodInvoices } from '@stay/sdk/react';
 import { type InvoicePeriodShareResult, type InvoiceStatus, isPeriod } from '@stay/shared';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { FilterBar } from '@/libraries/filter-bar';
 import { formatVnd, todayIsoDate } from '@/libraries/format';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { PeriodPicker } from '@/libraries/forms/period-picker';
@@ -17,6 +18,7 @@ import {
   invoiceErrorMessage,
   invoicePath,
 } from '../invoice-ui';
+import { InvoicePreviewButton } from './invoice-preview';
 import { ShareLinkActions } from './share-dialog';
 import { copyWithToast } from './share-tools';
 
@@ -36,42 +38,59 @@ export default function PeriodSharePage() {
   const raw = params.get('period');
   const period = isPeriod(raw) ? raw : todayIsoDate().slice(0, 7);
 
+  const picker = (
+    <PeriodPicker
+      label="Kỳ hoá đơn"
+      value={period}
+      onChange={(value) => {
+        if (!isPeriod(value)) return;
+
+        setParams(
+          () => {
+            const next = latestSearchParams();
+
+            next.set('period', value);
+            return next;
+          },
+          { replace: true },
+        );
+      }}
+    />
+  );
+
   return (
     <div className="grid min-w-0 gap-5">
       <ScreenHeader
         title={`Chia sẻ kỳ ${displayPeriod(period)}`}
         description="Tạo link xem hoá đơn (có mã VietQR số tiền còn lại) cho từng phòng rồi gửi lần lượt qua Zalo hoặc tin nhắn."
-        action={
-          <PeriodPicker
-            label="Kỳ hoá đơn"
-            value={period}
-            className="w-full sm:w-48"
-            onChange={(value) => {
-              if (!isPeriod(value)) return;
-
-              setParams(
-                () => {
-                  const next = latestSearchParams();
-
-                  next.set('period', value);
-                  return next;
-                },
-                { replace: true },
-              );
-            }}
-          />
-        }
       />
       {!buildingId ? (
-        <p>Chọn toà nhà để chia sẻ hoá đơn.</p>
+        <>
+          <FilterBar>{picker}</FilterBar>
+          <p>Chọn toà nhà để chia sẻ hoá đơn.</p>
+        </>
       ) : (
-        <PeriodShares key={`${buildingId}:${period}`} buildingId={buildingId} period={period} />
+        <PeriodShares
+          key={`${buildingId}:${period}`}
+          buildingId={buildingId}
+          period={period}
+          filters={picker}
+        />
       )}
     </div>
   );
 }
 
-function PeriodShares({ buildingId, period }: { buildingId: string; period: string }) {
+/** The period's invoices (or the links just created) under a toolbar with the period actions. */
+function PeriodShares({
+  buildingId,
+  period,
+  filters,
+}: {
+  buildingId: string;
+  period: string;
+  filters: ReactNode;
+}) {
   const query = useInvoices({
     buildingId,
     period,
@@ -118,23 +137,33 @@ function PeriodShares({ buildingId, period }: { buildingId: string; period: stri
     void copyWithToast(text, 'tất cả link');
   };
 
-  if (query.isPending) return <LoadingRows rows={3} />;
-  if (query.isError) return <LoadError error={query.error} onRetry={() => void query.refetch()} />;
+  const actions = result?.links.length ? (
+    <Button variant="secondary" onClick={copyAll}>
+      <Icon name="copy" className="size-4" aria-hidden />
+      Sao chép tất cả
+    </Button>
+  ) : !result && shareable.length ? (
+    <Button
+      loading={sharePeriod.isPending}
+      onClick={() => (active ? setConfirm(true) : void generate())}
+    >
+      <Icon name="link" className="size-4" aria-hidden />
+      Tạo link cho cả kỳ
+    </Button>
+  ) : null;
 
-  if (result)
-    return (
+  let content: ReactNode;
+
+  if (query.isPending) content = <LoadingRows rows={3} />;
+  else if (query.isError)
+    content = <LoadError error={query.error} onRetry={() => void query.refetch()} />;
+  else if (result)
+    content = (
       <section aria-labelledby="period-share-links" className="grid min-w-0 gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="period-share-links" className="text-section font-semibold">
-            {result.count} link · hết hạn{' '}
-            {result.links[0] ? displayExpiry(result.links[0].expiresAt) : ''}
-          </h2>
-          {result.links.length ? (
-            <Button variant="secondary" onClick={copyAll}>
-              Sao chép tất cả
-            </Button>
-          ) : null}
-        </div>
+        <h2 id="period-share-links" className="text-section font-semibold">
+          {result.count} link · hết hạn{' '}
+          {result.links[0] ? displayExpiry(result.links[0].expiresAt) : ''}
+        </h2>
         <p className="text-ui-sm text-muted">
           Link chỉ hiện một lần. Tạo lại link cho kỳ sẽ làm các link này hết hiệu lực.
         </p>
@@ -166,48 +195,55 @@ function PeriodShares({ buildingId, period }: { buildingId: string; period: stri
         </ul>
       </section>
     );
-
-  if (!shareable.length)
-    return (
+  else if (!shareable.length)
+    content = (
       <EmptyState
         title="Chưa có hoá đơn đã phát hành"
         description={`Phát hành hoá đơn kỳ ${displayPeriod(period)} trước khi chia sẻ.`}
       />
     );
+  else
+    content = (
+      <section aria-labelledby="period-share-invoices" className="grid min-w-0 gap-3">
+        <h2 id="period-share-invoices" className="text-section font-semibold">
+          {shareable.length} hoá đơn đã phát hành
+        </h2>
+        <ul className="grid gap-2" aria-label="Hoá đơn của kỳ">
+          {shareable.map((row) => (
+            <li
+              key={row.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-panel border border-line bg-surface p-3"
+            >
+              <p>
+                Phòng <strong>{row.roomCode}</strong> · {row.code} ·{' '}
+                {INVOICE_STATUS_LABELS[row.status]}
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="text-ui-sm text-muted">
+                  Còn lại {formatVnd(row.remaining)} ·{' '}
+                  {row.shareExpiresAt
+                    ? `Có link đến ${displayExpiry(row.shareExpiresAt)}`
+                    : 'Chưa có link'}
+                </p>
+                <InvoicePreviewButton
+                  invoiceId={row.id}
+                  variant="ghost"
+                  size="sm"
+                  label={`Xem trước hoá đơn ${row.code ?? ''}`}
+                  iconOnly
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
 
   return (
-    <section aria-labelledby="period-share-invoices" className="grid min-w-0 gap-3">
-      <h2 id="period-share-invoices" className="text-section font-semibold">
-        {shareable.length} hoá đơn đã phát hành
-      </h2>
-      <ul className="grid gap-2" aria-label="Hoá đơn của kỳ">
-        {shareable.map((row) => (
-          <li
-            key={row.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-panel border border-line bg-surface p-3"
-          >
-            <p>
-              Phòng <strong>{row.roomCode}</strong> · {row.code} ·{' '}
-              {INVOICE_STATUS_LABELS[row.status]}
-            </p>
-            <p className="text-ui-sm text-muted">
-              Còn lại {formatVnd(row.remaining)} ·{' '}
-              {row.shareExpiresAt
-                ? `Có link đến ${displayExpiry(row.shareExpiresAt)}`
-                : 'Chưa có link'}
-            </p>
-          </li>
-        ))}
-      </ul>
+    <>
+      <FilterBar actions={actions}>{filters}</FilterBar>
       <FormError message={error} />
-      <div>
-        <Button
-          loading={sharePeriod.isPending}
-          onClick={() => (active ? setConfirm(true) : void generate())}
-        >
-          Tạo link cho cả kỳ
-        </Button>
-      </div>
+      {content}
       <AlertDialog
         open={confirm}
         onOpenChange={(open) => {
@@ -221,6 +257,6 @@ function PeriodShares({ buildingId, period }: { buildingId: string; period: stri
         confirmLoading={sharePeriod.isPending}
         onConfirm={() => void generate()}
       />
-    </section>
+    </>
   );
 }

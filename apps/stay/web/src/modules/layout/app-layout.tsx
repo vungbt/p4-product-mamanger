@@ -2,6 +2,7 @@ import { SidebarProvider, WorkspaceBody, WorkspaceMain, WorkspaceShell } from '@
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import { BuildingProvider } from '@/libraries/buildings/building-provider';
+import { PageMetaProvider } from '@/libraries/page-meta';
 import AppHeader from './app-header';
 import AppSidebar from './app-sidebar';
 import BottomNav from './bottom-nav';
@@ -27,14 +28,16 @@ export default function AppLayout() {
           sidebar={<AppSidebar />}
         >
           <WorkspaceBody>
-            <AppHeader />
-            <WorkspaceMain
-              id={MAIN_ID}
-              tabIndex={-1}
-              className="w-full max-w-none px-4 py-5 pb-bottom-nav outline-none sm:px-6 lg:px-8 lg:py-8"
-            >
-              <Outlet />
-            </WorkspaceMain>
+            <PageMetaProvider>
+              <AppHeader />
+              <WorkspaceMain
+                id={MAIN_ID}
+                tabIndex={-1}
+                className="px-4 py-5 pb-bottom-nav outline-none sm:px-6 lg:px-8 lg:py-8"
+              >
+                <Outlet />
+              </WorkspaceMain>
+            </PageMetaProvider>
           </WorkspaceBody>
         </WorkspaceShell>
         <BottomNav />

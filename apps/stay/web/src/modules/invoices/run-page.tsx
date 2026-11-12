@@ -1,4 +1,16 @@
-import { AlertDialog, Button, Checkbox, cn } from '@itclabs/react-ui';
+import {
+  AlertDialog,
+  Button,
+  Checkbox,
+  type ColumnDef,
+  cn,
+  DataTable,
+  type DataTableState,
+  Icon,
+  KpiCard,
+  KpiGrid,
+  useDataTable,
+} from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import {
   useBillingPreview,
@@ -14,7 +26,9 @@ import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { PeriodPicker } from '@/libraries/forms/period-picker';
+import { ListTable, rowTestId } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
+import { PAGE_SIZE_OPTIONS } from '@/libraries/table-params';
 import { useIsDesktop } from '@/libraries/use-media-query';
 import {
   displayPeriod,
@@ -25,7 +39,8 @@ import {
   periodSharePath,
 } from './invoice-ui';
 
-const DRAFT_PAGE_SIZE = 100;
+const PREVIEW_TABLE_ID = 'billing-list';
+const DRAFT_TABLE_ID = 'draft-list';
 
 /**
  * O-20 Lập hoá đơn kỳ M: check (preview) → create drafts → issue selected drafts.
@@ -110,21 +125,29 @@ function BillingRun({ buildingId, period }: { buildingId: string; period: string
               Điện nước tháng {displayPeriod(data.utilityPeriod)} · Phát hành{' '}
               {displayDate(data.issueDate)} · Hạn {displayDate(data.dueDate)}
             </p>
-            <div
-              className="grid gap-3 rounded-panel border border-line bg-surface p-4 sm:grid-cols-3"
-              data-testid="billing-summary"
-            >
-              <p>
-                Đủ điều kiện <strong className="block text-section">{data.eligibleCount}</strong>
-              </p>
-              <p>
-                Bị loại <strong className="block text-section">{data.excludedCount}</strong>
-              </p>
-              <p>
-                Tổng dự kiến{' '}
-                <strong className="block text-section">{formatVnd(data.expectedTotal)}</strong>
-              </p>
-            </div>
+            <KpiGrid columns={3} data-testid="billing-summary">
+              <KpiCard
+                label="Đủ điều kiện"
+                value={data.eligibleCount}
+                icon="clipboardText"
+                tone="success"
+                compact
+              />
+              <KpiCard
+                label="Bị loại"
+                value={data.excludedCount}
+                icon="clipboardText"
+                tone={data.excludedCount ? 'warning' : 'neutral'}
+                compact
+              />
+              <KpiCard
+                label="Tổng dự kiến"
+                value={formatVnd(data.expectedTotal)}
+                icon="receipt"
+                tone="brand"
+                compact
+              />
+            </KpiGrid>
             {data.rows.length ? (
               <PreviewRows rows={data.rows} />
             ) : (
@@ -145,6 +168,7 @@ function BillingRun({ buildingId, period }: { buildingId: string; period: string
               disabled={!data?.eligibleCount}
               onClick={() => void generate()}
             >
+              <Icon name="plus" className="size-4" aria-hidden />
               Tạo bản nháp
             </Button>
           ) : null}
@@ -207,6 +231,34 @@ function InvoiceCell({ row }: { row: BillingPreviewRow }) {
   );
 }
 
+const previewColumns: ColumnDef<BillingPreviewRow, unknown>[] = [
+  { id: 'roomCode', header: 'Phòng', accessorFn: (row) => row.roomCode },
+  {
+    id: 'contract',
+    header: 'Hợp đồng',
+    cell: ({ row }) => (
+      <Link
+        className="whitespace-nowrap text-accent underline"
+        to={`/contracts/${row.original.contractId}`}
+      >
+        {row.original.contractCode}
+      </Link>
+    ),
+  },
+  { id: 'check', header: 'Kiểm tra', cell: ({ row }) => <ReasonCell row={row.original} /> },
+  { id: 'invoice', header: 'Hoá đơn', cell: ({ row }) => <InvoiceCell row={row.original} /> },
+  {
+    id: 'total',
+    header: 'Tổng dự kiến',
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap">
+        {row.original.total === null ? '—' : formatVnd(row.original.total)}
+      </span>
+    ),
+  },
+];
+
+/** Every contract of the period on one page (no paging): a client-side DataTable. */
 function PreviewRows({ rows }: { rows: BillingPreviewRow[] }) {
   const isDesktop = useIsDesktop();
 
@@ -217,7 +269,7 @@ function PreviewRows({ rows }: { rows: BillingPreviewRow[] }) {
           <li
             key={row.contractId}
             className="grid gap-1 rounded-panel border border-line bg-surface p-4"
-            data-testid="billing-row"
+            data-testid={rowTestId(PREVIEW_TABLE_ID, row.contractId)}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <strong>Phòng {row.roomCode}</strong>
@@ -238,47 +290,23 @@ function PreviewRows({ rows }: { rows: BillingPreviewRow[] }) {
     );
 
   return (
-    <div className="min-w-0 relative overflow-x-auto rounded-panel border border-line bg-surface">
-      <table className="w-full text-left" aria-label="Kiểm tra hợp đồng">
-        <thead>
-          <tr>
-            {['Phòng', 'Hợp đồng', 'Kiểm tra', 'Hoá đơn', 'Tổng dự kiến'].map((label) => (
-              <th key={label} scope="col" className="whitespace-nowrap p-3">
-                {label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.contractId} className="border-t border-line" data-testid="billing-row">
-              <td className="p-3">{row.roomCode}</td>
-              <td className="whitespace-nowrap p-3">
-                <Link className="text-accent underline" to={`/contracts/${row.contractId}`}>
-                  {row.contractCode}
-                </Link>
-              </td>
-              <td className="p-3">
-                <ReasonCell row={row} />
-              </td>
-              <td className="p-3">
-                <InvoiceCell row={row} />
-              </td>
-              <td className="whitespace-nowrap p-3">
-                {row.total === null ? '—' : formatVnd(row.total)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DataTable<BillingPreviewRow>
+      caption="Kiểm tra hợp đồng"
+      rows={rows}
+      columns={previewColumns}
+      rowId={(row) => row.contractId}
+      data-testid={PREVIEW_TABLE_ID}
+    />
   );
 }
 
 function Drafts({ buildingId, period }: { buildingId: string; period: string }) {
   const canIssue = useCanOn('issue', 'Invoice', { buildingId });
   const issue = useIssueInvoices();
-  const [page, setPage] = useState(1);
+  const [state, setState] = useState<DataTableState>({
+    sorting: [],
+    pagination: { pageIndex: 0, pageSize: 100 },
+  });
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -287,8 +315,8 @@ function Drafts({ buildingId, period }: { buildingId: string; period: string }) 
     period,
     kind: 'monthly',
     status: 'draft',
-    page,
-    pageSize: DRAFT_PAGE_SIZE,
+    page: state.pagination.pageIndex + 1,
+    pageSize: state.pagination.pageSize,
     sortBy: 'createdAt',
     sortOrder: 'asc',
   });
@@ -321,78 +349,80 @@ function Drafts({ buildingId, period }: { buildingId: string; period: string }) 
     setConfirm(false);
   };
 
+  const controller = useDataTable<StayInvoiceSummary>({
+    caption: 'Bản nháp',
+    mode: 'server',
+    rows: drafts,
+    rowCount: query.data?.meta.total ?? 0,
+    // Keep the page height only once rows exist (not the first load's skeleton).
+    preservePageHeight: (query.data?.meta.total ?? 0) > 0,
+    columns: draftColumns(selected, toggle),
+    rowId: (row) => row.id,
+    state,
+    onStateChange: setState,
+    pageSizeOptions: PAGE_SIZE_OPTIONS,
+    loading: query.isPending,
+    classNames: { row: 'has-[[aria-checked=true]]:bg-selected' },
+    'data-testid': DRAFT_TABLE_ID,
+  });
+
   if (query.isPending) return <LoadingRows rows={2} />;
   if (query.isError) return <LoadError error={query.error} onRetry={() => void query.refetch()} />;
   if (!drafts.length)
     return <p className="text-muted">Chưa có bản nháp kỳ {displayPeriod(period)}.</p>;
 
-  const totalPages = query.data?.meta.totalPages ?? 1;
-
   return (
     <div className="grid min-w-0 gap-3">
-      <Checkbox
-        label={`Chọn tất cả (${drafts.length})`}
-        checked={allChosen ? true : chosen.length ? 'indeterminate' : false}
-        onCheckedChange={(value) =>
-          setSelected(value === true ? new Set(drafts.map((row) => row.id)) : new Set())
-        }
-      />
-      <ul className="grid gap-2" aria-label="Bản nháp">
-        {drafts.map((draft) => (
-          <li
-            key={draft.id}
-            className={cn(
-              'flex flex-wrap items-center justify-between gap-3 rounded-panel border p-3',
-              selected.has(draft.id) ? 'border-brand-700 bg-selected' : 'border-line bg-surface',
-            )}
-            data-testid="draft-row"
-          >
-            <Checkbox
-              label={`Phòng ${draft.roomCode} · ${draft.contractCode}`}
-              checked={selected.has(draft.id)}
-              onCheckedChange={(value) => toggle(draft.id, value === true)}
-            />
-            <div className="flex flex-wrap items-center gap-3">
-              <strong className="whitespace-nowrap">{formatVnd(draft.total)}</strong>
-              <Link className="text-accent underline" to={invoicePath(draft.id)}>
-                Xem nháp phòng {draft.roomCode}
-              </Link>
-            </div>
-          </li>
-        ))}
-      </ul>
-      {totalPages > 1 ? (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <Button
-            variant="secondary"
-            disabled={page <= 1 || query.isFetching}
-            onClick={() => setPage(page - 1)}
-          >
-            Trước
-          </Button>
-          <span>
-            Trang {page}/{totalPages}
-          </span>
-          <Button
-            variant="secondary"
-            disabled={page >= totalPages || query.isFetching}
-            onClick={() => setPage(page + 1)}
-          >
-            Sau
-          </Button>
+      {/* Selection on the left, the bulk action on the right of the row above the list. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <Checkbox
+            label={`Chọn tất cả (${drafts.length})`}
+            checked={allChosen ? true : chosen.length ? 'indeterminate' : false}
+            onCheckedChange={(value) =>
+              setSelected(value === true ? new Set(drafts.map((row) => row.id)) : new Set())
+            }
+          />
+          {canIssue ? (
+            <p role="status" className="text-ui-sm text-muted">
+              Đã chọn {chosen.length} hoá đơn · tổng {formatVnd(chosenTotal)}
+            </p>
+          ) : null}
         </div>
-      ) : null}
-      <FormError message={error} />
-      {canIssue ? (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-panel border border-line bg-surface p-4">
-          <p role="status">
-            Đã chọn {chosen.length} hoá đơn · tổng {formatVnd(chosenTotal)}
-          </p>
+        {canIssue ? (
           <Button disabled={!chosen.length} onClick={() => setConfirm(true)}>
+            <Icon name="send" className="size-4" aria-hidden />
             Phát hành
           </Button>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
+      <ListTable
+        controller={controller}
+        refreshing={query.isFetching && !query.isPending}
+        cards={(items) => (
+          <ul className="grid gap-2" aria-label="Bản nháp">
+            {items.map((draft) => (
+              <li
+                key={draft.id}
+                className={cn(
+                  'flex flex-wrap items-center justify-between gap-3 rounded-panel border p-3',
+                  selected.has(draft.id)
+                    ? 'border-brand-700 bg-selected'
+                    : 'border-line bg-surface',
+                )}
+                data-testid={rowTestId(DRAFT_TABLE_ID, draft.id)}
+              >
+                <DraftCheckbox draft={draft} selected={selected} onToggle={toggle} />
+                <div className="flex flex-wrap items-center gap-3">
+                  <strong className="whitespace-nowrap">{formatVnd(draft.total)}</strong>
+                  <DraftLink draft={draft} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      />
+      <FormError message={error} />
       <AlertDialog
         open={confirm}
         onOpenChange={(open) => {
@@ -408,4 +438,64 @@ function Drafts({ buildingId, period }: { buildingId: string; period: string }) 
       />
     </div>
   );
+}
+
+type DraftToggle = (id: string, on: boolean) => void;
+
+/**
+ * Selection keeps its own labelled checkbox ("Phòng 101 · HĐ…") rather than DataTable
+ * `selectable`, whose row checkbox is named after the row id and adds a second selection bar.
+ */
+function DraftCheckbox({
+  draft,
+  selected,
+  onToggle,
+}: {
+  draft: StayInvoiceSummary;
+  selected: ReadonlySet<string>;
+  onToggle: DraftToggle;
+}) {
+  return (
+    <Checkbox
+      label={`Phòng ${draft.roomCode} · ${draft.contractCode}`}
+      checked={selected.has(draft.id)}
+      onCheckedChange={(value) => onToggle(draft.id, value === true)}
+    />
+  );
+}
+
+function DraftLink({ draft }: { draft: StayInvoiceSummary }) {
+  return (
+    <Link className="whitespace-nowrap text-accent underline" to={invoicePath(draft.id)}>
+      Xem nháp phòng {draft.roomCode}
+    </Link>
+  );
+}
+
+function draftColumns(
+  selected: ReadonlySet<string>,
+  onToggle: DraftToggle,
+): ColumnDef<StayInvoiceSummary, unknown>[] {
+  return [
+    {
+      id: 'draft',
+      header: 'Phòng · Hợp đồng',
+      cell: ({ row }) => (
+        <DraftCheckbox draft={row.original} selected={selected} onToggle={onToggle} />
+      ),
+    },
+    {
+      id: 'total',
+      header: 'Tổng',
+      meta: { align: 'right' },
+      cell: ({ row }) => (
+        <strong className="whitespace-nowrap">{formatVnd(row.original.total)}</strong>
+      ),
+    },
+    {
+      id: 'link',
+      header: () => <span className="sr-only">Xem nháp</span>,
+      cell: ({ row }) => <DraftLink draft={row.original} />,
+    },
+  ];
 }

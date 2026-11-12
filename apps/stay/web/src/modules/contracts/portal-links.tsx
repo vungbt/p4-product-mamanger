@@ -1,4 +1,4 @@
-import { AlertDialog, Button, Input, Tag, type TagTone } from '@itclabs/react-ui';
+import { AlertDialog, Button, IconButton, Input, Tag, type TagTone } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useCreatePortalLink, usePortalLinks, useRevokePortalLink } from '@stay/sdk/react';
 import { getErrorMessage } from '@stay/sdk/shared';
@@ -222,25 +222,23 @@ export function PortalLinksPanel({ contract }: { contract: StayContract }) {
                   <LinkFacts link={link} />
                 </div>
                 {canManage && open ? (
-                  <div className="flex flex-wrap gap-2">
-                    <Button
+                  <div className="flex shrink-0 items-center gap-1">
+                    <IconButton
+                      icon="link"
                       size="sm"
-                      variant={active ? 'secondary' : 'primary'}
+                      variant={active ? 'ghost' : 'secondary'}
                       loading={create.isPending && create.variables?.tenantId === occupant.tenantId}
-                      aria-label={`${active ? 'Tạo link mới' : 'Tạo link'} cho ${occupant.fullName}`}
+                      label={`${active ? 'Tạo link mới' : 'Tạo link'} cho ${occupant.fullName}`}
                       onClick={() => (active ? setConfirmNew(occupant) : void createFor(occupant))}
-                    >
-                      {active ? 'Tạo link mới' : 'Tạo link'}
-                    </Button>
+                    />
                     {active ? (
-                      <Button
+                      <IconButton
+                        icon="delete"
                         size="sm"
                         variant="danger"
-                        aria-label={`Thu hồi link của ${occupant.fullName}`}
+                        label={`Thu hồi link của ${occupant.fullName}`}
                         onClick={() => setConfirmRevoke(link)}
-                      >
-                        Thu hồi
-                      </Button>
+                      />
                     ) : null}
                   </div>
                 ) : null}

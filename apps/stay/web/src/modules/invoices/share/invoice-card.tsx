@@ -1,4 +1,4 @@
-import { Alert, Button, cn, Tag } from '@itclabs/react-ui';
+import { Alert, cn, IconButton, Tag } from '@itclabs/react-ui';
 import type { PublicInvoiceBase } from '@stay/shared';
 import { QRCodeSVG } from 'qrcode.react';
 import { type Ref, useId } from 'react';
@@ -40,14 +40,13 @@ function PublicStatusTag({ invoice }: { invoice: PublicInvoiceBase }) {
 function CopyButton({ value, label }: { value: string; label: string }) {
   return (
     <span data-image-exclude="" className="print:hidden">
-      <Button
+      <IconButton
+        icon="copy"
         variant="ghost"
         size="sm"
-        aria-label={`Sao chép ${label}`}
+        label={`Sao chép ${label}`}
         onClick={() => void copyWithToast(value, label)}
-      >
-        Sao chép
-      </Button>
+      />
     </span>
   );
 }

@@ -5,6 +5,7 @@ import {
   Form,
   FormField,
   FormSubmit,
+  Icon,
   IconButton,
   Input,
   Select,
@@ -145,6 +146,7 @@ export function VehiclesSection({
         </h2>
         {editable && !adding ? (
           <Button variant="secondary" size="sm" onClick={() => setAdding(true)}>
+            <Icon name="plus" className="size-4" aria-hidden />
             {t('tenants.vehicles.add')}
           </Button>
         ) : null}

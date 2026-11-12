@@ -4,6 +4,7 @@ import {
   type ColumnDef,
   DataTable,
   EmptyState,
+  Icon,
   Input,
   Pagination,
   Select,
@@ -170,23 +171,28 @@ export default function TenantListPage() {
 
   return (
     <div className="grid gap-5" data-testid="tenant-list-page">
-      <ScreenHeader
-        title={t('nav.tenants')}
-        action={
-          <>
-            {canImport ? (
-              <Button variant="secondary" onClick={() => navigate('/tenants/import')}>
-                {t('tenants.importAction')}
-              </Button>
-            ) : null}
-            {canCreate ? (
-              <Button onClick={() => navigate('/tenants/new')}>{t('tenants.add')}</Button>
-            ) : null}
-          </>
-        }
-      />
+      <ScreenHeader title={t('nav.tenants')} />
 
-      <FilterBar>
+      <FilterBar
+        actions={
+          canImport || canCreate ? (
+            <>
+              {canImport ? (
+                <Button variant="secondary" onClick={() => navigate('/tenants/import')}>
+                  <Icon name="upload" className="size-4" aria-hidden />
+                  {t('tenants.importAction')}
+                </Button>
+              ) : null}
+              {canCreate ? (
+                <Button onClick={() => navigate('/tenants/new')}>
+                  <Icon name="plus" className="size-4" aria-hidden />
+                  {t('tenants.add')}
+                </Button>
+              ) : null}
+            </>
+          ) : null
+        }
+      >
         <Input
           type="search"
           icon="search"

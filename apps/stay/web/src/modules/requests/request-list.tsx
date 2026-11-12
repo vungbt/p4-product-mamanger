@@ -7,7 +7,7 @@ export function RequestList({
   onOpen,
   showRoom = true,
 }: {
-  items: InboxItem[];
+  items: readonly InboxItem[];
   onOpen: (item: InboxItem) => void;
   showRoom?: boolean;
 }) {

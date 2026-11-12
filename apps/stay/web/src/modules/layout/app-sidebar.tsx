@@ -59,6 +59,8 @@ export default function AppSidebar() {
     <Sidebar
       data-testid="app-sidebar"
       itemVariant="indicator"
+      groupLabel="caps"
+      groupDividers
       header={{
         // The kit draws the rounded accent square; the mark letter goes inside.
         logo: (

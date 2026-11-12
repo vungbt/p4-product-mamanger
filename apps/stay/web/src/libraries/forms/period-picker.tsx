@@ -11,6 +11,8 @@ export type PeriodPickerProps = {
   /** Earliest / latest selectable period (`YYYY-MM`). */
   min?: string;
   max?: string;
+  /** Trigger text while no period is chosen. */
+  placeholder?: string;
   hint?: ReactNode;
   error?: ReactNode;
   required?: boolean;

@@ -1,5 +1,16 @@
-import { Button, cn, EmptyState, Input, Select } from '@itclabs/react-ui';
+import {
+  Button,
+  type ColumnDef,
+  cn,
+  EmptyState,
+  Input,
+  KpiCard,
+  KpiGrid,
+  Select,
+  useDataTable,
+} from '@itclabs/react-ui';
 import { useReceivables } from '@stay/sdk/react';
+import { getErrorMessage } from '@stay/sdk/shared';
 import {
   type InvoiceShareLink,
   RECEIVABLE_BUCKETS,
@@ -14,10 +25,10 @@ import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
 import { displayDate, formatVnd } from '@/libraries/format';
-import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { ListTable, rowTestId } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { useIsDesktop } from '@/libraries/use-media-query';
+import { PAGE_SIZE_OPTIONS, type SortOrder, useTableParams } from '@/libraries/table-params';
 import { ShareInvoiceDialog } from '../invoices/share/share-dialog';
 import { InvoicesPaymentDialog } from '../payments/payment-dialog';
 import {
@@ -28,7 +39,14 @@ import {
   type RowActions,
 } from './receivable-ui';
 
-const PAGE_SIZE = 20;
+const TABLE_ID = 'receivable-list';
+
+/** Natural order of each sort field: room codes A→Z, amounts and days largest first. */
+const SORT_ORDER: Record<ReceivableSortField, SortOrder> = {
+  remaining: 'desc',
+  overdueDays: 'desc',
+  roomCode: 'asc',
+};
 
 const SORT_OPTIONS: { value: ReceivableSortField; label: string }[] = [
   { value: 'remaining', label: 'Còn nợ nhiều nhất' },
@@ -48,24 +66,24 @@ export default function ReceivablesPage() {
   const [collecting, setCollecting] = useState<Collecting | null>(null);
   const [sharing, setSharing] = useState<Sharing | null>(null);
   const [links, setLinks] = useState<Record<string, InvoiceShareLink | null>>({});
-  const isDesktop = useIsDesktop();
   const scope = { buildingId: buildingId ?? undefined };
   const canPay = useCanOn('create', 'Payment', scope);
   const canShare = useCanOn('update', 'Invoice', scope);
+  const table = useTableParams({
+    sortFields: RECEIVABLE_SORT_FIELDS,
+    defaultSort: { sortBy: 'remaining', sortOrder: 'desc' },
+  });
 
   const q = params.get('q') ?? '';
   const bucket = RECEIVABLE_BUCKETS.find((value) => value === params.get('bucket'));
-  const sortBy =
-    RECEIVABLE_SORT_FIELDS.find((value) => value === params.get('sort')) ?? 'remaining';
-  const page = Math.max(1, Number(params.get('page')) || 1);
 
   const query = useReceivables(buildingId ?? '', {
     bucket,
     q: q || undefined,
-    page,
-    pageSize: PAGE_SIZE,
-    sortBy,
-    sortOrder: sortBy === 'roomCode' ? 'asc' : 'desc',
+    page: table.page,
+    pageSize: table.pageSize,
+    sortBy: table.sortBy,
+    sortOrder: table.sortOrder,
   });
 
   const filter = (field: string, value: string | null) =>
@@ -75,7 +93,7 @@ export default function ReceivablesPage() {
 
         if (value) next.set(field, value);
         else next.delete(field);
-        if (field !== 'page') next.delete('page');
+        next.delete('page');
         return next;
       },
       { replace: true },
@@ -104,7 +122,6 @@ export default function ReceivablesPage() {
 
   const rows: StayReceivable[] = query.data?.data ?? [];
   const meta = query.data?.meta;
-  const totalPages = meta?.totalPages ?? 1;
   const allCount = meta?.buckets.reduce((sum, row) => sum + row.count, 0) ?? 0;
   const collectingRow = rows.find((row) => row.contractId === collecting?.contractId);
   const sharingRow = rows.find((row) => row.contractId === sharing?.contractId);
@@ -129,6 +146,38 @@ export default function ReceivablesPage() {
       : undefined,
   };
 
+  const filtered = Boolean(bucket || q);
+
+  const controller = useDataTable<StayReceivable>({
+    caption: 'Công nợ',
+    mode: 'server',
+    rows,
+    rowCount: meta?.total ?? 0,
+    // Keep the page height only once rows exist (not the first load's skeleton).
+    preservePageHeight: (meta?.total ?? 0) > 0,
+    columns: receivableColumns({ expanded, onToggle: toggle, actions }),
+    rowId: (row) => row.contractId,
+    state: table.state,
+    onStateChange: table.onStateChange,
+    pageSizeOptions: PAGE_SIZE_OPTIONS,
+    loading: query.isPending,
+    error: query.isError ? getErrorMessage(query.error, 'Không tải được công nợ.') : undefined,
+    onRetry: () => void query.refetch(),
+    emptyState: (
+      <EmptyState
+        size="compact"
+        title={filtered ? 'Không có công nợ phù hợp' : 'Không có công nợ'}
+        description={
+          filtered
+            ? 'Đổi nhóm hoặc từ khoá tìm kiếm.'
+            : 'Mọi hoá đơn đã phát hành của toà đều đã thu đủ.'
+        }
+        variant={filtered ? 'no-results' : 'empty'}
+      />
+    ),
+    'data-testid': TABLE_ID,
+  });
+
   return (
     <div className="grid min-w-0 gap-5">
       <ScreenHeader
@@ -140,28 +189,27 @@ export default function ReceivablesPage() {
       ) : (
         <>
           {meta ? (
-            <dl className="grid min-w-0 grid-cols-2 gap-3" aria-label="Tổng công nợ">
-              <div className="grid gap-0.5 rounded-panel border border-line bg-surface p-3">
-                <dt className="text-ui-sm text-muted">
-                  Tổng công nợ{bucket || q ? ' (theo bộ lọc)' : ''} · {meta.invoiceCount} hoá đơn
-                </dt>
-                <dd className="font-bold break-all" data-testid="receivables-total">
-                  {formatVnd(meta.totalRemaining)}
-                </dd>
-              </div>
-              <div className="grid gap-0.5 rounded-panel border border-line bg-surface p-3">
-                <dt className="text-ui-sm text-muted">Đã quá hạn</dt>
-                <dd
-                  className={cn(
-                    'font-bold break-all',
-                    meta.overdueRemaining > 0 && 'text-danger-700',
-                  )}
-                  data-testid="receivables-overdue"
-                >
-                  {formatVnd(meta.overdueRemaining)}
-                </dd>
-              </div>
-            </dl>
+            <KpiGrid columns={2} aria-label="Tổng công nợ">
+              <KpiCard
+                label={`Tổng công nợ${bucket || q ? ' (theo bộ lọc)' : ''}`}
+                value={
+                  <span data-testid="receivables-total">{formatVnd(meta.totalRemaining)}</span>
+                }
+                hint={`${meta.invoiceCount} hoá đơn chưa thu đủ`}
+                icon="walletMoney"
+                tone={meta.totalRemaining > 0 ? 'warning' : 'success'}
+                compact
+              />
+              <KpiCard
+                label="Đã quá hạn"
+                value={
+                  <span data-testid="receivables-overdue">{formatVnd(meta.overdueRemaining)}</span>
+                }
+                icon="moneyTime"
+                tone={meta.overdueRemaining > 0 ? 'danger' : 'success'}
+                compact
+              />
+            </KpiGrid>
           ) : null}
 
           <fieldset className="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0">
@@ -200,64 +248,28 @@ export default function ReceivablesPage() {
             />
             <Select
               label="Sắp xếp"
-              value={sortBy}
+              value={table.sortBy}
               options={SORT_OPTIONS}
-              onValueChange={(value) => filter('sort', value === 'remaining' ? null : value)}
+              onValueChange={(value) => {
+                const field = RECEIVABLE_SORT_FIELDS.find((option) => option === value);
+
+                if (field) table.setSort({ sortBy: field, sortOrder: SORT_ORDER[field] });
+              }}
             />
           </FilterBar>
 
-          {query.isPending ? (
-            <LoadingRows />
-          ) : query.isError ? (
-            <LoadError error={query.error} onRetry={() => void query.refetch()} />
-          ) : !rows.length ? (
-            <EmptyState
-              title={bucket || q ? 'Không có công nợ phù hợp' : 'Không có công nợ'}
-              description={
-                bucket || q
-                  ? 'Đổi nhóm hoặc từ khoá tìm kiếm.'
-                  : 'Mọi hoá đơn đã phát hành của toà đều đã thu đủ.'
-              }
-              variant={bucket || q ? 'no-results' : 'empty'}
-            />
-          ) : (
-            <>
-              {isDesktop ? (
-                <ReceivableTable
-                  rows={rows}
-                  expanded={expanded}
-                  onToggle={toggle}
-                  actions={actions}
-                />
-              ) : (
-                <ReceivableCards
-                  rows={rows}
-                  expanded={expanded}
-                  onToggle={toggle}
-                  actions={actions}
-                />
-              )}
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="secondary"
-                  disabled={page <= 1 || query.isFetching}
-                  onClick={() => filter('page', String(page - 1))}
-                >
-                  Trước
-                </Button>
-                <span>
-                  Trang {page}/{Math.max(1, totalPages)} · {meta?.total ?? 0} hợp đồng
-                </span>
-                <Button
-                  variant="secondary"
-                  disabled={page >= totalPages || query.isFetching}
-                  onClick={() => filter('page', String(page + 1))}
-                >
-                  Sau
-                </Button>
-              </div>
-            </>
-          )}
+          <ListTable
+            controller={controller}
+            refreshing={query.isFetching && !query.isPending}
+            cards={(items) => (
+              <ReceivableCards
+                rows={items}
+                expanded={expanded}
+                onToggle={toggle}
+                actions={actions}
+              />
+            )}
+          />
         </>
       )}
       {collectingRow ? (
@@ -286,7 +298,7 @@ export default function ReceivablesPage() {
 }
 
 type ListProps = {
-  rows: StayReceivable[];
+  rows: readonly StayReceivable[];
   expanded: ReadonlySet<string>;
   onToggle: (contractId: string) => void;
   actions: RowActions;
@@ -325,75 +337,97 @@ function Representative({ row }: { row: StayReceivable }) {
   );
 }
 
-function ReceivableTable({ rows, expanded, onToggle, actions }: ListProps) {
-  return (
-    <div className="min-w-0 relative overflow-x-auto rounded-panel border border-line bg-surface">
-      <table className="w-full text-left" aria-label="Công nợ">
-        <thead>
-          <tr>
-            {['Phòng', 'Người đại diện', 'Số kỳ nợ', 'Còn lại', 'Quá hạn', 'Hạn cũ nhất'].map(
-              (label) => (
-                <th key={label} scope="col" className="whitespace-nowrap p-3">
-                  {label}
-                </th>
-              ),
-            )}
-            <th scope="col" className="p-3">
-              <span className="sr-only">Thao tác</span>
-            </th>
-          </tr>
-        </thead>
-        {rows.map((row) => {
-          const open = expanded.has(row.contractId);
+/**
+ * DataTable has no expandable rows: the "N kỳ" toggle opens the invoice list inside its own
+ * cell, so the row keeps its invoices (and their actions) together.
+ */
+function receivableColumns({
+  expanded,
+  onToggle,
+  actions,
+}: Omit<ListProps, 'rows'>): ColumnDef<StayReceivable, unknown>[] {
+  return [
+    {
+      id: 'roomCode',
+      header: 'Phòng',
+      accessorFn: (row) => row.roomCode,
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap font-semibold">{row.original.roomCode}</span>
+      ),
+    },
+    {
+      id: 'representative',
+      header: 'Người đại diện',
+      cell: ({ row }) => (
+        <span className="grid max-w-56">
+          <Representative row={row.original} />
+        </span>
+      ),
+    },
+    {
+      id: 'periods',
+      header: 'Số kỳ nợ',
+      cell: ({ row }) => {
+        const open = expanded.has(row.original.contractId);
 
-          return (
-            <tbody
-              key={row.contractId}
-              className="border-t border-line"
-              data-testid="receivable-row"
-              data-room={row.roomCode}
-              data-bucket={row.bucket}
-            >
-              <tr>
-                <th scope="row" className="whitespace-nowrap p-3 font-semibold">
-                  {row.roomCode}
-                </th>
-                <td className="max-w-56 p-3">
-                  <Representative row={row} />
-                </td>
-                <td className="p-2">
-                  <PeriodsToggle row={row} open={open} onToggle={() => onToggle(row.contractId)} />
-                </td>
-                <td
-                  className={cn(
-                    'whitespace-nowrap p-3 font-semibold',
-                    row.overdueDays > 0 && 'text-danger-700',
-                  )}
-                  data-testid="receivable-remaining"
-                >
-                  {formatVnd(row.remaining)}
-                </td>
-                <td className="whitespace-nowrap p-3">
-                  <OverdueTag row={row} />
-                </td>
-                <td className="whitespace-nowrap p-3">{displayDate(row.oldestDueOn)}</td>
-                <td className="p-1">
-                  <ReceivableActions row={row} {...actions} />
-                </td>
-              </tr>
-              {open ? (
-                <tr id={`receivable-${row.contractId}`}>
-                  <td colSpan={7} className="px-3 pb-3">
-                    <ReceivableInvoices row={row} {...actions} />
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          );
-        })}
-      </table>
-    </div>
-  );
+        return (
+          <div className={cn('grid gap-2', open && 'min-w-80')}>
+            <span>
+              <PeriodsToggle
+                row={row.original}
+                open={open}
+                onToggle={() => onToggle(row.original.contractId)}
+              />
+            </span>
+            {open ? (
+              <div id={`receivable-${row.original.contractId}`}>
+                <ReceivableInvoices row={row.original} {...actions} />
+              </div>
+            ) : null}
+          </div>
+        );
+      },
+    },
+    {
+      id: 'remaining',
+      header: 'Còn lại',
+      meta: { align: 'right' },
+      accessorFn: (row) => row.remaining,
+      cell: ({ row }) => (
+        <span
+          className={cn(
+            'whitespace-nowrap font-semibold',
+            row.original.overdueDays > 0 && 'text-danger-700',
+          )}
+          data-testid="receivable-remaining"
+        >
+          {formatVnd(row.original.remaining)}
+        </span>
+      ),
+    },
+    {
+      id: 'overdueDays',
+      header: 'Quá hạn',
+      accessorFn: (row) => row.overdueDays,
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">
+          <OverdueTag row={row.original} />
+        </span>
+      ),
+    },
+    {
+      id: 'oldestDueOn',
+      header: 'Hạn cũ nhất',
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">{displayDate(row.original.oldestDueOn)}</span>
+      ),
+    },
+    {
+      id: 'actions',
+      header: () => <span className="sr-only">Thao tác</span>,
+      cell: ({ row }) => <ReceivableActions row={row.original} {...actions} />,
+    },
+  ];
 }
 
 function ReceivableCards({ rows, expanded, onToggle, actions }: ListProps) {
@@ -409,7 +443,7 @@ function ReceivableCards({ rows, expanded, onToggle, actions }: ListProps) {
               'grid min-w-0 gap-2 rounded-panel border bg-surface p-4',
               row.bucket === 'over_30' ? 'border-danger-700' : 'border-line',
             )}
-            data-testid="receivable-row"
+            data-testid={rowTestId(TABLE_ID, row.contractId)}
             data-room={row.roomCode}
             data-bucket={row.bucket}
           >

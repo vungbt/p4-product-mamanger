@@ -1,4 +1,4 @@
-import { Button, type ButtonProps } from '@itclabs/react-ui';
+import { Button, type ButtonProps, Icon } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { invoiceQueryOptions, useStaySdk } from '@stay/sdk/react';
 import type { PublicInvoice } from '@stay/shared';
@@ -57,6 +57,7 @@ export function InvoiceImageButton({
   return (
     <>
       <Button variant={variant} size={size} loading={busy} onClick={() => void start()}>
+        <Icon name="download" className="size-4" aria-hidden />
         {label}
       </Button>
       {invoice ? (

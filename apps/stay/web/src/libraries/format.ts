@@ -15,6 +15,23 @@ export function formatVnd(amount: number): string {
   return formatCurrency(amount, 'VND', { locale: 'vi-VN', maximumFractionDigits: 0 });
 }
 
+const compactNumber = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
+
+const COMPACT_UNITS = [
+  { size: 1_000_000_000, unit: 'tỷ' },
+  { size: 1_000_000, unit: 'tr' },
+  { size: 1_000, unit: 'N' },
+] as const;
+
+/** Chart axis ticks: `1,2 tỷ`, `40 tr`, `500 N` (nghìn), `0`; tooltips keep `formatVnd`. */
+export function formatVndCompact(amount: number): string {
+  const unit = COMPACT_UNITS.find(({ size }) => Math.abs(amount) >= size);
+
+  return unit
+    ? `${compactNumber.format(amount / unit.size)} ${unit.unit}`
+    : compactNumber.format(amount);
+}
+
 const pad = (value: number) => String(value).padStart(2, '0');
 
 /** `YYYY-MM-DD` → `dd/MM/yyyy`. */

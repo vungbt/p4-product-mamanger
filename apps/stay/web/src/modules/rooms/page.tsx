@@ -3,6 +3,7 @@ import {
   Button,
   cn,
   EmptyState,
+  Icon,
   Input,
   Pagination,
   Select,
@@ -117,12 +118,16 @@ export default function RoomMapPage() {
   }));
 
   const actions = canManage ? (
-    <div className="flex flex-wrap gap-2">
+    <>
       <Button variant="secondary" onClick={() => navigate(ROUTES.roomBulk)}>
+        <Icon name="plus" className="size-4" aria-hidden />
         {t('rooms.actions.bulk')}
       </Button>
-      <Button onClick={() => navigate(ROUTES.roomNew)}>{t('rooms.actions.create')}</Button>
-    </div>
+      <Button onClick={() => navigate(ROUTES.roomNew)}>
+        <Icon name="plus" className="size-4" aria-hidden />
+        {t('rooms.actions.create')}
+      </Button>
+    </>
   ) : null;
 
   let content: ReactNode;
@@ -217,7 +222,6 @@ export default function RoomMapPage() {
       <ScreenHeader
         title={t('nav.rooms')}
         description={building ? t('rooms.map.description', { building: building.name }) : undefined}
-        action={actions}
       />
 
       {counts && !buildingEmpty ? (
@@ -253,7 +257,7 @@ export default function RoomMapPage() {
       ) : null}
 
       {!buildingEmpty ? (
-        <FilterBar>
+        <FilterBar actions={actions}>
           <Input
             label={t('rooms.map.search')}
             rootClassName={FILTER_WIDE}

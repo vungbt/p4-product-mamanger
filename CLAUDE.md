@@ -33,6 +33,17 @@
 
 - Table rows with up to three actions show them inline. Use the kit IconButton with descriptive labels; reserve overflow menus for larger action sets.
 
+Action placement (Stay web):
+
+- Page actions (create, import, export, bulk share/issue) go in the toolbar row directly above the table or list, right-aligned: pass them to `FilterBar`'s `actions` slot (a page without filters renders `<FilterBar actions={…} />`). Never in the page header of a list and never below the list.
+- Page heading: `ScreenHeader` renders a visually hidden `<h1>` and sends its text description to the app header under the breadcrumb; only the overview keeps a visible title (`visible`). Page reads: header → filter card (`FilterBar` with filters renders as a surface card) → table/list.
+- Lists show skeletons only on the first load (`loading: query.isPending`); refetches keep the rows (`ListTable refreshing` / `Refreshing`: dimmed, `aria-busy`).
+- Order: secondary actions first (Xuất, Nhập, Chia sẻ…), the primary action last.
+- Detail pages (invoice, contract, room, tenant) keep their actions on the right of the header, same order; destructive actions use `variant="danger"` or ghost.
+- Icons, as children of the kit Button: create/add `plus`, import `upload`, export/download `download`, share `share`, link `link`, copy `copy`, print `printer`, edit `edit`, delete/void/revoke `delete`, reverse a record `rotateLeft`, view/preview `view`, collect money `moneyReceive`. Register every glyph in `apps/stay/web/src/libraries/ui-theme.ts`.
+- Row actions are IconButtons (the rule above); keep the accessible names the e2e specs use.
+- Exceptions that stay at the bottom: form submit/cancel bars, wizard step navigation, dialog/drawer footers and destructive confirmations.
+
 ## Code spacing
 
 - Separate hook calls, derived data, handler declarations and the returned JSX with blank lines. Keep a blank line between top-level type declarations and components/functions. Biome does not insert all semantic blank lines; check these manually after formatting.

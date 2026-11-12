@@ -111,11 +111,11 @@ for (const width of [1280, 375]) {
     // Search our room: one row, the invoice total, more than 30 days overdue.
     await page.getByRole('searchbox', { name: 'Tìm' }).fill(roomCode);
     await expect(page).toHaveURL(new RegExp(`q=${roomCode}`));
-    const rows = page.getByTestId('receivable-row');
+    const rows = page.getByTestId(/^receivable-list-row-/);
     const row = rows.filter({ hasText: roomCode });
     // The previous (unfiltered) page stays visible until the filtered result arrives.
     await expect(rows).toHaveCount(1);
-    await expect(row).toHaveAttribute('data-bucket', 'over_30');
+    await expect(row.locator('[data-bucket]')).toHaveAttribute('data-bucket', 'over_30');
     await expect(row.getByTestId('receivable-remaining')).toHaveText(exactly(invoice.total));
     await expect(row).toContainText(`Khách công nợ`);
     await expect(row.getByText(/^Quá hạn \d+ ngày$/)).toBeVisible();

@@ -1,35 +1,102 @@
-import { Button, Select, Skeleton } from '@itclabs/react-ui';
+import { type ColumnDef, DataTable, KpiCard, KpiGrid, Select } from '@itclabs/react-ui';
 import { useDeposits } from '@stay/sdk/react';
+import { type components, getErrorMessage } from '@stay/sdk/shared';
 import { CONTRACT_STATUSES } from '@stay/shared';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FilterBar } from '@/libraries/filter-bar';
 import { formatVnd } from '@/libraries/format';
+import { Refreshing } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { CONTRACT_LABELS, LoadError } from '@/modules/contracts/contract-ui';
+import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
+import { CONTRACT_LABELS } from '@/modules/contracts/contract-ui';
 import { DepositActions } from './actions';
 
+type DepositRow = components['schemas']['DepositSummary'];
+
+const SORT_FIELDS = ['code', 'createdAt'] as const;
+
+const columns: ColumnDef<DepositRow, unknown>[] = [
+  {
+    id: 'code',
+    header: 'Hợp đồng',
+    accessorFn: (row) => row.code,
+    cell: ({ row }) => (
+      <Link
+        className="whitespace-nowrap text-accent underline"
+        to={`/contracts/${row.original.contractId}?tab=Cọc`}
+      >
+        {row.original.code}
+      </Link>
+    ),
+  },
+  { id: 'room', header: 'Phòng', enableSorting: false, accessorFn: (row) => row.roomCode },
+  {
+    id: 'tenant',
+    header: 'Người đại diện',
+    cell: ({ row }) => row.original.primaryTenantName ?? '—',
+  },
+  { id: 'status', header: 'Trạng thái', cell: ({ row }) => CONTRACT_LABELS[row.original.status] },
+  {
+    id: 'received',
+    header: 'Đã thu',
+    meta: { align: 'right' },
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap">{formatVnd(row.original.received)}</span>
+    ),
+  },
+  {
+    id: 'held',
+    header: 'Đang giữ',
+    meta: { align: 'right' },
+    cell: ({ row }) => (
+      <span className="whitespace-nowrap" data-testid="deposit-held">
+        {formatVnd(row.original.held)}
+      </span>
+    ),
+  },
+  {
+    id: 'actions',
+    header: 'Thao tác',
+    cell: ({ row }) => (
+      <DepositActions
+        contractId={row.original.contractId}
+        buildingId={row.original.buildingId}
+        status={row.original.status}
+      />
+    ),
+  },
+];
+
+/** O-15 Sổ cọc: deposits per contract; the table scrolls inside its frame on phones. */
 export default function DepositsPage() {
   const { buildingId } = useActiveBuilding();
   const [params, setParams] = useSearchParams();
-  const page = Math.max(1, Number(params.get('page')) || 1);
+  const table = useTableParams({
+    sortFields: SORT_FIELDS,
+    defaultSort: { sortBy: 'code', sortOrder: 'asc' },
+  });
+
   const status = CONTRACT_STATUSES.find((value) => value === params.get('status'));
   const query = useDeposits({
     buildingId: buildingId ?? undefined,
     status,
-    page,
-    pageSize: 20,
-    sortBy: 'code',
-    sortOrder: 'asc',
+    page: table.page,
+    pageSize: table.pageSize,
+    sortBy: table.sortBy,
+    sortOrder: table.sortOrder,
   });
 
-  const changePage = (next: number) =>
+  const filterStatus = (value: string | null) =>
     setParams(
       () => {
-        const result = latestSearchParams();
-        result.set('page', String(next));
-        return result;
+        const next = latestSearchParams();
+
+        if (value) next.set('status', value);
+        else next.delete('status');
+        next.delete('page');
+        return next;
       },
       { replace: true },
     );
@@ -48,101 +115,40 @@ export default function DepositsPage() {
           clearable
           options={CONTRACT_STATUSES.map((value) => ({ value, label: CONTRACT_LABELS[value] }))}
           value={status ?? null}
-          onValueChange={(value) => setParams(value ? { status: value } : {}, { replace: true })}
+          onValueChange={filterStatus}
         />
       </FilterBar>
-      {query.isPending ? (
-        <Skeleton className="h-64" />
-      ) : query.isError ? (
-        <LoadError error={query.error} retry={() => void query.refetch()} />
-      ) : (
-        <>
-          <section
-            className="grid gap-0.5 rounded-panel border border-line bg-surface p-3 sm:max-w-sm"
-            aria-label="Tổng cọc đang giữ"
+      {query.data ? (
+        <KpiGrid columns={3}>
+          <KpiCard
+            label={`Tổng cọc đang giữ ${buildingId ? 'của toà' : 'tất cả toà'} (theo bộ lọc)`}
+            value={formatVnd(query.data.meta.totalHeld)}
+            icon="key"
+            tone="info"
+            compact
             data-testid="deposit-total"
-          >
-            <p className="text-ui-sm text-muted">
-              Tổng cọc đang giữ {buildingId ? 'của toà' : 'tất cả toà'} (theo bộ lọc)
-            </p>
-            <strong className="text-ink">{formatVnd(query.data.meta.totalHeld)}</strong>
-          </section>
-          {!query.data.data.length ? (
-            <p>Chưa có hợp đồng phù hợp.</p>
-          ) : (
-            <div className="relative overflow-x-auto rounded-panel border border-line bg-surface">
-              <table className="w-full text-left" aria-label="Sổ cọc">
-                <thead>
-                  <tr>
-                    {[
-                      'Hợp đồng',
-                      'Phòng',
-                      'Người đại diện',
-                      'Trạng thái',
-                      'Đã thu',
-                      'Đang giữ',
-                      'Thao tác',
-                    ].map((label) => (
-                      <th className="whitespace-nowrap p-3" key={label}>
-                        {label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {query.data.data.map((row) => (
-                    <tr
-                      className="border-t border-line"
-                      key={row.contractId}
-                      data-testid="deposit-row"
-                    >
-                      <td className="whitespace-nowrap p-3">
-                        <Link
-                          className="text-accent underline"
-                          to={`/contracts/${row.contractId}?tab=Cọc`}
-                        >
-                          {row.code}
-                        </Link>
-                      </td>
-                      <td className="p-3">{row.roomCode}</td>
-                      <td className="p-3">{row.primaryTenantName ?? '—'}</td>
-                      <td className="p-3">{CONTRACT_LABELS[row.status]}</td>
-                      <td className="whitespace-nowrap p-3">{formatVnd(row.received)}</td>
-                      <td className="whitespace-nowrap p-3" data-testid="deposit-held">
-                        {formatVnd(row.held)}
-                      </td>
-                      <td className="p-3">
-                        <DepositActions
-                          contractId={row.contractId}
-                          buildingId={row.buildingId}
-                          status={row.status}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <div className="flex items-center justify-between gap-2">
-            <Button
-              variant="secondary"
-              disabled={page <= 1 || query.isFetching}
-              onClick={() => changePage(page - 1)}
-            >
-              Trước
-            </Button>
-            <span>Trang {page}</span>
-            <Button
-              variant="secondary"
-              disabled={page >= query.data.meta.totalPages || query.isFetching}
-              onClick={() => changePage(page + 1)}
-            >
-              Sau
-            </Button>
-          </div>
-        </>
-      )}
+          />
+        </KpiGrid>
+      ) : null}
+      <Refreshing active={query.isFetching && !query.isPending}>
+        <DataTable<DepositRow>
+          caption="Sổ cọc"
+          mode="server"
+          rows={query.data?.data ?? []}
+          rowCount={query.data?.meta.total ?? 0}
+          preservePageHeight={(query.data?.meta.total ?? 0) > 0}
+          columns={columns}
+          rowId={(row) => row.contractId}
+          state={table.state}
+          onStateChange={table.onStateChange}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          loading={query.isPending}
+          error={query.isError ? getErrorMessage(query.error, 'Không tải được sổ cọc.') : undefined}
+          onRetry={() => void query.refetch()}
+          emptyText="Chưa có hợp đồng phù hợp."
+          data-testid="deposit-list"
+        />
+      </Refreshing>
     </div>
   );
 }
