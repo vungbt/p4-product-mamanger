@@ -42,6 +42,15 @@
   }
 }
 
+/* Filter bars that share their row with page actions: 12rem+ columns leave room for them. */
+@utility grid-cols-filters-compact {
+  grid-template-columns: minmax(0, 1fr);
+
+  @media (width >= 40rem) {
+    grid-template-columns: repeat(auto-fill, minmax(calc(var(--spacing) * 48), 1fr));
+  }
+}
+
 @utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }

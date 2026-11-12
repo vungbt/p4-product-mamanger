@@ -15,7 +15,7 @@
     "pretypecheck": "pnpm --filter @stay/shared build && pnpm --filter @stay/sdk build"
   },
   "dependencies": {
-    "@itclabs/react-ui": "0.14.0",
+    "@itclabs/react-ui": "0.18.0",
     "@p4/ability": "workspace:*",
     "@p4/i18n": "workspace:*",
     "@stay/sdk": "workspace:*",

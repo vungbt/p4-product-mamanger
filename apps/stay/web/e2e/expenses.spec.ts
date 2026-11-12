@@ -28,7 +28,7 @@ for (const width of [1280, 375]) {
       .setInputFiles({ name: 'receipt.png', mimeType: 'image/png', buffer: PNG });
     await form.getByRole('button', { name: 'Lưu chi phí' }).click();
 
-    const row = page.getByTestId('expense-row').filter({ hasText: note });
+    const row = page.getByTestId(/^expense-list-row-/).filter({ hasText: note });
     const totals = page.getByTestId('expense-totals');
 
     await expect(row).toContainText('123.456');

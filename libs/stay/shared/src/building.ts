@@ -4,6 +4,24 @@ import type { BillingDay, BillingSettings, RoundingUnit } from './settings.js';
 /** Building code used in invoice codes: `A`–`Z`, `0`–`9`, at most 6 characters. */
 export const BUILDING_CODE_PATTERN = /^[A-Z0-9]{1,6}$/;
 
+/**
+ * Code suggested from a building name: the initial of each word without diacritics (`đ` → `D`),
+ * numbers kept whole, upper case, at most 6 characters — "Nhà trọ Hoà Bình 2" → `NTHB2`.
+ * Empty when the name has no letters or digits.
+ */
+export function suggestBuildingCode(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/[đĐ]/g, 'D')
+    .toUpperCase()
+    .split(/[^A-Z0-9]+/)
+    .filter(Boolean)
+    .map((word) => (/^\d+$/.test(word) ? word : word.charAt(0)))
+    .join('')
+    .slice(0, 6);
+}
+
 /** `GET /api/buildings?status=`: archived buildings are hidden by default. */
 export const BUILDING_STATUS_FILTERS = ['active', 'archived', 'all'] as const;
 export type BuildingStatusFilter = (typeof BUILDING_STATUS_FILTERS)[number];

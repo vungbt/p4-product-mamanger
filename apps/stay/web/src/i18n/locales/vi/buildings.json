@@ -57,6 +57,7 @@
     "generalTitle": "Thông tin chung",
     "code": "Mã toà",
     "codeHint": "A–Z, 0–9, tối đa 6 ký tự.",
+    "codeSuggestHint": "Gợi ý từ tên toà; A–Z, 0–9, tối đa 6 ký tự.",
     "codeLocked": "Toà đã có hoá đơn nên không đổi được mã.",
     "codeFormat": "Mã toà chỉ gồm chữ A–Z và số 0–9, tối đa 6 ký tự.",
     "name": "Tên toà",

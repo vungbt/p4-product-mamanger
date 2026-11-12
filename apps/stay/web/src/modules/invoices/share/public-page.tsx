@@ -1,4 +1,4 @@
-import { Button, EmptyState } from '@itclabs/react-ui';
+import { Button, EmptyState, Icon } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { usePublicInvoice } from '@stay/sdk/react';
 import { useRef, useState } from 'react';
@@ -59,9 +59,11 @@ export default function PublicInvoicePage() {
             <InvoiceCard ref={cardRef} invoice={invoice} copyable />
             <div className="flex flex-wrap gap-2 print:hidden">
               <Button variant="secondary" loading={downloading} onClick={() => void download()}>
+                <Icon name="download" className="size-4" aria-hidden />
                 Tải ảnh hoá đơn
               </Button>
               <Button variant="secondary" onClick={() => window.print()}>
+                <Icon name="printer" className="size-4" aria-hidden />
                 In / Lưu PDF
               </Button>
             </div>

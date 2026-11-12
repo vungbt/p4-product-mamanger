@@ -3,11 +3,12 @@ import {
   type ColumnDef,
   DataTable,
   EmptyState,
+  Icon,
   Input,
   Select,
-  Skeleton,
 } from '@itclabs/react-ui';
 import { useContracts, useRooms } from '@stay/sdk/react';
+import { getErrorMessage } from '@stay/sdk/shared';
 import { CONTRACT_STATUSES, type StayContract } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -15,9 +16,13 @@ import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar, FilterCheckbox } from '@/libraries/filter-bar';
 import { displayDate, formatVnd } from '@/libraries/format';
+import { Refreshing } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { CONTRACT_LABELS, LoadError } from './contract-ui';
+import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
+import { CONTRACT_LABELS } from './contract-ui';
+
+const SORT_FIELDS = ['code', 'startDate', 'endDate', 'createdAt'] as const;
 
 export default function ContractListPage() {
   const { buildingId } = useActiveBuilding();
@@ -25,14 +30,19 @@ export default function ContractListPage() {
   const navigate = useNavigate();
   const canCreate = useCanOn('create', 'Contract', { buildingId: buildingId ?? undefined });
   const [search, setSearch] = useState(params.get('q') ?? '');
+  const table = useTableParams({
+    sortFields: SORT_FIELDS,
+    defaultSort: { sortBy: 'createdAt', sortOrder: 'asc' },
+  });
   const q = params.get('q') ?? '';
   const status = CONTRACT_STATUSES.find((s) => s === params.get('status'));
-  const page = Math.max(1, Number(params.get('page')) || 1);
   const rooms = useRooms(buildingId ?? '', { pageSize: 100 });
   const query = useContracts({
     buildingId: buildingId ?? undefined,
-    page,
-    pageSize: 20,
+    page: table.page,
+    pageSize: table.pageSize,
+    sortBy: table.sortBy,
+    sortOrder: table.sortOrder,
     q: q || undefined,
     status,
     roomId: params.get('roomId') || undefined,
@@ -75,28 +85,40 @@ export default function ContractListPage() {
     {
       id: 'code',
       header: 'Mã HĐ',
+      accessorFn: (row) => row.code,
       cell: ({ row }) => (
-        <Link className="text-accent font-semibold" to={`/contracts/${row.original.id}`}>
+        <Link
+          className="whitespace-nowrap font-semibold text-accent"
+          to={`/contracts/${row.original.id}`}
+        >
           {row.original.code}
         </Link>
       ),
     },
-    { accessorKey: 'roomCode', header: 'Phòng' },
-    { accessorKey: 'primaryTenantName', header: 'Người đại diện' },
+    { accessorKey: 'roomCode', header: 'Phòng', enableSorting: false },
+    { accessorKey: 'primaryTenantName', header: 'Người đại diện', enableSorting: false },
     {
       id: 'startDate',
       header: 'Ngày bắt đầu',
+      accessorFn: (row) => row.startDate,
       cell: ({ row }) => displayDate(row.original.startDate),
     },
     {
       id: 'endDate',
       header: 'Ngày kết thúc',
+      accessorFn: (row) => row.endDate ?? '',
       cell: ({ row }) => (row.original.endDate ? displayDate(row.original.endDate) : '—'),
     },
-    { id: 'rent', header: 'Giá thuê', cell: ({ row }) => formatVnd(row.original.rent) },
+    {
+      id: 'rent',
+      header: 'Giá thuê',
+      meta: { align: 'right' },
+      cell: ({ row }) => formatVnd(row.original.rent),
+    },
     {
       id: 'deposit',
       header: 'Cọc đang giữ',
+      meta: { align: 'right' },
       cell: ({ row }) => formatVnd(row.original.depositHeld),
     },
     {
@@ -114,13 +136,17 @@ export default function ContractListPage() {
       <ScreenHeader
         title="Hợp đồng"
         description="Hợp đồng thuê của toà đang chọn: lọc theo trạng thái, phòng, sắp hết hạn."
-        action={
-          canCreate ? (
-            <Button onClick={() => navigate('/contracts/new')}>Tạo hợp đồng</Button>
-          ) : undefined
-        }
       />
-      <FilterBar>
+      <FilterBar
+        actions={
+          canCreate ? (
+            <Button onClick={() => navigate('/contracts/new')}>
+              <Icon name="plus" className="size-4" aria-hidden />
+              Tạo hợp đồng
+            </Button>
+          ) : null
+        }
+      >
         <Input
           label="Tìm hợp đồng"
           type="search"
@@ -153,66 +179,33 @@ export default function ContractListPage() {
           onCheckedChange={(v) => filter('expiring', v === true ? 'true' : null)}
         />
       </FilterBar>
-      {!buildingId || query.isPending ? (
-        <Skeleton className="h-48" />
-      ) : query.isError ? (
-        <LoadError error={query.error} retry={() => void query.refetch()} />
-      ) : !query.data?.data.length ? (
-        <EmptyState
-          title="Chưa có hợp đồng"
-          description="Tạo hợp đồng cho một phòng trống hoặc đổi bộ lọc."
-        />
-      ) : (
-        <>
-          <div className="min-w-0 relative overflow-x-auto">
-            <DataTable<StayContract>
-              caption="Hợp đồng"
-              state={{ sorting: [], pagination: { pageIndex: page - 1, pageSize: 20 } }}
-              onStateChange={(next) =>
-                setParams((p) => {
-                  p.set('page', String(next.pagination.pageIndex + 1));
-                  return p;
-                })
-              }
-              columns={columns}
-              rows={query.data.data}
-              mode="server"
-              rowCount={query.data.meta.total}
-              rowId={(row) => row.id}
-              paginationPlacement="none"
+      <Refreshing active={query.isFetching && !query.isPending}>
+        <DataTable<StayContract>
+          caption="Hợp đồng"
+          mode="server"
+          rows={query.data?.data ?? []}
+          rowCount={query.data?.meta.total ?? 0}
+          preservePageHeight={(query.data?.meta.total ?? 0) > 0}
+          columns={columns}
+          rowId={(row) => row.id}
+          state={table.state}
+          onStateChange={table.onStateChange}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
+          loading={!buildingId || query.isPending}
+          error={
+            query.isError ? getErrorMessage(query.error, 'Không tải được hợp đồng.') : undefined
+          }
+          onRetry={() => void query.refetch()}
+          emptyState={
+            <EmptyState
+              size="compact"
+              title="Chưa có hợp đồng"
+              description="Tạo hợp đồng cho một phòng trống hoặc đổi bộ lọc."
             />
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <Button
-              variant="secondary"
-              disabled={page <= 1}
-              onClick={() =>
-                setParams((p) => {
-                  p.set('page', String(page - 1));
-                  return p;
-                })
-              }
-            >
-              Trước
-            </Button>
-            <span>
-              Trang {page} · {query.data.meta.total} hợp đồng
-            </span>
-            <Button
-              variant="secondary"
-              disabled={page * 20 >= query.data.meta.total}
-              onClick={() =>
-                setParams((p) => {
-                  p.set('page', String(page + 1));
-                  return p;
-                })
-              }
-            >
-              Sau
-            </Button>
-          </div>
-        </>
-      )}
+          }
+          data-testid="contract-list"
+        />
+      </Refreshing>
     </div>
   );
 }

@@ -1,21 +1,42 @@
-import { Button, cn, DatePicker, EmptyState, IconButton, Input, Select } from '@itclabs/react-ui';
+import {
+  type ColumnDef,
+  cn,
+  DatePicker,
+  EmptyState,
+  IconButton,
+  type IconName,
+  Input,
+  KpiCard,
+  KpiGrid,
+  Select,
+  useDataTable,
+} from '@itclabs/react-ui';
 import { usePayments } from '@stay/sdk/react';
-import { isIsoDate, PAYMENT_METHODS, type StayPayment } from '@stay/shared';
+import { getErrorMessage } from '@stay/sdk/shared';
+import { isIsoDate, PAYMENT_METHODS, type PaymentMethod, type StayPayment } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar, FilterCheckbox } from '@/libraries/filter-bar';
 import { displayDate, formatVnd } from '@/libraries/format';
-import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
+import { ListTable, rowTestId } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { useIsDesktop } from '@/libraries/use-media-query';
+import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
 import { invoicePath } from '../invoices/invoice-ui';
 import { PAYMENT_METHOD_LABELS, PAYMENT_METHOD_OPTIONS, PaymentStatusTag } from './payment-ui';
 import { ReversePaymentDialog } from './reverse-dialog';
 
-const PAGE_SIZE = 20;
+const TABLE_ID = 'payment-list';
+
+const METHOD_ICONS: Record<PaymentMethod, IconName> = {
+  cash: 'walletMoney',
+  bank_transfer: 'creditCard',
+  other: 'receipt',
+  deposit: 'key',
+};
+const SORT_FIELDS = ['paidOn', 'amount', 'createdAt'] as const;
 
 /** O-23 Sổ thu: payments by date with totals per method, to reconcile with bank statements. */
 export default function PaymentsPage() {
@@ -23,15 +44,17 @@ export default function PaymentsPage() {
   const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState(params.get('q') ?? '');
   const [reversing, setReversing] = useState<StayPayment | null>(null);
-  const isDesktop = useIsDesktop();
   const canReverse = useCanOn('void', 'Payment', { buildingId: buildingId ?? undefined });
+  const table = useTableParams({
+    sortFields: SORT_FIELDS,
+    defaultSort: { sortBy: 'paidOn', sortOrder: 'desc' },
+  });
 
   const q = params.get('q') ?? '';
   const from = isIsoDate(params.get('from')) ? (params.get('from') ?? '') : '';
   const to = isIsoDate(params.get('to')) ? (params.get('to') ?? '') : '';
   const method = PAYMENT_METHODS.find((value) => value === params.get('method'));
   const hideReversed = params.get('reversed') === 'hide';
-  const page = Math.max(1, Number(params.get('page')) || 1);
   const invalidRange = Boolean(from && to && from > to);
 
   const query = usePayments({
@@ -41,10 +64,10 @@ export default function PaymentsPage() {
     method,
     includeReversed: hideReversed ? 'false' : 'true',
     q: q || undefined,
-    page,
-    pageSize: PAGE_SIZE,
-    sortBy: 'paidOn',
-    sortOrder: 'desc',
+    page: table.page,
+    pageSize: table.pageSize,
+    sortBy: table.sortBy,
+    sortOrder: table.sortOrder,
   });
 
   const filter = (field: string, value: string | null) =>
@@ -54,7 +77,7 @@ export default function PaymentsPage() {
 
         if (value) next.set(field, value);
         else next.delete(field);
-        if (field !== 'page') next.delete('page');
+        next.delete('page');
         return next;
       },
       { replace: true },
@@ -83,9 +106,34 @@ export default function PaymentsPage() {
 
   const rows = query.data?.data ?? [];
   const meta = query.data?.meta;
-  const totalPages = meta?.totalPages ?? 1;
   const filtered = Boolean(from || to || method || q || hideReversed);
   const onReverse = canReverse ? setReversing : undefined;
+
+  const controller = useDataTable<StayPayment>({
+    caption: 'Sổ thu',
+    mode: 'server',
+    rows,
+    rowCount: meta?.total ?? 0,
+    // Keep the page height only once rows exist (not the first load's skeleton).
+    preservePageHeight: (meta?.total ?? 0) > 0,
+    columns: paymentColumns(onReverse),
+    rowId: (row) => row.id,
+    state: table.state,
+    onStateChange: table.onStateChange,
+    pageSizeOptions: PAGE_SIZE_OPTIONS,
+    loading: query.isPending,
+    error: query.isError ? getErrorMessage(query.error, 'Không tải được sổ thu.') : undefined,
+    onRetry: () => void query.refetch(),
+    emptyState: (
+      <EmptyState
+        size="compact"
+        title="Chưa có khoản thu"
+        description="Thu tiền từ chi tiết hoá đơn, danh sách hoá đơn hoặc sơ đồ phòng."
+        variant={filtered ? 'no-results' : 'empty'}
+      />
+    ),
+    'data-testid': TABLE_ID,
+  });
 
   return (
     <div className="grid min-w-0 gap-5">
@@ -139,71 +187,35 @@ export default function PaymentsPage() {
           ) : null}
 
           {meta ? (
-            <dl
-              className="grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5"
-              aria-label="Tổng theo phương thức"
-              data-testid="payment-totals"
-            >
+            <KpiGrid columns={5} aria-label="Tổng theo phương thức" data-testid="payment-totals">
               {meta.totals.map((total) => (
-                <div
+                <KpiCard
                   key={total.method}
-                  className="grid gap-0.5 rounded-panel border border-line bg-surface p-3"
+                  label={PAYMENT_METHOD_LABELS[total.method]}
+                  value={formatVnd(total.amount)}
+                  hint={`${total.count} khoản`}
+                  icon={METHOD_ICONS[total.method]}
+                  tone="neutral"
+                  compact
                   data-testid={`payment-total-${total.method}`}
-                >
-                  <dt className="text-ui-sm text-muted">
-                    {PAYMENT_METHOD_LABELS[total.method]} · {total.count} khoản
-                  </dt>
-                  <dd className="font-bold break-all">{formatVnd(total.amount)}</dd>
-                </div>
+                />
               ))}
-              <div
-                className="grid gap-0.5 rounded-panel border border-line bg-surface p-3"
+              <KpiCard
+                label="Tổng đã thu"
+                value={formatVnd(meta.totalAmount)}
+                icon="moneyReceive"
+                tone="success"
+                compact
                 data-testid="payment-total-all"
-              >
-                <dt className="text-ui-sm text-muted">Tổng đã thu</dt>
-                <dd className="font-bold break-all">{formatVnd(meta.totalAmount)}</dd>
-              </div>
-            </dl>
+              />
+            </KpiGrid>
           ) : null}
 
-          {query.isPending ? (
-            <LoadingRows />
-          ) : query.isError ? (
-            <LoadError error={query.error} onRetry={() => void query.refetch()} />
-          ) : !rows.length ? (
-            <EmptyState
-              title="Chưa có khoản thu"
-              description="Thu tiền từ chi tiết hoá đơn, danh sách hoá đơn hoặc sơ đồ phòng."
-              variant={filtered ? 'no-results' : 'empty'}
-            />
-          ) : (
-            <>
-              {isDesktop ? (
-                <PaymentTable rows={rows} onReverse={onReverse} />
-              ) : (
-                <PaymentCards rows={rows} onReverse={onReverse} />
-              )}
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant="secondary"
-                  disabled={page <= 1 || query.isFetching}
-                  onClick={() => filter('page', String(page - 1))}
-                >
-                  Trước
-                </Button>
-                <span>
-                  Trang {page}/{Math.max(1, totalPages)} · {meta?.total ?? 0} khoản
-                </span>
-                <Button
-                  variant="secondary"
-                  disabled={page >= totalPages || query.isFetching}
-                  onClick={() => filter('page', String(page + 1))}
-                >
-                  Sau
-                </Button>
-              </div>
-            </>
-          )}
+          <ListTable
+            controller={controller}
+            refreshing={query.isFetching && !query.isPending}
+            cards={(items) => <PaymentCards rows={items} onReverse={onReverse} />}
+          />
         </>
       )}
       {reversing ? (
@@ -214,7 +226,7 @@ export default function PaymentsPage() {
 }
 
 type RowsProps = {
-  rows: StayPayment[];
+  rows: readonly StayPayment[];
   onReverse?: (payment: StayPayment) => void;
 };
 
@@ -256,64 +268,76 @@ function Amount({ payment }: { payment: StayPayment }) {
   );
 }
 
-function PaymentTable({ rows, onReverse }: RowsProps) {
+function paymentColumns(onReverse: RowsProps['onReverse']): ColumnDef<StayPayment, unknown>[] {
+  const columns: ColumnDef<StayPayment, unknown>[] = [
+    {
+      id: 'paidOn',
+      header: 'Ngày',
+      accessorFn: (row) => row.paidOn,
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">{displayDate(row.original.paidOn)}</span>
+      ),
+    },
+    {
+      id: 'invoice',
+      header: 'Hoá đơn',
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">
+          <InvoiceLink payment={row.original} />
+          <span className="block text-ui-sm text-muted">Phòng {row.original.roomCode}</span>
+        </span>
+      ),
+    },
+    {
+      id: 'amount',
+      header: 'Số tiền',
+      meta: { align: 'right' },
+      accessorFn: (row) => row.amount,
+      cell: ({ row }) => <Amount payment={row.original} />,
+    },
+    {
+      id: 'method',
+      header: 'Phương thức',
+      cell: ({ row }) => (
+        <span className="whitespace-nowrap">{PAYMENT_METHOD_LABELS[row.original.method]}</span>
+      ),
+    },
+    {
+      id: 'detail',
+      header: 'Chi tiết',
+      cell: ({ row }) => (
+        <span className="grid max-w-48">
+          <span className="truncate" title={row.original.reference ?? undefined}>
+            {row.original.reference ? `Mã GD ${row.original.reference}` : '—'}
+          </span>
+          <span className="truncate text-ui-sm text-muted">
+            Người ghi {row.original.actorName ?? '—'}
+          </span>
+        </span>
+      ),
+    },
+    {
+      id: 'status',
+      header: 'Trạng thái',
+      cell: ({ row }) => <Status payment={row.original} />,
+    },
+  ];
+
+  if (onReverse)
+    columns.push({
+      id: 'actions',
+      header: () => <span className="sr-only">Thao tác</span>,
+      cell: ({ row }) => <ReverseButton payment={row.original} onReverse={onReverse} />,
+    });
+  return columns;
+}
+
+/** Status tag; `data-payment-status` marks the row's payment status for tests. */
+function Status({ payment }: { payment: StayPayment }) {
   return (
-    <div className="min-w-0 relative overflow-x-auto rounded-panel border border-line bg-surface">
-      <table className="w-full text-left" aria-label="Sổ thu">
-        <thead>
-          <tr>
-            {['Ngày', 'Hoá đơn', 'Số tiền', 'Phương thức', 'Chi tiết', 'Trạng thái'].map(
-              (label) => (
-                <th key={label} scope="col" className="whitespace-nowrap p-3">
-                  {label}
-                </th>
-              ),
-            )}
-            {onReverse ? (
-              <th scope="col" className="p-3">
-                <span className="sr-only">Thao tác</span>
-              </th>
-            ) : null}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((payment) => (
-            <tr
-              key={payment.id}
-              className="border-t border-line"
-              data-testid="payment-row"
-              data-payment-status={payment.status}
-            >
-              <td className="whitespace-nowrap p-3">{displayDate(payment.paidOn)}</td>
-              <td className="whitespace-nowrap p-3">
-                <InvoiceLink payment={payment} />
-                <span className="block text-ui-sm text-muted">Phòng {payment.roomCode}</span>
-              </td>
-              <td className="p-3">
-                <Amount payment={payment} />
-              </td>
-              <td className="whitespace-nowrap p-3">{PAYMENT_METHOD_LABELS[payment.method]}</td>
-              <td className="max-w-48 p-3">
-                <span className="block truncate" title={payment.reference ?? undefined}>
-                  {payment.reference ? `Mã GD ${payment.reference}` : '—'}
-                </span>
-                <span className="block truncate text-ui-sm text-muted">
-                  Người ghi {payment.actorName ?? '—'}
-                </span>
-              </td>
-              <td className="p-3">
-                <PaymentStatusTag payment={payment} />
-              </td>
-              {onReverse ? (
-                <td className="p-1">
-                  <ReverseButton payment={payment} onReverse={onReverse} />
-                </td>
-              ) : null}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <span className="inline-flex" data-payment-status={payment.status}>
+      <PaymentStatusTag payment={payment} />
+    </span>
   );
 }
 
@@ -336,13 +360,12 @@ function PaymentCards({ rows, onReverse }: RowsProps) {
               <li
                 key={payment.id}
                 className="grid gap-1 rounded-panel border border-line bg-surface p-3"
-                data-testid="payment-row"
-                data-payment-status={payment.status}
+                data-testid={rowTestId(TABLE_ID, payment.id)}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <InvoiceLink payment={payment} />
                   <div className="flex items-center gap-1">
-                    <PaymentStatusTag payment={payment} />
+                    <Status payment={payment} />
                     <ReverseButton payment={payment} onReverse={onReverse} />
                   </div>
                 </div>

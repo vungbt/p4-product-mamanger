@@ -1,4 +1,12 @@
-import { Alert, AlertDialog, Button, DropdownMenu, EmptyState, Skeleton } from '@itclabs/react-ui';
+import {
+  Alert,
+  AlertDialog,
+  Button,
+  DropdownMenu,
+  EmptyState,
+  Icon,
+  Skeleton,
+} from '@itclabs/react-ui';
 import { useCancelContract, useCancelNotice, useContract } from '@stay/sdk/react';
 import type { ContractChangeKind } from '@stay/sdk/shared';
 import { ApiSdkError, getErrorMessage } from '@stay/sdk/shared';
@@ -67,17 +75,24 @@ export default function ContractDetailPage() {
         </div>
         {data.status === 'draft' && canUpdate && (
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => navigate(`/contracts/new?draftId=${data.id}`)}>
-              Tiếp tục bản nháp
-            </Button>
             <Button variant="danger" onClick={() => setConfirm(true)}>
+              <Icon name="delete" className="size-4" aria-hidden />
               Huỷ bản nháp
+            </Button>
+            <Button onClick={() => navigate(`/contracts/new?draftId=${data.id}`)}>
+              <Icon name="edit" className="size-4" aria-hidden />
+              Tiếp tục bản nháp
             </Button>
           </div>
         )}
         {canUpdate && ['active', 'ending'].includes(data.status) && (
           <DropdownMenu
-            trigger={<Button variant="secondary">Thay đổi</Button>}
+            trigger={
+              <Button variant="secondary">
+                <Icon name="edit" className="size-4" aria-hidden />
+                Thay đổi
+              </Button>
+            }
             triggerAsChild
             items={[
               ...(Object.entries(CHANGE_LABELS) as [ContractChangeKind, string][]).map(

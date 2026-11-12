@@ -23,9 +23,10 @@ import {
   ROUNDING_UNITS,
   type StayBuildingDetail,
   type StaySettings,
+  suggestBuildingCode,
 } from '@stay/shared';
 import type { TFunction } from 'i18next';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as v from 'valibot';
@@ -220,6 +221,8 @@ function BuildingForm({
   const update = useUpdateBuilding();
   const [formError, setFormError] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
+  // Last code filled from the name; a different code means the user typed their own.
+  const suggestedCode = useRef('');
 
   const archived = Boolean(building?.archivedAt);
   const schema = useMemo(() => buildingSchema(t), [t]);
@@ -246,7 +249,20 @@ function BuildingForm({
 
   const form = useAppForm({
     defaultValues: building ? toValues(building) : EMPTY_VALUES,
-    listeners: clearServerErrorOnChange,
+    listeners: {
+      onChange: (event) => {
+        clearServerErrorOnChange.onChange(event);
+
+        // A new building takes its code from the name until the user edits the code.
+        if (building || event.fieldApi.name !== 'name') return;
+
+        const code = event.formApi.getFieldValue('code');
+
+        if (code !== suggestedCode.current) return;
+        suggestedCode.current = suggestBuildingCode(String(event.fieldApi.state.value ?? ''));
+        event.formApi.setFieldValue('code', suggestedCode.current);
+      },
+    },
     onSubmit: async ({ value }) => {
       setFormError(null);
       setConflict(false);
@@ -355,7 +371,11 @@ function BuildingForm({
               maxLength={6}
               autoCapitalize="characters"
               disabled={building?.codeLocked}
-              hint={building?.codeLocked ? t('form.codeLocked') : t('form.codeHint')}
+              hint={
+                building?.codeLocked
+                  ? t('form.codeLocked')
+                  : t(building ? 'form.codeHint' : 'form.codeSuggestHint')
+              }
             />
           </FormField>
           <FormField name="name" label={t('form.name')} required className="mb-0 md:col-span-2">

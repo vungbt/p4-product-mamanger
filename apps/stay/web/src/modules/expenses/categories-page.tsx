@@ -3,6 +3,7 @@ import {
   Form,
   FormField,
   FormSubmit,
+  Icon,
   IconButton,
   Input,
   Switch,
@@ -17,6 +18,7 @@ import {
 import type { StayExpenseCategory } from '@stay/shared';
 import { useState } from 'react';
 import * as v from 'valibot';
+import { FilterBar } from '@/libraries/filter-bar';
 import {
   apiFormErrors,
   clearServerErrorOnChange,
@@ -124,9 +126,14 @@ export default function ExpenseCategoriesPage() {
   return (
     <div className="grid gap-5">
       <ScreenHeader title="Danh mục chi phí" />
-      <div>
-        <Button onClick={() => setEditing('new')}>Thêm danh mục</Button>
-      </div>
+      <FilterBar
+        actions={
+          <Button onClick={() => setEditing('new')}>
+            <Icon name="plus" className="size-4" aria-hidden />
+            Thêm danh mục
+          </Button>
+        }
+      />
       {editing ? (
         <CategoryForm
           key={editing === 'new' ? 'new' : editing.id}

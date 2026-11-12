@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCanAccess } from '@/libraries/ability';
+import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { buildingEditPath, buildingPricesPath, ROUTES } from '@/routing/route-configs';
@@ -182,10 +183,10 @@ export default function BuildingsPage() {
 
   return (
     <div className="grid gap-6">
-      <ScreenHeader
-        title={t('list.title')}
-        description={t('list.description')}
-        action={
+      <ScreenHeader title={t('list.title')} description={t('list.description')} />
+
+      <FilterBar
+        actions={
           canManage ? (
             <Button onClick={() => navigate(ROUTES.newBuilding)}>
               <Icon name="plus" className="size-4" aria-hidden />
@@ -193,22 +194,22 @@ export default function BuildingsPage() {
             </Button>
           ) : null
         }
-      />
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Tabs
-          variant="segmented"
-          label={t('list.statusFilter')}
-          value={status}
-          onValueChange={(value) =>
-            updateParams({ status: value === 'archived' ? 'archived' : null, page: null })
-          }
-        >
-          <TabsList>
-            <TabsTrigger value="active">{t('list.status.active')}</TabsTrigger>
-            <TabsTrigger value="archived">{t('list.status.archived')}</TabsTrigger>
-          </TabsList>
-        </Tabs>
+      >
+        <div className={FILTER_WIDE}>
+          <Tabs
+            variant="segmented"
+            label={t('list.statusFilter')}
+            value={status}
+            onValueChange={(value) =>
+              updateParams({ status: value === 'archived' ? 'archived' : null, page: null })
+            }
+          >
+            <TabsList>
+              <TabsTrigger value="active">{t('list.status.active')}</TabsTrigger>
+              <TabsTrigger value="archived">{t('list.status.archived')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
         <Input
           type="search"
           icon="search"
@@ -216,9 +217,9 @@ export default function BuildingsPage() {
           onChange={(event) => setSearch(event.target.value)}
           placeholder={t('list.searchPlaceholder')}
           aria-label={t('list.search')}
-          rootClassName="w-full sm:w-72"
+          rootClassName={FILTER_WIDE}
         />
-      </div>
+      </FilterBar>
 
       {query.isPending ? (
         <LoadingRows rows={3} />
