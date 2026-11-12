@@ -26,6 +26,7 @@
     "buildings": "Buildings",
     "newBuilding": "Add building",
     "editBuilding": "Edit building",
+    "notificationSettings": "Notification settings",
     "buildingPrices": "Building prices",
     "more": "More",
     "moreTitle": "All features",
@@ -65,6 +66,7 @@
   },
   "account": {
     "menu": "Account",
+    "notifications": "Notification settings",
     "changePassword": "Change password",
     "changePasswordSoon": "Changing your password is coming in a later release.",
     "signOut": "Sign out",

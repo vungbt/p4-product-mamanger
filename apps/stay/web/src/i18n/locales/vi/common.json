@@ -26,6 +26,7 @@
     "buildings": "Toà nhà",
     "newBuilding": "Thêm toà",
     "editBuilding": "Sửa toà",
+    "notificationSettings": "Cài đặt thông báo",
     "buildingPrices": "Đơn giá của toà",
     "more": "Thêm",
     "moreTitle": "Tất cả chức năng",
@@ -65,6 +66,7 @@
   },
   "account": {
     "menu": "Tài khoản",
+    "notifications": "Cài đặt thông báo",
     "changePassword": "Đổi mật khẩu",
     "changePasswordSoon": "Đổi mật khẩu sẽ có ở bản sau.",
     "signOut": "Đăng xuất",
