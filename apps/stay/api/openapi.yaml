@@ -48,6 +48,8 @@ tags:
       hành (cấp mã, khoá chỉ số), void. Mọi số tiền tính bằng `@stay/billing` tại server; dòng hoá đơn là snapshot."
   - name: me
     description: Người dùng hiện tại và quyền CASL.
+  - name: members
+    description: "Người quản lý theo toà: mời qua email, gán toà/nhóm quyền và khoá tài khoản; chỉ chủ trọ."
   - name: notifications
     description: Thông báo trong ứng dụng (nhân viên theo toà, người thuê theo hợp đồng), luồng SSE, email SMTP và thông báo
       trình duyệt (Web Push) gửi qua outbox sau commit; cài đặt kênh/nhóm sự kiện theo người.
@@ -4406,10 +4408,12 @@ paths:
       description: >-
         Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của
         `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền
-        phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu; nợ
-        cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá
-        và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá
-        đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.
+        phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu
+        (không gửi `surcharges` → tự thêm dòng "Khấu hao cơ sở vật chất" bằng `moveOutFee` của toà, 0 = không thêm; gửi
+        mảng, kể cả rỗng, → dùng đúng danh sách đó); nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn)
+        hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409
+        `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi
+        đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.
 
 
         **Quyền:** `read:Contract`.
@@ -4605,6 +4609,224 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "429":
           $ref: "#/components/responses/RateLimited"
+  /api/members:
+    get:
+      tags:
+        - members
+      operationId: get_api_members
+      summary: Người quản lý theo toà
+      description: "**Quyền:** `manage:Member`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: read
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum:
+              - email
+              - displayName
+            default: email
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            default: asc
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 255
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StayMember"
+                  message:
+                    type: string
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - meta
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/members/invitations:
+    post:
+      tags:
+        - members
+      operationId: post_api_members_invitations
+      summary: Mời người quản lý
+      description: |-
+        Tạo tài khoản và xếp lời mời vào outbox; không nâng quyền tài khoản đã tồn tại.
+
+        **Quyền:** `manage:Member`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberInvitationInput"
+      responses:
+        "201":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMember"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/members/{id}:
+    put:
+      tags:
+        - members
+      operationId: put_api_members_id
+      summary: Gán toà và quyền
+      description: |-
+        Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+
+        **Quyền:** `manage:Member`.
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/MemberInput"
+                - type: object
+                  required:
+                    - version
+                  properties:
+                    version:
+                      type: integer
+                      minimum: 0
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMember"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /api/members/{id}/disable:
+    post:
+      tags:
+        - members
+      operationId: post_api_members_id_disable
+      summary: Khoá người quản lý và thu hồi mọi phiên
+      description: "**Quyền:** `manage:Member`."
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/StayMember"
+                  message:
+                    type: string
+                required:
+                  - data
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/RateLimited"
   /api/settings:
     get:
       tags:
@@ -4697,6 +4919,11 @@ paths:
                     - 1000
                 refundUnusedRent:
                   type: boolean
+                moveOutFee:
+                  type: integer
+                  minimum: 0
+                  maximum: 100000000
+                  default: 300000
                 transferContentTemplate:
                   type: string
                   minLength: 1
@@ -5100,6 +5327,12 @@ paths:
                     - "null"
                   minimum: 0
                   maximum: 31
+                moveOutFee:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 0
+                  maximum: 100000000
                 roundingUnit:
                   type:
                     - integer
@@ -5285,6 +5518,12 @@ paths:
                     - "null"
                   minimum: 0
                   maximum: 31
+                moveOutFee:
+                  type:
+                    - integer
+                    - "null"
+                  minimum: 0
+                  maximum: 100000000
                 roundingUnit:
                   type:
                     - integer
@@ -14588,6 +14827,8 @@ components:
                 - 1000
         refundUnusedRent:
           type: boolean
+        moveOutFee:
+          type: number
       required:
         - readingDay
         - readingDayMonth
@@ -14596,6 +14837,7 @@ components:
         - graceDays
         - roundingUnit
         - refundUnusedRent
+        - moveOutFee
     BuildingPriceList:
       type: object
       properties:
@@ -15207,7 +15449,9 @@ components:
             - string
             - "null"
         surcharges:
-          type: array
+          type:
+            - array
+            - "null"
           items:
             $ref: "#/components/schemas/SettlementSurchargeInput"
       required:
@@ -15235,7 +15479,9 @@ components:
             - string
             - "null"
         surcharges:
-          type: array
+          type:
+            - array
+            - "null"
           items:
             $ref: "#/components/schemas/SettlementSurchargeInput"
       required:
@@ -15257,6 +15503,8 @@ components:
           type: string
         refundUnusedRent:
           type: boolean
+        moveOutFee:
+          type: number
         readings:
           type: array
           items:
@@ -15309,6 +15557,7 @@ components:
         - moveOutDate
         - period
         - refundUnusedRent
+        - moveOutFee
         - readings
         - lines
         - subtotal
@@ -16361,6 +16610,47 @@ components:
         - signatureImage
         - signatureUpdatedAt
         - version
+    MemberInput:
+      type: object
+      properties:
+        buildingIds:
+          type: array
+          items:
+            type: string
+        permissionGroups:
+          type: array
+          items:
+            type: string
+            enum:
+              - billing
+              - operations
+              - payments
+              - readings
+      required:
+        - buildingIds
+        - permissionGroups
+    MemberInvitationInput:
+      type: object
+      properties:
+        email:
+          type: string
+        buildingIds:
+          type: array
+          items:
+            type: string
+        permissionGroups:
+          type: array
+          items:
+            type: string
+            enum:
+              - billing
+              - operations
+              - payments
+              - readings
+      required:
+        - email
+        - buildingIds
+        - permissionGroups
     MeterReadingInput:
       type: object
       properties:
@@ -18775,6 +19065,10 @@ components:
           type:
             - boolean
             - "null"
+        moveOutFee:
+          type:
+            - number
+            - "null"
         bankBin:
           type:
             - string
@@ -18819,6 +19113,7 @@ components:
         - graceDays
         - roundingUnit
         - refundUnusedRent
+        - moveOutFee
         - bankBin
         - bankAccount
         - bankAccountName
@@ -18887,6 +19182,10 @@ components:
           type:
             - boolean
             - "null"
+        moveOutFee:
+          type:
+            - number
+            - "null"
         bankBin:
           type:
             - string
@@ -18933,6 +19232,7 @@ components:
         - graceDays
         - roundingUnit
         - refundUnusedRent
+        - moveOutFee
         - bankBin
         - bankAccount
         - bankAccountName
@@ -19520,6 +19820,48 @@ components:
           $ref: "#/components/schemas/StayUser"
       required:
         - user
+    StayMember:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        accountStatus:
+          type: string
+          enum:
+            - active
+            - blocked
+        buildingNames:
+          type: array
+          items:
+            type: string
+        version:
+          type: number
+        email:
+          type: string
+        buildingIds:
+          type: array
+          items:
+            type: string
+        permissionGroups:
+          type: array
+          items:
+            type: string
+            enum:
+              - billing
+              - operations
+              - payments
+              - readings
+      required:
+        - id
+        - displayName
+        - accountStatus
+        - buildingNames
+        - version
+        - email
+        - buildingIds
+        - permissionGroups
     StayMeterReading:
       type: object
       properties:
@@ -20221,6 +20563,8 @@ components:
                 - 1000
         refundUnusedRent:
           type: boolean
+        moveOutFee:
+          type: number
       required:
         - transferContentTemplate
         - version
@@ -20231,6 +20575,7 @@ components:
         - graceDays
         - roundingUnit
         - refundUnusedRent
+        - moveOutFee
     StayTenant:
       type: object
       properties:
@@ -20509,6 +20854,15 @@ components:
           type: array
           items:
             type: string
+        permissionGroups:
+          type: array
+          items:
+            type: string
+            enum:
+              - billing
+              - operations
+              - payments
+              - readings
       required:
         - id
         - email

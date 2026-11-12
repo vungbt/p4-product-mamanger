@@ -15,6 +15,7 @@ import {
 } from '@stay/shared';
 import { Op, Transaction, type WhereOptions } from 'sequelize';
 import { canAccessRecord, hasAccess } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import { InvoiceModel, PaymentModel, RoomModel } from '@/sequelize/models/index.js';
 import type { PaymentAttributes } from '@/sequelize/models/payment.model.js';
 import { auditedTransaction, recordAudit } from '@/shared/audit.js';
@@ -53,7 +54,10 @@ async function findInvoice(
   action: StayAction,
   transaction: Transaction,
 ) {
-  const row = await InvoiceModel.findByPk(id, { transaction });
+  const row = await InvoiceModel.findOne({
+    where: { [Op.and]: [{ id }, accessibleWhere(user, action, 'Payment')] },
+    transaction,
+  });
 
   if (
     !row ||
@@ -276,7 +280,7 @@ export async function listPayments(
   )
     throw new NotFound();
   const ids = readableBuildingIds(user);
-  const conditions: WhereOptions<PaymentAttributes>[] = [];
+  const conditions: WhereOptions<PaymentAttributes>[] = [accessibleWhere(user, 'read', 'Payment')];
 
   if (ids !== 'all') conditions.push({ buildingId: { [Op.in]: ids } });
   if (query.buildingId) conditions.push({ buildingId: query.buildingId });

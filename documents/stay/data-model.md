@@ -9,6 +9,7 @@ Tên cột dưới đây là đề xuất; chốt lại trong migration của ta
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
 | `users`, `auth_*` | Better Auth; `role` (`owner`, `manager`, `tenant`) | Cookie prefix `stay`. MVP chỉ dùng `owner` (ST-03) |
+| `users` (ST-27 bổ sung) | `permission_groups` (text[], chung cho các toà), `version` | Nhóm quyền cho quản lý; `account_status=blocked` thu hồi phiên bằng trigger hiện có |
 | `building_members` | `building_id`, `user_id`, `role` | Phân quyền người quản lý theo toà (ST-27). Owner không cần dòng ở đây |
 | `audit_logs`, `domain_events`, `job_leases` | Như P4 | Dùng lại thiết kế từ `libs/server-core` (ST-01) |
 | `system_settings` | `key`, `value` (JSONB), `version` | Giá trị mặc định: kỳ thu, làm tròn, hoàn tiền phòng (ST-06) |
@@ -24,7 +25,7 @@ Tên cột dưới đây là đề xuất; chốt lại trong migration của ta
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
-| `buildings` | `code` (unique, dùng trong mã hoá đơn), `name`, `address`, `reading_day`, `issue_day`, `due_day`, `rounding_unit`, `refund_unused_rent`, `bank_bin`, `bank_account`, `bank_account_name`, `rules_text`, `contact_phone`, `archived_at` | Ngày để `null` thì lấy theo `system_settings` (ST-07) |
+| `buildings` | `code` (unique, dùng trong mã hoá đơn), `name`, `address`, `reading_day`, `issue_day`, `due_day`, `rounding_unit`, `refund_unused_rent`, `move_out_fee`, `bank_bin`, `bank_account`, `bank_account_name`, `rules_text`, `contact_phone`, `archived_at` | Ngày để `null` thì lấy theo `system_settings` (ST-07) |
 | `rooms` | `building_id`, `code` (unique trong toà), `floor`, `area_m2`, `list_price`, `max_occupants`, `maintenance` (bool), `note`, `archived_at` | Trạng thái trống/đã cọc/đang thuê suy ra từ hợp đồng (ST-08) |
 | `room_default_services` | `room_id`, `service_id` | Dịch vụ mặc định gợi ý khi tạo hợp đồng (ST-08) |
 

@@ -450,7 +450,28 @@
         "error": "Could not upload {{name}}. Choose a JPG/PNG/WEBP image under 10 MB."
       }
     },
-    "importAction": "Import"
+    "importAction": "Import",
+    "scan": {
+      "button": "Scan ID card",
+      "title": "Scan the QR code on the ID card",
+      "description": "Point the camera at the QR code on the front of the CCCD. The data is read on this device only and never uploaded.",
+      "starting": "Opening the camera…",
+      "scanning": "Looking for the QR code… Keep the card well lit, without glare.",
+      "pickPhoto": "Choose a card photo",
+      "pickPhotoHint": "Or choose a photo of the front with the QR code.",
+      "reading": "Reading the photo…",
+      "manual": "Enter manually",
+      "video": "Camera view for scanning the CCCD QR code",
+      "denied": "Camera access was denied. Allow the camera in the browser settings, choose a card photo or enter the details manually.",
+      "noCamera": "No camera found on this device. Choose a card photo or enter the details manually.",
+      "cameraFailed": "The camera could not be opened (another app may be using it). Choose a card photo or enter the details manually.",
+      "notFound": "No QR code could be read in the photo. Take a close, sharp photo of the QR code on the front, or enter the details manually.",
+      "notCccd": "This QR code is not a CCCD code. Scan the QR code on the front of the ID card.",
+      "invalidId": "The QR code has no valid 12-digit CCCD number. Check the card or enter the details manually.",
+      "decoderFailed": "The QR reader could not be loaded. Check the connection and try again, or enter the details manually.",
+      "filled": "Filled from the ID card: {{fields}}. Review, then save.",
+      "filledNone": "The ID card was read but had nothing to fill."
+    }
   },
   "audit": {
     "search": "Search action or record",

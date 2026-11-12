@@ -4,6 +4,7 @@ import { appRoutes, ROUTES } from './route-configs';
 import { GuestOnly, PageSpinner, RequireAbility, RequireAuth } from './route-guards';
 
 const VerifyDocumentPage = lazy(() => import('@/modules/documents/verify-page'));
+const ResetPasswordPage = lazy(() => import('@/modules/login/reset-password-page'));
 const LoginPage = lazy(() => import('@/modules/login/page'));
 const AppLayout = lazy(() => import('@/modules/layout/app-layout'));
 const NotFoundPage = lazy(() => import('@/modules/errors/not-found-page'));
@@ -61,6 +62,7 @@ export default function AppRoutes() {
         <Route path="requests/new" element={<LazyPage component={PortalRequestNewPage} />} />
       </Route>
 
+      <Route path="/reset-password" element={<LazyPage component={ResetPasswordPage} />} />
       <Route element={<GuestOnly />}>
         <Route path={ROUTES.login} element={<LazyPage component={LoginPage} />} />
       </Route>

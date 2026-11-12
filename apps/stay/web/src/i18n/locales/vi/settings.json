@@ -78,7 +78,10 @@
     "refundHint": "Bật: hoàn tiền phòng và dịch vụ của những ngày chưa ở theo tỷ lệ ngày.",
     "saved": "Đã lưu kỳ thu.",
     "dueBeforeIssue": "Hạn thanh toán phải bằng hoặc sau ngày phát hành.",
-    "readingAfterIssue": "Khi chốt số vào đầu tháng sau, ngày chốt số phải bằng hoặc trước ngày phát hành."
+    "readingAfterIssue": "Khi chốt số vào đầu tháng sau, ngày chốt số phải bằng hoặc trước ngày phát hành.",
+    "moveOutFee": "Phí khấu hao cơ sở vật chất khi trả phòng",
+    "moveOutFeeHint": "Tự thêm thành dòng phụ thu \"Khấu hao cơ sở vật chất\" khi thanh lý; chủ trọ sửa hoặc xoá được trước khi phát hành. 0 = không thu.",
+    "moveOutFeeRange": "Nhập số nguyên từ 0 đến 100.000.000 ₫."
   },
   "services": {
     "title": "Dịch vụ & đơn giá",

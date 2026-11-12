@@ -29,8 +29,10 @@ import {
 } from '@stay/sdk/react';
 import { ApiSdkError, createUploadApi, getErrorMessage } from '@stay/sdk/shared';
 import {
+  type CccdQrData,
   type ContractInput,
   isIsoDate,
+  maskIdNumber,
   type StayContract,
   type StayRoomDetail,
 } from '@stay/shared';
@@ -38,6 +40,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
+import { CccdScanButton } from '@/libraries/cccd/cccd-scan';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, serverError } from '@/libraries/forms/api-errors';
 import { DATE_FIELD } from '@/libraries/forms/date-field';
@@ -84,21 +87,38 @@ function QuickTenant({
 }) {
   const create = useCreateTenant();
   const [error, setError] = useState<string | null>(null);
+  // Card details read from the CCCD QR, saved with the new tenant.
+  const [card, setCard] = useState<CccdQrData | null>(null);
   const form = useAppForm({
     defaultValues: { fullName: '', phone: '' },
     onSubmit: async ({ value }) => {
       setError(null);
       try {
-        const tenant = await create.mutateAsync({ buildingId, ...value });
+        const tenant = await create.mutateAsync({
+          buildingId,
+          ...value,
+          ...(card
+            ? {
+                idNumber: card.idNumber,
+                birthDate: card.birthDate,
+                gender: card.gender,
+                permanentAddress: card.permanentAddress,
+                idIssuedAt: card.issuedAt,
+              }
+            : {}),
+        });
 
         form.reset();
+        setCard(null);
         onCreated(tenant.id);
       } catch (e) {
         const errors = apiFormErrors(e, ['fullName', 'phone'], 'Không thể tạo người thuê.');
+        const cardError =
+          card && e instanceof ApiSdkError ? Object.values(e.fieldErrors).flat()[0] : undefined;
 
         for (const field of ['fullName', 'phone'] as const)
           form.setFieldMeta(field, serverError(errors.fields[field]));
-        setError(errors.message);
+        setError(cardError && !errors.fields.fullName ? cardError : errors.message);
       }
     },
   });
@@ -120,6 +140,21 @@ function QuickTenant({
         Tạo nhanh người thuê
       </h2>
       {error && <Alert tone="danger">{error}</Alert>}
+      <div>
+        <CccdScanButton
+          onScanned={(data) => {
+            setCard(data);
+            if (data.fullName) form.setFieldValue('fullName', data.fullName);
+          }}
+        />
+      </div>
+      {card ? (
+        <Alert tone="success" role="status" data-testid="quick-tenant-cccd">
+          Đã đọc CCCD {maskIdNumber(card.idNumber)}
+          {card.birthDate ? `, sinh ${displayDate(card.birthDate)}` : ''}: số CCCD, ngày sinh, giới
+          tính, địa chỉ và ngày cấp sẽ lưu cùng người thuê. Nhập số điện thoại rồi thêm.
+        </Alert>
+      ) : null}
       <FormField name="fullName" label="Họ tên" required>
         <Input />
       </FormField>

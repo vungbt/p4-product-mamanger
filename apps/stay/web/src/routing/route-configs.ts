@@ -38,7 +38,7 @@ const ContractDetailPage = lazy(() => import('@/modules/contracts/detail-page'))
 const ContractSettlePage = lazy(() => import('@/modules/contracts/settle-page'));
 const AuditPage = lazy(() => import('@/modules/audit/page'));
 const OverviewPage = lazy(() => import('@/modules/overview/page'));
-const PlaceholderPage = lazy(() => import('@/modules/placeholder/page'));
+const MembersPage = lazy(() => import('@/modules/members/page'));
 const RequestsPage = lazy(() => import('@/modules/requests/page'));
 const AnnouncementsPage = lazy(() => import('@/modules/announcements/page'));
 const RoomMapPage = lazy(() => import('@/modules/rooms/page'));
@@ -436,7 +436,7 @@ export const appRoutes: StayRoute[] = [
     path: '/settings/members',
     name: 'members',
     icon: 'users',
-    component: PlaceholderPage,
+    component: MembersPage,
     ability: { action: 'manage', subject: 'Member' },
     hideInMenu: true,
   },

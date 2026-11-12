@@ -183,8 +183,12 @@ export interface ContractSettlementInput {
   /** Private `contract_meter` uploads of the final readings. */
   electricPhotoFileId?: string | null;
   waterPhotoFileId?: string | null;
-  /** Move-out surcharges, each with a reason (at most 20). */
-  surcharges?: SettlementSurchargeInput[];
+  /**
+   * Move-out surcharges, each with a reason (at most 20). Omitted (or `null`): one
+   * "Khấu hao cơ sở vật chất" surcharge of the building's `moveOutFee` (none when 0). An array,
+   * even empty, is used as sent, so the owner can edit or remove that line.
+   */
+  surcharges?: SettlementSurchargeInput[] | null;
 }
 
 /** `POST /api/contracts/:id/settle` (with an `Idempotency-Key` header). */
@@ -241,6 +245,8 @@ export interface ContractSettlementPreview {
   period: string;
   /** Building setting `refundUnusedRent`. */
   refundUnusedRent: boolean;
+  /** Move-out facility depreciation fee in force for the building (0 = off). */
+  moveOutFee: number;
   readings: SettlementReading[];
   lines: SettlementLine[];
   subtotal: number;

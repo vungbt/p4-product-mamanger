@@ -1725,7 +1725,7 @@ export interface paths {
     put?: never;
     /**
      * Xem trước thanh lý
-     * @description Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu; nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.
+     * @description Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu (không gửi `surcharges` → tự thêm dòng "Khấu hao cơ sở vật chất" bằng `moveOutFee` của toà, 0 = không thêm; gửi mảng, kể cả rỗng, → dùng đúng danh sách đó); nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.
      *
      *     **Quyền:** `read:Contract`.
      */
@@ -2361,6 +2361,90 @@ export interface paths {
      *     **Yêu cầu đăng nhập.**
      */
     delete: operations['delete_api_me_push_subscriptions'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/members': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Người quản lý theo toà
+     * @description **Quyền:** `manage:Member`.
+     */
+    get: operations['get_api_members'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/members/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Gán toà và quyền
+     * @description Gửi lại `version` đã đọc; dữ liệu đã bị người khác sửa thì trả 409 `version_conflict`.
+     *
+     *     **Quyền:** `manage:Member`.
+     */
+    put: operations['put_api_members_id'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/members/{id}/disable': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Khoá người quản lý và thu hồi mọi phiên
+     * @description **Quyền:** `manage:Member`.
+     */
+    post: operations['post_api_members_id_disable'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/members/invitations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Mời người quản lý
+     * @description Tạo tài khoản và xếp lời mời vào outbox; không nâng quyền tài khoản đã tồn tại.
+     *
+     *     **Quyền:** `manage:Member`.
+     */
+    post: operations['post_api_members_invitations'];
+    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
@@ -4134,6 +4218,7 @@ export interface components {
       dueDay: number;
       graceDays: number;
       issueDay: number;
+      moveOutFee: number;
       readingDay: number;
       /** @enum {string} */
       readingDayMonth: 'next' | 'same';
@@ -4342,7 +4427,7 @@ export interface components {
       moveOutDate: string;
       /** @enum {string} */
       refundMethod?: 'bank_transfer' | 'cash' | 'other';
-      surcharges?: components['schemas']['SettlementSurchargeInput'][];
+      surcharges?: components['schemas']['SettlementSurchargeInput'][] | null;
       version: number;
       waterPhotoFileId?: string | null;
     };
@@ -4351,7 +4436,7 @@ export interface components {
       finalElectric?: number | null;
       finalWater?: number | null;
       moveOutDate: string;
-      surcharges?: components['schemas']['SettlementSurchargeInput'][];
+      surcharges?: components['schemas']['SettlementSurchargeInput'][] | null;
       waterPhotoFileId?: string | null;
     };
     ContractSettlementPreview: {
@@ -4363,6 +4448,7 @@ export interface components {
       depositRefunded: number;
       lines: components['schemas']['SettlementLine'][];
       moveOutDate: string;
+      moveOutFee: number;
       outstandingInvoices: components['schemas']['SettlementOutstandingInvoice'][];
       outstandingTotal: number;
       ownerRefunds: number;
@@ -4716,6 +4802,15 @@ export interface components {
       signatureImage: string | null;
       signatureUpdatedAt: string | null;
       version: number;
+    };
+    MemberInput: {
+      buildingIds: string[];
+      permissionGroups: ('billing' | 'operations' | 'payments' | 'readings')[];
+    };
+    MemberInvitationInput: {
+      buildingIds: string[];
+      email: string;
+      permissionGroups: ('billing' | 'operations' | 'payments' | 'readings')[];
     };
     MeterReadingInput: {
       confirmHighConsumption?: boolean;
@@ -5545,6 +5640,7 @@ export interface components {
       graceDays: number | null;
       id: string;
       issueDay: number | null;
+      moveOutFee: number | null;
       name: string;
       readingDay: number | null;
       /** @enum {string|null} */
@@ -5571,6 +5667,7 @@ export interface components {
       graceDays: number | null;
       id: string;
       issueDay: number | null;
+      moveOutFee: number | null;
       name: string;
       readingDay: number | null;
       /** @enum {string|null} */
@@ -5761,6 +5858,17 @@ export interface components {
     };
     StayMe: {
       user: components['schemas']['StayUser'];
+    };
+    StayMember: {
+      /** @enum {string} */
+      accountStatus: 'active' | 'blocked';
+      buildingIds: string[];
+      buildingNames: string[];
+      displayName: string;
+      email: string;
+      id: string;
+      permissionGroups: ('billing' | 'operations' | 'payments' | 'readings')[];
+      version: number;
     };
     StayMeterReading: {
       id: string;
@@ -6001,6 +6109,7 @@ export interface components {
       dueDay: number;
       graceDays: number;
       issueDay: number;
+      moveOutFee: number;
       readingDay: number;
       /** @enum {string} */
       readingDayMonth: 'next' | 'same';
@@ -6094,6 +6203,7 @@ export interface components {
       email: string;
       emailVerified: boolean;
       id: string;
+      permissionGroups?: ('billing' | 'operations' | 'payments' | 'readings')[];
       /** @enum {string} */
       role: 'manager' | 'owner' | 'tenant';
     };
@@ -9939,6 +10049,7 @@ export interface operations {
           dueDay?: number | null;
           graceDays?: number | null;
           issueDay?: number | null;
+          moveOutFee?: number | null;
           name: string;
           readingDay?: number | null;
           /** @enum {string|null} */
@@ -10590,6 +10701,7 @@ export interface operations {
           dueDay?: number | null;
           graceDays?: number | null;
           issueDay?: number | null;
+          moveOutFee?: number | null;
           name: string;
           readingDay?: number | null;
           /** @enum {string|null} */
@@ -13191,6 +13303,139 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  get_api_members: {
+    parameters: {
+      query?: {
+        page?: number;
+        pageSize?: number;
+        q?: string;
+        sortBy?: 'email' | 'displayName';
+        sortOrder?: 'asc' | 'desc';
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMember'][];
+            message?: string;
+            meta: components['schemas']['PaginationMeta'];
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  put_api_members_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MemberInput'] & {
+          version: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMember'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_members_id_disable: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMember'];
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_members_invitations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MemberInvitationInput'];
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['StayMember'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   post_api_meters_id_replace: {
     parameters: {
       query?: never;
@@ -15492,6 +15737,8 @@ export interface operations {
           /** @default 0 */
           graceDays?: number;
           issueDay: number;
+          /** @default 300000 */
+          moveOutFee?: number;
           readingDay: number;
           /**
            * @default same

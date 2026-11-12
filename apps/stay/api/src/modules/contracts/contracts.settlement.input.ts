@@ -34,8 +34,9 @@ export function readVersionInput(body: FormBody): ContractVersionInput {
   return input;
 }
 
-function readSurcharges(body: FormBody): SettlementSurchargeInput[] {
-  if (body.isEmpty('surcharges')) return [];
+/** `undefined` when omitted: the settlement then adds the building's `moveOutFee` line. */
+function readSurcharges(body: FormBody): SettlementSurchargeInput[] | undefined {
+  if (body.isEmpty('surcharges')) return undefined;
   const raw = body.data.surcharges;
 
   if (!Array.isArray(raw) || raw.length > MAX_SURCHARGES) {

@@ -9,7 +9,8 @@ import {
 import type { JsonValue, ListQuery, PaginationMeta } from '@p4/shared';
 import type { StayAuditLog, StayUser } from '@stay/shared';
 import { Op, type WhereOptions } from 'sequelize';
-import { canAccessRecord, hasAccess } from '@/middlewares/ability.middleware.js';
+import { hasAccess } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import type { AuditLogAttributes } from '@/sequelize/models/audit-log.model.js';
 import { AuditLogModel, UserModel } from '@/sequelize/models/index.js';
 import type { ModelOrder } from '@/types/database.js';
@@ -51,25 +52,34 @@ function auditDto(row: AuditLogModel, actorName: string | null): StayAuditLog {
   };
 }
 
-/** Only explicit building context is trusted; global or unscoped entries remain owner-only. */
 function buildingScope(ids: string[]): WhereOptions<AuditLogAttributes> {
   return {
     [Op.or]: [
       { resourceType: 'building', resourceId: { [Op.in]: ids } },
-      { 'changes.buildingId': { [Op.in]: ids } },
-      { 'changes.before.buildingId': { [Op.in]: ids } },
-      { 'changes.after.buildingId': { [Op.in]: ids } },
+      ...['changes.buildingId', 'changes.before.buildingId', 'changes.after.buildingId'].map(
+        (field) => ({ [field]: { [Op.in]: ids } }),
+      ),
     ],
   };
 }
 
+/** Query every supported audit building location through CASL; global entries stay owner-only. */
 function scope(user: StayUser): WhereOptions<AuditLogAttributes> {
   if (hasAccess(user, 'read', 'AuditLog')) return {};
-  return buildingScope(
-    user.buildingIds.filter((buildingId) =>
-      canAccessRecord(user, 'read', 'AuditLog', { buildingId }),
-    ),
-  );
+
+  return {
+    [Op.or]: [
+      {
+        [Op.and]: [
+          { resourceType: 'building' },
+          accessibleWhere(user, 'read', 'AuditLog', { buildingId: 'resourceId' }),
+        ],
+      },
+      ...['changes.buildingId', 'changes.before.buildingId', 'changes.after.buildingId'].map(
+        (field) => accessibleWhere(user, 'read', 'AuditLog', { buildingId: field }),
+      ),
+    ],
+  };
 }
 
 export async function listAuditLogs(

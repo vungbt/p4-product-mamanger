@@ -24,6 +24,8 @@ tài khoản do chủ trọ tạo. Quyền của người dùng hiện tại l�
 - Mọi dữ liệu nghiệp vụ gắn \`buildingId\`; quyền kiểm tra theo toà.`;
 
 const TAG_DESCRIPTIONS = {
+  members:
+    'Người quản lý theo toà: mời qua email, gán toà/nhóm quyền và khoá tài khoản; chỉ chủ trọ.',
   automation:
     'Tự động hoá theo toà, chỉ tạo bản nháp; nhắc qua email và thông báo. Nhắc chủ trọ trước ngày chốt số `readingReminderDaysBefore` ngày (0 = tắt) và vào ngày chốt số, chỉ khi còn phòng thiếu chỉ số. Nhắc người thuê trước hạn 1 ngày và sau hạn 3 ngày, hoặc vào ngày đầu tiên quá hạn khi toà có `graceDays` > 0.',
   notifications:
@@ -222,6 +224,13 @@ const OPERATIONS = {
     'So khớp file PDF',
     '**Công khai**, 10 lần/phút. multipart `file`; so SHA-256 với PDF cuối cùng đã lưu.',
   ],
+  'GET /api/members': ['Người quản lý theo toà'],
+  'POST /api/members/invitations': [
+    'Mời người quản lý',
+    'Tạo tài khoản và xếp lời mời vào outbox; không nâng quyền tài khoản đã tồn tại.',
+  ],
+  'PUT /api/members/{id}': ['Gán toà và quyền', VERSION_NOTE],
+  'POST /api/members/{id}/disable': ['Khoá người quản lý và thu hồi mọi phiên'],
   'GET /api/buildings/{id}/automation': [
     'Cấu hình tự động hoá',
     'Chỉ toà được phép đọc. Mặc định tắt các job và tắt toàn bộ nhắc người thuê.',
@@ -375,7 +384,7 @@ const OPERATIONS = {
   ],
   'POST /api/contracts/{id}/settlement-preview': [
     'Xem trước thanh lý',
-    'Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu; nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.',
+    'Không ghi dữ liệu; cùng phép tính với `/settle` (`computeSettlement` + `allocateSettlementDeposit` của `@stay/billing`). Điện nước từ chỉ số đã khoá gần nhất (hoặc chỉ số nhận phòng/đổi phòng) tới chỉ số cuối; tiền phòng/dịch vụ những ngày đã ở chưa có hoá đơn; hoàn tiền ngày chưa ở khi toà bật `refundUnusedRent`; phụ thu (không gửi `surcharges` → tự thêm dòng "Khấu hao cơ sở vật chất" bằng `moveOutFee` của toà, 0 = không thêm; gửi mảng, kể cả rỗng, → dùng đúng danh sách đó); nợ cũ (chỉ liệt kê); cọc đang giữ → `ownerRefunds` (chủ trọ hoàn) hoặc `tenantPays` (người thuê trả thêm). Đơn giá và số người/xe lấy tại ngày trả phòng. 409 `contract_has_draft_invoices` kèm `extensions.invoices` khi còn hoá đơn nháp; 409 `reading_after_move_out` khi đã có chỉ số sau ngày trả phòng; 422 lỗi field cho ngày/chỉ số.',
   ],
   'POST /api/contracts/{id}/settle': [
     'Thanh lý hợp đồng',
@@ -761,6 +770,7 @@ const buildingFields = {
   dueDay: { schema: billingDay },
   roundingUnit: { schema: { type: ['integer', 'null'], enum: [...roundingUnit.enum, null] } },
   refundUnusedRent: { schema: { type: ['boolean', 'null'] } },
+  moveOutFee: { schema: { type: ['integer', 'null'], minimum: 0, maximum: 100_000_000 } },
   address: { schema: { type: ['string', 'null'], maxLength: 255 } },
   bankBin: { schema: { type: ['string', 'null'], pattern: '^[0-9]{6}$' } },
   bankAccount: { schema: { type: ['string', 'null'], maxLength: 19 } },
@@ -864,6 +874,32 @@ const OVERRIDES = {
     fields: {
       signatureImage: {
         schema: { type: 'string', description: signatureImage.schema.description },
+      },
+    },
+  },
+  'GET /api/members': { list: true, response: { type: 'array', items: { ref: 'StayMember' } } },
+  'POST /api/members/invitations': {
+    requestBody: {
+      required: true,
+      content: { 'application/json': { schema: { ref: 'MemberInvitationInput' } } },
+    },
+  },
+  'PUT /api/members/{id}': {
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            allOf: [
+              { ref: 'MemberInput' },
+              {
+                type: 'object',
+                required: ['version'],
+                properties: { version: { type: 'integer', minimum: 0 } },
+              },
+            ],
+          },
+        },
       },
     },
   },
@@ -1288,6 +1324,9 @@ const OVERRIDES = {
       roundingUnit: { schema: roundingUnit, required: true },
       readingDayMonth: { schema: { type: 'string', enum: ['same', 'next'], default: 'same' } },
       graceDays: { schema: { type: 'integer', minimum: 0, maximum: 31, default: 0 } },
+      moveOutFee: {
+        schema: { type: 'integer', minimum: 0, maximum: 100_000_000, default: 300_000 },
+      },
     },
   },
   'POST /api/services': { fields: serviceFields },
@@ -1428,6 +1467,7 @@ export default {
     { file: 'libs/shared/src/index.ts', names: ['ApiError', 'PaginationMeta'] },
     'libs/stay/shared/src/ability.ts',
     'libs/stay/shared/src/account.ts',
+    'libs/stay/shared/src/member.ts',
     'libs/stay/shared/src/automation.ts',
     'libs/stay/shared/src/notification.ts',
     'libs/stay/shared/src/audit.ts',

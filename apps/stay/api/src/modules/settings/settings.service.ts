@@ -5,6 +5,7 @@ import {
   DEFAULT_BILLING_SETTINGS,
   isBillingDay,
   isGraceDays,
+  isMoveOutFee,
   isReadingDayMonth,
   isRoundingUnit,
   type ServiceKind,
@@ -70,6 +71,9 @@ function settingsValue(value: JsonValue): SettingsInput {
       typeof stored.refundUnusedRent === 'boolean'
         ? stored.refundUnusedRent
         : DEFAULT_BILLING_SETTINGS.refundUnusedRent,
+    moveOutFee: isMoveOutFee(stored.moveOutFee)
+      ? stored.moveOutFee
+      : DEFAULT_BILLING_SETTINGS.moveOutFee,
     transferContentTemplate:
       typeof stored.transferContentTemplate === 'string' && stored.transferContentTemplate
         ? stored.transferContentTemplate
@@ -116,6 +120,7 @@ type BuildingBilling = Pick<
   | 'graceDays'
   | 'roundingUnit'
   | 'refundUnusedRent'
+  | 'moveOutFee'
 >;
 
 /** The building's own billing values, else the system defaults. */
@@ -128,6 +133,7 @@ export function effectiveBilling(row: BuildingBilling, defaults: BillingSettings
     graceDays: row.graceDays ?? defaults.graceDays,
     roundingUnit: row.roundingUnit ?? defaults.roundingUnit,
     refundUnusedRent: row.refundUnusedRent ?? defaults.refundUnusedRent,
+    moveOutFee: row.moveOutFee ?? defaults.moveOutFee,
   };
 }
 

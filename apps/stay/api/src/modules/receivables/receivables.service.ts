@@ -15,6 +15,7 @@ import {
 } from '@stay/shared';
 import { Op, QueryTypes, Transaction } from 'sequelize';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import { BuildingModel, InvoiceModel, sequelize } from '@/sequelize/models/index.js';
 import { buildingBilling } from '../settings/settings.service.js';
 
@@ -225,7 +226,15 @@ export async function listReceivables(
   return sequelize.transaction(
     { isolationLevel: Transaction.ISOLATION_LEVELS.REPEATABLE_READ },
     async (transaction) => {
-      const building = await BuildingModel.findByPk(buildingId, { transaction });
+      const building = await BuildingModel.findOne({
+        where: {
+          [Op.and]: [
+            { id: buildingId },
+            accessibleWhere(user, 'read', 'Invoice', { buildingId: 'id' }),
+          ],
+        },
+        transaction,
+      });
 
       if (!building) throw new NotFound();
       replacements.graceDays = (await buildingBilling(building, transaction)).graceDays;

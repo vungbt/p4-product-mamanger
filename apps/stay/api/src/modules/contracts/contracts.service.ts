@@ -19,6 +19,7 @@ import {
 } from '@stay/shared';
 import { literal, Op, type Transaction, type WhereOptions } from 'sequelize';
 import { accessibleBuildingIds, canAccessRecord } from '@/middlewares/ability.middleware.js';
+import { accessibleWhere } from '@/middlewares/accessible-where.js';
 import type { ContractAttributes } from '@/sequelize/models/contract.model.js';
 import {
   BuildingModel,
@@ -63,7 +64,13 @@ export async function findContract(
   action: 'read' | 'update',
   transaction?: Transaction,
 ) {
-  const row = await ContractModel.findByPk(id, {
+  const row = await ContractModel.findOne({
+    where: {
+      [Op.and]: [
+        { id },
+        accessibleWhere(user, action, 'Contract', { buildingId: 'buildingId', contractId: 'id' }),
+      ],
+    },
     transaction,
     ...(transaction ? { lock: transaction.LOCK.UPDATE } : {}),
   });

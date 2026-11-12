@@ -78,7 +78,10 @@
     "refundHint": "On: refund rent and services of unused days pro rata.",
     "saved": "Billing cycle saved.",
     "dueBeforeIssue": "The due day must be on or after the issue day.",
-    "readingAfterIssue": "When readings are taken early next month, the reading day must be on or before the issue day."
+    "readingAfterIssue": "When readings are taken early next month, the reading day must be on or before the issue day.",
+    "moveOutFee": "Facility depreciation fee on move-out",
+    "moveOutFeeHint": "Added as a \"Khấu hao cơ sở vật chất\" surcharge on settlement; the owner can edit or remove it before issuing. 0 = off.",
+    "moveOutFeeRange": "Enter a whole number from 0 to 100,000,000 ₫."
   },
   "services": {
     "title": "Services & prices",
