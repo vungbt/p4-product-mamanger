@@ -9,6 +9,8 @@ import {
 import pg from 'pg';
 import { allowedWebOrigins } from '@/middlewares/cookie-origin.js';
 import { loadActiveUser } from '@/modules/me/me.service.js';
+import { renderEmailLayout } from '@/modules/notifications/email-layout.js';
+import { emailLogoUrl } from '@/modules/notifications/notifications.templates.js';
 import { smtpTransport } from '@/modules/notifications/notifications.transports.js';
 import { auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { emailEnabled, env } from './env.js';
@@ -24,20 +26,28 @@ export const authPool = new pg.Pool({
   allowExitOnIdle: true,
 });
 
-const AUTH_EMAIL_COPY: Record<AuthEmailRequest['purpose'], { subject: string; action: string }> = {
+const AUTH_EMAILS: Record<
+  AuthEmailRequest['purpose'],
+  { subject: string; title: string; body: string; action: string }
+> = {
   password_reset: {
     subject: '[Stay] Đặt mật khẩu tài khoản',
-    action: 'Bấm vào liên kết dưới đây để đặt mật khẩu cho tài khoản Stay của bạn:',
+    title: 'Đặt mật khẩu tài khoản Stay',
+    body: 'Có yêu cầu đặt mật khẩu cho tài khoản Stay gắn với địa chỉ email này (quên mật khẩu hoặc lời mời quản lý toà).\nBấm nút bên dưới để đặt mật khẩu mới. Liên kết chỉ dùng được một lần và sẽ hết hạn sau ít phút.',
+    action: 'Đặt mật khẩu',
   },
   verify_email: {
     subject: '[Stay] Xác nhận địa chỉ email',
-    action: 'Bấm vào liên kết dưới đây để xác nhận địa chỉ email của bạn:',
+    title: 'Xác nhận địa chỉ email',
+    body: 'Bấm nút bên dưới để xác nhận địa chỉ email của tài khoản Stay.',
+    action: 'Xác nhận email',
   },
 };
 
 /**
  * Password reset (also used for manager invitations) and email verification go through the
- * SMTP transport. Without SMTP the link is logged outside production; production refuses.
+ * SMTP transport with the shared email layout. Without SMTP the link is logged outside
+ * production; production refuses.
  */
 async function sendAuthEmail({ userId, email, url, purpose }: AuthEmailRequest) {
   if (!emailEnabled()) {
@@ -46,16 +56,19 @@ async function sendAuthEmail({ userId, email, url, purpose }: AuthEmailRequest) 
     return;
   }
 
-  const copy = AUTH_EMAIL_COPY[purpose];
-  const ignore = 'Nếu bạn không yêu cầu, hãy bỏ qua email này.';
-
-  await smtpTransport.send({
-    id: randomUUID(),
-    to: email,
+  const copy = AUTH_EMAILS[purpose];
+  const { html, text } = renderEmailLayout({
     subject: copy.subject,
-    text: `${copy.action}\n\n${url}\n\n${ignore}`,
-    html: `<p>${copy.action}</p><p><a href="${encodeURI(url)}">${encodeURI(url)}</a></p><p>${ignore}</p>`,
+    tone: 'account',
+    context: 'Quản lý nhà trọ',
+    logoUrl: emailLogoUrl(),
+    title: copy.title,
+    body: copy.body,
+    action: { label: copy.action, url },
+    footer: 'Nếu bạn không yêu cầu, hãy bỏ qua email này; mật khẩu hiện tại không thay đổi.',
   });
+
+  await smtpTransport.send({ id: randomUUID(), to: email, subject: copy.subject, text, html });
 }
 
 export const authAuditActions = AUTH_AUDIT_ACTIONS;

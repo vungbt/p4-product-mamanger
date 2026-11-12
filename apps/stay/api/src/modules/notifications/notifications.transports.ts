@@ -9,6 +9,8 @@ export interface EmailMessage {
   subject: string;
   text: string;
   html: string;
+  /** Inline images referenced as `cid:` in the HTML (e.g. the VietQR code). */
+  attachments?: { filename: string; content: Buffer; cid: string; contentType: string }[];
 }
 
 export interface PushTarget {
@@ -76,6 +78,7 @@ export const smtpTransport: EmailTransport = {
         subject: message.subject,
         text: message.text,
         html: message.html,
+        attachments: message.attachments,
         // Same id on every retry: receiving servers can drop duplicates.
         messageId: `<${message.id}@${domain}>`,
       });

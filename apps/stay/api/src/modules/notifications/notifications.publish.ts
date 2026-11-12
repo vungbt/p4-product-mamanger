@@ -32,6 +32,10 @@ export interface NotificationInput {
   tenantId?: string | null;
   /** Absolute link used by the email instead of the web path (e.g. a shared invoice link). */
   emailLink?: string;
+  /** Invoice whose amounts, due date and VietQR the email shows (read fresh at send time). */
+  invoiceId?: string;
+  /** Amount the email highlights instead of the remaining balance (payment, claim). */
+  emailAmount?: number;
   guard?: DeliveryGuard;
 }
 
@@ -85,6 +89,8 @@ export async function publishNotification(
       payload: {
         notificationId: id,
         ...(input.emailLink ? { emailLink: input.emailLink } : {}),
+        ...(input.invoiceId ? { invoiceId: input.invoiceId } : {}),
+        ...(input.emailAmount !== undefined ? { emailAmount: input.emailAmount } : {}),
         ...(input.guard ? { guard: { ...input.guard } } : {}),
       },
     },
