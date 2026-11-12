@@ -31,6 +31,8 @@ const TAG_DESCRIPTIONS = {
   reports:
     'Báo cáo tổng hợp SQL theo tháng, theo phòng, điện nước và xuất sổ Excel. Chỉ đọc, có phân quyền theo toà.',
   deposits: 'Sổ cọc bất biến; thu thêm, hoàn, mất cọc và cấn trừ thanh lý.',
+  documents:
+    'Hợp đồng online (ST-30a): thông tin bên cho thuê và chữ ký mẫu, mẫu văn bản có phiên bản (nhập từ Word .docx), văn bản điền từ snapshot hợp đồng, gửi ký, người thuê ký trong cổng (T-12), chủ trọ ký (xác nhận mật khẩu), PDF cuối cùng bất biến kèm trang bằng chứng và SHA-256, phương án giấy, thay thế và trang kiểm tra công khai `/verify/:code`. Chữ ký điện tử đơn giản (Luật Giao dịch điện tử 2023), không phải chữ ký số. Audit chỉ ghi id/trạng thái, không ghi nội dung, CCCD hay chữ ký.',
   readings:
     'Chốt chỉ số điện nước, lưu theo dòng và thay đồng hồ; tiêu thụ tính theo các đoạn đồng hồ.',
   expenses: 'Chi phí vận hành, danh mục chi phí và tổng theo kỳ. Ảnh hoá đơn lưu private.',
@@ -71,7 +73,22 @@ const VERSION_NOTE =
 const TENANT_FIELDS_NOTE =
   'Chỉ bắt buộc `fullName` và `phone` (10 số, bắt đầu 0; nhận cả `+84`, khoảng trắng, dấu chấm và tự chuẩn hoá). CCCD 12 số, duy nhất toàn hệ thống: trùng → 400 với `extensions.idNumber` và `extensions.duplicateTenant` (`tenantId` chỉ có khi người dùng được xem hồ sơ đó). Ngày dạng `YYYY-MM-DD` (hoặc `dd/MM/yyyy`), không sau hôm nay. Không tự điền giá trị nào.';
 
+const PDF_FILE = {
+  description: 'File PDF (attachment, `Cache-Control: private, no-store`).',
+  content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } },
+};
+
 export const FILE_RESPONSES = {
+  '/api/documents/{id}/pdf': PDF_FILE,
+  '/api/portal/documents/{id}/pdf': PDF_FILE,
+  '/api/documents/{id}/scan': {
+    description: 'Bản scan ký giấy (PDF/JPG/PNG).',
+    content: {
+      'application/pdf': { schema: { type: 'string', format: 'binary' } },
+      'image/png': { schema: { type: 'string', format: 'binary' } },
+      'image/jpeg': { schema: { type: 'string', format: 'binary' } },
+    },
+  },
   '/api/buildings/{buildingId}/residents/export': {
     description: 'Danh sách tạm trú XLSX; audit trước khi trả dữ liệu cá nhân.',
     content: {
@@ -83,6 +100,116 @@ export const FILE_RESPONSES = {
 };
 
 const OPERATIONS = {
+  'GET /api/settings/landlord': [
+    'Thông tin bên cho thuê',
+    'manage Settings (chủ trọ). Hồ sơ của tài khoản đang đăng nhập; `version: 0` khi chưa lưu. `signatureImage` là data URL PNG/JPG (riêng tư).',
+  ],
+  'PUT /api/settings/landlord': [
+    'Lưu thông tin bên cho thuê',
+    'CCCD 12 số, SĐT 10 số. `signatureImage`: data URL PNG/JPG ≤ 200 KB (vẽ hoặc tải ảnh), `null` để xoá, bỏ trống để giữ. Audit chỉ ghi tên trường đã đổi. ' +
+      'Gửi lại `version` (0 khi tạo).',
+  ],
+  'GET /api/contract-template-variables': [
+    'Biến của mẫu văn bản',
+    'Nhóm, mô tả, ví dụ, bắt buộc hay không.',
+  ],
+  'GET /api/contract-templates': [
+    'Danh sách mẫu văn bản',
+    'Mẫu dùng chung (`buildingId: null`) và mẫu của các toà được đọc; lọc `buildingId`, `kind`.',
+  ],
+  'POST /api/contract-templates': [
+    'Tạo mẫu văn bản',
+    'manage Settings. `source`: `default` (Hợp đồng thuê phòng trọ mặc định), `blank`, `copy` (`copyFromId`) hoặc `html` (`bodyHtml`, ví dụ sau khi nhập Word). HTML được lọc theo allowlist.',
+  ],
+  'POST /api/contract-templates/import-docx': [
+    'Nhập mẫu từ file Word',
+    'manage Settings; multipart `file` (.docx ≤ 5 MB, kiểm tra chữ ký ZIP). Chuyển sang HTML của trình soạn (tiêu đề, đoạn, bảng, đậm/nghiêng/gạch chân, danh sách, căn giữa/phải), bỏ ảnh và phần không hỗ trợ, tô vàng chỗ trống (`……`, `....`, `___`, `[Họ tên]`). Không lưu file.',
+  ],
+  'GET /api/contract-templates/{id}': [
+    'Chi tiết mẫu',
+    'Nội dung phiên bản đang dùng và lịch sử phiên bản.',
+  ],
+  'PUT /api/contract-templates/{id}': [
+    'Đổi tên / tắt mẫu',
+    'Mẫu đã dùng không xoá được, chỉ tắt. ' + VERSION_NOTE,
+  ],
+  'POST /api/contract-templates/{id}/versions': [
+    'Lưu phiên bản mới',
+    'Tạo phiên bản mới và đặt làm phiên bản đang dùng; văn bản đã tạo giữ phiên bản cũ. ' +
+      VERSION_NOTE,
+  ],
+  'POST /api/contract-templates/{id}/preview': [
+    'Xem trước mẫu',
+    '`bodyHtml` (nội dung chưa lưu) hoặc phiên bản đang dùng, điền dữ liệu mẫu hoặc `contractId`. Trả `missing` (biến bắt buộc thiếu dữ liệu) và `unknown` (biến không hợp lệ).',
+  ],
+  'GET /api/contract-template-versions/{id}': [
+    'Một phiên bản mẫu',
+    'Xem lại hoặc khôi phục (lưu thành phiên bản mới).',
+  ],
+  'GET /api/contracts/{id}/documents': [
+    'Văn bản của hợp đồng',
+    'Mới nhất trước; `expired` khi link ký quá 14 ngày.',
+  ],
+  'POST /api/contracts/{id}/documents': [
+    'Tạo văn bản từ mẫu',
+    'Điền phiên bản đang dùng của mẫu bằng snapshot dữ liệu hợp đồng (sửa hợp đồng sau đó không đổi văn bản). Biến bắt buộc thiếu dữ liệu được đánh dấu và liệt kê ở `missing`; hợp đồng ended/cancelled trả 409.',
+  ],
+  'GET /api/documents/{id}': [
+    'Chi tiết văn bản',
+    'Nội dung, người ký, sự kiện (IP, thiết bị) và mã băm.',
+  ],
+  'PUT /api/documents/{id}': [
+    'Sửa bản nháp',
+    '`bodyHtml` (đánh dấu đã sửa tay) hoặc `regenerate: true` (điền lại từ mẫu với dữ liệu mới). Chỉ bản nháp; đã gửi hoặc đã có người ký trả 409 `document_locked`. ' +
+      VERSION_NOTE,
+  ],
+  'POST /api/documents/{id}/send': [
+    'Gửi ký',
+    'Thiếu dữ liệu bắt buộc trả 422 `document_missing_fields` (`extensions.missing`). Khoá nội dung (SHA-256), người đại diện là người ký bắt buộc, `coSignerTenantIds` là người ở cùng ký tuỳ chọn; link ký trong cổng người thuê hết hạn sau 14 ngày. Gửi lại gia hạn link.',
+  ],
+  'POST /api/documents/{id}/owner-sign': [
+    'Chủ trọ ký',
+    'Chỉ bên cho thuê của văn bản; xác nhận lại mật khẩu (sai trả 422 `password_invalid`, 10 lần/phút), áp chữ ký mẫu. Bản nháp → `owner_signed` (ký trước), `signed_by_tenant` → `completed` và sinh PDF cuối cùng.',
+  ],
+  'POST /api/documents/{id}/cancel': [
+    'Huỷ văn bản',
+    'Văn bản chưa hoàn tất; link ký ngừng hoạt động. ' + VERSION_NOTE,
+  ],
+  'POST /api/documents/{id}/paper': [
+    'Đánh dấu đã ký giấy',
+    'multipart `file` (PDF/JPG/PNG ≤ 10 MB), `signedOn`, `version`. Văn bản chuyển `completed_paper`.',
+  ],
+  'POST /api/documents/{id}/supersede': [
+    'Tạo văn bản thay thế',
+    'Chỉ văn bản đã hoàn tất. Tạo bản nháp mới từ cùng mẫu; văn bản cũ chuyển `superseded` khi bản mới hoàn tất.',
+  ],
+  'GET /api/documents/{id}/pdf': [
+    'Tải PDF',
+    'Bản hoàn tất: file đã lưu (khớp `pdfSha256`); chưa hoàn tất: render có chữ "BẢN NHÁP".',
+  ],
+  'GET /api/documents/{id}/scan': ['Tải bản scan ký giấy'],
+  'GET /api/portal/documents': ['Văn bản của tôi (T-13)', 'Văn bản chờ mình ký lên đầu.'],
+  'GET /api/portal/documents/{id}': [
+    'Đọc văn bản (T-12)',
+    'Chỉ người ký đọc được nội dung (có CCCD). Lần mở đầu tiên ghi sự kiện `viewed`.',
+  ],
+  'POST /api/portal/documents/{id}/sign': [
+    'Ký văn bản',
+    '`agree: true`, `fullName` khớp hồ sơ (không phân biệt hoa thường/khoảng trắng), `phoneLast4`, `method` `drawn` (`signatureImage` data URL PNG) hoặc `typed`. Sai 5 lần khoá 15 phút (429). Link hết hạn trả 410.',
+  ],
+  'POST /api/portal/documents/{id}/reject': [
+    'Từ chối ký',
+    'Lý do bắt buộc; văn bản chuyển `rejected`.',
+  ],
+  'GET /api/portal/documents/{id}/pdf': ['Tải PDF đã hoàn tất', 'Chỉ người ký của văn bản.'],
+  'GET /api/public/documents/verify/{code}': [
+    'Kiểm tra văn bản (công khai)',
+    '**Công khai**, 30 lần/phút. Loại, toà, trạng thái, số người đã ký; không có nội dung, tên hay CCCD.',
+  ],
+  'POST /api/public/documents/verify/{code}': [
+    'So khớp file PDF',
+    '**Công khai**, 10 lần/phút. multipart `file`; so SHA-256 với PDF cuối cùng đã lưu.',
+  ],
   'GET /api/buildings/{id}/automation': [
     'Cấu hình tự động hoá',
     'Chỉ toà được phép đọc. Mặc định tắt các job và tắt toàn bộ nhắc người thuê.',
@@ -661,7 +788,22 @@ const readingBody = (name) => ({
 const settlementBody = (name) => ({
   requestBody: { required: true, content: { 'application/json': { schema: { ref: name } } } },
 });
+const signatureImage = {
+  schema: {
+    type: ['string', 'null'],
+    description: 'data URL `data:image/png;base64,…` (PNG/JPG ≤ 200 KB)',
+  },
+};
+
 const OVERRIDES = {
+  'PUT /api/settings/landlord': { fields: { signatureImage } },
+  'POST /api/portal/documents/{id}/sign': {
+    fields: {
+      signatureImage: {
+        schema: { type: 'string', description: signatureImage.schema.description },
+      },
+    },
+  },
   'GET /api/buildings/{id}/automation': { response: { ref: 'StayAutomationSettings' } },
   'PUT /api/buildings/{id}/automation': {
     response: { ref: 'StayAutomationSettings' },
@@ -1203,6 +1345,7 @@ export default {
     'libs/stay/shared/src/upload.ts',
     'libs/stay/shared/src/expense.ts',
     'libs/stay/shared/src/deposit.ts',
+    'libs/stay/shared/src/document.ts',
     'libs/stay/shared/src/reading.ts',
     'libs/stay/shared/src/invoice.ts',
     'libs/stay/shared/src/payment.ts',
