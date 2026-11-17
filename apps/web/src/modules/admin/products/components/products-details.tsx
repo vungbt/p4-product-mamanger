@@ -4,6 +4,7 @@ import { useProduct, useProductVariants, useUpdateProductPublication } from '@p4
 import { ApiSdkError, getErrorMessage } from '@p4/api-sdk/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { extractRichText } from '../helpers/rich-text';
 
 const statusTone: Record<string, TagTone> = {
   draft: 'neutral',
@@ -23,51 +24,46 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
   const updateProductPublication = useUpdateProductPublication();
 
   const changeStatus = async (status: 'active' | 'inactive' | 'archived') => {
-    if (!products) return;
+    if (!products || typeof products.version !== 'number') return;
     try {
       await updateProductPublication.mutateAsync({
         id: products.id,
         body: {
           status,
-          expectedVersion: (products as { version?: number }).version ?? 1,
+          expectedVersion: products.version,
         },
       });
       toast.success(t('products.statusUpdated', 'Đã cập nhật trạng thái sản phẩm.'));
       void query.refetch();
     } catch (error: unknown) {
-      const isApiSdkError = error instanceof ApiSdkError;
-      const statusCode = isApiSdkError
-        ? error.status
-        : ((error as { status?: number; statusCode?: number })?.status ??
-          (error as { status?: number; statusCode?: number })?.statusCode);
-      const code = isApiSdkError ? error.code : (error as { code?: string })?.code;
+      if (error instanceof ApiSdkError && error.status === 409) {
+        switch (error.code) {
+          case 'version_conflict':
+            toast.error(
+              t(
+                'products.conflictVersion',
+                'Phiên bản sản phẩm đã bị thay đổi bởi người khác. Đang tải lại dữ liệu mới nhất...',
+              ),
+            );
+            void query.refetch();
+            return;
 
-      if (statusCode === 409) {
-        if (code === 'version_conflict') {
-          toast.error(
-            t(
-              'products.conflictVersion',
-              'Phiên bản sản phẩm đã bị thay đổi bởi người khác. Đang tải lại dữ liệu mới nhất...',
-            ),
-          );
-          void query.refetch();
-          return;
-        }
-        if (code === 'product_incomplete') {
-          toast.error(
-            t(
-              'products.incompleteCondition',
-              'Sản phẩm chưa đủ điều kiện xuất bản (cần có tên, slug, mô tả, ảnh đại diện và ít nhất một biến thể SKU đang hoạt động).',
-            ),
-          );
-          return;
-        }
-        if (code === 'invalid_state_transition') {
-          toast.error(t('products.invalidTransition', 'Không thể chuyển đổi sang trạng thái này.'));
-          return;
+          case 'product_incomplete':
+            toast.error(
+              t(
+                'products.incompleteCondition',
+                'Sản phẩm chưa đủ điều kiện xuất bản (cần có tên, slug, mô tả, ảnh đại diện và ít nhất một biến thể SKU đang hoạt động).',
+              ),
+            );
+            return;
+
+          case 'invalid_state_transition':
+            toast.error(
+              t('products.invalidTransition', 'Không thể chuyển đổi sang trạng thái này.'),
+            );
+            return;
         }
       }
-
       toast.error(
         getErrorMessage(error, t('products.statusUpdateFailed', 'Không thể đổi trạng thái.')),
       );
@@ -105,7 +101,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                   {t('products.status', 'Trạng thái')}:
                 </span>
                 <Tag tone={statusTone[products.status] ?? 'neutral'} size="sm">
-                  {products.status || 'draft'}
+                  {t(`products.statuses.${products.status}`, products.status)}
                 </Tag>
               </div>
               <div className="flex items-center gap-1.5">
@@ -205,7 +201,8 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
               <div className="sm:col-span-2">
                 <dt className="text-ui-sm text-muted">{t('products.description', 'Mô tả')}</dt>
                 <dd className="whitespace-pre-line">
-                  {products.description || t('products.noDescription', 'Chưa có mô tả.')}
+                  {extractRichText(products.description) ||
+                    t('products.noDescription', 'Chưa có mô tả.')}
                 </dd>
               </div>
             </dl>
@@ -299,9 +296,12 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
               label: t('products.archive', 'Lưu trữ'),
               variant: 'danger',
               loading: updateProductPublication.isPending,
-              onClick: () => {
-                void changeStatus('archived');
-                setArchiveConfirmOpen(false);
+              onClick: async () => {
+                try {
+                  await changeStatus('archived');
+                } finally {
+                  setArchiveConfirmOpen(false);
+                }
               },
             },
           ]}

@@ -158,7 +158,7 @@ export default function useProductsPage() {
     hasFilters,
     hasAppliedFilters,
     viewing,
-    loading: query.isPending || query.isFetching,
+    loading: query.isPending,
     error: query.isError
       ? getErrorMessage(query.error, t('products.loadFailed', 'Không thể tải danh sách sản phẩm.'))
       : undefined,

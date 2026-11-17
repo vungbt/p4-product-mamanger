@@ -213,7 +213,7 @@
     "clearSearch": "Clear search",
     "generateSlug": "From name",
     "slugHint": "Generated from the name for new categories. Edit the slug or regenerate it from the name.",
-    "refresh": "Refresh listes."
+    "refresh": "Refresh list"
   },
   "products": {
     "productName": "Product name",
@@ -274,6 +274,12 @@
     "brand": "Brand",
     "material": "Material",
     "careInstructions": "Care Instructions",
-    "version": "Version"
+    "version": "Version",
+    "statuses": {
+      "draft": "Draft",
+      "active": "Active",
+      "inactive": "Inactive",
+      "archived": "Archived"
+    }
   }
 }

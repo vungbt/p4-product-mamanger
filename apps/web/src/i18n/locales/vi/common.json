@@ -275,6 +275,12 @@
     "brand": "Thương hiệu",
     "material": "Chất liệu",
     "careInstructions": "Hướng dẫn bảo quản",
-    "version": "Phiên bản"
+    "version": "Phiên bản",
+    "statuses": {
+      "draft": "Bản nháp",
+      "active": "Đang hoạt động",
+      "inactive": "Tạm ngưng",
+      "archived": "Đã lưu trữ"
+    }
   }
 }

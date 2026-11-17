@@ -7,27 +7,38 @@ import {
   IconButton,
   Input,
   Select,
-  Tag,
-  type TagTone,
   Tooltip,
 } from '@itclabs/react-ui';
-import { useCategories } from '@p4/api-sdk/react';
+import { useQuery } from '@p4/api-client';
+import { useApiSdk } from '@p4/api-sdk/react';
+import { createCategoryApi } from '@p4/api-sdk/shared';
 import type { Product } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
 import ProductDetails from './components/products-details';
+import { extractRichText } from './helpers/rich-text';
 import useProductsPage from './hooks/use-products-page';
-
-const statusTone: Record<string, TagTone> = {
-  draft: 'neutral',
-  active: 'success',
-  inactive: 'warning',
-  archived: 'danger',
-};
 
 export default function AdminProductsPage() {
   const { t } = useTranslation();
-  const categoriesQuery = useCategories({ pageSize: 50 });
-  const categoryOptions = (categoriesQuery.data?.data ?? []).map((cat) => ({
+  const sdk = useApiSdk();
+  const categoriesQuery = useQuery({
+    queryKey: ['categories', 'dropdown-options'],
+    queryFn: async ({ signal }) => {
+      const api = createCategoryApi(sdk);
+      const res1 = await api.list({ page: 1, pageSize: 100 }, signal);
+      const totalPages = res1.meta?.totalPages ?? 1;
+      if (totalPages <= 1) return res1.data;
+
+      const rest = await Promise.all(
+        Array.from({ length: totalPages - 1 }, (_, i) =>
+          api.list({ page: i + 2, pageSize: 100 }, signal),
+        ),
+      );
+      return [...res1.data, ...rest.flatMap((r) => r.data)];
+    },
+  });
+
+  const categoryOptions = (categoriesQuery.data ?? []).map((cat) => ({
     value: cat.id,
     label: cat.name,
   }));
@@ -90,22 +101,12 @@ export default function AdminProductsPage() {
       accessorKey: 'description',
       header: t('products.description', 'Mô tả sản phẩm'),
       enableSorting: false,
-      cell: ({ row }) => (
-        <span className="block max-w-sm truncate" title={row.original.description}>
-          {row.original.description || t('products.noDescription', 'Chưa có mô tả')}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'status',
-      header: t('products.status', 'Trạng thái'),
-      enableSorting: false,
       cell: ({ row }) => {
-        const status = (row.original as { status?: string }).status || 'draft';
+        const text = extractRichText(row.original.description).replace(/\s+/g, ' ').trim();
         return (
-          <Tag tone={statusTone[status] ?? 'neutral'} size="sm">
-            {String(t(`products.statuses.${status}` as never, status))}
-          </Tag>
+          <span className="block max-w-sm truncate" title={text}>
+            {text || t('products.noDescription', 'Chưa có mô tả')}
+          </span>
         );
       },
     },
@@ -201,15 +202,13 @@ export default function AdminProductsPage() {
                   {t('products.columns', 'Cột hiển thị')}
                 </Button>
               }
-              items={['imageUrl', 'price', 'stock', 'description', 'status', 'category'].map(
-                (id) => ({
-                  id,
-                  type: 'checkbox' as const,
-                  label: id === 'imageUrl' ? t('products.image', 'Ảnh') : t(`products.${id}`),
-                  checked: state.columnVisibility?.[id] !== false,
-                  onCheckedChange: (checked) => changeColumnVisibility(id, checked),
-                }),
-              )}
+              items={['imageUrl', 'price', 'stock', 'description', 'category'].map((id) => ({
+                id,
+                type: 'checkbox' as const,
+                label: id === 'imageUrl' ? t('products.image', 'Ảnh') : t(`products.${id}`),
+                checked: state.columnVisibility?.[id] !== false,
+                onCheckedChange: (checked) => changeColumnVisibility(id, checked),
+              }))}
             />
           </div>
         </div>
