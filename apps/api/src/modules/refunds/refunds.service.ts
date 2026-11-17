@@ -7,6 +7,13 @@ import type { ModelOrder } from '@/types/database.js';
 import { selectFields } from '@/utils/select-fields.js';
 
 const refundFields = [
+  'attemptId',
+  'externalId',
+  'manualReference',
+  'returnId',
+  'processingStatus',
+  'attemptNumber',
+  'version',
   'id',
   'paymentId',
   'orderId',
@@ -15,7 +22,7 @@ const refundFields = [
   'reason',
 ] satisfies (keyof Refund)[];
 
-function toRefund(row: RefundModel): Refund {
+export function toRefund(row: RefundModel): Refund {
   return {
     ...selectFields(row, refundFields),
     createdAt: row.createdAt.toISOString(),

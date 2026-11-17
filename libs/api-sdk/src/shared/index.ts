@@ -2,3 +2,5 @@ export { type CategoryInput, type CategoryListQuery, createCategoryApi } from '.
 export { type ApiSdk, type ApiSdkOptions, createApiSdk } from './client.js';
 export { ApiSdkError, getErrorMessage, getFieldError, unwrap } from './errors.js';
 export type { components, operations, paths } from './generated.js';
+export * from './products.js';
+export * from './resources.js';

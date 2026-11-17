@@ -40,6 +40,42 @@ export function contentDto(row: ContentEntryModel): ContentEntry {
     scheduledAt: row.scheduledAt?.toISOString() ?? null,
   };
 }
+/** Resolve published media in one query without exposing private upload metadata. */
+export async function withContentMedia<T extends ContentDraftInput>(items: T[]) {
+  const ids = [
+    ...new Set(
+      items
+        .flatMap((item) => [
+          item.coverFileId,
+          ...item.body.flatMap((block) => (block.type === 'image' ? [block.fileId] : [])),
+        ])
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const files = ids.length ? await FileModel.findAll({ where: { id: { [Op.in]: ids } } }) : [];
+  const urls = new Map(
+    files.filter((file) => file.metadata?.private !== true).map((file) => [file.id, file.url]),
+  );
+  return items.map((item) => {
+    const itemIds = [
+      ...new Set(
+        [
+          item.coverFileId,
+          ...item.body.flatMap((block) => (block.type === 'image' ? [block.fileId] : [])),
+        ].filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    return {
+      ...item,
+      coverUrl: item.coverFileId ? (urls.get(item.coverFileId) ?? '') : '',
+      media: itemIds.flatMap((id) => {
+        const url = urls.get(id);
+        return url ? [{ id, url }] : [];
+      }),
+    };
+  });
+}
+
 async function revision(row: ContentEntryModel, actorId: string, transaction: Transaction) {
   await ContentRevisionModel.create(
     { id: randomUUID(), entryId: row.id, actorId, version: row.version, snapshot: contentDto(row) },
@@ -203,7 +239,9 @@ export async function publicContent(kind: ContentKind, slug: string) {
   )
     throw new NotFound();
   // Published content is immutable while an editor works on the next draft revision.
-  return { ...row.publishedSnapshot, redirect };
+  const [published] = await withContentMedia([row.publishedSnapshot]);
+  if (!published) throw new NotFound();
+  return { ...published, redirect };
 }
 export async function publishScheduledContent() {
   const rows = await ContentEntryModel.findAll({

@@ -55,6 +55,8 @@ function toPayment(row: PaymentModel): Payment {
 }
 
 const shipmentFields = [
+  'fulfillmentStatus',
+  'version',
   'id',
   'orderId',
   'status',

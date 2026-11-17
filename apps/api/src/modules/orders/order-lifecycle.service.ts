@@ -115,7 +115,16 @@ export async function transitionOrder(
 
 export function cancellationDto(row: CancellationRequestModel): CancellationRequest {
   return {
-    ...selectFields(row, ['id', 'orderId', 'status', 'reason', 'resolution', 'items', 'version']),
+    ...selectFields(row, [
+      'id',
+      'userId',
+      'orderId',
+      'status',
+      'reason',
+      'resolution',
+      'items',
+      'version',
+    ]),
     createdAt: row.createdAt.toISOString(),
   };
 }

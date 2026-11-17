@@ -3227,7 +3227,7 @@ paths:
                             products:
                               type: array
                               items:
-                                $ref: "#/components/schemas/CatalogProduct"
+                                $ref: "#/components/schemas/Product"
                             imageUrl:
                               type: "null"
                             href:
@@ -3381,7 +3381,7 @@ paths:
                           products:
                             type: array
                             items:
-                              $ref: "#/components/schemas/CatalogProduct"
+                              $ref: "#/components/schemas/Product"
                           imageUrl:
                             type: "null"
                           href:
@@ -3779,7 +3779,7 @@ paths:
                                     products:
                                       type: array
                                       items:
-                                        $ref: "#/components/schemas/CatalogProduct"
+                                        $ref: "#/components/schemas/Product"
                                     imageUrl:
                                       type: "null"
                                     href:
@@ -5596,6 +5596,20 @@ paths:
                         type: string
                       seoDescription:
                         type: string
+                      coverUrl:
+                        type: string
+                      media:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            url:
+                              type: string
+                          required:
+                            - id
+                            - url
                     required:
                       - redirect
                       - id
@@ -5610,6 +5624,8 @@ paths:
                       - taxonomyIds
                       - seoTitle
                       - seoDescription
+                      - coverUrl
+                      - media
                   message:
                     type: string
                 required:
@@ -6182,6 +6198,20 @@ paths:
                         type: string
                       seoDescription:
                         type: string
+                      coverUrl:
+                        type: string
+                      media:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            url:
+                              type: string
+                          required:
+                            - id
+                            - url
                     required:
                       - redirect
                       - id
@@ -6196,6 +6226,8 @@ paths:
                       - taxonomyIds
                       - seoTitle
                       - seoDescription
+                      - coverUrl
+                      - media
                   message:
                     type: string
                 required:
@@ -6767,9 +6799,67 @@ paths:
                   data:
                     type: array
                     items:
-                      anyOf:
-                        - $ref: "#/components/schemas/PublishedContent"
-                        - type: "null"
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        kind:
+                          $ref: "#/components/schemas/ContentKind"
+                        version:
+                          type: number
+                        publishedAt:
+                          type: string
+                        slug:
+                          type: string
+                        title:
+                          type: string
+                        excerpt:
+                          type: string
+                        body:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/ContentBlock"
+                        coverFileId:
+                          type:
+                            - string
+                            - "null"
+                        taxonomyIds:
+                          type: array
+                          items:
+                            type: string
+                        seoTitle:
+                          type: string
+                        seoDescription:
+                          type: string
+                        coverUrl:
+                          type: string
+                        media:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                              url:
+                                type: string
+                            required:
+                              - id
+                              - url
+                      required:
+                        - id
+                        - kind
+                        - version
+                        - publishedAt
+                        - slug
+                        - title
+                        - excerpt
+                        - body
+                        - coverFileId
+                        - taxonomyIds
+                        - seoTitle
+                        - seoDescription
+                        - coverUrl
+                        - media
                   message:
                     type: string
                   meta:
@@ -7229,9 +7319,67 @@ paths:
                   data:
                     type: array
                     items:
-                      anyOf:
-                        - $ref: "#/components/schemas/PublishedContent"
-                        - type: "null"
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        kind:
+                          $ref: "#/components/schemas/ContentKind"
+                        version:
+                          type: number
+                        publishedAt:
+                          type: string
+                        slug:
+                          type: string
+                        title:
+                          type: string
+                        excerpt:
+                          type: string
+                        body:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/ContentBlock"
+                        coverFileId:
+                          type:
+                            - string
+                            - "null"
+                        taxonomyIds:
+                          type: array
+                          items:
+                            type: string
+                        seoTitle:
+                          type: string
+                        seoDescription:
+                          type: string
+                        coverUrl:
+                          type: string
+                        media:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                              url:
+                                type: string
+                            required:
+                              - id
+                              - url
+                      required:
+                        - id
+                        - kind
+                        - version
+                        - publishedAt
+                        - slug
+                        - title
+                        - excerpt
+                        - body
+                        - coverFileId
+                        - taxonomyIds
+                        - seoTitle
+                        - seoDescription
+                        - coverUrl
+                        - media
                   message:
                     type: string
                 required:
@@ -7302,7 +7450,7 @@ paths:
                           type: string
                         product:
                           anyOf:
-                            - $ref: "#/components/schemas/CatalogProduct"
+                            - $ref: "#/components/schemas/Product"
                             - type: "null"
                       required:
                         - id
@@ -8108,40 +8256,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    type: object
-                    properties:
-                      createdAt:
-                        type: string
-                      version:
-                        type: number
-                      id:
-                        type: string
-                      status:
-                        $ref: "#/components/schemas/RefundStatus"
-                      reason:
-                        type:
-                          - string
-                          - "null"
-                      orderId:
-                        type: string
-                      returnId:
-                        type:
-                          - string
-                          - "null"
-                      processingStatus:
-                        $ref: "#/components/schemas/RefundAttemptStatus"
-                      amount:
-                        type: number
-                    required:
-                      - createdAt
-                      - version
-                      - id
-                      - status
-                      - reason
-                      - orderId
-                      - returnId
-                      - processingStatus
-                      - amount
+                    $ref: "#/components/schemas/Refund"
                   message:
                     type: string
                 required:
@@ -8197,40 +8312,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    type: object
-                    properties:
-                      createdAt:
-                        type: string
-                      version:
-                        type: number
-                      id:
-                        type: string
-                      status:
-                        $ref: "#/components/schemas/RefundStatus"
-                      reason:
-                        type:
-                          - string
-                          - "null"
-                      orderId:
-                        type: string
-                      returnId:
-                        type:
-                          - string
-                          - "null"
-                      processingStatus:
-                        $ref: "#/components/schemas/RefundAttemptStatus"
-                      amount:
-                        type: number
-                    required:
-                      - createdAt
-                      - version
-                      - id
-                      - status
-                      - reason
-                      - orderId
-                      - returnId
-                      - processingStatus
-                      - amount
+                    $ref: "#/components/schemas/Refund"
                   message:
                     type: string
                 required:
@@ -8294,40 +8376,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    type: object
-                    properties:
-                      createdAt:
-                        type: string
-                      version:
-                        type: number
-                      id:
-                        type: string
-                      status:
-                        $ref: "#/components/schemas/RefundStatus"
-                      reason:
-                        type:
-                          - string
-                          - "null"
-                      orderId:
-                        type: string
-                      returnId:
-                        type:
-                          - string
-                          - "null"
-                      processingStatus:
-                        $ref: "#/components/schemas/RefundAttemptStatus"
-                      amount:
-                        type: number
-                    required:
-                      - createdAt
-                      - version
-                      - id
-                      - status
-                      - reason
-                      - orderId
-                      - returnId
-                      - processingStatus
-                      - amount
+                    $ref: "#/components/schemas/Refund"
                   message:
                     type: string
                 required:
@@ -12043,7 +12092,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: "#/components/schemas/CatalogProduct"
+                    $ref: "#/components/schemas/Product"
                   message:
                     type: string
                 required:
@@ -12087,7 +12136,7 @@ paths:
                       - type: object
                         properties:
                           product:
-                            $ref: "#/components/schemas/CatalogProduct"
+                            $ref: "#/components/schemas/Product"
                           redirect:
                             type: "null"
                         required:
@@ -12096,7 +12145,7 @@ paths:
                       - type: object
                         properties:
                           product:
-                            $ref: "#/components/schemas/CatalogProduct"
+                            $ref: "#/components/schemas/Product"
                           redirect:
                             type: string
                         required:
@@ -12156,7 +12205,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: "#/components/schemas/CatalogProduct"
+                    $ref: "#/components/schemas/Product"
                   message:
                     type: string
                 required:
@@ -16875,39 +16924,59 @@ paths:
                     properties:
                       replayed:
                         type: boolean
-                      createdAt:
-                        type: string
-                      version:
-                        type: number
-                      id:
-                        type: string
-                      status:
-                        $ref: "#/components/schemas/RefundStatus"
-                      reason:
+                      attemptId:
                         type:
                           - string
                           - "null"
-                      orderId:
-                        type: string
+                      externalId:
+                        type:
+                          - string
+                          - "null"
+                      manualReference:
+                        type:
+                          - string
+                          - "null"
                       returnId:
                         type:
                           - string
                           - "null"
                       processingStatus:
                         $ref: "#/components/schemas/RefundAttemptStatus"
+                      attemptNumber:
+                        type: number
+                      version:
+                        type: number
+                      id:
+                        type: string
+                      paymentId:
+                        type: string
+                      orderId:
+                        type: string
                       amount:
                         type: number
+                      status:
+                        $ref: "#/components/schemas/RefundStatus"
+                      reason:
+                        type:
+                          - string
+                          - "null"
+                      createdAt:
+                        type: string
                     required:
                       - replayed
-                      - createdAt
-                      - version
-                      - id
-                      - status
-                      - reason
-                      - orderId
+                      - attemptId
+                      - externalId
+                      - manualReference
                       - returnId
                       - processingStatus
+                      - attemptNumber
+                      - version
+                      - id
+                      - paymentId
+                      - orderId
                       - amount
+                      - status
+                      - createdAt
                   message:
                     type: string
                 required:
@@ -17145,40 +17214,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    type: object
-                    properties:
-                      createdAt:
-                        type: string
-                      version:
-                        type: number
-                      id:
-                        type: string
-                      status:
-                        $ref: "#/components/schemas/RefundStatus"
-                      reason:
-                        type:
-                          - string
-                          - "null"
-                      orderId:
-                        type: string
-                      returnId:
-                        type:
-                          - string
-                          - "null"
-                      processingStatus:
-                        $ref: "#/components/schemas/RefundAttemptStatus"
-                      amount:
-                        type: number
-                    required:
-                      - createdAt
-                      - version
-                      - id
-                      - status
-                      - reason
-                      - orderId
-                      - returnId
-                      - processingStatus
-                      - amount
+                    $ref: "#/components/schemas/Refund"
                   message:
                     type: string
                 required:
@@ -17897,12 +17933,26 @@ paths:
             type: string
       responses:
         "200":
-          description: File riêng tư, chỉ chủ sở hữu tải được.
+          description: Thành công
           content:
-            application/octet-stream:
+            application/json:
               schema:
-                type: string
-                format: binary
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                      expiresIn:
+                        type: number
+                    required:
+                      - url
+                      - expiresIn
+                  message:
+                    type: string
+                required:
+                  - data
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -21615,6 +21665,8 @@ components:
     CancellationRequest:
       type: object
       properties:
+        userId:
+          type: string
         id:
           type: string
         orderId:
@@ -21640,6 +21692,7 @@ components:
         createdAt:
           type: string
       required:
+        - userId
         - id
         - orderId
         - status
@@ -21672,6 +21725,12 @@ components:
     CartItem:
       type: object
       properties:
+        productSlug:
+          type:
+            - string
+            - "null"
+        imageUrl:
+          type: string
         id:
           type: string
         variantId:
@@ -21699,6 +21758,8 @@ components:
           items:
             $ref: "#/components/schemas/CartWarning"
       required:
+        - productSlug
+        - imageUrl
         - id
         - variantId
         - productId
@@ -21726,73 +21787,6 @@ components:
         - insufficient_stock
         - price_changed
         - unavailable
-    CatalogProduct:
-      type: object
-      properties:
-        slug:
-          type: string
-        status:
-          $ref: "#/components/schemas/ProductPublicationStatus"
-        brand:
-          type: string
-        material:
-          type: string
-        careInstructions:
-          type: string
-        seoTitle:
-          type: string
-        seoDescription:
-          type: string
-        sizeGuideId:
-          type:
-            - string
-            - "null"
-        version:
-          type: number
-        id:
-          type: string
-        name:
-          type: string
-        price:
-          type: number
-        description:
-          type: string
-        imageUrl:
-          type: string
-        imageId:
-          type:
-            - string
-            - "null"
-        categoryId:
-          type:
-            - string
-            - "null"
-        category:
-          anyOf:
-            - $ref: "#/components/schemas/Category"
-            - type: "null"
-        images:
-          type: array
-          items:
-            $ref: "#/components/schemas/ProductImage"
-        stock:
-          type: number
-      required:
-        - slug
-        - status
-        - brand
-        - material
-        - careInstructions
-        - seoTitle
-        - seoDescription
-        - sizeGuideId
-        - version
-        - id
-        - name
-        - price
-        - description
-        - imageUrl
-        - stock
     Category:
       type: object
       properties:
@@ -22177,6 +22171,8 @@ components:
     ExchangeRequest:
       type: object
       properties:
+        userId:
+          type: string
         id:
           type: string
         orderId:
@@ -22218,6 +22214,7 @@ components:
           enum:
             - refund_and_repurchase
       required:
+        - userId
         - id
         - orderId
         - returnId
@@ -22831,6 +22828,30 @@ components:
     Product:
       type: object
       properties:
+        slug:
+          type: string
+        status:
+          $ref: "#/components/schemas/ProductPublicationStatus"
+        brand:
+          type: string
+        material:
+          type: string
+        careInstructions:
+          type: string
+        seoTitle:
+          type: string
+        seoDescription:
+          type: string
+        sizeGuideId:
+          type:
+            - string
+            - "null"
+        version:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
         id:
           type: string
         name:
@@ -22860,6 +22881,17 @@ components:
         stock:
           type: number
       required:
+        - slug
+        - status
+        - brand
+        - material
+        - careInstructions
+        - seoTitle
+        - seoDescription
+        - sizeGuideId
+        - version
+        - createdAt
+        - updatedAt
         - id
         - name
         - price
@@ -22989,52 +23021,6 @@ components:
         - startsAt
         - endsAt
         - version
-    PublishedContent:
-      type: object
-      properties:
-        id:
-          type: string
-        kind:
-          $ref: "#/components/schemas/ContentKind"
-        version:
-          type: number
-        publishedAt:
-          type: string
-        slug:
-          type: string
-        title:
-          type: string
-        excerpt:
-          type: string
-        body:
-          type: array
-          items:
-            $ref: "#/components/schemas/ContentBlock"
-        coverFileId:
-          type:
-            - string
-            - "null"
-        taxonomyIds:
-          type: array
-          items:
-            type: string
-        seoTitle:
-          type: string
-        seoDescription:
-          type: string
-      required:
-        - id
-        - kind
-        - version
-        - publishedAt
-        - slug
-        - title
-        - excerpt
-        - body
-        - coverFileId
-        - taxonomyIds
-        - seoTitle
-        - seoDescription
     QuoteItemSnapshot:
       type: object
       properties:
@@ -23080,6 +23066,28 @@ components:
     Refund:
       type: object
       properties:
+        attemptId:
+          type:
+            - string
+            - "null"
+        externalId:
+          type:
+            - string
+            - "null"
+        manualReference:
+          type:
+            - string
+            - "null"
+        returnId:
+          type:
+            - string
+            - "null"
+        processingStatus:
+          $ref: "#/components/schemas/RefundAttemptStatus"
+        attemptNumber:
+          type: number
+        version:
+          type: number
         id:
           type: string
         paymentId:
@@ -23097,6 +23105,13 @@ components:
         createdAt:
           type: string
       required:
+        - attemptId
+        - externalId
+        - manualReference
+        - returnId
+        - processingStatus
+        - attemptNumber
+        - version
         - id
         - paymentId
         - orderId
@@ -23178,6 +23193,8 @@ components:
     ReturnRequest:
       type: object
       properties:
+        userId:
+          type: string
         id:
           type: string
         orderId:
@@ -23209,6 +23226,7 @@ components:
         createdAt:
           type: string
       required:
+        - userId
         - id
         - orderId
         - status
@@ -23280,6 +23298,10 @@ components:
     Shipment:
       type: object
       properties:
+        fulfillmentStatus:
+          $ref: "#/components/schemas/FulfillmentStatus"
+        version:
+          type: number
         id:
           type: string
         orderId:
@@ -23303,6 +23325,8 @@ components:
             - string
             - "null"
       required:
+        - fulfillmentStatus
+        - version
         - id
         - orderId
         - status
@@ -23392,6 +23416,8 @@ components:
     ShopSettings:
       type: object
       properties:
+        logoUrl:
+          type: string
         name:
           type: string
         supportEmail:
@@ -23411,6 +23437,7 @@ components:
         version:
           type: number
       required:
+        - logoUrl
         - name
         - supportEmail
         - supportPhone
@@ -23438,6 +23465,10 @@ components:
     SupportMessage:
       type: object
       properties:
+        ticketId:
+          type: string
+        authorId:
+          type: string
         id:
           type: string
         body:
@@ -23451,6 +23482,8 @@ components:
         createdAt:
           type: string
       required:
+        - ticketId
+        - authorId
         - id
         - body
         - internal
@@ -23459,6 +23492,8 @@ components:
     SupportTicket:
       type: object
       properties:
+        userId:
+          type: string
         id:
           type: string
         orderId:
@@ -23480,6 +23515,7 @@ components:
         createdAt:
           type: string
       required:
+        - userId
         - id
         - orderId
         - subject

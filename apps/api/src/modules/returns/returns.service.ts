@@ -28,6 +28,7 @@ import { settings } from '../settings/settings.service.js';
 export function returnDto(row: ReturnRequestModel): ReturnRequest {
   return {
     ...selectFields(row, [
+      'userId',
       'id',
       'orderId',
       'status',

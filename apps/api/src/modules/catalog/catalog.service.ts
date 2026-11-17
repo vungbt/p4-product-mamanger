@@ -33,22 +33,7 @@ export function normalizedSlug(value: string) {
 }
 
 export async function getCatalogProduct(id: string, admin = false): Promise<CatalogProduct> {
-  const row = await ProductModel.findByPk(id);
-  if (!row || (!admin && row.status !== 'active')) throw new NotFound('product_not_found');
-  return {
-    ...(await getProductById(id, admin)),
-    ...selectFields(row, [
-      'slug',
-      'status',
-      'brand',
-      'material',
-      'careInstructions',
-      'seoTitle',
-      'seoDescription',
-      'sizeGuideId',
-      'version',
-    ]),
-  };
+  return getProductById(id, admin);
 }
 
 export async function getProductBySlug(slug: string) {

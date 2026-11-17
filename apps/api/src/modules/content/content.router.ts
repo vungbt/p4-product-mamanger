@@ -214,7 +214,9 @@ router.get(
       offset: (query.page - 1) * query.pageSize,
     });
     return {
-      data: result.rows.map((row) => row.publishedSnapshot),
+      data: await content.withContentMedia(
+        result.rows.flatMap((row) => (row.publishedSnapshot ? [row.publishedSnapshot] : [])),
+      ),
       meta: buildPaginationMeta(query.page, query.pageSize, result.count),
     };
   }),
@@ -292,7 +294,9 @@ router.get(
       },
       order: [['slug', 'ASC']],
     });
-    return rows.map((row) => row.publishedSnapshot);
+    return content.withContentMedia(
+      rows.flatMap((row) => (row.publishedSnapshot ? [row.publishedSnapshot] : [])),
+    );
   }),
 );
 export default applyAuditPolicies(router, auditPolicies);

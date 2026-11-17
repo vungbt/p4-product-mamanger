@@ -77,7 +77,10 @@ describe('list API integration against the existing local database (read-only re
     const detail = await get(`/products/${product.id}`);
     assert.equal(typeof detail.data.imageUrl, 'string');
     assert.ok(Array.isArray(detail.data.images));
-    assert.equal(Object.hasOwn(detail.data, 'createdAt'), false);
+    assert.equal(typeof detail.data.createdAt, 'string');
+    assert.equal(typeof detail.data.slug, 'string');
+    assert.equal(typeof detail.data.version, 'number');
+    assert.equal(Object.hasOwn(detail.data, '_previousDataValues'), false);
     const dashboard = await get('/dashboard/stats');
     assert.equal(typeof dashboard.data.totalRevenue, 'number');
     assert.ok(dashboard.data.lowStockProducts.every((row) => typeof row.imageUrl === 'string'));

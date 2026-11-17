@@ -15,24 +15,12 @@ import {
 import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent, runIdempotent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { selectFields } from '@/utils/select-fields.js';
 import { quantityAmount } from '../orders/order-lifecycle.service.js';
 import { getStripe } from '../payments/stripe.service.js';
+import { toRefund } from './refunds.service.js';
 
-export function refundDto(row: RefundModel) {
-  return {
-    ...selectFields(row, [
-      'id',
-      'orderId',
-      'amount',
-      'status',
-      'reason',
-      'processingStatus',
-      'returnId',
-      'version',
-    ]),
-    createdAt: row.createdAt.toISOString(),
-  };
+export function refundDto(row: RefundModel): import('@p4/shared').Refund {
+  return toRefund(row);
 }
 
 export async function ownedRefund(user: User, id: string) {

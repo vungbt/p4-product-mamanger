@@ -5323,6 +5323,7 @@ export interface components {
       resolution: string | null;
       /** @enum {string} */
       status: 'approved' | 'rejected' | 'requested';
+      userId: string;
       version: number;
     };
     Cart: {
@@ -5336,8 +5337,10 @@ export interface components {
       available: number;
       color: string;
       id: string;
+      imageUrl: string;
       productId: string | null;
       productName: string;
+      productSlug: string | null;
       quantity: number;
       size: string;
       sku: string;
@@ -5351,27 +5354,6 @@ export interface components {
     };
     /** @enum {string} */
     CartWarning: 'insufficient_stock' | 'price_changed' | 'unavailable';
-    CatalogProduct: {
-      brand: string;
-      careInstructions: string;
-      category?: components['schemas']['Category'] | null;
-      categoryId?: string | null;
-      description: string;
-      id: string;
-      imageId?: string | null;
-      images?: components['schemas']['ProductImage'][];
-      imageUrl: string;
-      material: string;
-      name: string;
-      price: number;
-      seoDescription: string;
-      seoTitle: string;
-      sizeGuideId: string | null;
-      slug: string;
-      status: components['schemas']['ProductPublicationStatus'];
-      stock: number;
-      version: number;
-    };
     Category: {
       description: string;
       id: string;
@@ -5512,6 +5494,7 @@ export interface components {
       /** @enum {string} */
       settlementPolicy: 'refund_and_repurchase';
       status: components['schemas']['ExchangeStatus'];
+      userId: string;
       version: number;
     };
     /** @enum {string} */
@@ -5742,16 +5725,27 @@ export interface components {
     /** @enum {string} */
     PaymentStatus: 'failed' | 'paid' | 'pending';
     Product: {
+      brand: string;
+      careInstructions: string;
       category?: components['schemas']['Category'] | null;
       categoryId?: string | null;
+      createdAt: string;
       description: string;
       id: string;
       imageId?: string | null;
       images?: components['schemas']['ProductImage'][];
       imageUrl: string;
+      material: string;
       name: string;
       price: number;
+      seoDescription: string;
+      seoTitle: string;
+      sizeGuideId: string | null;
+      slug: string;
+      status: components['schemas']['ProductPublicationStatus'];
       stock: number;
+      updatedAt: string;
+      version: number;
     };
     ProductImage: {
       fileId: string;
@@ -5791,20 +5785,6 @@ export interface components {
       variantIds: string[];
       version: number;
     };
-    PublishedContent: {
-      body: components['schemas']['ContentBlock'][];
-      coverFileId: string | null;
-      excerpt: string;
-      id: string;
-      kind: components['schemas']['ContentKind'];
-      publishedAt: string;
-      seoDescription: string;
-      seoTitle: string;
-      slug: string;
-      taxonomyIds: string[];
-      title: string;
-      version: number;
-    };
     QuoteItemSnapshot: {
       categoryId: string | null;
       color: string;
@@ -5821,12 +5801,19 @@ export interface components {
     };
     Refund: {
       amount: number;
+      attemptId: string | null;
+      attemptNumber: number;
       createdAt: string;
+      externalId: string | null;
       id: string;
+      manualReference: string | null;
       orderId: string;
       paymentId: string;
+      processingStatus: components['schemas']['RefundAttemptStatus'];
       reason?: string | null;
+      returnId: string | null;
       status: components['schemas']['RefundStatus'];
+      version: number;
     };
     /** @enum {string} */
     RefundAttemptStatus: 'cancelled' | 'failed' | 'processing' | 'requested' | 'succeeded';
@@ -5862,6 +5849,7 @@ export interface components {
       reason: string;
       resolution: string | null;
       status: components['schemas']['ReturnStatus'];
+      userId: string;
       version: number;
     };
     /** @enum {string} */
@@ -5894,11 +5882,13 @@ export interface components {
     Shipment: {
       carrier?: string | null;
       deliveredAt?: string | null;
+      fulfillmentStatus: components['schemas']['FulfillmentStatus'];
       id: string;
       orderId: string;
       shippedAt?: string | null;
       status: components['schemas']['ShipmentStatus'];
       trackingCode?: string | null;
+      version: number;
     };
     /** @enum {string} */
     ShipmentStatus: 'cancelled' | 'delivered' | 'pending' | 'shipped';
@@ -5932,6 +5922,7 @@ export interface components {
       currency: string;
       defaultLocale: string;
       logoFileId: string | null;
+      logoUrl: string;
       name: string;
       supportEmail: string;
       supportPhone: string;
@@ -5946,10 +5937,12 @@ export interface components {
     };
     SupportMessage: {
       attachmentIds: string[];
+      authorId: string;
       body: string;
       createdAt: string;
       id: string;
       internal: boolean;
+      ticketId: string;
     };
     SupportTicket: {
       assigneeId: string | null;
@@ -5959,6 +5952,7 @@ export interface components {
       orderId: string | null;
       status: components['schemas']['SupportTicketStatus'];
       subject: string;
+      userId: string;
       version: number;
     };
     /** @enum {string} */
@@ -8518,7 +8512,7 @@ export interface operations {
         };
         content: {
           'application/json': {
-            data: components['schemas']['CatalogProduct'];
+            data: components['schemas']['Product'];
             message?: string;
           };
         };
@@ -8734,17 +8728,7 @@ export interface operations {
         };
         content: {
           'application/json': {
-            data: {
-              amount: number;
-              createdAt: string;
-              id: string;
-              orderId: string;
-              processingStatus: components['schemas']['RefundAttemptStatus'];
-              reason: string | null;
-              returnId: string | null;
-              status: components['schemas']['RefundStatus'];
-              version: number;
-            };
+            data: components['schemas']['Refund'];
             message?: string;
           };
         };
@@ -8775,17 +8759,7 @@ export interface operations {
         };
         content: {
           'application/json': {
-            data: {
-              amount: number;
-              createdAt: string;
-              id: string;
-              orderId: string;
-              processingStatus: components['schemas']['RefundAttemptStatus'];
-              reason: string | null;
-              returnId: string | null;
-              status: components['schemas']['RefundStatus'];
-              version: number;
-            };
+            data: components['schemas']['Refund'];
             message?: string;
           };
         };
@@ -8821,17 +8795,7 @@ export interface operations {
         };
         content: {
           'application/json': {
-            data: {
-              amount: number;
-              createdAt: string;
-              id: string;
-              orderId: string;
-              processingStatus: components['schemas']['RefundAttemptStatus'];
-              reason: string | null;
-              returnId: string | null;
-              status: components['schemas']['RefundStatus'];
-              version: number;
-            };
+            data: components['schemas']['Refund'];
             message?: string;
           };
         };
@@ -14266,7 +14230,7 @@ export interface operations {
                   imageUrl?: null;
                   items?: null;
                   placement?: null;
-                  products: components['schemas']['CatalogProduct'][];
+                  products: components['schemas']['Product'][];
                   sections?: null;
                   slug: string;
                   title: string;
@@ -14345,7 +14309,7 @@ export interface operations {
                   imageUrl?: null;
                   items?: null;
                   placement?: null;
-                  products: components['schemas']['CatalogProduct'][];
+                  products: components['schemas']['Product'][];
                   sections?: null;
                   slug: string;
                   title: string;
@@ -14846,13 +14810,19 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description File riêng tư, chỉ chủ sở hữu tải được. */
+      /** @description Thành công */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/octet-stream': string;
+          'application/json': {
+            data: {
+              expiresIn: number;
+              url: string;
+            };
+            message?: string;
+          };
         };
       };
       401: components['responses']['Unauthorized'];
@@ -16230,11 +16200,16 @@ export interface operations {
           'application/json': {
             data: {
               amount: number;
+              attemptId: string | null;
+              attemptNumber: number;
               createdAt: string;
+              externalId: string | null;
               id: string;
+              manualReference: string | null;
               orderId: string;
+              paymentId: string;
               processingStatus: components['schemas']['RefundAttemptStatus'];
-              reason: string | null;
+              reason?: string | null;
               replayed: boolean;
               returnId: string | null;
               status: components['schemas']['RefundStatus'];
@@ -16463,9 +16438,14 @@ export interface operations {
             data: {
               body: components['schemas']['ContentBlock'][];
               coverFileId: string | null;
+              coverUrl: string;
               excerpt: string;
               id: string;
               kind: components['schemas']['ContentKind'];
+              media: {
+                id: string;
+                url: string;
+              }[];
               publishedAt: string;
               redirect: string | null;
               seoDescription: string;
@@ -16575,7 +16555,25 @@ export interface operations {
         };
         content: {
           'application/json': {
-            data: (components['schemas']['PublishedContent'] | null)[];
+            data: {
+              body: components['schemas']['ContentBlock'][];
+              coverFileId: string | null;
+              coverUrl: string;
+              excerpt: string;
+              id: string;
+              kind: components['schemas']['ContentKind'];
+              media: {
+                id: string;
+                url: string;
+              }[];
+              publishedAt: string;
+              seoDescription: string;
+              seoTitle: string;
+              slug: string;
+              taxonomyIds: string[];
+              title: string;
+              version: number;
+            }[];
             message?: string;
           };
         };
@@ -16678,7 +16676,25 @@ export interface operations {
         };
         content: {
           'application/json': {
-            data: (components['schemas']['PublishedContent'] | null)[];
+            data: {
+              body: components['schemas']['ContentBlock'][];
+              coverFileId: string | null;
+              coverUrl: string;
+              excerpt: string;
+              id: string;
+              kind: components['schemas']['ContentKind'];
+              media: {
+                id: string;
+                url: string;
+              }[];
+              publishedAt: string;
+              seoDescription: string;
+              seoTitle: string;
+              slug: string;
+              taxonomyIds: string[];
+              title: string;
+              version: number;
+            }[];
             message?: string;
             meta: components['schemas']['PaginationMeta'];
           };
@@ -16709,9 +16725,14 @@ export interface operations {
             data: {
               body: components['schemas']['ContentBlock'][];
               coverFileId: string | null;
+              coverUrl: string;
               excerpt: string;
               id: string;
               kind: components['schemas']['ContentKind'];
+              media: {
+                id: string;
+                url: string;
+              }[];
               publishedAt: string;
               redirect: string | null;
               seoDescription: string;
@@ -17367,7 +17388,7 @@ export interface operations {
         };
         content: {
           'application/json': {
-            data: components['schemas']['CatalogProduct'];
+            data: components['schemas']['Product'];
             message?: string;
           };
         };
@@ -17699,11 +17720,11 @@ export interface operations {
           'application/json': {
             data:
               | {
-                  product: components['schemas']['CatalogProduct'];
+                  product: components['schemas']['Product'];
                   redirect: null;
                 }
               | {
-                  product: components['schemas']['CatalogProduct'];
+                  product: components['schemas']['Product'];
                   redirect: string;
                 };
             message?: string;
@@ -17827,17 +17848,7 @@ export interface operations {
         };
         content: {
           'application/json': {
-            data: {
-              amount: number;
-              createdAt: string;
-              id: string;
-              orderId: string;
-              processingStatus: components['schemas']['RefundAttemptStatus'];
-              reason: string | null;
-              returnId: string | null;
-              status: components['schemas']['RefundStatus'];
-              version: number;
-            };
+            data: components['schemas']['Refund'];
             message?: string;
           };
         };
@@ -18959,7 +18970,7 @@ export interface operations {
                       imageUrl?: null;
                       items?: null;
                       placement?: null;
-                      products: components['schemas']['CatalogProduct'][];
+                      products: components['schemas']['Product'][];
                       sections?: null;
                       slug: string;
                       title: string;
@@ -19260,7 +19271,7 @@ export interface operations {
           'application/json': {
             data: {
               id: string;
-              product: components['schemas']['CatalogProduct'] | null;
+              product: components['schemas']['Product'] | null;
               productId: string;
             }[];
             message?: string;

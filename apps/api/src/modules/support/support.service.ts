@@ -16,6 +16,7 @@ import { selectFields } from '@/utils/select-fields.js';
 export function ticketDto(row: SupportTicketModel): SupportTicket {
   return {
     ...selectFields(row, [
+      'userId',
       'id',
       'orderId',
       'subject',
@@ -29,7 +30,7 @@ export function ticketDto(row: SupportTicketModel): SupportTicket {
 }
 export function messageDto(row: SupportMessageModel): SupportMessage {
   return {
-    ...selectFields(row, ['id', 'body', 'internal', 'attachmentIds']),
+    ...selectFields(row, ['id', 'ticketId', 'authorId', 'body', 'internal', 'attachmentIds']),
     createdAt: row.createdAt.toISOString(),
   };
 }

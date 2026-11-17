@@ -58,6 +58,17 @@ export interface ProductImage {
 }
 
 export interface Product {
+  slug: string;
+  status: ProductPublicationStatus;
+  brand: string;
+  material: string;
+  careInstructions: string;
+  seoTitle: string;
+  seoDescription: string;
+  sizeGuideId: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
   id: string;
   name: string;
   price: number;
@@ -138,6 +149,8 @@ export interface Payment {
 }
 
 export interface Shipment {
+  fulfillmentStatus: FulfillmentStatus;
+  version: number;
   id: string;
   orderId: string;
   status: ShipmentStatus;
@@ -188,6 +201,13 @@ export interface OrderCouponInfo {
 }
 
 export interface Refund {
+  attemptId: string | null;
+  externalId: string | null;
+  manualReference: string | null;
+  returnId: string | null;
+  processingStatus: RefundAttemptStatus;
+  attemptNumber: number;
+  version: number;
   id: string;
   paymentId: string;
   orderId: string;
@@ -547,19 +567,10 @@ export interface InventoryListQuery
   productId?: string;
   status?: 'active' | 'inactive';
 }
-export interface CatalogProduct extends Product {
-  slug: string;
-  status: ProductPublicationStatus;
-  brand: string;
-  material: string;
-  careInstructions: string;
-  seoTitle: string;
-  seoDescription: string;
-  sizeGuideId: string | null;
-  version: number;
-}
+export type CatalogProduct = Product;
 
 export interface ShopSettings {
+  logoUrl: string;
   name: string;
   supportEmail: string;
   supportPhone: string;
@@ -602,6 +613,8 @@ export interface CartLineInput {
 }
 export type CartWarning = 'unavailable' | 'insufficient_stock' | 'price_changed';
 export interface CartItem {
+  productSlug: string | null;
+  imageUrl: string;
   id: string;
   variantId: string;
   productId: string | null;
@@ -698,6 +711,7 @@ export interface OrderQuantityInput {
   quantity: number;
 }
 export interface CancellationRequest {
+  userId: string;
   id: string;
   orderId: string;
   status: 'requested' | 'approved' | 'rejected';
@@ -740,6 +754,7 @@ export interface ReturnInspection {
   damagedQuantity: number;
 }
 export interface ReturnRequest {
+  userId: string;
   id: string;
   orderId: string;
   status: ReturnStatus;
@@ -800,6 +815,7 @@ export interface Notification {
 
 export type SupportTicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 export interface SupportTicket {
+  userId: string;
   id: string;
   orderId: string | null;
   subject: string;
@@ -810,6 +826,8 @@ export interface SupportTicket {
   createdAt: string;
 }
 export interface SupportMessage {
+  ticketId: string;
+  authorId: string;
   id: string;
   body: string;
   internal: boolean;
@@ -861,6 +879,7 @@ export interface ExchangeLine {
   quantity: number;
 }
 export interface ExchangeRequest {
+  userId: string;
   id: string;
   orderId: string;
   returnId: string;

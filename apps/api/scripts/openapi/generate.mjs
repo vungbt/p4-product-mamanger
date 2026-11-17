@@ -1131,6 +1131,9 @@ for (const [openPath, item] of Object.entries(paths)) {
   if (operation && openPath.endsWith('/download')) {
     const ok = Object.keys(operation.responses).find((code) => /^2/.test(code));
 
+    // Some /download routes return a JSON envelope with a signed URL instead of bytes.
+    if (!ok || operation.responses[ok].content?.['application/json']) continue;
+
     operation.responses[ok] = {
       description: 'File riêng tư, chỉ chủ sở hữu tải được.',
       content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },

@@ -24,6 +24,7 @@ import { settings } from '../settings/settings.service.js';
 export function exchangeDto(row: ExchangeRequestModel): ExchangeRequest {
   return {
     ...selectFields(row, [
+      'userId',
       'id',
       'orderId',
       'returnId',

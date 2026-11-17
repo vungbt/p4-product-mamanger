@@ -73,6 +73,15 @@ function toGalleryImage(row: GalleryRow): ProductImage {
 }
 
 const productFields = [
+  'slug',
+  'status',
+  'brand',
+  'material',
+  'careInstructions',
+  'seoTitle',
+  'seoDescription',
+  'sizeGuideId',
+  'version',
   'id',
   'name',
   'price',
@@ -82,13 +91,15 @@ const productFields = [
   'stock',
 ] satisfies (keyof Product)[];
 
-function toProduct(row: ProductEager): Product {
+export function productDto(row: ProductEager): Product {
   const images = (row.gallery ?? [])
     .slice()
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map(toGalleryImage);
   return {
     ...selectFields(row, productFields),
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
     imageUrl: row.image?.url ?? images[0]?.url ?? '',
     category: row.category
       ? selectFields(row.category, ['id', 'name', 'slug', 'description'])
@@ -97,7 +108,7 @@ function toProduct(row: ProductEager): Product {
   };
 }
 
-const productInclude = [imageInclude, categoryInclude, galleryInclude];
+export const productInclude = [imageInclude, categoryInclude, galleryInclude];
 
 async function resolveImageId(imageStorageId?: string, fallback?: string | null) {
   if (!imageStorageId?.trim()) return fallback ?? null;
@@ -151,7 +162,7 @@ export async function listProducts(query: ProductListQuery, admin = false) {
   });
 
   return {
-    data: rows.map(toProduct),
+    data: rows.map(productDto),
     meta: buildPaginationMeta(query.page, query.pageSize, count),
   };
 }
@@ -162,7 +173,7 @@ export async function getProductById(id: string, admin = false, transaction?: Tr
     transaction,
   })) as ProductEager | null;
   if (!row || (!admin && row.status !== 'active')) throw new NotFound(errorKeys.productNotFound);
-  return toProduct(row);
+  return productDto(row);
 }
 
 async function validateReferences(input: Partial<ProductInput>) {

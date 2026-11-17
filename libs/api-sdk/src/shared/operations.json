@@ -1,0 +1,2621 @@
+[
+  {
+    "operationId": "auth_get__account_info",
+    "name": "authGetAccountInfo",
+    "method": "get",
+    "path": "/api/auth/account-info",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_get__callback_id_",
+    "name": "authGetCallbackId",
+    "method": "get",
+    "path": "/api/auth/callback/{id}",
+    "tag": "auth-native",
+    "response": "empty",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_get__delete_user_callback",
+    "name": "authGetDeleteUserCallback",
+    "method": "get",
+    "path": "/api/auth/delete-user/callback",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_get__error",
+    "name": "authGetError",
+    "method": "get",
+    "path": "/api/auth/error",
+    "tag": "auth-native",
+    "response": "text",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_get__get_session",
+    "name": "authGetGetSession",
+    "method": "get",
+    "path": "/api/auth/get-session",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_get__list_accounts",
+    "name": "authGetListAccounts",
+    "method": "get",
+    "path": "/api/auth/list-accounts",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_get__list_sessions",
+    "name": "authGetListSessions",
+    "method": "get",
+    "path": "/api/auth/list-sessions",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_get__ok",
+    "name": "authGetOk",
+    "method": "get",
+    "path": "/api/auth/ok",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_get__reset_password_token_",
+    "name": "authGetResetPasswordToken",
+    "method": "get",
+    "path": "/api/auth/reset-password/{token}",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_get__verify_email",
+    "name": "authGetVerifyEmail",
+    "method": "get",
+    "path": "/api/auth/verify-email",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__callback_id_",
+    "name": "authPostCallbackId",
+    "method": "post",
+    "path": "/api/auth/callback/{id}",
+    "tag": "auth-native",
+    "response": "empty",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__change_email",
+    "name": "authPostChangeEmail",
+    "method": "post",
+    "path": "/api/auth/change-email",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__change_password",
+    "name": "authPostChangePassword",
+    "method": "post",
+    "path": "/api/auth/change-password",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__delete_user",
+    "name": "authPostDeleteUser",
+    "method": "post",
+    "path": "/api/auth/delete-user",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__get_access_token",
+    "name": "authPostGetAccessToken",
+    "method": "post",
+    "path": "/api/auth/get-access-token",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__get_session",
+    "name": "authPostGetSession",
+    "method": "post",
+    "path": "/api/auth/get-session",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__link_social",
+    "name": "authPostLinkSocial",
+    "method": "post",
+    "path": "/api/auth/link-social",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__refresh_token",
+    "name": "authPostRefreshToken",
+    "method": "post",
+    "path": "/api/auth/refresh-token",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__request_password_reset",
+    "name": "authPostRequestPasswordReset",
+    "method": "post",
+    "path": "/api/auth/request-password-reset",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__reset_password",
+    "name": "authPostResetPassword",
+    "method": "post",
+    "path": "/api/auth/reset-password",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__revoke_other_sessions",
+    "name": "authPostRevokeOtherSessions",
+    "method": "post",
+    "path": "/api/auth/revoke-other-sessions",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__revoke_session",
+    "name": "authPostRevokeSession",
+    "method": "post",
+    "path": "/api/auth/revoke-session",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__revoke_sessions",
+    "name": "authPostRevokeSessions",
+    "method": "post",
+    "path": "/api/auth/revoke-sessions",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__send_verification_email",
+    "name": "authPostSendVerificationEmail",
+    "method": "post",
+    "path": "/api/auth/send-verification-email",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__sign_in_email",
+    "name": "authPostSignInEmail",
+    "method": "post",
+    "path": "/api/auth/sign-in/email",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__sign_in_social",
+    "name": "authPostSignInSocial",
+    "method": "post",
+    "path": "/api/auth/sign-in/social",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__sign_out",
+    "name": "authPostSignOut",
+    "method": "post",
+    "path": "/api/auth/sign-out",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__sign_up_email",
+    "name": "authPostSignUpEmail",
+    "method": "post",
+    "path": "/api/auth/sign-up/email",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__unlink_account",
+    "name": "authPostUnlinkAccount",
+    "method": "post",
+    "path": "/api/auth/unlink-account",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__update_session",
+    "name": "authPostUpdateSession",
+    "method": "post",
+    "path": "/api/auth/update-session",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__update_user",
+    "name": "authPostUpdateUser",
+    "method": "post",
+    "path": "/api/auth/update-user",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "auth_post__verify_password",
+    "name": "authPostVerifyPassword",
+    "method": "post",
+    "path": "/api/auth/verify-password",
+    "tag": "auth-native",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_addresses_id",
+    "name": "deleteAddressesId",
+    "method": "delete",
+    "path": "/api/addresses/{id}",
+    "tag": "addresses",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_cart_items",
+    "name": "deleteCartItems",
+    "method": "delete",
+    "path": "/api/cart/items",
+    "tag": "cart",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_cart_items_id",
+    "name": "deleteCartItemsId",
+    "method": "delete",
+    "path": "/api/cart/items/{id}",
+    "tag": "cart",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_categories_id",
+    "name": "deleteCategoriesId",
+    "method": "delete",
+    "path": "/api/categories/{id}",
+    "tag": "categories",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_coupons_id",
+    "name": "deleteCouponsId",
+    "method": "delete",
+    "path": "/api/coupons/{id}",
+    "tag": "coupons",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_files_id",
+    "name": "deleteFilesId",
+    "method": "delete",
+    "path": "/api/files/{id}",
+    "tag": "files",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_me_sessions_id",
+    "name": "deleteMeSessionsId",
+    "method": "delete",
+    "path": "/api/me/sessions/{id}",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_products_id",
+    "name": "deleteProductsId",
+    "method": "delete",
+    "path": "/api/products/{id}",
+    "tag": "products",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_products_id_images_imageId",
+    "name": "deleteProductsIdImagesImageId",
+    "method": "delete",
+    "path": "/api/products/{id}/images/{imageId}",
+    "tag": "products",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_products_id_reviews_reviewId",
+    "name": "deleteProductsIdReviewsReviewId",
+    "method": "delete",
+    "path": "/api/products/{id}/reviews/{reviewId}",
+    "tag": "products",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_stock_alert_subscriptions_id",
+    "name": "deleteStockAlertSubscriptionsId",
+    "method": "delete",
+    "path": "/api/stock-alert-subscriptions/{id}",
+    "tag": "wishlist",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "delete_api_wishlist_items_productId",
+    "name": "deleteWishlistItemsProductId",
+    "method": "delete",
+    "path": "/api/wishlist/items/{productId}",
+    "tag": "wishlist",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_addresses",
+    "name": "getAddresses",
+    "method": "get",
+    "path": "/api/addresses",
+    "tag": "addresses",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_audit_logs",
+    "name": "getAdminAuditLogs",
+    "method": "get",
+    "path": "/api/admin/audit-logs",
+    "tag": "audit",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_audit_logs_id",
+    "name": "getAdminAuditLogsId",
+    "method": "get",
+    "path": "/api/admin/audit-logs/{id}",
+    "tag": "audit",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_banners",
+    "name": "getAdminBanners",
+    "method": "get",
+    "path": "/api/admin/banners",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_banners_id",
+    "name": "getAdminBannersId",
+    "method": "get",
+    "path": "/api/admin/banners/{id}",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_collections",
+    "name": "getAdminCollections",
+    "method": "get",
+    "path": "/api/admin/collections",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_collections_id",
+    "name": "getAdminCollectionsId",
+    "method": "get",
+    "path": "/api/admin/collections/{id}",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_coupons_id",
+    "name": "getAdminCouponsId",
+    "method": "get",
+    "path": "/api/admin/coupons/{id}",
+    "tag": "promotions",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_coupons_id_redemptions",
+    "name": "getAdminCouponsIdRedemptions",
+    "method": "get",
+    "path": "/api/admin/coupons/{id}/redemptions",
+    "tag": "promotions",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_customers",
+    "name": "getAdminCustomers",
+    "method": "get",
+    "path": "/api/admin/customers",
+    "tag": "staff",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_exchanges",
+    "name": "getAdminExchanges",
+    "method": "get",
+    "path": "/api/admin/exchanges",
+    "tag": "exchanges",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_home_layout",
+    "name": "getAdminHomeLayout",
+    "method": "get",
+    "path": "/api/admin/home-layout",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_import_templates_resource",
+    "name": "getAdminImportTemplatesResource",
+    "method": "get",
+    "path": "/api/admin/import-templates/{resource}",
+    "tag": "processes",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_inventory",
+    "name": "getAdminInventory",
+    "method": "get",
+    "path": "/api/admin/inventory",
+    "tag": "inventory",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_inventory_movements",
+    "name": "getAdminInventoryMovements",
+    "method": "get",
+    "path": "/api/admin/inventory/movements",
+    "tag": "inventory",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_inventory_reconciliation",
+    "name": "getAdminInventoryReconciliation",
+    "method": "get",
+    "path": "/api/admin/inventory/reconciliation",
+    "tag": "inventory",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_jobs",
+    "name": "getAdminJobs",
+    "method": "get",
+    "path": "/api/admin/jobs",
+    "tag": "jobs",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_jobs_id",
+    "name": "getAdminJobsId",
+    "method": "get",
+    "path": "/api/admin/jobs/{id}",
+    "tag": "jobs",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_navigation_placement",
+    "name": "getAdminNavigationPlacement",
+    "method": "get",
+    "path": "/api/admin/navigation/{placement}",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_notification_templates",
+    "name": "getAdminNotificationTemplates",
+    "method": "get",
+    "path": "/api/admin/notification-templates",
+    "tag": "notifications",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_pages",
+    "name": "getAdminPages",
+    "method": "get",
+    "path": "/api/admin/pages",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_pages_id",
+    "name": "getAdminPagesId",
+    "method": "get",
+    "path": "/api/admin/pages/{id}",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_pages_id_revisions",
+    "name": "getAdminPagesIdRevisions",
+    "method": "get",
+    "path": "/api/admin/pages/{id}/revisions",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_posts",
+    "name": "getAdminPosts",
+    "method": "get",
+    "path": "/api/admin/posts",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_posts_id",
+    "name": "getAdminPostsId",
+    "method": "get",
+    "path": "/api/admin/posts/{id}",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_posts_id_revisions",
+    "name": "getAdminPostsIdRevisions",
+    "method": "get",
+    "path": "/api/admin/posts/{id}/revisions",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_products",
+    "name": "getAdminProducts",
+    "method": "get",
+    "path": "/api/admin/products",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_products_id",
+    "name": "getAdminProductsId",
+    "method": "get",
+    "path": "/api/admin/products/{id}",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_products_id_variants",
+    "name": "getAdminProductsIdVariants",
+    "method": "get",
+    "path": "/api/admin/products/{id}/variants",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_promotions",
+    "name": "getAdminPromotions",
+    "method": "get",
+    "path": "/api/admin/promotions",
+    "tag": "promotions",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_promotions_id",
+    "name": "getAdminPromotionsId",
+    "method": "get",
+    "path": "/api/admin/promotions/{id}",
+    "tag": "promotions",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_report_exports_id",
+    "name": "getAdminReportExportsId",
+    "method": "get",
+    "path": "/api/admin/report-exports/{id}",
+    "tag": "reports",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_report_exports_id_download",
+    "name": "getAdminReportExportsIdDownload",
+    "method": "get",
+    "path": "/api/admin/report-exports/{id}/download",
+    "tag": "reports",
+    "response": "blob",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_reports_inventory",
+    "name": "getAdminReportsInventory",
+    "method": "get",
+    "path": "/api/admin/reports/inventory",
+    "tag": "reports",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_reports_orders",
+    "name": "getAdminReportsOrders",
+    "method": "get",
+    "path": "/api/admin/reports/orders",
+    "tag": "reports",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_reports_products",
+    "name": "getAdminReportsProducts",
+    "method": "get",
+    "path": "/api/admin/reports/products",
+    "tag": "reports",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_reports_sales",
+    "name": "getAdminReportsSales",
+    "method": "get",
+    "path": "/api/admin/reports/sales",
+    "tag": "reports",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_returns",
+    "name": "getAdminReturns",
+    "method": "get",
+    "path": "/api/admin/returns",
+    "tag": "returns",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_reviews",
+    "name": "getAdminReviews",
+    "method": "get",
+    "path": "/api/admin/reviews",
+    "tag": "reviews",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_roles",
+    "name": "getAdminRoles",
+    "method": "get",
+    "path": "/api/admin/roles",
+    "tag": "staff",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_settings_commerce",
+    "name": "getAdminSettingsCommerce",
+    "method": "get",
+    "path": "/api/admin/settings/commerce",
+    "tag": "settings",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_settings_shop",
+    "name": "getAdminSettingsShop",
+    "method": "get",
+    "path": "/api/admin/settings/shop",
+    "tag": "settings",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_shipping_methods",
+    "name": "getAdminShippingMethods",
+    "method": "get",
+    "path": "/api/admin/shipping-methods",
+    "tag": "settings",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_shipping_methods_id",
+    "name": "getAdminShippingMethodsId",
+    "method": "get",
+    "path": "/api/admin/shipping-methods/{id}",
+    "tag": "settings",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_size_guides",
+    "name": "getAdminSizeGuides",
+    "method": "get",
+    "path": "/api/admin/size-guides",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_size_guides_id",
+    "name": "getAdminSizeGuidesId",
+    "method": "get",
+    "path": "/api/admin/size-guides/{id}",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_staff",
+    "name": "getAdminStaff",
+    "method": "get",
+    "path": "/api/admin/staff",
+    "tag": "staff",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_support_tickets",
+    "name": "getAdminSupportTickets",
+    "method": "get",
+    "path": "/api/admin/support/tickets",
+    "tag": "support",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_system_contracts",
+    "name": "getAdminSystemContracts",
+    "method": "get",
+    "path": "/api/admin/system/contracts",
+    "tag": "system",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_admin_variants",
+    "name": "getAdminVariants",
+    "method": "get",
+    "path": "/api/admin/variants",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_auth_me",
+    "name": "getAuthMe",
+    "method": "get",
+    "path": "/api/auth/me",
+    "tag": "auth",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_cancellation_requests_id",
+    "name": "getCancellationRequestsId",
+    "method": "get",
+    "path": "/api/cancellation-requests/{id}",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_cart",
+    "name": "getCart",
+    "method": "get",
+    "path": "/api/cart",
+    "tag": "cart",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_categories",
+    "name": "getCategories",
+    "method": "get",
+    "path": "/api/categories",
+    "tag": "categories",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_categories_id",
+    "name": "getCategoriesId",
+    "method": "get",
+    "path": "/api/categories/{id}",
+    "tag": "categories",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_checkout_quotes_id",
+    "name": "getCheckoutQuotesId",
+    "method": "get",
+    "path": "/api/checkout/quotes/{id}",
+    "tag": "checkout",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_collections",
+    "name": "getCollections",
+    "method": "get",
+    "path": "/api/collections",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_collections_slug",
+    "name": "getCollectionsSlug",
+    "method": "get",
+    "path": "/api/collections/{slug}",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_coupons",
+    "name": "getCoupons",
+    "method": "get",
+    "path": "/api/coupons",
+    "tag": "coupons",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_dashboard_stats",
+    "name": "getDashboardStats",
+    "method": "get",
+    "path": "/api/dashboard/stats",
+    "tag": "dashboard",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_exchanges_id",
+    "name": "getExchangesId",
+    "method": "get",
+    "path": "/api/exchanges/{id}",
+    "tag": "exchanges",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_exchanges_mine",
+    "name": "getExchangesMine",
+    "method": "get",
+    "path": "/api/exchanges/mine",
+    "tag": "exchanges",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_files_id_download",
+    "name": "getFilesIdDownload",
+    "method": "get",
+    "path": "/api/files/{id}/download",
+    "tag": "files",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_files_sign_upload_url",
+    "name": "getFilesSignUploadUrl",
+    "method": "get",
+    "path": "/api/files/sign-upload-url",
+    "tag": "files",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_files_sign_upload_urls",
+    "name": "getFilesSignUploadUrls",
+    "method": "get",
+    "path": "/api/files/sign-upload-urls",
+    "tag": "files",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_files_uploads_id",
+    "name": "getFilesUploadsId",
+    "method": "get",
+    "path": "/api/files/uploads/{id}",
+    "tag": "files",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_health",
+    "name": "getHealth",
+    "method": "get",
+    "path": "/health",
+    "tag": "operations",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_health_live",
+    "name": "getHealthLive",
+    "method": "get",
+    "path": "/health/live",
+    "tag": "operations",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_health_ready",
+    "name": "getHealthReady",
+    "method": "get",
+    "path": "/health/ready",
+    "tag": "operations",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_internal_metrics",
+    "name": "getInternalMetrics",
+    "method": "get",
+    "path": "/api/internal/metrics",
+    "tag": "operations",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_me_capabilities",
+    "name": "getMeCapabilities",
+    "method": "get",
+    "path": "/api/me/capabilities",
+    "tag": "system",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_me_notification_preferences",
+    "name": "getMeNotificationPreferences",
+    "method": "get",
+    "path": "/api/me/notification-preferences",
+    "tag": "notifications",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_me_preferences",
+    "name": "getMePreferences",
+    "method": "get",
+    "path": "/api/me/preferences",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_me_profile",
+    "name": "getMeProfile",
+    "method": "get",
+    "path": "/api/me/profile",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_me_sessions",
+    "name": "getMeSessions",
+    "method": "get",
+    "path": "/api/me/sessions",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_navigation_placement",
+    "name": "getNavigationPlacement",
+    "method": "get",
+    "path": "/api/navigation/{placement}",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_notifications",
+    "name": "getNotifications",
+    "method": "get",
+    "path": "/api/notifications",
+    "tag": "notifications",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_notifications_unread_count",
+    "name": "getNotificationsUnreadCount",
+    "method": "get",
+    "path": "/api/notifications/unread-count",
+    "tag": "notifications",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_orders",
+    "name": "getOrders",
+    "method": "get",
+    "path": "/api/orders",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_orders_id",
+    "name": "getOrdersId",
+    "method": "get",
+    "path": "/api/orders/{id}",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_orders_id_events",
+    "name": "getOrdersIdEvents",
+    "method": "get",
+    "path": "/api/orders/{id}/events",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_orders_id_payments",
+    "name": "getOrdersIdPayments",
+    "method": "get",
+    "path": "/api/orders/{id}/payments",
+    "tag": "payments",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_orders_id_shipments",
+    "name": "getOrdersIdShipments",
+    "method": "get",
+    "path": "/api/orders/{id}/shipments",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_orders_mine",
+    "name": "getOrdersMine",
+    "method": "get",
+    "path": "/api/orders/mine",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_pages_slug",
+    "name": "getPagesSlug",
+    "method": "get",
+    "path": "/api/pages/{slug}",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_policies_current",
+    "name": "getPoliciesCurrent",
+    "method": "get",
+    "path": "/api/policies/current",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_post_categories",
+    "name": "getPostCategories",
+    "method": "get",
+    "path": "/api/post-categories",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_posts",
+    "name": "getPosts",
+    "method": "get",
+    "path": "/api/posts",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_posts_slug",
+    "name": "getPostsSlug",
+    "method": "get",
+    "path": "/api/posts/{slug}",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_post_tags",
+    "name": "getPostTags",
+    "method": "get",
+    "path": "/api/post-tags",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_processes",
+    "name": "getProcesses",
+    "method": "get",
+    "path": "/api/processes",
+    "tag": "processes",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_processes_id",
+    "name": "getProcessesId",
+    "method": "get",
+    "path": "/api/processes/{id}",
+    "tag": "processes",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_processes_id_download",
+    "name": "getProcessesIdDownload",
+    "method": "get",
+    "path": "/api/processes/{id}/download",
+    "tag": "processes",
+    "response": "blob",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_processes_id_items",
+    "name": "getProcessesIdItems",
+    "method": "get",
+    "path": "/api/processes/{id}/items",
+    "tag": "processes",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_products",
+    "name": "getProducts",
+    "method": "get",
+    "path": "/api/products",
+    "tag": "products",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_products_by_slug_slug",
+    "name": "getProductsBySlugSlug",
+    "method": "get",
+    "path": "/api/products/by-slug/{slug}",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_products_facets",
+    "name": "getProductsFacets",
+    "method": "get",
+    "path": "/api/products/facets",
+    "tag": "discovery",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_products_id",
+    "name": "getProductsId",
+    "method": "get",
+    "path": "/api/products/{id}",
+    "tag": "products",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_products_id_reviews",
+    "name": "getProductsIdReviews",
+    "method": "get",
+    "path": "/api/products/{id}/reviews",
+    "tag": "products",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_products_id_review_summary",
+    "name": "getProductsIdReviewSummary",
+    "method": "get",
+    "path": "/api/products/{id}/review-summary",
+    "tag": "reviews",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_products_id_variants",
+    "name": "getProductsIdVariants",
+    "method": "get",
+    "path": "/api/products/{id}/variants",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_refunds",
+    "name": "getRefunds",
+    "method": "get",
+    "path": "/api/refunds",
+    "tag": "refunds",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_refunds_id",
+    "name": "getRefundsId",
+    "method": "get",
+    "path": "/api/refunds/{id}",
+    "tag": "refunds",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_returns_id",
+    "name": "getReturnsId",
+    "method": "get",
+    "path": "/api/returns/{id}",
+    "tag": "returns",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_returns_mine",
+    "name": "getReturnsMine",
+    "method": "get",
+    "path": "/api/returns/mine",
+    "tag": "returns",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_search_suggestions",
+    "name": "getSearchSuggestions",
+    "method": "get",
+    "path": "/api/search/suggestions",
+    "tag": "discovery",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_shipments_id_events",
+    "name": "getShipmentsIdEvents",
+    "method": "get",
+    "path": "/api/shipments/{id}/events",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_shop_config",
+    "name": "getShopConfig",
+    "method": "get",
+    "path": "/api/shop/config",
+    "tag": "settings",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_stock_alert_subscriptions_mine",
+    "name": "getStockAlertSubscriptionsMine",
+    "method": "get",
+    "path": "/api/stock-alert-subscriptions/mine",
+    "tag": "wishlist",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_storefront_home",
+    "name": "getStorefrontHome",
+    "method": "get",
+    "path": "/api/storefront/home",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_support_tickets_id",
+    "name": "getSupportTicketsId",
+    "method": "get",
+    "path": "/api/support/tickets/{id}",
+    "tag": "support",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_support_tickets_id_messages",
+    "name": "getSupportTicketsIdMessages",
+    "method": "get",
+    "path": "/api/support/tickets/{id}/messages",
+    "tag": "support",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_support_tickets_mine",
+    "name": "getSupportTicketsMine",
+    "method": "get",
+    "path": "/api/support/tickets/mine",
+    "tag": "support",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "get_api_wishlist",
+    "name": "getWishlist",
+    "method": "get",
+    "path": "/api/wishlist",
+    "tag": "wishlist",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_addresses_id_default",
+    "name": "patchAddressesIdDefault",
+    "method": "patch",
+    "path": "/api/addresses/{id}/default",
+    "tag": "addresses",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_banners_id",
+    "name": "patchAdminBannersId",
+    "method": "patch",
+    "path": "/api/admin/banners/{id}",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_collections_id",
+    "name": "patchAdminCollectionsId",
+    "method": "patch",
+    "path": "/api/admin/collections/{id}",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_customers_id_status",
+    "name": "patchAdminCustomersIdStatus",
+    "method": "patch",
+    "path": "/api/admin/customers/{id}/status",
+    "tag": "staff",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_home_layout",
+    "name": "patchAdminHomeLayout",
+    "method": "patch",
+    "path": "/api/admin/home-layout",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_navigation_placement",
+    "name": "patchAdminNavigationPlacement",
+    "method": "patch",
+    "path": "/api/admin/navigation/{placement}",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_pages_id",
+    "name": "patchAdminPagesId",
+    "method": "patch",
+    "path": "/api/admin/pages/{id}",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_post_categories_id",
+    "name": "patchAdminPostCategoriesId",
+    "method": "patch",
+    "path": "/api/admin/post-categories/{id}",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_posts_id",
+    "name": "patchAdminPostsId",
+    "method": "patch",
+    "path": "/api/admin/posts/{id}",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_post_tags_id",
+    "name": "patchAdminPostTagsId",
+    "method": "patch",
+    "path": "/api/admin/post-tags/{id}",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_promotions_id",
+    "name": "patchAdminPromotionsId",
+    "method": "patch",
+    "path": "/api/admin/promotions/{id}",
+    "tag": "promotions",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_settings_commerce",
+    "name": "patchAdminSettingsCommerce",
+    "method": "patch",
+    "path": "/api/admin/settings/commerce",
+    "tag": "settings",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_settings_shop",
+    "name": "patchAdminSettingsShop",
+    "method": "patch",
+    "path": "/api/admin/settings/shop",
+    "tag": "settings",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_shipping_methods_id",
+    "name": "patchAdminShippingMethodsId",
+    "method": "patch",
+    "path": "/api/admin/shipping-methods/{id}",
+    "tag": "settings",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_size_guides_id",
+    "name": "patchAdminSizeGuidesId",
+    "method": "patch",
+    "path": "/api/admin/size-guides/{id}",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_staff_id_role",
+    "name": "patchAdminStaffIdRole",
+    "method": "patch",
+    "path": "/api/admin/staff/{id}/role",
+    "tag": "staff",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_admin_staff_id_status",
+    "name": "patchAdminStaffIdStatus",
+    "method": "patch",
+    "path": "/api/admin/staff/{id}/status",
+    "tag": "staff",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_auth_me",
+    "name": "patchAuthMe",
+    "method": "patch",
+    "path": "/api/auth/me",
+    "tag": "auth",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_auth_password",
+    "name": "patchAuthPassword",
+    "method": "patch",
+    "path": "/api/auth/password",
+    "tag": "auth",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_cart_items_id",
+    "name": "patchCartItemsId",
+    "method": "patch",
+    "path": "/api/cart/items/{id}",
+    "tag": "cart",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_me_notification_preferences",
+    "name": "patchMeNotificationPreferences",
+    "method": "patch",
+    "path": "/api/me/notification-preferences",
+    "tag": "notifications",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_me_preferences",
+    "name": "patchMePreferences",
+    "method": "patch",
+    "path": "/api/me/preferences",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_me_profile",
+    "name": "patchMeProfile",
+    "method": "patch",
+    "path": "/api/me/profile",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_products_id_publication",
+    "name": "patchProductsIdPublication",
+    "method": "patch",
+    "path": "/api/products/{id}/publication",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_products_id_variants_variantId",
+    "name": "patchProductsIdVariantsVariantId",
+    "method": "patch",
+    "path": "/api/products/{id}/variants/{variantId}",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_products_id_variants_variantId_images",
+    "name": "patchProductsIdVariantsVariantIdImages",
+    "method": "patch",
+    "path": "/api/products/{id}/variants/{variantId}/images",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "patch_api_reviews_id",
+    "name": "patchReviewsId",
+    "method": "patch",
+    "path": "/api/reviews/{id}",
+    "tag": "reviews",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_addresses",
+    "name": "postAddresses",
+    "method": "post",
+    "path": "/api/addresses",
+    "tag": "addresses",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_banners",
+    "name": "postAdminBanners",
+    "method": "post",
+    "path": "/api/admin/banners",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_collections",
+    "name": "postAdminCollections",
+    "method": "post",
+    "path": "/api/admin/collections",
+    "tag": "merchandising",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_exports",
+    "name": "postAdminExports",
+    "method": "post",
+    "path": "/api/admin/exports",
+    "tag": "processes",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_imports_resource",
+    "name": "postAdminImportsResource",
+    "method": "post",
+    "path": "/api/admin/imports/{resource}",
+    "tag": "processes",
+    "response": "json",
+    "multipart": true
+  },
+  {
+    "operationId": "post_api_admin_inventory_adjustments",
+    "name": "postAdminInventoryAdjustments",
+    "method": "post",
+    "path": "/api/admin/inventory/adjustments",
+    "tag": "inventory",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_inventory_receipts",
+    "name": "postAdminInventoryReceipts",
+    "method": "post",
+    "path": "/api/admin/inventory/receipts",
+    "tag": "inventory",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_jobs_id_retry",
+    "name": "postAdminJobsIdRetry",
+    "method": "post",
+    "path": "/api/admin/jobs/{id}/retry",
+    "tag": "jobs",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_operations_inventory_reconciliation",
+    "name": "postAdminOperationsInventoryReconciliation",
+    "method": "post",
+    "path": "/api/admin/operations/inventory-reconciliation",
+    "tag": "operations",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_pages",
+    "name": "postAdminPages",
+    "method": "post",
+    "path": "/api/admin/pages",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_pages_id_archive",
+    "name": "postAdminPagesIdArchive",
+    "method": "post",
+    "path": "/api/admin/pages/{id}/archive",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_pages_id_publish",
+    "name": "postAdminPagesIdPublish",
+    "method": "post",
+    "path": "/api/admin/pages/{id}/publish",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_payments_id_cod_collection",
+    "name": "postAdminPaymentsIdCodCollection",
+    "method": "post",
+    "path": "/api/admin/payments/{id}/cod-collection",
+    "tag": "payments",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_payments_id_reconcile",
+    "name": "postAdminPaymentsIdReconcile",
+    "method": "post",
+    "path": "/api/admin/payments/{id}/reconcile",
+    "tag": "payments",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_post_categories",
+    "name": "postAdminPostCategories",
+    "method": "post",
+    "path": "/api/admin/post-categories",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_posts",
+    "name": "postAdminPosts",
+    "method": "post",
+    "path": "/api/admin/posts",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_posts_id_archive",
+    "name": "postAdminPostsIdArchive",
+    "method": "post",
+    "path": "/api/admin/posts/{id}/archive",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_posts_id_publish",
+    "name": "postAdminPostsIdPublish",
+    "method": "post",
+    "path": "/api/admin/posts/{id}/publish",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_post_tags",
+    "name": "postAdminPostTags",
+    "method": "post",
+    "path": "/api/admin/post-tags",
+    "tag": "content",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_promotions",
+    "name": "postAdminPromotions",
+    "method": "post",
+    "path": "/api/admin/promotions",
+    "tag": "promotions",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_refunds_id_manual_confirmation",
+    "name": "postAdminRefundsIdManualConfirmation",
+    "method": "post",
+    "path": "/api/admin/refunds/{id}/manual-confirmation",
+    "tag": "refunds",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_refunds_id_reconcile",
+    "name": "postAdminRefundsIdReconcile",
+    "method": "post",
+    "path": "/api/admin/refunds/{id}/reconcile",
+    "tag": "refunds",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_refunds_id_retry",
+    "name": "postAdminRefundsIdRetry",
+    "method": "post",
+    "path": "/api/admin/refunds/{id}/retry",
+    "tag": "refunds",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_report_exports",
+    "name": "postAdminReportExports",
+    "method": "post",
+    "path": "/api/admin/report-exports",
+    "tag": "reports",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_shipping_methods",
+    "name": "postAdminShippingMethods",
+    "method": "post",
+    "path": "/api/admin/shipping-methods",
+    "tag": "settings",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_size_guides",
+    "name": "postAdminSizeGuides",
+    "method": "post",
+    "path": "/api/admin/size-guides",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_staff_invitations",
+    "name": "postAdminStaffInvitations",
+    "method": "post",
+    "path": "/api/admin/staff/invitations",
+    "tag": "staff",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_admin_support_tickets_id_assign",
+    "name": "postAdminSupportTicketsIdAssign",
+    "method": "post",
+    "path": "/api/admin/support/tickets/{id}/assign",
+    "tag": "support",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_auth_email_verification_requests",
+    "name": "postAuthEmailVerificationRequests",
+    "method": "post",
+    "path": "/api/auth/email-verification-requests",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_auth_email_verifications",
+    "name": "postAuthEmailVerifications",
+    "method": "post",
+    "path": "/api/auth/email-verifications",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_auth_google",
+    "name": "postAuthGoogle",
+    "method": "post",
+    "path": "/api/auth/google",
+    "tag": "auth",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_auth_login",
+    "name": "postAuthLogin",
+    "method": "post",
+    "path": "/api/auth/login",
+    "tag": "auth",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_auth_logout",
+    "name": "postAuthLogout",
+    "method": "post",
+    "path": "/api/auth/logout",
+    "tag": "auth",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_auth_password_reset_requests",
+    "name": "postAuthPasswordResetRequests",
+    "method": "post",
+    "path": "/api/auth/password-reset-requests",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_auth_password_resets",
+    "name": "postAuthPasswordResets",
+    "method": "post",
+    "path": "/api/auth/password-resets",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_auth_refresh",
+    "name": "postAuthRefresh",
+    "method": "post",
+    "path": "/api/auth/refresh",
+    "tag": "auth",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_auth_register",
+    "name": "postAuthRegister",
+    "method": "post",
+    "path": "/api/auth/register",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_cancellation_requests_id_approve",
+    "name": "postCancellationRequestsIdApprove",
+    "method": "post",
+    "path": "/api/cancellation-requests/{id}/approve",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_cancellation_requests_id_reject",
+    "name": "postCancellationRequestsIdReject",
+    "method": "post",
+    "path": "/api/cancellation-requests/{id}/reject",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_cart_items",
+    "name": "postCartItems",
+    "method": "post",
+    "path": "/api/cart/items",
+    "tag": "cart",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_cart_merge",
+    "name": "postCartMerge",
+    "method": "post",
+    "path": "/api/cart/merge",
+    "tag": "cart",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_categories",
+    "name": "postCategories",
+    "method": "post",
+    "path": "/api/categories",
+    "tag": "categories",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_checkout_quotes",
+    "name": "postCheckoutQuotes",
+    "method": "post",
+    "path": "/api/checkout/quotes",
+    "tag": "checkout",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_coupons",
+    "name": "postCoupons",
+    "method": "post",
+    "path": "/api/coupons",
+    "tag": "coupons",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_coupons_preview",
+    "name": "postCouponsPreview",
+    "method": "post",
+    "path": "/api/coupons/preview",
+    "tag": "coupons",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_exchanges_id_approve",
+    "name": "postExchangesIdApprove",
+    "method": "post",
+    "path": "/api/exchanges/{id}/approve",
+    "tag": "exchanges",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_exchanges_id_create_replacement",
+    "name": "postExchangesIdCreateReplacement",
+    "method": "post",
+    "path": "/api/exchanges/{id}/create-replacement",
+    "tag": "exchanges",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_exchanges_id_reject",
+    "name": "postExchangesIdReject",
+    "method": "post",
+    "path": "/api/exchanges/{id}/reject",
+    "tag": "exchanges",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_files_uploads",
+    "name": "postFilesUploads",
+    "method": "post",
+    "path": "/api/files/uploads",
+    "tag": "files",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_files_uploads_batch",
+    "name": "postFilesUploadsBatch",
+    "method": "post",
+    "path": "/api/files/uploads/batch",
+    "tag": "processes",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_files_uploads_batch_complete",
+    "name": "postFilesUploadsBatchComplete",
+    "method": "post",
+    "path": "/api/files/uploads/batch/complete",
+    "tag": "processes",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_files_uploads_id_complete",
+    "name": "postFilesUploadsIdComplete",
+    "method": "post",
+    "path": "/api/files/uploads/{id}/complete",
+    "tag": "files",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_me_email_change_requests",
+    "name": "postMeEmailChangeRequests",
+    "method": "post",
+    "path": "/api/me/email-change-requests",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_me_email_changes_confirm",
+    "name": "postMeEmailChangesConfirm",
+    "method": "post",
+    "path": "/api/me/email-changes/confirm",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_me_sessions_revoke_others",
+    "name": "postMeSessionsRevokeOthers",
+    "method": "post",
+    "path": "/api/me/sessions/revoke-others",
+    "tag": "accounts",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_notifications_id_read",
+    "name": "postNotificationsIdRead",
+    "method": "post",
+    "path": "/api/notifications/{id}/read",
+    "tag": "notifications",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_notifications_read_all",
+    "name": "postNotificationsReadAll",
+    "method": "post",
+    "path": "/api/notifications/read-all",
+    "tag": "notifications",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_order_items_id_reviews",
+    "name": "postOrderItemsIdReviews",
+    "method": "post",
+    "path": "/api/order-items/{id}/reviews",
+    "tag": "reviews",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_orders",
+    "name": "postOrders",
+    "method": "post",
+    "path": "/api/orders",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_orders_id_cancel",
+    "name": "postOrdersIdCancel",
+    "method": "post",
+    "path": "/api/orders/{id}/cancel",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_orders_id_cancellation_requests",
+    "name": "postOrdersIdCancellationRequests",
+    "method": "post",
+    "path": "/api/orders/{id}/cancellation-requests",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_orders_id_confirm",
+    "name": "postOrdersIdConfirm",
+    "method": "post",
+    "path": "/api/orders/{id}/confirm",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_orders_id_exchanges",
+    "name": "postOrdersIdExchanges",
+    "method": "post",
+    "path": "/api/orders/{id}/exchanges",
+    "tag": "exchanges",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_orders_id_payment_attempts",
+    "name": "postOrdersIdPaymentAttempts",
+    "method": "post",
+    "path": "/api/orders/{id}/payment-attempts",
+    "tag": "payments",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_orders_id_refunds",
+    "name": "postOrdersIdRefunds",
+    "method": "post",
+    "path": "/api/orders/{id}/refunds",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_orders_id_returns",
+    "name": "postOrdersIdReturns",
+    "method": "post",
+    "path": "/api/orders/{id}/returns",
+    "tag": "returns",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_orders_id_shipments",
+    "name": "postOrdersIdShipments",
+    "method": "post",
+    "path": "/api/orders/{id}/shipments",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_orders_id_start_processing",
+    "name": "postOrdersIdStartProcessing",
+    "method": "post",
+    "path": "/api/orders/{id}/start-processing",
+    "tag": "orders",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_payments_id_mock_pay",
+    "name": "postPaymentsIdMockPay",
+    "method": "post",
+    "path": "/api/payments/{id}/mock-pay",
+    "tag": "payments",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_payments_webhook_stripe",
+    "name": "postPaymentsWebhookStripe",
+    "method": "post",
+    "path": "/api/payments/webhook/stripe",
+    "tag": "payments",
+    "response": "empty",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_processes_id_cancel",
+    "name": "postProcessesIdCancel",
+    "method": "post",
+    "path": "/api/processes/{id}/cancel",
+    "tag": "processes",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_processes_id_confirm",
+    "name": "postProcessesIdConfirm",
+    "method": "post",
+    "path": "/api/processes/{id}/confirm",
+    "tag": "processes",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_products",
+    "name": "postProducts",
+    "method": "post",
+    "path": "/api/products",
+    "tag": "products",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_products_id_images",
+    "name": "postProductsIdImages",
+    "method": "post",
+    "path": "/api/products/{id}/images",
+    "tag": "products",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_products_id_reviews",
+    "name": "postProductsIdReviews",
+    "method": "post",
+    "path": "/api/products/{id}/reviews",
+    "tag": "products",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_products_id_variants",
+    "name": "postProductsIdVariants",
+    "method": "post",
+    "path": "/api/products/{id}/variants",
+    "tag": "catalog",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_returns_id_approve",
+    "name": "postReturnsIdApprove",
+    "method": "post",
+    "path": "/api/returns/{id}/approve",
+    "tag": "returns",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_returns_id_complete",
+    "name": "postReturnsIdComplete",
+    "method": "post",
+    "path": "/api/returns/{id}/complete",
+    "tag": "returns",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_returns_id_inspect",
+    "name": "postReturnsIdInspect",
+    "method": "post",
+    "path": "/api/returns/{id}/inspect",
+    "tag": "returns",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_returns_id_in_transit",
+    "name": "postReturnsIdInTransit",
+    "method": "post",
+    "path": "/api/returns/{id}/in-transit",
+    "tag": "returns",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_returns_id_receive",
+    "name": "postReturnsIdReceive",
+    "method": "post",
+    "path": "/api/returns/{id}/receive",
+    "tag": "returns",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_returns_id_reject",
+    "name": "postReturnsIdReject",
+    "method": "post",
+    "path": "/api/returns/{id}/reject",
+    "tag": "returns",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_reviews_id_moderation",
+    "name": "postReviewsIdModeration",
+    "method": "post",
+    "path": "/api/reviews/{id}/moderation",
+    "tag": "reviews",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_reviews_id_reports",
+    "name": "postReviewsIdReports",
+    "method": "post",
+    "path": "/api/reviews/{id}/reports",
+    "tag": "reviews",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_shipments_id_cancel",
+    "name": "postShipmentsIdCancel",
+    "method": "post",
+    "path": "/api/shipments/{id}/cancel",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_shipments_id_deliver",
+    "name": "postShipmentsIdDeliver",
+    "method": "post",
+    "path": "/api/shipments/{id}/deliver",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_shipments_id_fail",
+    "name": "postShipmentsIdFail",
+    "method": "post",
+    "path": "/api/shipments/{id}/fail",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_shipments_id_handover",
+    "name": "postShipmentsIdHandover",
+    "method": "post",
+    "path": "/api/shipments/{id}/handover",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_shipments_id_lose",
+    "name": "postShipmentsIdLose",
+    "method": "post",
+    "path": "/api/shipments/{id}/lose",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_shipments_id_out_for_delivery",
+    "name": "postShipmentsIdOutForDelivery",
+    "method": "post",
+    "path": "/api/shipments/{id}/out-for-delivery",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_shipments_id_pack",
+    "name": "postShipmentsIdPack",
+    "method": "post",
+    "path": "/api/shipments/{id}/pack",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_shipments_id_ready",
+    "name": "postShipmentsIdReady",
+    "method": "post",
+    "path": "/api/shipments/{id}/ready",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_shipments_id_return",
+    "name": "postShipmentsIdReturn",
+    "method": "post",
+    "path": "/api/shipments/{id}/return",
+    "tag": "fulfillment",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_shipping_quotes",
+    "name": "postShippingQuotes",
+    "method": "post",
+    "path": "/api/shipping/quotes",
+    "tag": "settings",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_staff_invitations_accept",
+    "name": "postStaffInvitationsAccept",
+    "method": "post",
+    "path": "/api/staff/invitations/accept",
+    "tag": "staff",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_stock_alert_subscriptions",
+    "name": "postStockAlertSubscriptions",
+    "method": "post",
+    "path": "/api/stock-alert-subscriptions",
+    "tag": "wishlist",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_support_tickets",
+    "name": "postSupportTickets",
+    "method": "post",
+    "path": "/api/support/tickets",
+    "tag": "support",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_support_tickets_id_close",
+    "name": "postSupportTicketsIdClose",
+    "method": "post",
+    "path": "/api/support/tickets/{id}/close",
+    "tag": "support",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "post_api_support_tickets_id_messages",
+    "name": "postSupportTicketsIdMessages",
+    "method": "post",
+    "path": "/api/support/tickets/{id}/messages",
+    "tag": "support",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "put_api_addresses_id",
+    "name": "putAddressesId",
+    "method": "put",
+    "path": "/api/addresses/{id}",
+    "tag": "addresses",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "put_api_admin_notification_templates",
+    "name": "putAdminNotificationTemplates",
+    "method": "put",
+    "path": "/api/admin/notification-templates",
+    "tag": "notifications",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "put_api_categories_id",
+    "name": "putCategoriesId",
+    "method": "put",
+    "path": "/api/categories/{id}",
+    "tag": "categories",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "put_api_coupons_id",
+    "name": "putCouponsId",
+    "method": "put",
+    "path": "/api/coupons/{id}",
+    "tag": "coupons",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "put_api_products_id",
+    "name": "putProductsId",
+    "method": "put",
+    "path": "/api/products/{id}",
+    "tag": "products",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "put_api_reviews_id_reply",
+    "name": "putReviewsIdReply",
+    "method": "put",
+    "path": "/api/reviews/{id}/reply",
+    "tag": "reviews",
+    "response": "json",
+    "multipart": false
+  },
+  {
+    "operationId": "put_api_wishlist_items_productId",
+    "name": "putWishlistItemsProductId",
+    "method": "put",
+    "path": "/api/wishlist/items/{productId}",
+    "tag": "wishlist",
+    "response": "json",
+    "multipart": false
+  }
+]

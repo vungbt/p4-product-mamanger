@@ -12,17 +12,21 @@ export async function settings(transaction?: Transaction) {
   return row;
 }
 
-export function shopDto(row: ShopSettingsModel): ShopSettings {
-  return selectFields(row, [
-    'name',
-    'supportEmail',
-    'supportPhone',
-    'logoFileId',
-    'defaultLocale',
-    'currency',
-    'timezone',
-    'version',
-  ]);
+export async function shopDto(row: ShopSettingsModel): Promise<ShopSettings> {
+  const logo = row.logoFileId ? await FileModel.findByPk(row.logoFileId) : null;
+  return {
+    ...selectFields(row, [
+      'name',
+      'supportEmail',
+      'supportPhone',
+      'logoFileId',
+      'defaultLocale',
+      'currency',
+      'timezone',
+      'version',
+    ]),
+    logoUrl: logo?.metadata?.private !== true ? (logo?.url ?? '') : '',
+  };
 }
 
 export function commerceDto(row: ShopSettingsModel): CommerceSettings {
