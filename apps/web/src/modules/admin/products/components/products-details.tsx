@@ -1,7 +1,7 @@
 import { Alert, Button, Dialog, Spinner, Tag, type TagTone } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { useProduct, useProductVariants, useUpdateProductPublication } from '@p4/api-sdk/react';
-import { getErrorMessage } from '@p4/api-sdk/shared';
+import { ApiSdkError, getErrorMessage } from '@p4/api-sdk/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -35,15 +35,41 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
       toast.success(t('products.statusUpdated', 'Đã cập nhật trạng thái sản phẩm.'));
       void query.refetch();
     } catch (error: unknown) {
-      const err = error as { status?: number; statusCode?: number } | null;
-      const isConflict = err?.status === 409 || err?.statusCode === 409;
-      toast.error(
-        isConflict
-          ? t(
+      const isApiSdkError = error instanceof ApiSdkError;
+      const statusCode = isApiSdkError
+        ? error.status
+        : ((error as { status?: number; statusCode?: number })?.status ??
+          (error as { status?: number; statusCode?: number })?.statusCode);
+      const code = isApiSdkError ? error.code : (error as { code?: string })?.code;
+
+      if (statusCode === 409) {
+        if (code === 'version_conflict') {
+          toast.error(
+            t(
               'products.conflictVersion',
-              'Phiên bản sản phẩm đã bị thay đổi bởi người khác. Vui lòng tải lại trang.',
-            )
-          : getErrorMessage(error, t('products.statusUpdateFailed', 'Không thể đổi trạng thái.')),
+              'Phiên bản sản phẩm đã bị thay đổi bởi người khác. Đang tải lại dữ liệu mới nhất...',
+            ),
+          );
+          void query.refetch();
+          return;
+        }
+        if (code === 'product_incomplete') {
+          toast.error(
+            t(
+              'products.incompleteCondition',
+              'Sản phẩm chưa đủ điều kiện xuất bản (cần có tên, slug, mô tả, ảnh đại diện và ít nhất một biến thể SKU đang hoạt động).',
+            ),
+          );
+          return;
+        }
+        if (code === 'invalid_state_transition') {
+          toast.error(t('products.invalidTransition', 'Không thể chuyển đổi sang trạng thái này.'));
+          return;
+        }
+      }
+
+      toast.error(
+        getErrorMessage(error, t('products.statusUpdateFailed', 'Không thể đổi trạng thái.')),
       );
     }
   };
@@ -187,10 +213,29 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
 
           <div>
             <h4 className="mb-2 border-b border-line pb-2 font-semibold text-ui-sm">
-              {t('products.skus', 'Danh sách biến thể SKU')} ({variants.length})
+              {t('products.skus', 'Danh sách biến thể SKU')}
+              {!variantsQuery.isPending && !variantsQuery.isError ? ` (${variants.length})` : ''}
             </h4>
             {variantsQuery.isPending ? (
               <Spinner label={t('products.loadingSkus', 'Đang tải SKU...')} />
+            ) : variantsQuery.isError ? (
+              <div className="grid gap-2">
+                <Alert tone="danger">
+                  {getErrorMessage(
+                    variantsQuery.error,
+                    t('products.loadSkusFailed', 'Không thể tải danh sách biến thể SKU.'),
+                  )}
+                </Alert>
+                <div>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => void variantsQuery.refetch()}
+                  >
+                    {t('products.retry', 'Thử lại')}
+                  </Button>
+                </div>
+              </div>
             ) : variants.length === 0 ? (
               <p className="text-ui-sm text-muted">
                 {t('products.noVariants', 'Chưa có biến thể SKU nào.')}

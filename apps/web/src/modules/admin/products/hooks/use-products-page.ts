@@ -7,7 +7,12 @@ import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
 import useQueryParam from '@/hooks/use-query-param';
 
-const sortFields: NonNullable<ProductListQuery['sortBy']>[] = ['name', 'price', 'createdAt'];
+const sortFields: NonNullable<ProductListQuery['sortBy']>[] = [
+  'name',
+  'price',
+  'createdAt',
+  'stock',
+];
 
 const productQuerySchema = v.object({
   page: v.optional(
@@ -122,7 +127,7 @@ export default function useProductsPage() {
 
   const resetOrRefresh = () => {
     if (hasFilters) resetFilters();
-    else if (query.isFetching) void query.refetch();
+    else if (!query.isFetching) void query.refetch();
   };
 
   const changeSearch = (value: string) => {

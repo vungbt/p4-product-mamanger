@@ -89,6 +89,7 @@ export default function AdminProductsPage() {
     {
       accessorKey: 'description',
       header: t('products.description', 'Mô tả sản phẩm'),
+      enableSorting: false,
       cell: ({ row }) => (
         <span className="block max-w-sm truncate" title={row.original.description}>
           {row.original.description || t('products.noDescription', 'Chưa có mô tả')}
@@ -98,6 +99,7 @@ export default function AdminProductsPage() {
     {
       accessorKey: 'status',
       header: t('products.status', 'Trạng thái'),
+      enableSorting: false,
       cell: ({ row }) => {
         const status = (row.original as { status?: string }).status || 'draft';
         return (
@@ -110,6 +112,7 @@ export default function AdminProductsPage() {
     {
       id: 'category',
       header: t('products.category', 'Danh mục'),
+      enableSorting: false,
       cell: ({ row }) => row.original.category?.name || t('products.none', 'Chưa phân loại'),
     },
     {
