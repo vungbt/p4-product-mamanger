@@ -269,6 +269,10 @@
     "size": "Kích cỡ",
     "sku": "Mã SKU",
     "available": "Khả dụng",
-    "status": "Trạng thái"
+    "status": "Trạng thái",
+    "brand": "Thương hiệu",
+    "material": "Chất liệu",
+    "careInstructions": "Hướng dẫn bảo quản",
+    "version": "Phiên bản"
   }
 }

@@ -268,6 +268,10 @@
     "status": "Status",
     "noImage": "No image",
     "conflictVersion": "Product version has been changed by another person. Please reload the page.",
-    "loadingSkus": "Loading SKUs..."
+    "loadingSkus": "Loading SKUs...",
+    "brand": "Brand",
+    "material": "Material",
+    "careInstructions": "Care Instructions",
+    "version": "Version"
   }
 }

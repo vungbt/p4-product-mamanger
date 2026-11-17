@@ -1,12 +1,6 @@
-import { type DataTableState, toast, useDebouncedCallback } from '@itclabs/react-ui';
-import {
-  useCreateProduct,
-  useDeleteProduct,
-  useProducts,
-  useUpdateProduct,
-  useUpdateProductPublication,
-} from '@p4/api-sdk/react';
-import { getErrorMessage, type ProductInput, type ProductListQuery } from '@p4/api-sdk/shared';
+import { type DataTableState, useDebouncedCallback } from '@itclabs/react-ui';
+import { useProducts } from '@p4/api-sdk/react';
+import { getErrorMessage, type ProductListQuery } from '@p4/api-sdk/shared';
 import type { Product } from '@p4/shared';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -42,22 +36,20 @@ const productQuerySchema = v.object({
   ),
   q: v.optional(v.fallback(v.pipe(v.string(), v.trim()), '')),
   categoryId: v.optional(v.fallback(v.pipe(v.string(), v.trim()), '')),
-  sortBy: v.optional(v.fallback(v.picklist(sortFields), 'createdAt')),
-  sortOrder: v.optional(v.fallback(v.picklist(['asc', 'desc']), 'desc'), 'desc'),
+  sortBy: v.optional(v.picklist(sortFields)),
+  sortOrder: v.optional(v.picklist(['asc', 'desc'])),
 });
 
 export default function useProductsPage() {
   const { t } = useTranslation();
   const [params, setQuery] = useQueryParam(productQuerySchema);
   const { page, pageSize, sortBy } = params;
-  const sortOrder = sortBy ? params.sortOrder : 'desc';
+  const sortOrder = sortBy ? (params.sortOrder ?? 'desc') : undefined;
   const globalFilter = params.q ?? '';
   const categoryFilter = params.categoryId || undefined;
   const [columnVisibility, setColumnVisibility] = useState<DataTableState['columnVisibility']>({});
   const [search, setSearch] = useState(globalFilter);
   const [viewing, setViewing] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<Product | null>(null);
-  const [editor, setEditor] = useState<(ProductInput & { id?: string }) | null>(null);
 
   const state: DataTableState = {
     sorting: sortBy ? [{ id: sortBy, desc: sortOrder === 'desc' }] : [],
@@ -66,45 +58,42 @@ export default function useProductsPage() {
     columnFilters: categoryFilter ? [{ id: 'categoryId', value: categoryFilter }] : [],
     columnVisibility,
   };
+
   const query = useProducts({
     page,
     pageSize,
     q: globalFilter || undefined,
     categoryId: categoryFilter,
     sortBy: sortBy ?? 'createdAt',
-    sortOrder,
+    sortOrder: sortOrder ?? 'desc',
   });
-
-  const create = useCreateProduct();
-  const update = useUpdateProduct();
-  const remove = useDeleteProduct();
-  const updatePublication = useUpdateProductPublication();
 
   const changeTableState = (next: DataTableState) => {
     setColumnVisibility(next.columnVisibility);
 
     const sorting = next.sorting[0];
     const nextSortBy = sortFields.find((field) => field === sorting?.id);
-    if (
-      nextSortBy === sortBy &&
-      Boolean(sorting?.desc) === (sortOrder === 'desc') &&
-      next.pagination.pageIndex === state.pagination.pageIndex &&
-      next.pagination.pageSize === pageSize
-    )
-      return;
 
-    const resetPage =
-      next.pagination.pageSize !== pageSize ||
+    const pageIndexChanged = next.pagination.pageIndex !== state.pagination.pageIndex;
+    const pageSizeChanged = next.pagination.pageSize !== pageSize;
+    const sortChanged =
       nextSortBy !== sortBy ||
-      Boolean(sorting?.desc) !== (sortOrder === 'desc');
+      (nextSortBy ? Boolean(sorting?.desc) !== (sortOrder === 'desc') : false);
+
+    if (!pageIndexChanged && !pageSizeChanged && !sortChanged) {
+      return;
+    }
+
+    const resetPage = pageSizeChanged || sortChanged;
 
     setQuery({
       page: resetPage ? 1 : next.pagination.pageIndex + 1,
       pageSize: next.pagination.pageSize,
       sortBy: nextSortBy,
-      sortOrder: nextSortBy ? (sorting.desc ? 'desc' : 'asc') : undefined,
+      sortOrder: nextSortBy ? (sorting?.desc ? 'desc' : 'asc') : undefined,
     });
   };
+
   const applySearch = (value: string) => setQuery({ q: value, page: 1 }, { replace: true });
   const debouncedSearch = useDebouncedCallback(applySearch, 300);
 
@@ -118,6 +107,7 @@ export default function useProductsPage() {
     debouncedSearch.cancel();
     setSearch(globalFilter);
   }, [globalFilter, debouncedSearch]);
+
   const resetFilters = () => {
     debouncedSearch.cancel();
     setSearch('');
@@ -143,88 +133,16 @@ export default function useProductsPage() {
       applySearch('');
     }
   };
+
   const changeCategoryFilter = (categoryId: string | null) => {
     setQuery({ categoryId: categoryId || undefined, page: 1 });
   };
+
   const changeColumnVisibility = (id: string, checked: boolean) =>
     setColumnVisibility((previous) => ({ ...previous, [id]: checked }));
-  const openCreate = () => setEditor({ name: '', slug: '', description: '', price: 0, stock: 0 });
 
-  const openDetails = (products: Product) => setViewing(products.id);
+  const openDetails = (product: Product) => setViewing(product.id);
   const closeDetails = () => setViewing(null);
-
-  const closeEditor = () => setEditor(null);
-
-  const closeDelete = () => {
-    if (!remove.isPending) setDeleting(null);
-  };
-  const deleteProduct = async () => {
-    if (!deleting || remove.isPending) return;
-    try {
-      await remove.mutateAsync(deleting.id);
-      toast.success(t('products.deleted', 'Đã xóa sản phẩm.'));
-      setDeleting(null);
-    } catch (error) {
-      toast.error(getErrorMessage(error, t('products.deleteFailed', 'Không thể xóa sản phẩm.')));
-    }
-  };
-
-  const openEdit = (product: Product) => {
-    setEditor({
-      id: product.id,
-      name: product.name,
-      slug: (product as any).slug ?? '',
-      description: product.description,
-      price: product.price,
-      stock: product.stock,
-      categoryId: product.categoryId || undefined,
-      imageStorageId: product.imageUrl,
-    });
-  };
-  const saveProduct = async (input: ProductInput & { id?: string }) => {
-    try {
-      const payload: ProductInput = {
-        name: input.name,
-        slug: input.slug,
-        description: input.description,
-        price: input.price,
-        stock: input.stock,
-        categoryId: input.categoryId || undefined,
-        imageStorageId: input.imageStorageId,
-      };
-      if (input.id) {
-        await update.mutateAsync({ id: input.id, body: payload });
-        toast.success(t('products.updated', 'Đã cập nhật sản phẩm.'));
-      } else {
-        await create.mutateAsync(payload);
-        toast.success(t('products.created', 'Đã tạo sản phẩm thành công.'));
-      }
-      setEditor(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(
-          error,
-          input.id
-            ? t('products.updateFailed', 'Không thể cập nhật sản phẩm.')
-            : t('products.createFailed', 'Không thể tạo sản phẩm.'),
-        ),
-      );
-    }
-  };
-  const changePublication = async (
-    id: string,
-    status: 'draft' | 'active' | 'inactive' | 'archived',
-    expectedVersion = 1,
-  ) => {
-    try {
-      await updatePublication.mutateAsync({ id, body: { status, expectedVersion } });
-      toast.success(t('products.statusUpdated', 'Đã cập nhật trạng thái sản phẩm.'));
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error, t('products.statusUpdateFailed', 'Không thể đổi trạng thái.')),
-      );
-    }
-  };
 
   return {
     rows,
@@ -235,30 +153,18 @@ export default function useProductsPage() {
     hasFilters,
     hasAppliedFilters,
     viewing,
-    deleting,
-    editor,
     loading: query.isPending || query.isFetching,
     error: query.isError
       ? getErrorMessage(query.error, t('products.loadFailed', 'Không thể tải danh sách sản phẩm.'))
       : undefined,
-    saving: create.isPending || update.isPending || updatePublication.isPending,
-    deletingPending: remove.isPending,
     changeTableState,
     changeSearch,
     clearSearch,
     resetOrRefresh,
     changeCategoryFilter,
     changeColumnVisibility,
-    openCreate,
     openDetails,
     closeDetails,
-    openEdit,
-    closeEditor,
-    openDelete: setDeleting,
-    closeDelete,
-    deleteProduct,
-    changePublication,
-    saveProduct,
     retry: () => {
       void query.refetch();
     },

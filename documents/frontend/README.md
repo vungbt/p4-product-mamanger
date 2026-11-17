@@ -26,7 +26,7 @@ Task Admin cũ ở [documents/admin](../admin/README.md) chỉ là tham chiếu,
 | 14 | FE-60 | [Quản trị khách hàng](fe-60.md) | Admin | FE-32 | Chưa bắt đầu |
 | 15 | FE-41 | [Quản lý bảng size](fe-41.md) | Admin | FE-37 | Chưa bắt đầu |
 | 16 | FE-02 | [Hoàn thiện danh mục ở server mode](fe-02.md) | Admin | FE-01, FE-37 | Đã có một phần |
-| 17 | FE-03 | [Danh sách và chi tiết sản phẩm](fe-03.md) | Admin | FE-02 | Chưa bắt đầu |
+| 17 | FE-03 | [Danh sách và chi tiết sản phẩm](fe-03.md) | Admin | FE-02 | Hoàn thành |
 | 18 | FE-04 | [Form sản phẩm và gallery nhiều ảnh](fe-04.md) | Admin | FE-03, FE-38, FE-41 | Chưa bắt đầu |
 | 19 | FE-05 | [SKU và biến thể sản phẩm](fe-05.md) | Admin | FE-04, FE-39 | Chưa bắt đầu |
 | 20 | FE-42 | [Tồn kho và sổ kho](fe-42.md) | Admin | FE-05 | Chưa bắt đầu |

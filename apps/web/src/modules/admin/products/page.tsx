@@ -2,22 +2,28 @@ import {
   Button,
   type ColumnDef,
   DataTable,
-  Dialog,
   DropdownMenu,
   Icon,
   IconButton,
   Input,
   Select,
+  Tag,
+  type TagTone,
   Tooltip,
 } from '@itclabs/react-ui';
 import { useCategories } from '@p4/api-sdk/react';
 import type { Product } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
 import ProductDetails from './components/products-details';
-import ProductEditor from './components/products-editor';
 import useProductsPage from './hooks/use-products-page';
 
-// Navigation preview only; the product CRUD exercise remains unimplemented.
+const statusTone: Record<string, TagTone> = {
+  draft: 'neutral',
+  active: 'success',
+  inactive: 'warning',
+  archived: 'danger',
+};
+
 export default function AdminProductsPage() {
   const { t } = useTranslation();
   const categoriesQuery = useCategories({ pageSize: 50 });
@@ -25,6 +31,7 @@ export default function AdminProductsPage() {
     value: cat.id,
     label: cat.name,
   }));
+
   const {
     rows,
     rowCount,
@@ -34,46 +41,50 @@ export default function AdminProductsPage() {
     hasFilters,
     hasAppliedFilters,
     viewing,
-    deleting,
-    editor,
     loading,
     error,
-    saving,
-    deletingPending,
     changeTableState,
     changeSearch,
     clearSearch,
     resetOrRefresh,
     changeCategoryFilter,
     changeColumnVisibility,
-    openCreate,
     openDetails,
     closeDetails,
-    openEdit,
-    closeEditor,
-    openDelete,
-    closeDelete,
-    saveProduct,
-    deleteProduct,
     retry,
   } = useProductsPage();
 
   const columns: ColumnDef<Product, unknown>[] = [
+    {
+      accessorKey: 'imageUrl',
+      header: t('products.image', 'Ảnh'),
+      enableSorting: false,
+      cell: ({ row }) => {
+        const url = row.original.imageUrl;
+        return url ? (
+          <img
+            src={url}
+            alt={row.original.name}
+            className="size-10 rounded border border-line object-cover"
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+        ) : (
+          <span className="text-ui-xs text-muted">{t('products.noImage', 'Không có ảnh')}</span>
+        );
+      },
+    },
     { accessorKey: 'name', header: t('products.name', 'Tên sản phẩm'), enableHiding: false },
     {
       accessorKey: 'price',
       header: t('products.price', 'Giá bán'),
-      cell: ({ row }) => `${row.original.price?.toLocaleString(`vi-VN`) ?? 0}đ`,
+      cell: ({ row }) => `${row.original.price?.toLocaleString('vi-VN') ?? 0}đ`,
     },
     {
       accessorKey: 'stock',
       header: t('products.stock', 'Số lượng tồn kho'),
       cell: ({ row }) => row.original.stock ?? 0,
-    },
-    {
-      accessorKey: 'imageUrl',
-      header: t('products.showcaseImage', 'Ảnh mô tả sản phẩm'),
-      cell: ({ row }) => `${row.original.imageUrl}`,
     },
     {
       accessorKey: 'description',
@@ -88,11 +99,11 @@ export default function AdminProductsPage() {
       accessorKey: 'status',
       header: t('products.status', 'Trạng thái'),
       cell: ({ row }) => {
-        const status = (row.original as any).status || 'draft';
+        const status = (row.original as { status?: string }).status || 'draft';
         return (
-          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-ui-xs font-medium capitalize">
-            {String(t(`products.statuses.${status}` as any, status))}
-          </span>
+          <Tag tone={statusTone[status] ?? 'neutral'} size="sm">
+            {String(t(`products.statuses.${status}` as never, status))}
+          </Tag>
         );
       },
     },
@@ -109,40 +120,21 @@ export default function AdminProductsPage() {
       enableGlobalFilter: false,
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-1">
-          <Tooltip content={t('products.deleted')}>
-            <IconButton
-              icon="delete"
-              variant="ghost"
-              size="sm"
-              className="bg-danger-50 text-danger-700 hover:bg-danger-50 hover:text-danger-800"
-              label={`${t('products.deleted', 'Xóa')}: ${row.original.name}`}
-              onClick={() => openDelete(row.original)}
-            />
-          </Tooltip>
           <Tooltip content={t('products.details', 'Xem chi tiết')}>
             <IconButton
               icon="view"
               variant="ghost"
               size="sm"
-              className="bg-info-50 text-info-700 hover:bg-info-50 hover:text-info-700"
-              label={`${t('common.details', 'Xem chi tiết')}:${row.original.name}`}
+              className="bg-info-50 text-info-700 hover:bg-info-100 hover:text-info-800"
+              label={`${t('products.details', 'Xem chi tiết')}: ${row.original.name}`}
               onClick={() => openDetails(row.original)}
-            />
-          </Tooltip>
-          <Tooltip content={t('products.edit', 'Chỉnh sửa')}>
-            <IconButton
-              icon="edit"
-              variant="ghost"
-              size="sm"
-              className="bg-info-50 text-info-700 hover:bg-info-50 hover:text-info-700"
-              label={`${t('products.edit', 'Chỉnh sửa')}:${row.original.name}`}
-              onClick={() => openEdit(row.original)}
             />
           </Tooltip>
         </div>
       ),
     },
   ];
+
   return (
     <div className="grid gap-4">
       <p className="text-ui-sm text-muted">{t('products.intro')}</p>
@@ -203,20 +195,19 @@ export default function AdminProductsPage() {
               trigger={
                 <Button variant="secondary" size="sm">
                   <Icon name="settings" />
-                  {t('products.columns')}
+                  {t('products.columns', 'Cột hiển thị')}
                 </Button>
               }
-              items={['price', 'stock', 'category', 'description', 'image'].map((id) => ({
-                id,
-                type: 'checkbox' as const,
-                label: t(`products.${id}`),
-                checked: state.columnVisibility?.[id] !== false,
-                onCheckedChange: (checked) => changeColumnVisibility(id, checked),
-              }))}
+              items={['imageUrl', 'price', 'stock', 'description', 'status', 'category'].map(
+                (id) => ({
+                  id,
+                  type: 'checkbox' as const,
+                  label: id === 'imageUrl' ? t('products.image', 'Ảnh') : t(`products.${id}`),
+                  checked: state.columnVisibility?.[id] !== false,
+                  onCheckedChange: (checked) => changeColumnVisibility(id, checked),
+                }),
+              )}
             />
-            <Button size="sm" onClick={openCreate}>
-              {t('products.add')}
-            </Button>
           </div>
         </div>
         <DataTable
@@ -242,40 +233,6 @@ export default function AdminProductsPage() {
         />
       </div>
       {viewing && <ProductDetails id={viewing} onClose={closeDetails} />}
-      {deleting && (
-        <Dialog
-          open
-          onOpenChange={(open) => {
-            if (!open) closeDelete();
-          }}
-          title={t('products.delete')}
-          description={t('products.deleteConfirm', { name: deleting.name })}
-          actions={[
-            {
-              id: 'cancel',
-              label: t('products.cancel'),
-              variant: 'secondary',
-              disabled: deletingPending,
-              onClick: closeDelete,
-            },
-            {
-              id: 'delete',
-              label: t('products.delete'),
-              variant: 'danger',
-              loading: deletingPending,
-              onClick: deleteProduct,
-            },
-          ]}
-        />
-      )}
-      {editor && (
-        <ProductEditor
-          initial={editor}
-          pending={saving}
-          onClose={closeEditor}
-          onSave={saveProduct}
-        />
-      )}
     </div>
   );
 }

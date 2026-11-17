@@ -21,6 +21,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
   const products = query.data?.data;
   const variants = variantsQuery.data?.data ?? [];
   const updateProductPublication = useUpdateProductPublication();
+
   const changeStatus = async (status: 'active' | 'inactive' | 'archived') => {
     if (!products) return;
     try {
@@ -92,7 +93,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                     {t('products.activate', 'Kích hoạt')}
                   </Button>
                 )}
-                {products.status !== 'inactive' && (
+                {products.status === 'active' && (
                   <Button
                     size="sm"
                     variant="secondary"
@@ -102,7 +103,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                     {t('products.deactivate', 'Tạm ngưng')}
                   </Button>
                 )}
-                {products.status === 'archived' && (
+                {products.status !== 'archived' && (
                   <Button
                     size="sm"
                     variant="danger"
@@ -114,14 +115,32 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                 )}
               </div>
             </div>
+
+            {products.imageUrl && (
+              <div className="mb-4 flex items-center gap-4">
+                <img
+                  src={products.imageUrl}
+                  alt={products.name}
+                  className="size-20 rounded border border-line object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                />
+                <div>
+                  <h3 className="font-semibold text-ui-base">{products.name}</h3>
+                  <p className="font-mono text-ui-xs text-muted">{products.slug}</p>
+                </div>
+              </div>
+            )}
+
             <dl className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.name', 'Tên sản phẩm')}</dt>
-                <dd>{products.name}</dd>
+                <dd className="font-medium">{products.name}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.slug', 'Đường dẫn')}</dt>
-                <dd>{products.slug || '-'}</dd>
+                <dd className="font-mono text-ui-sm">{products.slug || '-'}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.price', 'Giá bán')}</dt>
@@ -131,9 +150,17 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                 <dt className="text-ui-sm text-muted">{t('products.stock', 'Số lượng tồn kho')}</dt>
                 <dd>{products.stock ?? 0}</dd>
               </div>
-              <div className="sm:col-span-2">
-                <dt className="text-ui-sm text-muted">{t('products.description', 'Mô tả')}</dt>
-                <dd>{products.description || t('products.noDescription', 'Chưa có mô tả.')}</dd>
+              <div>
+                <dt className="text-ui-sm text-muted">{t('products.brand', 'Thương hiệu')}</dt>
+                <dd>{products.brand || '-'}</dd>
+              </div>
+              <div>
+                <dt className="text-ui-sm text-muted">{t('products.material', 'Chất liệu')}</dt>
+                <dd>{products.material || '-'}</dd>
+              </div>
+              <div>
+                <dt className="text-ui-sm text-muted">{t('products.category', 'Danh mục')}</dt>
+                <dd>{products.category?.name || t('products.none', 'Chưa phân loại')}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">
@@ -141,20 +168,33 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                 </dt>
                 <dd>v{products.version ?? 1}</dd>
               </div>
-              <div>
-                <dt className="text-ui-sm text-muted">{t('products.category', 'Danh mục')}</dt>
-                <dd>{products.category?.name || t('products.none', 'Chưa phân loại')}</dd>
+              {products.careInstructions && (
+                <div className="sm:col-span-2">
+                  <dt className="text-ui-sm text-muted">
+                    {t('products.careInstructions', 'Hướng dẫn bảo quản')}
+                  </dt>
+                  <dd>{products.careInstructions}</dd>
+                </div>
+              )}
+              <div className="sm:col-span-2">
+                <dt className="text-ui-sm text-muted">{t('products.description', 'Mô tả')}</dt>
+                <dd className="whitespace-pre-line">
+                  {products.description || t('products.noDescription', 'Chưa có mô tả.')}
+                </dd>
               </div>
             </dl>
           </div>
+
           <div>
             <h4 className="mb-2 border-b border-line pb-2 font-semibold text-ui-sm">
-              {t('products.skus', 'Danh sách biến thể SKU')}({variants.length})
+              {t('products.skus', 'Danh sách biến thể SKU')} ({variants.length})
             </h4>
             {variantsQuery.isPending ? (
               <Spinner label={t('products.loadingSkus', 'Đang tải SKU...')} />
             ) : variants.length === 0 ? (
-              <p className="">{t('products.noVariants', 'Chưa có biến thể SKU nào.')}</p>
+              <p className="text-ui-sm text-muted">
+                {t('products.noVariants', 'Chưa có biến thể SKU nào.')}
+              </p>
             ) : (
               <div className="overflow-x-auto rounded border border-line">
                 <table className="w-full text-left text-ui-sm">
@@ -170,7 +210,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                   </thead>
                   <tbody>
                     {variants.map((v) => (
-                      <tr key={v.id} className="border-line last:border-b-0 hover:bg-hover ">
+                      <tr key={v.id} className="border-line last:border-b-0 hover:bg-hover">
                         <td className="p-2 font-mono font-medium">{v.sku}</td>
                         <td className="p-2">{v.color || '-'}</td>
                         <td className="p-2">{v.size || '-'}</td>
@@ -190,6 +230,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
           </div>
         </div>
       ) : null}
+
       {archiveConfirmOpen && (
         <Dialog
           open
