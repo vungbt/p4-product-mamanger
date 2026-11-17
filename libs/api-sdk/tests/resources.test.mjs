@@ -68,6 +68,12 @@ test('every OpenAPI operation has an executable typed helper, hook and options f
       'function',
       op.operationId,
     );
+    assert.ok(op.platform, op.operationId);
+    assert.equal(op.hook, `use${op.name[0].toUpperCase()}${op.name.slice(1)}`);
+    if (op.resourceHook) {
+      // biome-ignore lint/performance/noDynamicNamespaceImportAccess: Validate every documented alias against actual exports.
+      assert.equal(typeof react[op.resourceHook], 'function', op.operationId);
+    }
     if (op.multipart) {
       assert.match(request.headers.get('content-type'), /^multipart\/form-data; boundary=/);
       assert.equal((await request.formData()).get('file').name, 'import.csv');

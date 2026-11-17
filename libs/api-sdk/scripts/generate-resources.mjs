@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
+import { operationNames } from './operation-names.mjs';
 
 const spec = YAML.parse(
   await readFile(new URL('../../../apps/api/openapi.yaml', import.meta.url), 'utf8'),
@@ -15,11 +16,7 @@ for (const [path, item] of Object.entries(spec.paths)) {
     const op = item[method];
     if (!op) continue;
     if (!op.operationId) throw new Error(`Missing operationId: ${method} ${path}`);
-    const words = op.operationId
-      .replace('_api_', '_')
-      .split(/[^a-zA-Z0-9]+/)
-      .filter(Boolean);
-    const name = words[0] + words.slice(1).map(title).join('');
+    const { helper: name } = operationNames(op.operationId, method);
     if (names.has(name)) throw new Error(`Duplicate operation name: ${name}`);
     names.add(name);
     const parameters = [...(item.parameters ?? []), ...(op.parameters ?? [])];
@@ -63,7 +60,10 @@ const manifest = operations.map(({ path, method, op, name, binary, html, empty, 
   name,
   method,
   path,
-  tag: op.tags?.[0],
+  tag: op['x-resource'] ?? op.tags?.[0],
+  platform: op['x-platform'],
+  hook: operationNames(op.operationId, method).hook,
+  resourceHook: op['x-sdk']?.resourceHook,
   response: binary ? 'blob' : html ? 'text' : empty ? 'empty' : 'json',
   multipart,
 }));
@@ -95,3 +95,28 @@ if (check) {
     throw new Error('Operation manifest is stale.');
 } else await writeFile(manifestPath, json);
 console.log(`${check ? 'Checked' : 'Generated'} ${operations.length} API operations and hooks.`);
+
+const referencePath = new URL('../../../documents/backend/api-sdk-reference.md', import.meta.url);
+const groups = ['storefront', 'admin', 'shared', 'integration', 'operations'].filter((platform) =>
+  manifest.some((op) => op.platform === platform),
+);
+const reference =
+  '# API và SDK theo platform\n\nTự sinh từ OpenAPI; không sửa tay. Platform là nhóm sử dụng, không thay thế permission/ownership.\n\nHooks: `@p4/api-sdk/react`. Helpers và input: `@p4/api-sdk/shared`. Mọi helper nhận SDK trước input; hooks GET nhận input/settings, hooks mutation trả `mutate`/`mutateAsync`.\n\n' +
+  groups
+    .map(
+      (platform) =>
+        `## ${platform[0].toUpperCase()}${platform.slice(1)}\n\n| Method | Endpoint | Hook | Helper | Resource hook |\n| --- | --- | --- | --- | --- |\n` +
+        manifest
+          .filter((op) => op.platform === platform)
+          .map(
+            (op) =>
+              `| ${op.method.toUpperCase()} | \`${op.path}\` | \`${op.hook}\` | \`${op.name}\` | ${op.resourceHook ? `\`${op.resourceHook}\`` : '—'} |`,
+          )
+          .join('\n'),
+    )
+    .join('\n\n') +
+  '\n';
+if (check) {
+  if ((await readFile(referencePath, 'utf8')) !== reference)
+    throw new Error('API/SDK reference is stale.');
+} else await writeFile(referencePath, reference);

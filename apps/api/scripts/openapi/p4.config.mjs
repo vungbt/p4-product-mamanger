@@ -5,11 +5,13 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { API_DESCRIPTION, OPERATIONS, OVERRIDES, TAG_DESCRIPTIONS } from './metadata.mjs';
+import { decoratePlatformDocs } from './platform-docs.mjs';
 
 const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 export default {
   appRoot,
+  decorateDocument: decoratePlatformDocs,
   title: 'P4 Commerce API',
   generateCommand: 'pnpm --filter @p4/api openapi:generate',
   /** Exported interfaces/types without generics become `#/components/schemas/<Name>`. */

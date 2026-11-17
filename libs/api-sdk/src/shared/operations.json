@@ -5,6 +5,8 @@
     "method": "get",
     "path": "/api/auth/account-info",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthGetAccountInfo",
     "response": "json",
     "multipart": false
   },
@@ -14,6 +16,8 @@
     "method": "get",
     "path": "/api/auth/callback/{id}",
     "tag": "auth-native",
+    "platform": "integration",
+    "hook": "useAuthGetCallbackId",
     "response": "empty",
     "multipart": false
   },
@@ -23,6 +27,8 @@
     "method": "get",
     "path": "/api/auth/delete-user/callback",
     "tag": "auth-native",
+    "platform": "integration",
+    "hook": "useAuthGetDeleteUserCallback",
     "response": "json",
     "multipart": false
   },
@@ -32,6 +38,8 @@
     "method": "get",
     "path": "/api/auth/error",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthGetError",
     "response": "text",
     "multipart": false
   },
@@ -41,6 +49,8 @@
     "method": "get",
     "path": "/api/auth/get-session",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthGetGetSession",
     "response": "json",
     "multipart": false
   },
@@ -50,6 +60,8 @@
     "method": "get",
     "path": "/api/auth/list-accounts",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthGetListAccounts",
     "response": "json",
     "multipart": false
   },
@@ -59,6 +71,8 @@
     "method": "get",
     "path": "/api/auth/list-sessions",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthGetListSessions",
     "response": "json",
     "multipart": false
   },
@@ -68,6 +82,8 @@
     "method": "get",
     "path": "/api/auth/ok",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthGetOk",
     "response": "json",
     "multipart": false
   },
@@ -77,6 +93,8 @@
     "method": "get",
     "path": "/api/auth/reset-password/{token}",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthGetResetPasswordToken",
     "response": "json",
     "multipart": false
   },
@@ -86,6 +104,8 @@
     "method": "get",
     "path": "/api/auth/verify-email",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthGetVerifyEmail",
     "response": "json",
     "multipart": false
   },
@@ -95,6 +115,8 @@
     "method": "post",
     "path": "/api/auth/callback/{id}",
     "tag": "auth-native",
+    "platform": "integration",
+    "hook": "useAuthPostCallbackId",
     "response": "empty",
     "multipart": false
   },
@@ -104,6 +126,8 @@
     "method": "post",
     "path": "/api/auth/change-email",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostChangeEmail",
     "response": "json",
     "multipart": false
   },
@@ -113,6 +137,8 @@
     "method": "post",
     "path": "/api/auth/change-password",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostChangePassword",
     "response": "json",
     "multipart": false
   },
@@ -122,6 +148,8 @@
     "method": "post",
     "path": "/api/auth/delete-user",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostDeleteUser",
     "response": "json",
     "multipart": false
   },
@@ -131,6 +159,8 @@
     "method": "post",
     "path": "/api/auth/get-access-token",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostGetAccessToken",
     "response": "json",
     "multipart": false
   },
@@ -140,6 +170,8 @@
     "method": "post",
     "path": "/api/auth/get-session",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostGetSession",
     "response": "json",
     "multipart": false
   },
@@ -149,6 +181,8 @@
     "method": "post",
     "path": "/api/auth/link-social",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostLinkSocial",
     "response": "json",
     "multipart": false
   },
@@ -158,6 +192,8 @@
     "method": "post",
     "path": "/api/auth/refresh-token",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostRefreshToken",
     "response": "json",
     "multipart": false
   },
@@ -167,6 +203,8 @@
     "method": "post",
     "path": "/api/auth/request-password-reset",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostRequestPasswordReset",
     "response": "json",
     "multipart": false
   },
@@ -176,6 +214,8 @@
     "method": "post",
     "path": "/api/auth/reset-password",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostResetPassword",
     "response": "json",
     "multipart": false
   },
@@ -185,6 +225,8 @@
     "method": "post",
     "path": "/api/auth/revoke-other-sessions",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostRevokeOtherSessions",
     "response": "json",
     "multipart": false
   },
@@ -194,6 +236,8 @@
     "method": "post",
     "path": "/api/auth/revoke-session",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostRevokeSession",
     "response": "json",
     "multipart": false
   },
@@ -203,6 +247,8 @@
     "method": "post",
     "path": "/api/auth/revoke-sessions",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostRevokeSessions",
     "response": "json",
     "multipart": false
   },
@@ -212,6 +258,8 @@
     "method": "post",
     "path": "/api/auth/send-verification-email",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostSendVerificationEmail",
     "response": "json",
     "multipart": false
   },
@@ -221,6 +269,8 @@
     "method": "post",
     "path": "/api/auth/sign-in/email",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostSignInEmail",
     "response": "json",
     "multipart": false
   },
@@ -230,6 +280,8 @@
     "method": "post",
     "path": "/api/auth/sign-in/social",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostSignInSocial",
     "response": "json",
     "multipart": false
   },
@@ -239,6 +291,8 @@
     "method": "post",
     "path": "/api/auth/sign-out",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostSignOut",
     "response": "json",
     "multipart": false
   },
@@ -248,6 +302,8 @@
     "method": "post",
     "path": "/api/auth/sign-up/email",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostSignUpEmail",
     "response": "json",
     "multipart": false
   },
@@ -257,6 +313,8 @@
     "method": "post",
     "path": "/api/auth/unlink-account",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostUnlinkAccount",
     "response": "json",
     "multipart": false
   },
@@ -266,6 +324,8 @@
     "method": "post",
     "path": "/api/auth/update-session",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostUpdateSession",
     "response": "json",
     "multipart": false
   },
@@ -275,6 +335,8 @@
     "method": "post",
     "path": "/api/auth/update-user",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostUpdateUser",
     "response": "json",
     "multipart": false
   },
@@ -284,6 +346,8 @@
     "method": "post",
     "path": "/api/auth/verify-password",
     "tag": "auth-native",
+    "platform": "shared",
+    "hook": "useAuthPostVerifyPassword",
     "response": "json",
     "multipart": false
   },
@@ -293,6 +357,8 @@
     "method": "delete",
     "path": "/api/addresses/{id}",
     "tag": "addresses",
+    "platform": "storefront",
+    "hook": "useDeleteAddressesId",
     "response": "json",
     "multipart": false
   },
@@ -302,6 +368,8 @@
     "method": "delete",
     "path": "/api/cart/items",
     "tag": "cart",
+    "platform": "storefront",
+    "hook": "useDeleteCartItems",
     "response": "json",
     "multipart": false
   },
@@ -311,6 +379,8 @@
     "method": "delete",
     "path": "/api/cart/items/{id}",
     "tag": "cart",
+    "platform": "storefront",
+    "hook": "useDeleteCartItemsId",
     "response": "json",
     "multipart": false
   },
@@ -320,6 +390,9 @@
     "method": "delete",
     "path": "/api/categories/{id}",
     "tag": "categories",
+    "platform": "admin",
+    "hook": "useDeleteCategoriesId",
+    "resourceHook": "useDeleteCategory",
     "response": "json",
     "multipart": false
   },
@@ -329,6 +402,8 @@
     "method": "delete",
     "path": "/api/coupons/{id}",
     "tag": "coupons",
+    "platform": "admin",
+    "hook": "useDeleteCouponsId",
     "response": "json",
     "multipart": false
   },
@@ -338,6 +413,8 @@
     "method": "delete",
     "path": "/api/files/{id}",
     "tag": "files",
+    "platform": "shared",
+    "hook": "useDeleteFilesId",
     "response": "json",
     "multipart": false
   },
@@ -347,6 +424,8 @@
     "method": "delete",
     "path": "/api/me/sessions/{id}",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "useDeleteMeSessionsId",
     "response": "json",
     "multipart": false
   },
@@ -356,6 +435,9 @@
     "method": "delete",
     "path": "/api/products/{id}",
     "tag": "products",
+    "platform": "admin",
+    "hook": "useDeleteProductsId",
+    "resourceHook": "useDeleteProduct",
     "response": "json",
     "multipart": false
   },
@@ -365,6 +447,9 @@
     "method": "delete",
     "path": "/api/products/{id}/images/{imageId}",
     "tag": "products",
+    "platform": "admin",
+    "hook": "useDeleteProductsIdImagesImageId",
+    "resourceHook": "useRemoveProductImage",
     "response": "json",
     "multipart": false
   },
@@ -374,6 +459,8 @@
     "method": "delete",
     "path": "/api/products/{id}/reviews/{reviewId}",
     "tag": "products",
+    "platform": "shared",
+    "hook": "useDeleteProductsIdReviewsReviewId",
     "response": "json",
     "multipart": false
   },
@@ -383,6 +470,8 @@
     "method": "delete",
     "path": "/api/stock-alert-subscriptions/{id}",
     "tag": "wishlist",
+    "platform": "shared",
+    "hook": "useDeleteStockAlertSubscriptionsId",
     "response": "json",
     "multipart": false
   },
@@ -392,6 +481,8 @@
     "method": "delete",
     "path": "/api/wishlist/items/{productId}",
     "tag": "wishlist",
+    "platform": "storefront",
+    "hook": "useDeleteWishlistItemsProductId",
     "response": "json",
     "multipart": false
   },
@@ -401,6 +492,8 @@
     "method": "get",
     "path": "/api/addresses",
     "tag": "addresses",
+    "platform": "storefront",
+    "hook": "useGetAddresses",
     "response": "json",
     "multipart": false
   },
@@ -410,6 +503,8 @@
     "method": "get",
     "path": "/api/admin/audit-logs",
     "tag": "audit",
+    "platform": "admin",
+    "hook": "useGetAdminAuditLogs",
     "response": "json",
     "multipart": false
   },
@@ -419,6 +514,8 @@
     "method": "get",
     "path": "/api/admin/audit-logs/{id}",
     "tag": "audit",
+    "platform": "admin",
+    "hook": "useGetAdminAuditLogsId",
     "response": "json",
     "multipart": false
   },
@@ -428,6 +525,8 @@
     "method": "get",
     "path": "/api/admin/banners",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "useGetAdminBanners",
     "response": "json",
     "multipart": false
   },
@@ -437,6 +536,8 @@
     "method": "get",
     "path": "/api/admin/banners/{id}",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "useGetAdminBannersId",
     "response": "json",
     "multipart": false
   },
@@ -446,6 +547,8 @@
     "method": "get",
     "path": "/api/admin/collections",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "useGetAdminCollections",
     "response": "json",
     "multipart": false
   },
@@ -455,6 +558,8 @@
     "method": "get",
     "path": "/api/admin/collections/{id}",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "useGetAdminCollectionsId",
     "response": "json",
     "multipart": false
   },
@@ -464,6 +569,8 @@
     "method": "get",
     "path": "/api/admin/coupons/{id}",
     "tag": "promotions",
+    "platform": "admin",
+    "hook": "useGetAdminCouponsId",
     "response": "json",
     "multipart": false
   },
@@ -473,6 +580,8 @@
     "method": "get",
     "path": "/api/admin/coupons/{id}/redemptions",
     "tag": "promotions",
+    "platform": "admin",
+    "hook": "useGetAdminCouponsIdRedemptions",
     "response": "json",
     "multipart": false
   },
@@ -482,6 +591,8 @@
     "method": "get",
     "path": "/api/admin/customers",
     "tag": "staff",
+    "platform": "admin",
+    "hook": "useGetAdminCustomers",
     "response": "json",
     "multipart": false
   },
@@ -491,6 +602,8 @@
     "method": "get",
     "path": "/api/admin/exchanges",
     "tag": "exchanges",
+    "platform": "admin",
+    "hook": "useGetAdminExchanges",
     "response": "json",
     "multipart": false
   },
@@ -500,6 +613,8 @@
     "method": "get",
     "path": "/api/admin/home-layout",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "useGetAdminHomeLayout",
     "response": "json",
     "multipart": false
   },
@@ -509,6 +624,8 @@
     "method": "get",
     "path": "/api/admin/import-templates/{resource}",
     "tag": "processes",
+    "platform": "admin",
+    "hook": "useGetAdminImportTemplatesResource",
     "response": "json",
     "multipart": false
   },
@@ -518,6 +635,8 @@
     "method": "get",
     "path": "/api/admin/inventory",
     "tag": "inventory",
+    "platform": "admin",
+    "hook": "useGetAdminInventory",
     "response": "json",
     "multipart": false
   },
@@ -527,6 +646,8 @@
     "method": "get",
     "path": "/api/admin/inventory/movements",
     "tag": "inventory",
+    "platform": "admin",
+    "hook": "useGetAdminInventoryMovements",
     "response": "json",
     "multipart": false
   },
@@ -536,6 +657,8 @@
     "method": "get",
     "path": "/api/admin/inventory/reconciliation",
     "tag": "inventory",
+    "platform": "admin",
+    "hook": "useGetAdminInventoryReconciliation",
     "response": "json",
     "multipart": false
   },
@@ -545,6 +668,8 @@
     "method": "get",
     "path": "/api/admin/jobs",
     "tag": "jobs",
+    "platform": "admin",
+    "hook": "useGetAdminJobs",
     "response": "json",
     "multipart": false
   },
@@ -554,6 +679,8 @@
     "method": "get",
     "path": "/api/admin/jobs/{id}",
     "tag": "jobs",
+    "platform": "admin",
+    "hook": "useGetAdminJobsId",
     "response": "json",
     "multipart": false
   },
@@ -563,6 +690,8 @@
     "method": "get",
     "path": "/api/admin/navigation/{placement}",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "useGetAdminNavigationPlacement",
     "response": "json",
     "multipart": false
   },
@@ -572,6 +701,8 @@
     "method": "get",
     "path": "/api/admin/notification-templates",
     "tag": "notifications",
+    "platform": "admin",
+    "hook": "useGetAdminNotificationTemplates",
     "response": "json",
     "multipart": false
   },
@@ -581,6 +712,8 @@
     "method": "get",
     "path": "/api/admin/pages",
     "tag": "content",
+    "platform": "admin",
+    "hook": "useGetAdminPages",
     "response": "json",
     "multipart": false
   },
@@ -590,6 +723,8 @@
     "method": "get",
     "path": "/api/admin/pages/{id}",
     "tag": "content",
+    "platform": "admin",
+    "hook": "useGetAdminPagesId",
     "response": "json",
     "multipart": false
   },
@@ -599,6 +734,8 @@
     "method": "get",
     "path": "/api/admin/pages/{id}/revisions",
     "tag": "content",
+    "platform": "admin",
+    "hook": "useGetAdminPagesIdRevisions",
     "response": "json",
     "multipart": false
   },
@@ -608,6 +745,8 @@
     "method": "get",
     "path": "/api/admin/posts",
     "tag": "content",
+    "platform": "admin",
+    "hook": "useGetAdminPosts",
     "response": "json",
     "multipart": false
   },
@@ -617,6 +756,8 @@
     "method": "get",
     "path": "/api/admin/posts/{id}",
     "tag": "content",
+    "platform": "admin",
+    "hook": "useGetAdminPostsId",
     "response": "json",
     "multipart": false
   },
@@ -626,6 +767,8 @@
     "method": "get",
     "path": "/api/admin/posts/{id}/revisions",
     "tag": "content",
+    "platform": "admin",
+    "hook": "useGetAdminPostsIdRevisions",
     "response": "json",
     "multipart": false
   },
@@ -635,6 +778,9 @@
     "method": "get",
     "path": "/api/admin/products",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "useGetAdminProducts",
+    "resourceHook": "useProducts",
     "response": "json",
     "multipart": false
   },
@@ -644,6 +790,9 @@
     "method": "get",
     "path": "/api/admin/products/{id}",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "useGetAdminProductsId",
+    "resourceHook": "useProduct",
     "response": "json",
     "multipart": false
   },
@@ -653,6 +802,9 @@
     "method": "get",
     "path": "/api/admin/products/{id}/variants",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "useGetAdminProductsIdVariants",
+    "resourceHook": "useProductVariants",
     "response": "json",
     "multipart": false
   },
@@ -662,6 +814,8 @@
     "method": "get",
     "path": "/api/admin/promotions",
     "tag": "promotions",
+    "platform": "admin",
+    "hook": "useGetAdminPromotions",
     "response": "json",
     "multipart": false
   },
@@ -671,6 +825,8 @@
     "method": "get",
     "path": "/api/admin/promotions/{id}",
     "tag": "promotions",
+    "platform": "admin",
+    "hook": "useGetAdminPromotionsId",
     "response": "json",
     "multipart": false
   },
@@ -680,6 +836,8 @@
     "method": "get",
     "path": "/api/admin/report-exports/{id}",
     "tag": "reports",
+    "platform": "admin",
+    "hook": "useGetAdminReportExportsId",
     "response": "json",
     "multipart": false
   },
@@ -689,6 +847,8 @@
     "method": "get",
     "path": "/api/admin/report-exports/{id}/download",
     "tag": "reports",
+    "platform": "admin",
+    "hook": "useGetAdminReportExportsIdDownload",
     "response": "blob",
     "multipart": false
   },
@@ -698,6 +858,8 @@
     "method": "get",
     "path": "/api/admin/reports/inventory",
     "tag": "reports",
+    "platform": "admin",
+    "hook": "useGetAdminReportsInventory",
     "response": "json",
     "multipart": false
   },
@@ -707,6 +869,8 @@
     "method": "get",
     "path": "/api/admin/reports/orders",
     "tag": "reports",
+    "platform": "admin",
+    "hook": "useGetAdminReportsOrders",
     "response": "json",
     "multipart": false
   },
@@ -716,6 +880,8 @@
     "method": "get",
     "path": "/api/admin/reports/products",
     "tag": "reports",
+    "platform": "admin",
+    "hook": "useGetAdminReportsProducts",
     "response": "json",
     "multipart": false
   },
@@ -725,6 +891,8 @@
     "method": "get",
     "path": "/api/admin/reports/sales",
     "tag": "reports",
+    "platform": "admin",
+    "hook": "useGetAdminReportsSales",
     "response": "json",
     "multipart": false
   },
@@ -734,6 +902,8 @@
     "method": "get",
     "path": "/api/admin/returns",
     "tag": "returns",
+    "platform": "admin",
+    "hook": "useGetAdminReturns",
     "response": "json",
     "multipart": false
   },
@@ -743,6 +913,8 @@
     "method": "get",
     "path": "/api/admin/reviews",
     "tag": "reviews",
+    "platform": "admin",
+    "hook": "useGetAdminReviews",
     "response": "json",
     "multipart": false
   },
@@ -752,6 +924,8 @@
     "method": "get",
     "path": "/api/admin/roles",
     "tag": "staff",
+    "platform": "admin",
+    "hook": "useGetAdminRoles",
     "response": "json",
     "multipart": false
   },
@@ -761,6 +935,8 @@
     "method": "get",
     "path": "/api/admin/settings/commerce",
     "tag": "settings",
+    "platform": "admin",
+    "hook": "useGetAdminSettingsCommerce",
     "response": "json",
     "multipart": false
   },
@@ -770,6 +946,8 @@
     "method": "get",
     "path": "/api/admin/settings/shop",
     "tag": "settings",
+    "platform": "admin",
+    "hook": "useGetAdminSettingsShop",
     "response": "json",
     "multipart": false
   },
@@ -779,6 +957,8 @@
     "method": "get",
     "path": "/api/admin/shipping-methods",
     "tag": "settings",
+    "platform": "admin",
+    "hook": "useGetAdminShippingMethods",
     "response": "json",
     "multipart": false
   },
@@ -788,6 +968,8 @@
     "method": "get",
     "path": "/api/admin/shipping-methods/{id}",
     "tag": "settings",
+    "platform": "admin",
+    "hook": "useGetAdminShippingMethodsId",
     "response": "json",
     "multipart": false
   },
@@ -797,6 +979,8 @@
     "method": "get",
     "path": "/api/admin/size-guides",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "useGetAdminSizeGuides",
     "response": "json",
     "multipart": false
   },
@@ -806,6 +990,8 @@
     "method": "get",
     "path": "/api/admin/size-guides/{id}",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "useGetAdminSizeGuidesId",
     "response": "json",
     "multipart": false
   },
@@ -815,6 +1001,8 @@
     "method": "get",
     "path": "/api/admin/staff",
     "tag": "staff",
+    "platform": "admin",
+    "hook": "useGetAdminStaff",
     "response": "json",
     "multipart": false
   },
@@ -824,6 +1012,8 @@
     "method": "get",
     "path": "/api/admin/support/tickets",
     "tag": "support",
+    "platform": "admin",
+    "hook": "useGetAdminSupportTickets",
     "response": "json",
     "multipart": false
   },
@@ -833,6 +1023,8 @@
     "method": "get",
     "path": "/api/admin/system/contracts",
     "tag": "system",
+    "platform": "admin",
+    "hook": "useGetAdminSystemContracts",
     "response": "json",
     "multipart": false
   },
@@ -842,6 +1034,8 @@
     "method": "get",
     "path": "/api/admin/variants",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "useGetAdminVariants",
     "response": "json",
     "multipart": false
   },
@@ -851,6 +1045,8 @@
     "method": "get",
     "path": "/api/auth/me",
     "tag": "auth",
+    "platform": "shared",
+    "hook": "useGetAuthMe",
     "response": "json",
     "multipart": false
   },
@@ -860,6 +1056,8 @@
     "method": "get",
     "path": "/api/cancellation-requests/{id}",
     "tag": "orders",
+    "platform": "shared",
+    "hook": "useGetCancellationRequestsId",
     "response": "json",
     "multipart": false
   },
@@ -869,6 +1067,8 @@
     "method": "get",
     "path": "/api/cart",
     "tag": "cart",
+    "platform": "storefront",
+    "hook": "useGetCart",
     "response": "json",
     "multipart": false
   },
@@ -878,6 +1078,9 @@
     "method": "get",
     "path": "/api/categories",
     "tag": "categories",
+    "platform": "storefront",
+    "hook": "useGetCategories",
+    "resourceHook": "useCategories",
     "response": "json",
     "multipart": false
   },
@@ -887,6 +1090,9 @@
     "method": "get",
     "path": "/api/categories/{id}",
     "tag": "categories",
+    "platform": "storefront",
+    "hook": "useGetCategoriesId",
+    "resourceHook": "useCategory",
     "response": "json",
     "multipart": false
   },
@@ -896,6 +1102,8 @@
     "method": "get",
     "path": "/api/checkout/quotes/{id}",
     "tag": "checkout",
+    "platform": "storefront",
+    "hook": "useGetCheckoutQuotesId",
     "response": "json",
     "multipart": false
   },
@@ -905,6 +1113,8 @@
     "method": "get",
     "path": "/api/collections",
     "tag": "merchandising",
+    "platform": "storefront",
+    "hook": "useGetCollections",
     "response": "json",
     "multipart": false
   },
@@ -914,6 +1124,8 @@
     "method": "get",
     "path": "/api/collections/{slug}",
     "tag": "merchandising",
+    "platform": "storefront",
+    "hook": "useGetCollectionsSlug",
     "response": "json",
     "multipart": false
   },
@@ -923,6 +1135,8 @@
     "method": "get",
     "path": "/api/coupons",
     "tag": "coupons",
+    "platform": "admin",
+    "hook": "useGetCoupons",
     "response": "json",
     "multipart": false
   },
@@ -932,6 +1146,8 @@
     "method": "get",
     "path": "/api/dashboard/stats",
     "tag": "dashboard",
+    "platform": "admin",
+    "hook": "useGetDashboardStats",
     "response": "json",
     "multipart": false
   },
@@ -941,6 +1157,8 @@
     "method": "get",
     "path": "/api/exchanges/{id}",
     "tag": "exchanges",
+    "platform": "shared",
+    "hook": "useGetExchangesId",
     "response": "json",
     "multipart": false
   },
@@ -950,6 +1168,8 @@
     "method": "get",
     "path": "/api/exchanges/mine",
     "tag": "exchanges",
+    "platform": "storefront",
+    "hook": "useGetExchangesMine",
     "response": "json",
     "multipart": false
   },
@@ -959,6 +1179,8 @@
     "method": "get",
     "path": "/api/files/{id}/download",
     "tag": "files",
+    "platform": "shared",
+    "hook": "useGetFilesIdDownload",
     "response": "json",
     "multipart": false
   },
@@ -968,6 +1190,8 @@
     "method": "get",
     "path": "/api/files/sign-upload-url",
     "tag": "files",
+    "platform": "shared",
+    "hook": "useGetFilesSignUploadUrl",
     "response": "json",
     "multipart": false
   },
@@ -977,6 +1201,8 @@
     "method": "get",
     "path": "/api/files/sign-upload-urls",
     "tag": "files",
+    "platform": "shared",
+    "hook": "useGetFilesSignUploadUrls",
     "response": "json",
     "multipart": false
   },
@@ -986,6 +1212,8 @@
     "method": "get",
     "path": "/api/files/uploads/{id}",
     "tag": "files",
+    "platform": "shared",
+    "hook": "useGetFilesUploadsId",
     "response": "json",
     "multipart": false
   },
@@ -995,6 +1223,8 @@
     "method": "get",
     "path": "/health",
     "tag": "operations",
+    "platform": "operations",
+    "hook": "useGetHealth",
     "response": "json",
     "multipart": false
   },
@@ -1004,6 +1234,8 @@
     "method": "get",
     "path": "/health/live",
     "tag": "operations",
+    "platform": "operations",
+    "hook": "useGetHealthLive",
     "response": "json",
     "multipart": false
   },
@@ -1013,6 +1245,8 @@
     "method": "get",
     "path": "/health/ready",
     "tag": "operations",
+    "platform": "operations",
+    "hook": "useGetHealthReady",
     "response": "json",
     "multipart": false
   },
@@ -1022,6 +1256,8 @@
     "method": "get",
     "path": "/api/internal/metrics",
     "tag": "operations",
+    "platform": "operations",
+    "hook": "useGetInternalMetrics",
     "response": "json",
     "multipart": false
   },
@@ -1031,6 +1267,9 @@
     "method": "get",
     "path": "/api/me/capabilities",
     "tag": "system",
+    "platform": "shared",
+    "hook": "useGetMeCapabilities",
+    "resourceHook": "useCapabilities",
     "response": "json",
     "multipart": false
   },
@@ -1040,6 +1279,8 @@
     "method": "get",
     "path": "/api/me/notification-preferences",
     "tag": "notifications",
+    "platform": "shared",
+    "hook": "useGetMeNotificationPreferences",
     "response": "json",
     "multipart": false
   },
@@ -1049,6 +1290,8 @@
     "method": "get",
     "path": "/api/me/preferences",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "useGetMePreferences",
     "response": "json",
     "multipart": false
   },
@@ -1058,6 +1301,8 @@
     "method": "get",
     "path": "/api/me/profile",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "useGetMeProfile",
     "response": "json",
     "multipart": false
   },
@@ -1067,6 +1312,8 @@
     "method": "get",
     "path": "/api/me/sessions",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "useGetMeSessions",
     "response": "json",
     "multipart": false
   },
@@ -1076,6 +1323,8 @@
     "method": "get",
     "path": "/api/navigation/{placement}",
     "tag": "merchandising",
+    "platform": "storefront",
+    "hook": "useGetNavigationPlacement",
     "response": "json",
     "multipart": false
   },
@@ -1085,6 +1334,8 @@
     "method": "get",
     "path": "/api/notifications",
     "tag": "notifications",
+    "platform": "shared",
+    "hook": "useGetNotifications",
     "response": "json",
     "multipart": false
   },
@@ -1094,6 +1345,8 @@
     "method": "get",
     "path": "/api/notifications/unread-count",
     "tag": "notifications",
+    "platform": "shared",
+    "hook": "useGetNotificationsUnreadCount",
     "response": "json",
     "multipart": false
   },
@@ -1103,6 +1356,8 @@
     "method": "get",
     "path": "/api/orders",
     "tag": "orders",
+    "platform": "admin",
+    "hook": "useGetOrders",
     "response": "json",
     "multipart": false
   },
@@ -1112,6 +1367,8 @@
     "method": "get",
     "path": "/api/orders/{id}",
     "tag": "orders",
+    "platform": "shared",
+    "hook": "useGetOrdersId",
     "response": "json",
     "multipart": false
   },
@@ -1121,6 +1378,8 @@
     "method": "get",
     "path": "/api/orders/{id}/events",
     "tag": "orders",
+    "platform": "shared",
+    "hook": "useGetOrdersIdEvents",
     "response": "json",
     "multipart": false
   },
@@ -1130,6 +1389,8 @@
     "method": "get",
     "path": "/api/orders/{id}/payments",
     "tag": "payments",
+    "platform": "shared",
+    "hook": "useGetOrdersIdPayments",
     "response": "json",
     "multipart": false
   },
@@ -1139,6 +1400,8 @@
     "method": "get",
     "path": "/api/orders/{id}/shipments",
     "tag": "fulfillment",
+    "platform": "shared",
+    "hook": "useGetOrdersIdShipments",
     "response": "json",
     "multipart": false
   },
@@ -1148,6 +1411,8 @@
     "method": "get",
     "path": "/api/orders/mine",
     "tag": "orders",
+    "platform": "storefront",
+    "hook": "useGetOrdersMine",
     "response": "json",
     "multipart": false
   },
@@ -1157,6 +1422,8 @@
     "method": "get",
     "path": "/api/pages/{slug}",
     "tag": "content",
+    "platform": "storefront",
+    "hook": "useGetPagesSlug",
     "response": "json",
     "multipart": false
   },
@@ -1166,6 +1433,8 @@
     "method": "get",
     "path": "/api/policies/current",
     "tag": "content",
+    "platform": "storefront",
+    "hook": "useGetPoliciesCurrent",
     "response": "json",
     "multipart": false
   },
@@ -1175,6 +1444,8 @@
     "method": "get",
     "path": "/api/post-categories",
     "tag": "content",
+    "platform": "storefront",
+    "hook": "useGetPostCategories",
     "response": "json",
     "multipart": false
   },
@@ -1184,6 +1455,8 @@
     "method": "get",
     "path": "/api/posts",
     "tag": "content",
+    "platform": "storefront",
+    "hook": "useGetPosts",
     "response": "json",
     "multipart": false
   },
@@ -1193,6 +1466,8 @@
     "method": "get",
     "path": "/api/posts/{slug}",
     "tag": "content",
+    "platform": "storefront",
+    "hook": "useGetPostsSlug",
     "response": "json",
     "multipart": false
   },
@@ -1202,6 +1477,8 @@
     "method": "get",
     "path": "/api/post-tags",
     "tag": "content",
+    "platform": "storefront",
+    "hook": "useGetPostTags",
     "response": "json",
     "multipart": false
   },
@@ -1211,6 +1488,8 @@
     "method": "get",
     "path": "/api/processes",
     "tag": "processes",
+    "platform": "shared",
+    "hook": "useGetProcesses",
     "response": "json",
     "multipart": false
   },
@@ -1220,6 +1499,8 @@
     "method": "get",
     "path": "/api/processes/{id}",
     "tag": "processes",
+    "platform": "shared",
+    "hook": "useGetProcessesId",
     "response": "json",
     "multipart": false
   },
@@ -1229,6 +1510,8 @@
     "method": "get",
     "path": "/api/processes/{id}/download",
     "tag": "processes",
+    "platform": "shared",
+    "hook": "useGetProcessesIdDownload",
     "response": "blob",
     "multipart": false
   },
@@ -1238,6 +1521,8 @@
     "method": "get",
     "path": "/api/processes/{id}/items",
     "tag": "processes",
+    "platform": "shared",
+    "hook": "useGetProcessesIdItems",
     "response": "json",
     "multipart": false
   },
@@ -1247,6 +1532,9 @@
     "method": "get",
     "path": "/api/products",
     "tag": "products",
+    "platform": "storefront",
+    "hook": "useGetProducts",
+    "resourceHook": "useStorefrontProducts",
     "response": "json",
     "multipart": false
   },
@@ -1256,6 +1544,9 @@
     "method": "get",
     "path": "/api/products/by-slug/{slug}",
     "tag": "catalog",
+    "platform": "storefront",
+    "hook": "useGetProductsBySlugSlug",
+    "resourceHook": "useProductBySlug",
     "response": "json",
     "multipart": false
   },
@@ -1265,6 +1556,8 @@
     "method": "get",
     "path": "/api/products/facets",
     "tag": "discovery",
+    "platform": "storefront",
+    "hook": "useGetProductsFacets",
     "response": "json",
     "multipart": false
   },
@@ -1274,6 +1567,9 @@
     "method": "get",
     "path": "/api/products/{id}",
     "tag": "products",
+    "platform": "storefront",
+    "hook": "useGetProductsId",
+    "resourceHook": "useStorefrontProduct",
     "response": "json",
     "multipart": false
   },
@@ -1283,6 +1579,8 @@
     "method": "get",
     "path": "/api/products/{id}/reviews",
     "tag": "products",
+    "platform": "storefront",
+    "hook": "useGetProductsIdReviews",
     "response": "json",
     "multipart": false
   },
@@ -1292,6 +1590,8 @@
     "method": "get",
     "path": "/api/products/{id}/review-summary",
     "tag": "reviews",
+    "platform": "storefront",
+    "hook": "useGetProductsIdReviewSummary",
     "response": "json",
     "multipart": false
   },
@@ -1301,6 +1601,8 @@
     "method": "get",
     "path": "/api/products/{id}/variants",
     "tag": "catalog",
+    "platform": "storefront",
+    "hook": "useGetProductsIdVariants",
     "response": "json",
     "multipart": false
   },
@@ -1310,6 +1612,8 @@
     "method": "get",
     "path": "/api/refunds",
     "tag": "refunds",
+    "platform": "admin",
+    "hook": "useGetRefunds",
     "response": "json",
     "multipart": false
   },
@@ -1319,6 +1623,8 @@
     "method": "get",
     "path": "/api/refunds/{id}",
     "tag": "refunds",
+    "platform": "shared",
+    "hook": "useGetRefundsId",
     "response": "json",
     "multipart": false
   },
@@ -1328,6 +1634,8 @@
     "method": "get",
     "path": "/api/returns/{id}",
     "tag": "returns",
+    "platform": "shared",
+    "hook": "useGetReturnsId",
     "response": "json",
     "multipart": false
   },
@@ -1337,6 +1645,8 @@
     "method": "get",
     "path": "/api/returns/mine",
     "tag": "returns",
+    "platform": "storefront",
+    "hook": "useGetReturnsMine",
     "response": "json",
     "multipart": false
   },
@@ -1346,6 +1656,8 @@
     "method": "get",
     "path": "/api/search/suggestions",
     "tag": "discovery",
+    "platform": "storefront",
+    "hook": "useGetSearchSuggestions",
     "response": "json",
     "multipart": false
   },
@@ -1355,6 +1667,8 @@
     "method": "get",
     "path": "/api/shipments/{id}/events",
     "tag": "fulfillment",
+    "platform": "shared",
+    "hook": "useGetShipmentsIdEvents",
     "response": "json",
     "multipart": false
   },
@@ -1364,6 +1678,8 @@
     "method": "get",
     "path": "/api/shop/config",
     "tag": "settings",
+    "platform": "storefront",
+    "hook": "useGetShopConfig",
     "response": "json",
     "multipart": false
   },
@@ -1373,6 +1689,8 @@
     "method": "get",
     "path": "/api/stock-alert-subscriptions/mine",
     "tag": "wishlist",
+    "platform": "storefront",
+    "hook": "useGetStockAlertSubscriptionsMine",
     "response": "json",
     "multipart": false
   },
@@ -1382,6 +1700,8 @@
     "method": "get",
     "path": "/api/storefront/home",
     "tag": "merchandising",
+    "platform": "storefront",
+    "hook": "useGetStorefrontHome",
     "response": "json",
     "multipart": false
   },
@@ -1391,6 +1711,8 @@
     "method": "get",
     "path": "/api/support/tickets/{id}",
     "tag": "support",
+    "platform": "shared",
+    "hook": "useGetSupportTicketsId",
     "response": "json",
     "multipart": false
   },
@@ -1400,6 +1722,8 @@
     "method": "get",
     "path": "/api/support/tickets/{id}/messages",
     "tag": "support",
+    "platform": "shared",
+    "hook": "useGetSupportTicketsIdMessages",
     "response": "json",
     "multipart": false
   },
@@ -1409,6 +1733,8 @@
     "method": "get",
     "path": "/api/support/tickets/mine",
     "tag": "support",
+    "platform": "storefront",
+    "hook": "useGetSupportTicketsMine",
     "response": "json",
     "multipart": false
   },
@@ -1418,6 +1744,8 @@
     "method": "get",
     "path": "/api/wishlist",
     "tag": "wishlist",
+    "platform": "storefront",
+    "hook": "useGetWishlist",
     "response": "json",
     "multipart": false
   },
@@ -1427,6 +1755,8 @@
     "method": "patch",
     "path": "/api/addresses/{id}/default",
     "tag": "addresses",
+    "platform": "storefront",
+    "hook": "usePatchAddressesIdDefault",
     "response": "json",
     "multipart": false
   },
@@ -1436,6 +1766,8 @@
     "method": "patch",
     "path": "/api/admin/banners/{id}",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "usePatchAdminBannersId",
     "response": "json",
     "multipart": false
   },
@@ -1445,6 +1777,8 @@
     "method": "patch",
     "path": "/api/admin/collections/{id}",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "usePatchAdminCollectionsId",
     "response": "json",
     "multipart": false
   },
@@ -1454,6 +1788,8 @@
     "method": "patch",
     "path": "/api/admin/customers/{id}/status",
     "tag": "staff",
+    "platform": "admin",
+    "hook": "usePatchAdminCustomersIdStatus",
     "response": "json",
     "multipart": false
   },
@@ -1463,6 +1799,8 @@
     "method": "patch",
     "path": "/api/admin/home-layout",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "usePatchAdminHomeLayout",
     "response": "json",
     "multipart": false
   },
@@ -1472,6 +1810,8 @@
     "method": "patch",
     "path": "/api/admin/navigation/{placement}",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "usePatchAdminNavigationPlacement",
     "response": "json",
     "multipart": false
   },
@@ -1481,6 +1821,8 @@
     "method": "patch",
     "path": "/api/admin/pages/{id}",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePatchAdminPagesId",
     "response": "json",
     "multipart": false
   },
@@ -1490,6 +1832,8 @@
     "method": "patch",
     "path": "/api/admin/post-categories/{id}",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePatchAdminPostCategoriesId",
     "response": "json",
     "multipart": false
   },
@@ -1499,6 +1843,8 @@
     "method": "patch",
     "path": "/api/admin/posts/{id}",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePatchAdminPostsId",
     "response": "json",
     "multipart": false
   },
@@ -1508,6 +1854,8 @@
     "method": "patch",
     "path": "/api/admin/post-tags/{id}",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePatchAdminPostTagsId",
     "response": "json",
     "multipart": false
   },
@@ -1517,6 +1865,8 @@
     "method": "patch",
     "path": "/api/admin/promotions/{id}",
     "tag": "promotions",
+    "platform": "admin",
+    "hook": "usePatchAdminPromotionsId",
     "response": "json",
     "multipart": false
   },
@@ -1526,6 +1876,8 @@
     "method": "patch",
     "path": "/api/admin/settings/commerce",
     "tag": "settings",
+    "platform": "admin",
+    "hook": "usePatchAdminSettingsCommerce",
     "response": "json",
     "multipart": false
   },
@@ -1535,6 +1887,8 @@
     "method": "patch",
     "path": "/api/admin/settings/shop",
     "tag": "settings",
+    "platform": "admin",
+    "hook": "usePatchAdminSettingsShop",
     "response": "json",
     "multipart": false
   },
@@ -1544,6 +1898,8 @@
     "method": "patch",
     "path": "/api/admin/shipping-methods/{id}",
     "tag": "settings",
+    "platform": "admin",
+    "hook": "usePatchAdminShippingMethodsId",
     "response": "json",
     "multipart": false
   },
@@ -1553,6 +1909,8 @@
     "method": "patch",
     "path": "/api/admin/size-guides/{id}",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "usePatchAdminSizeGuidesId",
     "response": "json",
     "multipart": false
   },
@@ -1562,6 +1920,8 @@
     "method": "patch",
     "path": "/api/admin/staff/{id}/role",
     "tag": "staff",
+    "platform": "admin",
+    "hook": "usePatchAdminStaffIdRole",
     "response": "json",
     "multipart": false
   },
@@ -1571,6 +1931,8 @@
     "method": "patch",
     "path": "/api/admin/staff/{id}/status",
     "tag": "staff",
+    "platform": "admin",
+    "hook": "usePatchAdminStaffIdStatus",
     "response": "json",
     "multipart": false
   },
@@ -1580,6 +1942,8 @@
     "method": "patch",
     "path": "/api/auth/me",
     "tag": "auth",
+    "platform": "shared",
+    "hook": "usePatchAuthMe",
     "response": "json",
     "multipart": false
   },
@@ -1589,6 +1953,8 @@
     "method": "patch",
     "path": "/api/auth/password",
     "tag": "auth",
+    "platform": "shared",
+    "hook": "usePatchAuthPassword",
     "response": "json",
     "multipart": false
   },
@@ -1598,6 +1964,8 @@
     "method": "patch",
     "path": "/api/cart/items/{id}",
     "tag": "cart",
+    "platform": "storefront",
+    "hook": "usePatchCartItemsId",
     "response": "json",
     "multipart": false
   },
@@ -1607,6 +1975,8 @@
     "method": "patch",
     "path": "/api/me/notification-preferences",
     "tag": "notifications",
+    "platform": "shared",
+    "hook": "usePatchMeNotificationPreferences",
     "response": "json",
     "multipart": false
   },
@@ -1616,6 +1986,8 @@
     "method": "patch",
     "path": "/api/me/preferences",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "usePatchMePreferences",
     "response": "json",
     "multipart": false
   },
@@ -1625,6 +1997,8 @@
     "method": "patch",
     "path": "/api/me/profile",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "usePatchMeProfile",
     "response": "json",
     "multipart": false
   },
@@ -1634,6 +2008,9 @@
     "method": "patch",
     "path": "/api/products/{id}/publication",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "usePatchProductsIdPublication",
+    "resourceHook": "useUpdateProductPublication",
     "response": "json",
     "multipart": false
   },
@@ -1643,6 +2020,9 @@
     "method": "patch",
     "path": "/api/products/{id}/variants/{variantId}",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "usePatchProductsIdVariantsVariantId",
+    "resourceHook": "useUpdateProductVariant",
     "response": "json",
     "multipart": false
   },
@@ -1652,6 +2032,9 @@
     "method": "patch",
     "path": "/api/products/{id}/variants/{variantId}/images",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "usePatchProductsIdVariantsVariantIdImages",
+    "resourceHook": "useUpdateProductVariantImages",
     "response": "json",
     "multipart": false
   },
@@ -1661,6 +2044,8 @@
     "method": "patch",
     "path": "/api/reviews/{id}",
     "tag": "reviews",
+    "platform": "shared",
+    "hook": "usePatchReviewsId",
     "response": "json",
     "multipart": false
   },
@@ -1670,6 +2055,8 @@
     "method": "post",
     "path": "/api/addresses",
     "tag": "addresses",
+    "platform": "storefront",
+    "hook": "usePostAddresses",
     "response": "json",
     "multipart": false
   },
@@ -1679,6 +2066,8 @@
     "method": "post",
     "path": "/api/admin/banners",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "usePostAdminBanners",
     "response": "json",
     "multipart": false
   },
@@ -1688,6 +2077,8 @@
     "method": "post",
     "path": "/api/admin/collections",
     "tag": "merchandising",
+    "platform": "admin",
+    "hook": "usePostAdminCollections",
     "response": "json",
     "multipart": false
   },
@@ -1697,6 +2088,8 @@
     "method": "post",
     "path": "/api/admin/exports",
     "tag": "processes",
+    "platform": "admin",
+    "hook": "usePostAdminExports",
     "response": "json",
     "multipart": false
   },
@@ -1706,6 +2099,8 @@
     "method": "post",
     "path": "/api/admin/imports/{resource}",
     "tag": "processes",
+    "platform": "admin",
+    "hook": "usePostAdminImportsResource",
     "response": "json",
     "multipart": true
   },
@@ -1715,6 +2110,8 @@
     "method": "post",
     "path": "/api/admin/inventory/adjustments",
     "tag": "inventory",
+    "platform": "admin",
+    "hook": "usePostAdminInventoryAdjustments",
     "response": "json",
     "multipart": false
   },
@@ -1724,6 +2121,8 @@
     "method": "post",
     "path": "/api/admin/inventory/receipts",
     "tag": "inventory",
+    "platform": "admin",
+    "hook": "usePostAdminInventoryReceipts",
     "response": "json",
     "multipart": false
   },
@@ -1733,6 +2132,8 @@
     "method": "post",
     "path": "/api/admin/jobs/{id}/retry",
     "tag": "jobs",
+    "platform": "admin",
+    "hook": "usePostAdminJobsIdRetry",
     "response": "json",
     "multipart": false
   },
@@ -1742,6 +2143,8 @@
     "method": "post",
     "path": "/api/admin/operations/inventory-reconciliation",
     "tag": "operations",
+    "platform": "admin",
+    "hook": "usePostAdminOperationsInventoryReconciliation",
     "response": "json",
     "multipart": false
   },
@@ -1751,6 +2154,8 @@
     "method": "post",
     "path": "/api/admin/pages",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePostAdminPages",
     "response": "json",
     "multipart": false
   },
@@ -1760,6 +2165,8 @@
     "method": "post",
     "path": "/api/admin/pages/{id}/archive",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePostAdminPagesIdArchive",
     "response": "json",
     "multipart": false
   },
@@ -1769,6 +2176,8 @@
     "method": "post",
     "path": "/api/admin/pages/{id}/publish",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePostAdminPagesIdPublish",
     "response": "json",
     "multipart": false
   },
@@ -1778,6 +2187,8 @@
     "method": "post",
     "path": "/api/admin/payments/{id}/cod-collection",
     "tag": "payments",
+    "platform": "admin",
+    "hook": "usePostAdminPaymentsIdCodCollection",
     "response": "json",
     "multipart": false
   },
@@ -1787,6 +2198,8 @@
     "method": "post",
     "path": "/api/admin/payments/{id}/reconcile",
     "tag": "payments",
+    "platform": "admin",
+    "hook": "usePostAdminPaymentsIdReconcile",
     "response": "json",
     "multipart": false
   },
@@ -1796,6 +2209,8 @@
     "method": "post",
     "path": "/api/admin/post-categories",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePostAdminPostCategories",
     "response": "json",
     "multipart": false
   },
@@ -1805,6 +2220,8 @@
     "method": "post",
     "path": "/api/admin/posts",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePostAdminPosts",
     "response": "json",
     "multipart": false
   },
@@ -1814,6 +2231,8 @@
     "method": "post",
     "path": "/api/admin/posts/{id}/archive",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePostAdminPostsIdArchive",
     "response": "json",
     "multipart": false
   },
@@ -1823,6 +2242,8 @@
     "method": "post",
     "path": "/api/admin/posts/{id}/publish",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePostAdminPostsIdPublish",
     "response": "json",
     "multipart": false
   },
@@ -1832,6 +2253,8 @@
     "method": "post",
     "path": "/api/admin/post-tags",
     "tag": "content",
+    "platform": "admin",
+    "hook": "usePostAdminPostTags",
     "response": "json",
     "multipart": false
   },
@@ -1841,6 +2264,8 @@
     "method": "post",
     "path": "/api/admin/promotions",
     "tag": "promotions",
+    "platform": "admin",
+    "hook": "usePostAdminPromotions",
     "response": "json",
     "multipart": false
   },
@@ -1850,6 +2275,8 @@
     "method": "post",
     "path": "/api/admin/refunds/{id}/manual-confirmation",
     "tag": "refunds",
+    "platform": "admin",
+    "hook": "usePostAdminRefundsIdManualConfirmation",
     "response": "json",
     "multipart": false
   },
@@ -1859,6 +2286,8 @@
     "method": "post",
     "path": "/api/admin/refunds/{id}/reconcile",
     "tag": "refunds",
+    "platform": "admin",
+    "hook": "usePostAdminRefundsIdReconcile",
     "response": "json",
     "multipart": false
   },
@@ -1868,6 +2297,8 @@
     "method": "post",
     "path": "/api/admin/refunds/{id}/retry",
     "tag": "refunds",
+    "platform": "admin",
+    "hook": "usePostAdminRefundsIdRetry",
     "response": "json",
     "multipart": false
   },
@@ -1877,6 +2308,8 @@
     "method": "post",
     "path": "/api/admin/report-exports",
     "tag": "reports",
+    "platform": "admin",
+    "hook": "usePostAdminReportExports",
     "response": "json",
     "multipart": false
   },
@@ -1886,6 +2319,8 @@
     "method": "post",
     "path": "/api/admin/shipping-methods",
     "tag": "settings",
+    "platform": "admin",
+    "hook": "usePostAdminShippingMethods",
     "response": "json",
     "multipart": false
   },
@@ -1895,6 +2330,8 @@
     "method": "post",
     "path": "/api/admin/size-guides",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "usePostAdminSizeGuides",
     "response": "json",
     "multipart": false
   },
@@ -1904,6 +2341,8 @@
     "method": "post",
     "path": "/api/admin/staff/invitations",
     "tag": "staff",
+    "platform": "admin",
+    "hook": "usePostAdminStaffInvitations",
     "response": "json",
     "multipart": false
   },
@@ -1913,6 +2352,8 @@
     "method": "post",
     "path": "/api/admin/support/tickets/{id}/assign",
     "tag": "support",
+    "platform": "admin",
+    "hook": "usePostAdminSupportTicketsIdAssign",
     "response": "json",
     "multipart": false
   },
@@ -1922,6 +2363,8 @@
     "method": "post",
     "path": "/api/auth/email-verification-requests",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "usePostAuthEmailVerificationRequests",
     "response": "json",
     "multipart": false
   },
@@ -1931,6 +2374,8 @@
     "method": "post",
     "path": "/api/auth/email-verifications",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "usePostAuthEmailVerifications",
     "response": "json",
     "multipart": false
   },
@@ -1940,6 +2385,8 @@
     "method": "post",
     "path": "/api/auth/google",
     "tag": "auth",
+    "platform": "shared",
+    "hook": "usePostAuthGoogle",
     "response": "json",
     "multipart": false
   },
@@ -1949,6 +2396,8 @@
     "method": "post",
     "path": "/api/auth/login",
     "tag": "auth",
+    "platform": "shared",
+    "hook": "usePostAuthLogin",
     "response": "json",
     "multipart": false
   },
@@ -1958,6 +2407,8 @@
     "method": "post",
     "path": "/api/auth/logout",
     "tag": "auth",
+    "platform": "shared",
+    "hook": "usePostAuthLogout",
     "response": "json",
     "multipart": false
   },
@@ -1967,6 +2418,8 @@
     "method": "post",
     "path": "/api/auth/password-reset-requests",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "usePostAuthPasswordResetRequests",
     "response": "json",
     "multipart": false
   },
@@ -1976,6 +2429,8 @@
     "method": "post",
     "path": "/api/auth/password-resets",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "usePostAuthPasswordResets",
     "response": "json",
     "multipart": false
   },
@@ -1985,6 +2440,8 @@
     "method": "post",
     "path": "/api/auth/refresh",
     "tag": "auth",
+    "platform": "shared",
+    "hook": "usePostAuthRefresh",
     "response": "json",
     "multipart": false
   },
@@ -1994,6 +2451,8 @@
     "method": "post",
     "path": "/api/auth/register",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "usePostAuthRegister",
     "response": "json",
     "multipart": false
   },
@@ -2003,6 +2462,8 @@
     "method": "post",
     "path": "/api/cancellation-requests/{id}/approve",
     "tag": "orders",
+    "platform": "admin",
+    "hook": "usePostCancellationRequestsIdApprove",
     "response": "json",
     "multipart": false
   },
@@ -2012,6 +2473,8 @@
     "method": "post",
     "path": "/api/cancellation-requests/{id}/reject",
     "tag": "orders",
+    "platform": "admin",
+    "hook": "usePostCancellationRequestsIdReject",
     "response": "json",
     "multipart": false
   },
@@ -2021,6 +2484,8 @@
     "method": "post",
     "path": "/api/cart/items",
     "tag": "cart",
+    "platform": "storefront",
+    "hook": "usePostCartItems",
     "response": "json",
     "multipart": false
   },
@@ -2030,6 +2495,8 @@
     "method": "post",
     "path": "/api/cart/merge",
     "tag": "cart",
+    "platform": "storefront",
+    "hook": "usePostCartMerge",
     "response": "json",
     "multipart": false
   },
@@ -2039,6 +2506,9 @@
     "method": "post",
     "path": "/api/categories",
     "tag": "categories",
+    "platform": "admin",
+    "hook": "usePostCategories",
+    "resourceHook": "useCreateCategory",
     "response": "json",
     "multipart": false
   },
@@ -2048,6 +2518,8 @@
     "method": "post",
     "path": "/api/checkout/quotes",
     "tag": "checkout",
+    "platform": "storefront",
+    "hook": "usePostCheckoutQuotes",
     "response": "json",
     "multipart": false
   },
@@ -2057,6 +2529,8 @@
     "method": "post",
     "path": "/api/coupons",
     "tag": "coupons",
+    "platform": "admin",
+    "hook": "usePostCoupons",
     "response": "json",
     "multipart": false
   },
@@ -2066,6 +2540,8 @@
     "method": "post",
     "path": "/api/coupons/preview",
     "tag": "coupons",
+    "platform": "shared",
+    "hook": "usePostCouponsPreview",
     "response": "json",
     "multipart": false
   },
@@ -2075,6 +2551,8 @@
     "method": "post",
     "path": "/api/exchanges/{id}/approve",
     "tag": "exchanges",
+    "platform": "admin",
+    "hook": "usePostExchangesIdApprove",
     "response": "json",
     "multipart": false
   },
@@ -2084,6 +2562,8 @@
     "method": "post",
     "path": "/api/exchanges/{id}/create-replacement",
     "tag": "exchanges",
+    "platform": "admin",
+    "hook": "usePostExchangesIdCreateReplacement",
     "response": "json",
     "multipart": false
   },
@@ -2093,6 +2573,8 @@
     "method": "post",
     "path": "/api/exchanges/{id}/reject",
     "tag": "exchanges",
+    "platform": "admin",
+    "hook": "usePostExchangesIdReject",
     "response": "json",
     "multipart": false
   },
@@ -2102,6 +2584,8 @@
     "method": "post",
     "path": "/api/files/uploads",
     "tag": "files",
+    "platform": "shared",
+    "hook": "usePostFilesUploads",
     "response": "json",
     "multipart": false
   },
@@ -2111,6 +2595,8 @@
     "method": "post",
     "path": "/api/files/uploads/batch",
     "tag": "processes",
+    "platform": "shared",
+    "hook": "usePostFilesUploadsBatch",
     "response": "json",
     "multipart": false
   },
@@ -2120,6 +2606,8 @@
     "method": "post",
     "path": "/api/files/uploads/batch/complete",
     "tag": "processes",
+    "platform": "shared",
+    "hook": "usePostFilesUploadsBatchComplete",
     "response": "json",
     "multipart": false
   },
@@ -2129,6 +2617,8 @@
     "method": "post",
     "path": "/api/files/uploads/{id}/complete",
     "tag": "files",
+    "platform": "shared",
+    "hook": "usePostFilesUploadsIdComplete",
     "response": "json",
     "multipart": false
   },
@@ -2138,6 +2628,8 @@
     "method": "post",
     "path": "/api/me/email-change-requests",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "usePostMeEmailChangeRequests",
     "response": "json",
     "multipart": false
   },
@@ -2147,6 +2639,8 @@
     "method": "post",
     "path": "/api/me/email-changes/confirm",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "usePostMeEmailChangesConfirm",
     "response": "json",
     "multipart": false
   },
@@ -2156,6 +2650,8 @@
     "method": "post",
     "path": "/api/me/sessions/revoke-others",
     "tag": "accounts",
+    "platform": "shared",
+    "hook": "usePostMeSessionsRevokeOthers",
     "response": "json",
     "multipart": false
   },
@@ -2165,6 +2661,8 @@
     "method": "post",
     "path": "/api/notifications/{id}/read",
     "tag": "notifications",
+    "platform": "shared",
+    "hook": "usePostNotificationsIdRead",
     "response": "json",
     "multipart": false
   },
@@ -2174,6 +2672,8 @@
     "method": "post",
     "path": "/api/notifications/read-all",
     "tag": "notifications",
+    "platform": "shared",
+    "hook": "usePostNotificationsReadAll",
     "response": "json",
     "multipart": false
   },
@@ -2183,6 +2683,8 @@
     "method": "post",
     "path": "/api/order-items/{id}/reviews",
     "tag": "reviews",
+    "platform": "shared",
+    "hook": "usePostOrderItemsIdReviews",
     "response": "json",
     "multipart": false
   },
@@ -2192,6 +2694,8 @@
     "method": "post",
     "path": "/api/orders",
     "tag": "orders",
+    "platform": "storefront",
+    "hook": "usePostOrders",
     "response": "json",
     "multipart": false
   },
@@ -2201,6 +2705,8 @@
     "method": "post",
     "path": "/api/orders/{id}/cancel",
     "tag": "orders",
+    "platform": "shared",
+    "hook": "usePostOrdersIdCancel",
     "response": "json",
     "multipart": false
   },
@@ -2210,6 +2716,8 @@
     "method": "post",
     "path": "/api/orders/{id}/cancellation-requests",
     "tag": "orders",
+    "platform": "shared",
+    "hook": "usePostOrdersIdCancellationRequests",
     "response": "json",
     "multipart": false
   },
@@ -2219,6 +2727,8 @@
     "method": "post",
     "path": "/api/orders/{id}/confirm",
     "tag": "orders",
+    "platform": "admin",
+    "hook": "usePostOrdersIdConfirm",
     "response": "json",
     "multipart": false
   },
@@ -2228,6 +2738,8 @@
     "method": "post",
     "path": "/api/orders/{id}/exchanges",
     "tag": "exchanges",
+    "platform": "shared",
+    "hook": "usePostOrdersIdExchanges",
     "response": "json",
     "multipart": false
   },
@@ -2237,6 +2749,8 @@
     "method": "post",
     "path": "/api/orders/{id}/payment-attempts",
     "tag": "payments",
+    "platform": "shared",
+    "hook": "usePostOrdersIdPaymentAttempts",
     "response": "json",
     "multipart": false
   },
@@ -2246,6 +2760,8 @@
     "method": "post",
     "path": "/api/orders/{id}/refunds",
     "tag": "orders",
+    "platform": "admin",
+    "hook": "usePostOrdersIdRefunds",
     "response": "json",
     "multipart": false
   },
@@ -2255,6 +2771,8 @@
     "method": "post",
     "path": "/api/orders/{id}/returns",
     "tag": "returns",
+    "platform": "shared",
+    "hook": "usePostOrdersIdReturns",
     "response": "json",
     "multipart": false
   },
@@ -2264,6 +2782,8 @@
     "method": "post",
     "path": "/api/orders/{id}/shipments",
     "tag": "fulfillment",
+    "platform": "admin",
+    "hook": "usePostOrdersIdShipments",
     "response": "json",
     "multipart": false
   },
@@ -2273,6 +2793,8 @@
     "method": "post",
     "path": "/api/orders/{id}/start-processing",
     "tag": "orders",
+    "platform": "admin",
+    "hook": "usePostOrdersIdStartProcessing",
     "response": "json",
     "multipart": false
   },
@@ -2282,6 +2804,8 @@
     "method": "post",
     "path": "/api/payments/{id}/mock-pay",
     "tag": "payments",
+    "platform": "shared",
+    "hook": "usePostPaymentsIdMockPay",
     "response": "json",
     "multipart": false
   },
@@ -2291,6 +2815,8 @@
     "method": "post",
     "path": "/api/payments/webhook/stripe",
     "tag": "payments",
+    "platform": "integration",
+    "hook": "usePostPaymentsWebhookStripe",
     "response": "empty",
     "multipart": false
   },
@@ -2300,6 +2826,8 @@
     "method": "post",
     "path": "/api/processes/{id}/cancel",
     "tag": "processes",
+    "platform": "shared",
+    "hook": "usePostProcessesIdCancel",
     "response": "json",
     "multipart": false
   },
@@ -2309,6 +2837,8 @@
     "method": "post",
     "path": "/api/processes/{id}/confirm",
     "tag": "processes",
+    "platform": "shared",
+    "hook": "usePostProcessesIdConfirm",
     "response": "json",
     "multipart": false
   },
@@ -2318,6 +2848,9 @@
     "method": "post",
     "path": "/api/products",
     "tag": "products",
+    "platform": "admin",
+    "hook": "usePostProducts",
+    "resourceHook": "useCreateProduct",
     "response": "json",
     "multipart": false
   },
@@ -2327,6 +2860,9 @@
     "method": "post",
     "path": "/api/products/{id}/images",
     "tag": "products",
+    "platform": "admin",
+    "hook": "usePostProductsIdImages",
+    "resourceHook": "useAddProductImage",
     "response": "json",
     "multipart": false
   },
@@ -2336,6 +2872,8 @@
     "method": "post",
     "path": "/api/products/{id}/reviews",
     "tag": "products",
+    "platform": "shared",
+    "hook": "usePostProductsIdReviews",
     "response": "json",
     "multipart": false
   },
@@ -2345,6 +2883,9 @@
     "method": "post",
     "path": "/api/products/{id}/variants",
     "tag": "catalog",
+    "platform": "admin",
+    "hook": "usePostProductsIdVariants",
+    "resourceHook": "useCreateProductVariant",
     "response": "json",
     "multipart": false
   },
@@ -2354,6 +2895,8 @@
     "method": "post",
     "path": "/api/returns/{id}/approve",
     "tag": "returns",
+    "platform": "admin",
+    "hook": "usePostReturnsIdApprove",
     "response": "json",
     "multipart": false
   },
@@ -2363,6 +2906,8 @@
     "method": "post",
     "path": "/api/returns/{id}/complete",
     "tag": "returns",
+    "platform": "admin",
+    "hook": "usePostReturnsIdComplete",
     "response": "json",
     "multipart": false
   },
@@ -2372,6 +2917,8 @@
     "method": "post",
     "path": "/api/returns/{id}/inspect",
     "tag": "returns",
+    "platform": "admin",
+    "hook": "usePostReturnsIdInspect",
     "response": "json",
     "multipart": false
   },
@@ -2381,6 +2928,8 @@
     "method": "post",
     "path": "/api/returns/{id}/in-transit",
     "tag": "returns",
+    "platform": "admin",
+    "hook": "usePostReturnsIdInTransit",
     "response": "json",
     "multipart": false
   },
@@ -2390,6 +2939,8 @@
     "method": "post",
     "path": "/api/returns/{id}/receive",
     "tag": "returns",
+    "platform": "admin",
+    "hook": "usePostReturnsIdReceive",
     "response": "json",
     "multipart": false
   },
@@ -2399,6 +2950,8 @@
     "method": "post",
     "path": "/api/returns/{id}/reject",
     "tag": "returns",
+    "platform": "admin",
+    "hook": "usePostReturnsIdReject",
     "response": "json",
     "multipart": false
   },
@@ -2408,6 +2961,8 @@
     "method": "post",
     "path": "/api/reviews/{id}/moderation",
     "tag": "reviews",
+    "platform": "admin",
+    "hook": "usePostReviewsIdModeration",
     "response": "json",
     "multipart": false
   },
@@ -2417,6 +2972,8 @@
     "method": "post",
     "path": "/api/reviews/{id}/reports",
     "tag": "reviews",
+    "platform": "shared",
+    "hook": "usePostReviewsIdReports",
     "response": "json",
     "multipart": false
   },
@@ -2426,6 +2983,8 @@
     "method": "post",
     "path": "/api/shipments/{id}/cancel",
     "tag": "fulfillment",
+    "platform": "admin",
+    "hook": "usePostShipmentsIdCancel",
     "response": "json",
     "multipart": false
   },
@@ -2435,6 +2994,8 @@
     "method": "post",
     "path": "/api/shipments/{id}/deliver",
     "tag": "fulfillment",
+    "platform": "admin",
+    "hook": "usePostShipmentsIdDeliver",
     "response": "json",
     "multipart": false
   },
@@ -2444,6 +3005,8 @@
     "method": "post",
     "path": "/api/shipments/{id}/fail",
     "tag": "fulfillment",
+    "platform": "admin",
+    "hook": "usePostShipmentsIdFail",
     "response": "json",
     "multipart": false
   },
@@ -2453,6 +3016,8 @@
     "method": "post",
     "path": "/api/shipments/{id}/handover",
     "tag": "fulfillment",
+    "platform": "admin",
+    "hook": "usePostShipmentsIdHandover",
     "response": "json",
     "multipart": false
   },
@@ -2462,6 +3027,8 @@
     "method": "post",
     "path": "/api/shipments/{id}/lose",
     "tag": "fulfillment",
+    "platform": "admin",
+    "hook": "usePostShipmentsIdLose",
     "response": "json",
     "multipart": false
   },
@@ -2471,6 +3038,8 @@
     "method": "post",
     "path": "/api/shipments/{id}/out-for-delivery",
     "tag": "fulfillment",
+    "platform": "admin",
+    "hook": "usePostShipmentsIdOutForDelivery",
     "response": "json",
     "multipart": false
   },
@@ -2480,6 +3049,8 @@
     "method": "post",
     "path": "/api/shipments/{id}/pack",
     "tag": "fulfillment",
+    "platform": "admin",
+    "hook": "usePostShipmentsIdPack",
     "response": "json",
     "multipart": false
   },
@@ -2489,6 +3060,8 @@
     "method": "post",
     "path": "/api/shipments/{id}/ready",
     "tag": "fulfillment",
+    "platform": "admin",
+    "hook": "usePostShipmentsIdReady",
     "response": "json",
     "multipart": false
   },
@@ -2498,6 +3071,8 @@
     "method": "post",
     "path": "/api/shipments/{id}/return",
     "tag": "fulfillment",
+    "platform": "admin",
+    "hook": "usePostShipmentsIdReturn",
     "response": "json",
     "multipart": false
   },
@@ -2507,6 +3082,8 @@
     "method": "post",
     "path": "/api/shipping/quotes",
     "tag": "settings",
+    "platform": "storefront",
+    "hook": "usePostShippingQuotes",
     "response": "json",
     "multipart": false
   },
@@ -2516,6 +3093,8 @@
     "method": "post",
     "path": "/api/staff/invitations/accept",
     "tag": "staff",
+    "platform": "shared",
+    "hook": "usePostStaffInvitationsAccept",
     "response": "json",
     "multipart": false
   },
@@ -2525,6 +3104,8 @@
     "method": "post",
     "path": "/api/stock-alert-subscriptions",
     "tag": "wishlist",
+    "platform": "shared",
+    "hook": "usePostStockAlertSubscriptions",
     "response": "json",
     "multipart": false
   },
@@ -2534,6 +3115,8 @@
     "method": "post",
     "path": "/api/support/tickets",
     "tag": "support",
+    "platform": "shared",
+    "hook": "usePostSupportTickets",
     "response": "json",
     "multipart": false
   },
@@ -2543,6 +3126,8 @@
     "method": "post",
     "path": "/api/support/tickets/{id}/close",
     "tag": "support",
+    "platform": "shared",
+    "hook": "usePostSupportTicketsIdClose",
     "response": "json",
     "multipart": false
   },
@@ -2552,6 +3137,8 @@
     "method": "post",
     "path": "/api/support/tickets/{id}/messages",
     "tag": "support",
+    "platform": "shared",
+    "hook": "usePostSupportTicketsIdMessages",
     "response": "json",
     "multipart": false
   },
@@ -2561,6 +3148,8 @@
     "method": "put",
     "path": "/api/addresses/{id}",
     "tag": "addresses",
+    "platform": "storefront",
+    "hook": "usePutAddressesId",
     "response": "json",
     "multipart": false
   },
@@ -2570,6 +3159,8 @@
     "method": "put",
     "path": "/api/admin/notification-templates",
     "tag": "notifications",
+    "platform": "admin",
+    "hook": "usePutAdminNotificationTemplates",
     "response": "json",
     "multipart": false
   },
@@ -2579,6 +3170,9 @@
     "method": "put",
     "path": "/api/categories/{id}",
     "tag": "categories",
+    "platform": "admin",
+    "hook": "usePutCategoriesId",
+    "resourceHook": "useUpdateCategory",
     "response": "json",
     "multipart": false
   },
@@ -2588,6 +3182,8 @@
     "method": "put",
     "path": "/api/coupons/{id}",
     "tag": "coupons",
+    "platform": "admin",
+    "hook": "usePutCouponsId",
     "response": "json",
     "multipart": false
   },
@@ -2597,6 +3193,9 @@
     "method": "put",
     "path": "/api/products/{id}",
     "tag": "products",
+    "platform": "admin",
+    "hook": "usePutProductsId",
+    "resourceHook": "useUpdateProduct",
     "response": "json",
     "multipart": false
   },
@@ -2606,6 +3205,8 @@
     "method": "put",
     "path": "/api/reviews/{id}/reply",
     "tag": "reviews",
+    "platform": "admin",
+    "hook": "usePutReviewsIdReply",
     "response": "json",
     "multipart": false
   },
@@ -2615,6 +3216,8 @@
     "method": "put",
     "path": "/api/wishlist/items/{productId}",
     "tag": "wishlist",
+    "platform": "storefront",
+    "hook": "usePutWishlistItemsProductId",
     "response": "json",
     "multipart": false
   }

@@ -178,3 +178,5 @@ thương hiệu, chất liệu, SEO, category, ảnh đại diện và gallery. 
 draft hoặc ép kiểu che field thiếu.
 `productKeys.all` là namespace chung `['api']` để mutation cập nhật cả các resource
 liên quan; `lists()`/`details()` cho phép invalidate riêng danh sách/chi tiết admin.
+
+Tra [API/hook theo platform](../../documents/backend/api-sdk-reference.md) và [workflow upload đơn/batch](../../documents/backend/uploads.md). Scalar `/api/docs` hiển thị cùng tên export và ví dụ theo từng operation.

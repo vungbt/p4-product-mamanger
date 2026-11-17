@@ -11,6 +11,28 @@
 
 export const API_DESCRIPTION = `API cho shop quần áo: Admin và Storefront.
 
+## Platform và hooks SDK
+Sidebar chia theo Storefront, Admin, Shared, Integration và Operations, bên trong là resource.
+Đây là nhóm sử dụng API, không thay thế permission/ownership và không phải tenant isolation.
+Mỗi operation có bảng hook/helper/input/options và ví dụ React Query, sinh từ cùng quy tắc đặt tên SDK.
+Hooks import từ \`@p4/api-sdk/react\`; helper/input từ \`@p4/api-sdk/shared\`.
+Hooks không tự kiểm tra quyền trước request: backend quyết định quyền; UI có thể dùng
+\`useCapabilities\` và \`enabled\`. Token/cookie gửi qua SDK provider.
+
+## Upload ảnh
+Ảnh upload riêng tới storage bằng ticket do API cấp, sau đó API verify trước khi gắn vào resource.
+Một ảnh: \`POST /api/files/uploads\` → POST file tới \`uploadUrl\` →
+\`POST /api/files/uploads/{id}/complete\`. Giữ \`publicId\` từ ticket, đây là storage ID;
+\`fileId\`, ticket ID và URL ảnh là các giá trị khác nhau.
+Nhiều ảnh: \`POST /api/files/uploads/batch\` với \`purpose\`, \`names\` (1–20 file), \`resourceId?\`;
+POST từng file tới URL tương ứng, rồi \`POST /api/files/uploads/batch/complete\` với \`ticketIds\`
+và \`Idempotency-Key\`. API trả 202/process, worker verify từng ảnh; theo dõi
+\`GET /api/processes/{id}\` và \`GET /api/processes/{id}/items\`.
+Chỉ gắn ảnh completed. Product nhận \`imageStorageId\`/\`imageStorageIds\` từ publicId khi tạo;
+thêm gallery dùng \`POST /api/products/{id}/images\`, xóa dùng endpoint ảnh riêng.
+\`product\` cần quyền \`write:Catalog\`; \`blog\` cần \`write:Content\`; purpose support/return là private.
+Hooks API không tự gửi file tới storage hoặc tự thực thi toàn workflow batch.
+
 ## Xác thực
 Gửi \`Authorization: Bearer <token>\` với \`token\` lấy từ response đăng nhập. Token hết hạn thì gọi \`POST /api/auth/refresh\`.
 Mỗi operation ghi rõ quyền cần có; danh sách quyền của user hiện tại lấy từ \`GET /api/me/capabilities\`.

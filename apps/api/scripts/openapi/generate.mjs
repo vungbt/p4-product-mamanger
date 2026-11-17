@@ -1273,6 +1273,8 @@ spec.tags.push({
 });
 await authPool.end();
 
+config.decorateDocument?.(spec);
+
 const output = YAML.stringify(spec, { lineWidth: 120, aliasDuplicateObjects: false });
 const operationCount = Object.values(paths).reduce(
   (sum, item) => sum + Object.keys(item).length,

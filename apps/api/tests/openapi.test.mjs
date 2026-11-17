@@ -128,3 +128,39 @@ test('list query schemas expose implemented filters and optional metadata for le
       assert.ok(params(path)[field], `${path}: missing ${field}`);
   }
 });
+
+test('platform navigation and SDK documentation cover every operation without weakening security', async () => {
+  const spec = YAML.parse(await readFile(new URL('../openapi.yaml', import.meta.url), 'utf8'));
+  const groups = spec['x-tagGroups'];
+  assert.deepEqual(
+    groups.map((group) => group.name),
+    ['Storefront', 'Admin', 'Shared', 'Integration', 'Operations'],
+  );
+  const tags = new Set(groups.flatMap((group) => group.tags));
+  let count = 0;
+  for (const [path, item] of Object.entries(spec.paths)) {
+    for (const operation of Object.values(item)) {
+      if (!operation.operationId) continue;
+      count++;
+      assert.ok(tags.has(operation.tags[0]), path);
+      assert.ok(operation['x-platform'], path);
+      assert.ok(operation['x-resource'], path);
+      assert.ok(operation['x-sdk'].hook.startsWith('use'), path);
+      assert.match(operation.description, /Platform và SDK/);
+      assert.match(operation['x-codeSamples'][0].source, /@p4\/api-sdk\/react/);
+    }
+  }
+  assert.ok(count > 250);
+  const publicList = spec.paths['/api/products'].get;
+  const create = spec.paths['/api/products'].post;
+  assert.equal(publicList['x-platform'], 'storefront');
+  assert.equal(publicList['x-sdk'].resourceHook, 'useStorefrontProducts');
+  assert.deepEqual(publicList.security, []);
+  assert.equal(create['x-platform'], 'admin');
+  assert.match(create.description, /write:Catalog/);
+  assert.ok(create.security.length);
+  assert.equal(spec.paths['/api/admin/products'].get['x-sdk'].resourceHook, 'useProducts');
+  assert.equal(spec.paths['/api/files/uploads/batch'].post['x-platform'], 'shared');
+  assert.equal(spec.paths['/api/payments/webhook/stripe'].post['x-platform'], 'integration');
+  assert.equal(spec.paths['/health'].get['x-platform'], 'operations');
+});
