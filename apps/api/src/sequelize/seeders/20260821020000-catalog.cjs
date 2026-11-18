@@ -1,6 +1,7 @@
 'use strict';
 
 const { Op } = require('sequelize');
+const { descriptionToHtml } = require('../rich-text-html.cjs');
 const { data, money, now, uuid } = require('../seed-data.cjs');
 
 const productFiles = new Map();
@@ -45,7 +46,7 @@ module.exports = {
         id: product.id,
         name: product.name,
         price: money(product.price),
-        description: product.description,
+        description: descriptionToHtml(product.description),
         image_id: product.imageId ? uuid(product.imageId) : null,
         stock: product.stock,
         category_id: uuid(product.categoryId),

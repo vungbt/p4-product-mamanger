@@ -12,7 +12,7 @@
     "db:seed": "sequelize-cli db:seed:all",
     "db:reset": "sequelize-cli db:migrate:undo:all && sequelize-cli db:migrate && sequelize-cli db:seed:all",
     "test:categories": "pnpm build && node --test tests/categories.test.mjs",
-    "test:lists": "pnpm typecheck && pnpm build && node --test tests/categories.test.mjs tests/list-query.test.mjs tests/select-fields.test.mjs tests/production-config.test.mjs",
+    "test:lists": "pnpm typecheck && pnpm build && node --test tests/categories.test.mjs tests/list-query.test.mjs tests/select-fields.test.mjs tests/production-config.test.mjs tests/rich-text-html.test.mjs",
     "test:lists:local": "pnpm build && node --test tests/list-api.integration.test.mjs",
     "typecheck": "tsc -p tsconfig.typecheck.json --noEmit",
     "openapi:generate": "pnpm build && node scripts/openapi/generate.mjs",
