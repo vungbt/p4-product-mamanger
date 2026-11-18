@@ -41,8 +41,11 @@ const productQuerySchema = v.object({
   ),
   q: v.optional(v.fallback(v.pipe(v.string(), v.trim()), '')),
   categoryId: v.optional(v.fallback(v.pipe(v.string(), v.trim()), '')),
-  sortBy: v.optional(v.picklist(sortFields)),
-  sortOrder: v.optional(v.picklist(['asc', 'desc'])),
+  sortBy: v.fallback(v.optional(v.pipe(v.string(), v.trim(), v.picklist(sortFields))), undefined),
+  sortOrder: v.fallback(
+    v.optional(v.pipe(v.string(), v.trim(), v.toLowerCase(), v.picklist(['asc', 'desc']))),
+    undefined,
+  ),
 });
 
 export default function useProductsPage() {

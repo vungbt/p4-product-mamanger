@@ -2,14 +2,25 @@ export function extractRichText(value?: string | null): string {
   if (!value) return '';
 
   const trimmed = value.trim();
-
+  function stripHtml(html: string): string {
+    return html
+      .replace(/<\/p>|<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+      .trim();
+  }
   if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) {
-    return trimmed;
+    return stripHtml(trimmed);
   }
 
   try {
     const parsed = JSON.parse(trimmed);
-    if (!parsed || typeof parsed !== 'object' || !parsed.root) {
+    const root = parsed && typeof parsed === 'object' ? parsed.root : null;
+    if (
+      !root ||
+      typeof root !== 'object' ||
+      root.type !== 'root' ||
+      !Array.isArray(root.children)
+    ) {
       return trimmed;
     }
 
@@ -39,6 +50,6 @@ export function extractRichText(value?: string | null): string {
     const result = extractNode(parsed.root).trim();
     return result;
   } catch {
-    return trimmed;
+    return stripHtml(trimmed);
   }
 }

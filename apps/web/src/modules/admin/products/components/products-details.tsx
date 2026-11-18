@@ -25,8 +25,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
   const updateProductPublication = useUpdateProductPublication();
 
   const changeStatus = async (status: 'active' | 'inactive' | 'archived'): Promise<boolean> => {
-    if (!products || typeof products.version !== 'number') {
-      toast.error(t('products.invalidProduct', 'Phiên bản sản phẩm không hợp lệ.'));
+    if (!products) {
       return false;
     }
     try {
@@ -128,7 +127,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                     loading={updateProductPublication.isPending}
                     onClick={() => void changeStatus('inactive')}
                   >
-                    {t('products.status.inactive', 'Tạm ngưng')}
+                    {t('products.statuses.inactive', 'Tạm ngưng')}
                   </Button>
                 )}
                 {products.status !== 'archived' && (
@@ -188,10 +187,14 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                 <dd>{products.category?.name || t('products.none', 'Chưa phân loại')}</dd>
               </div>
               <div>
+                <dt className="text-ui-sm text-muted">{t('products.status', 'Trạng thái')}</dt>
+                <dd>{products.status}</dd>
+              </div>
+              <div>
                 <dt className="text-ui-sm text-muted">
                   {t('products.version', 'Phiên bản (version)')}
                 </dt>
-                <dd>v{products.version ?? 1}</dd>
+                <dd>v{products.version}</dd>
               </div>
               {products.careInstructions && (
                 <div className="sm:col-span-2">

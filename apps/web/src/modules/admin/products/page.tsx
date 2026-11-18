@@ -7,15 +7,24 @@ import {
   IconButton,
   Input,
   Select,
+  Tag,
+  type TagTone,
   Tooltip,
 } from '@itclabs/react-ui';
 import { useAllCategories } from '@p4/api-sdk/react';
-import type { Product } from '@p4/shared';
+import type { Product, ProductPublicationStatus } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
 import ProductDetails from './components/products-details';
 import ProductsImage from './components/products-image';
 import { extractRichText } from './helpers/rich-text';
 import useProductsPage from './hooks/use-products-page';
+
+const statusTone: Record<ProductPublicationStatus, TagTone> = {
+  draft: 'neutral',
+  active: 'success',
+  inactive: 'warning',
+  archived: 'danger',
+};
 
 export default function AdminProductsPage() {
   const { t } = useTranslation();
@@ -81,6 +90,20 @@ export default function AdminProductsPage() {
           <span className="block max-w-sm truncate" title={text}>
             {text || t('products.noDescription', 'Chưa có mô tả')}
           </span>
+        );
+      },
+    },
+    {
+      accessorKey: 'status',
+      header: t('products.status', 'Trạng thái'),
+      enableSorting: false,
+      cell: ({ row }) => {
+        const status = (row.original as Product & { status?: ProductPublicationStatus }).status;
+        if (!status) return null;
+        return (
+          <Tag tone={statusTone[status] ?? 'neutral'} size="sm">
+            {t(`products.statuses.${status}`, status)}
+          </Tag>
         );
       },
     },
@@ -176,13 +199,15 @@ export default function AdminProductsPage() {
                   {t('products.columns', 'Cột hiển thị')}
                 </Button>
               }
-              items={['imageUrl', 'price', 'stock', 'description', 'category'].map((id) => ({
-                id,
-                type: 'checkbox' as const,
-                label: id === 'imageUrl' ? t('products.image', 'Ảnh') : t(`products.${id}`),
-                checked: state.columnVisibility?.[id] !== false,
-                onCheckedChange: (checked) => changeColumnVisibility(id, checked),
-              }))}
+              items={['imageUrl', 'price', 'stock', 'description', 'category', 'status'].map(
+                (id) => ({
+                  id,
+                  type: 'checkbox' as const,
+                  label: id === 'imageUrl' ? t('products.image', 'Ảnh') : t(`products.${id}`),
+                  checked: state.columnVisibility?.[id] !== false,
+                  onCheckedChange: (checked) => changeColumnVisibility(id, checked),
+                }),
+              )}
             />
           </div>
         </div>

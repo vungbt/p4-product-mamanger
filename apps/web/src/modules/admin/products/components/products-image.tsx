@@ -15,10 +15,11 @@ export default function ProductImage({
   fallbackClassName = 'text-ui-xs text-muted',
 }: ProductImageProps) {
   const { t } = useTranslation();
-  const [failed, setFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
-  if (!src || failed) {
+  if (!src || failedSrc === src) {
     return <span className={fallbackClassName}>{t('products.noImage', 'Không có ảnh')}</span>;
   }
-  return <img src={src} alt={alt} className={className} onError={() => setFailed(true)} />;
+
+  return <img src={src} alt={alt} className={className} onError={() => setFailedSrc(src)} />;
 }

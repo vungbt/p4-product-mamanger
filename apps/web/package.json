@@ -20,7 +20,6 @@
     "@p4/i18n": "workspace:*",
     "@p4/shared": "workspace:*",
     "i18next": "catalog:",
-    "lexical": "^0.53.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-i18next": "catalog:",
