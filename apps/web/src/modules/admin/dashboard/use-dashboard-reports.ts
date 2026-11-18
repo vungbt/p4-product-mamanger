@@ -1,10 +1,7 @@
 import { getApiSdk, useQuery } from '@p4/api-client';
 import { unwrap } from '@p4/api-sdk/shared';
 import { useMemo } from 'react';
-
-export const DASHBOARD_RANGES = [7, 30, 90] as const;
-
-export type DashboardRange = (typeof DASHBOARD_RANGES)[number];
+import type { DashboardRange } from './dashboard-range';
 
 /** Variants at or below this sellable quantity need restocking. */
 const LOW_STOCK_THRESHOLD = 5;

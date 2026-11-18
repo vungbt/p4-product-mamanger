@@ -1,4 +1,4 @@
-import { cn, KpiGrid, Skeleton } from '@itclabs/react-ui';
+import { Card, cn, KpiGrid, Skeleton } from '@itclabs/react-ui';
 import { useBuildingOverview } from '@stay/sdk/react';
 import { isPeriod, type StayOverview } from '@stay/shared';
 import { lazy, Suspense } from 'react';
@@ -13,7 +13,8 @@ import { latestSearchParams } from '@/libraries/search-params';
 import { useAuth } from '@/libraries/session/auth-provider';
 import { displayPeriod } from '@/modules/invoices/invoice-ui';
 import { OnboardingSteps } from './onboarding';
-import { OccupancyCard, StatCard } from './stat-cards';
+import { RoomStatusCard } from './room-status-card';
+import { StatCard } from './stat-cards';
 import { TodoList } from './todo-list';
 
 const PeriodChart = lazy(() => import('./period-chart'));
@@ -139,7 +140,7 @@ function OverviewContent({
         <h2 id="overview-stats-title" className="text-section font-semibold text-ink">
           Kỳ {period}
         </h2>
-        <KpiGrid columns={5}>
+        <KpiGrid columns={4}>
           <StatCard
             id="billed"
             label="Phải thu kỳ này"
@@ -186,51 +187,45 @@ function OverviewContent({
             href="/receivables"
             tone={data.receivables.overdueRemaining > 0 ? 'danger' : 'success'}
           />
-          <OccupancyCard data={data} previousLabel={previous} />
         </KpiGrid>
       </section>
 
       <div className="grid min-w-0 gap-6 xl:grid-cols-3">
-        <div className="min-w-0 xl:order-last">
-          <TodoList todos={data.todos} />
-        </div>
-
-        <section
-          aria-labelledby="overview-chart-title"
-          className="grid min-w-0 content-start gap-3 xl:col-span-2"
+        <RoomStatusCard data={data} previousLabel={previous} />
+        <Card
+          title="6 kỳ gần nhất"
+          description="Phải thu và đã thu theo từng kỳ"
+          className="min-w-0 xl:col-span-2"
         >
-          <h2 id="overview-chart-title" className="text-section font-semibold text-ink">
-            6 kỳ gần nhất
-          </h2>
-          <div className="relative min-w-0 overflow-hidden rounded-panel border border-line bg-surface p-3 sm:p-5">
-            {!loading && !hasSeries ? (
-              // A full-height empty chart is mostly blank space; a one-line state says the same.
-              <p data-testid="overview-chart" className="py-6 text-center text-muted">
-                Chưa có hoá đơn phát hành trong 6 kỳ này.
-              </p>
-            ) : (
-              <Suspense fallback={<Skeleton className="h-64" />}>
-                <PeriodChart
-                  type="bar"
-                  label={`Phải thu và đã thu từ kỳ ${displayPeriod(data.series[0]?.period ?? data.period)} đến kỳ ${period}`}
-                  description="Mỗi kỳ: tổng hoá đơn đã phát hành (phải thu) và số đã thu của chính các hoá đơn đó."
-                  data={hasSeries ? chartData : []}
-                  series={[
-                    { id: 'billed', label: 'Phải thu' },
-                    { id: 'collected', label: 'Đã thu' },
-                  ]}
-                  valueFormatter={formatVnd}
-                  axisValueFormatter={formatVndCompact}
-                  emptyMessage="Chưa có hoá đơn phát hành trong 6 kỳ này."
-                  loadingLabel="Đang tải biểu đồ"
-                  loading={loading}
-                  data-testid="overview-chart"
-                />
-              </Suspense>
-            )}
-          </div>
-        </section>
+          {!loading && !hasSeries ? (
+            // A full-height empty chart is mostly blank space; a one-line state says the same.
+            <p data-testid="overview-chart" className="py-6 text-center text-muted">
+              Chưa có hoá đơn phát hành trong 6 kỳ này.
+            </p>
+          ) : (
+            <Suspense fallback={<Skeleton className="h-64" />}>
+              <PeriodChart
+                type="bar"
+                label={`Phải thu và đã thu từ kỳ ${displayPeriod(data.series[0]?.period ?? data.period)} đến kỳ ${period}`}
+                description="Mỗi kỳ: tổng hoá đơn đã phát hành (phải thu) và số đã thu của chính các hoá đơn đó."
+                data={hasSeries ? chartData : []}
+                series={[
+                  { id: 'billed', label: 'Phải thu' },
+                  { id: 'collected', label: 'Đã thu' },
+                ]}
+                valueFormatter={formatVnd}
+                axisValueFormatter={formatVndCompact}
+                emptyMessage="Chưa có hoá đơn phát hành trong 6 kỳ này."
+                loadingLabel="Đang tải biểu đồ"
+                loading={loading}
+                data-testid="overview-chart"
+              />
+            </Suspense>
+          )}
+        </Card>
       </div>
+
+      <TodoList todos={data.todos} />
     </div>
   );
 }
