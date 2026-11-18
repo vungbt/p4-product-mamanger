@@ -346,6 +346,10 @@ export interface ProductListQuery
   maxStock?: number;
 }
 
+export interface AdminProductListQuery extends ProductListQuery {
+  status?: ProductPublicationStatus;
+}
+
 export interface OrderListQuery
   extends ListQuery<keyof Pick<Order, 'id' | 'userEmail' | 'status' | 'total' | 'createdAt'>> {
   status?: OrderStatus;

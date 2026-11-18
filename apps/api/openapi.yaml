@@ -21857,6 +21857,15 @@ paths:
             type: integer
             minimum: 0
             maximum: 2147483647
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - active
+              - archived
+              - draft
+              - inactive
       responses:
         "200":
           description: Thành công

@@ -115,6 +115,16 @@ describe('catalog and SKU inventory on local API', { skip: !base }, () => {
     const listed = await call('GET', '/admin/products?q=Test%20clothing');
     assert.ok(listed.some((row) => row.id === product.id));
   });
+  test('admin list filters by publication status; storefront rejects the filter', async () => {
+    const drafts = await call('GET', '/admin/products?q=Test%20clothing&status=draft');
+    assert.ok(drafts.some((row) => row.id === product.id));
+    assert.ok(drafts.every((row) => row.status === 'draft'));
+    const active = await call('GET', '/admin/products?q=Test%20clothing&status=active');
+    assert.ok(!active.some((row) => row.id === product.id));
+    assert.ok(active.every((row) => row.status === 'active'));
+    await call('GET', '/admin/products?status=unknown', undefined, 400);
+    await call('GET', '/products?status=draft', undefined, 400, undefined, true);
+  });
   test('SKU combinations and codes are unique; inventory fields cannot be patched', async () => {
     const input = { sku: `TEST-${suffix}`, size: 'M', color: 'Black', price: 125000 };
     await call('POST', `/products/${product.id}/variants`, input, 201);
@@ -202,6 +212,8 @@ describe('catalog and SKU inventory on local API', { skip: !base }, () => {
   test('archiving preserves records and keeps public lookup unavailable', async () => {
     await call('DELETE', `/products/${product.id}`);
     assert.equal((await call('GET', `/admin/products/${product.id}`)).status, 'archived');
+    const archived = await call('GET', '/admin/products?q=Test%20clothing&status=archived');
+    assert.ok(archived.some((row) => row.id === product.id));
     assert.ok(await ProductModel.findByPk(product.id));
   });
 });

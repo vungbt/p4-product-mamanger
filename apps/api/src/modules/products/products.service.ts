@@ -8,7 +8,7 @@ import {
   requestStore,
   searchPattern,
 } from '@p4/server-core';
-import type { Product, ProductImage, ProductInput, ProductListQuery } from '@p4/shared';
+import type { AdminProductListQuery, Product, ProductImage, ProductInput } from '@p4/shared';
 import type { Transaction, WhereOptions } from 'sequelize';
 import { literal, Op } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
@@ -116,8 +116,12 @@ async function resolveImageId(imageStorageId?: string, fallback?: string | null)
   return file.id;
 }
 
-export async function listProducts(query: ProductListQuery, admin = false) {
-  const conditions: WhereOptions<ProductAttributes>[] = admin ? [] : [{ status: 'active' }];
+export async function listProducts(query: AdminProductListQuery, admin = false) {
+  const conditions: WhereOptions<ProductAttributes>[] = admin
+    ? query.status
+      ? [{ status: query.status }]
+      : []
+    : [{ status: 'active' }];
 
   const order: ModelOrder<ProductAttributes> = [
     [query.sortBy ?? 'createdAt', query.sortOrder === 'desc' ? 'DESC' : 'ASC'],
