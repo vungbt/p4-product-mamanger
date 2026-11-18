@@ -36,6 +36,10 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/** A session checked this recently is not checked again on focus or by the timer. */
+const SESSION_SYNC_INTERVAL_MS = 5 * 60_000;
+const SESSION_SYNC_CHECK_MS = 60_000;
+
 function assertPortalRole(user: User, portal: AuthPortal) {
   if (portal === 'admin' && user.role !== 'admin') {
     throw new Error('auth.unauthorized');
@@ -72,27 +76,32 @@ export function AuthProvider({
 
   useEffect(() => {
     let active = true;
+    let lastSyncAt = 0;
     clearAuthSession(sessionKey);
     const sync = () => {
+      lastSyncAt = Date.now();
       if (onRefresh)
         void onRefresh().finally(() => {
           if (active) setIsLoading(false);
         });
       else setIsLoading(false);
     };
+    const syncIfStale = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - lastSyncAt >= SESSION_SYNC_INTERVAL_MS) sync();
+    };
     sync();
     const channel =
       typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel('p4-auth');
+    // Sign-in and sign-out in another tab apply immediately.
     if (channel) channel.onmessage = sync;
-    const interval = window.setInterval(() => {
-      if (document.visibilityState === 'visible') sync();
-    }, 5 * 60_000);
-    window.addEventListener('focus', sync);
+    const interval = window.setInterval(syncIfStale, SESSION_SYNC_CHECK_MS);
+    window.addEventListener('focus', syncIfStale);
     return () => {
       active = false;
       window.clearInterval(interval);
       channel?.close();
-      window.removeEventListener('focus', sync);
+      window.removeEventListener('focus', syncIfStale);
     };
   }, [onRefresh, sessionKey]);
 
