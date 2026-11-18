@@ -19,6 +19,7 @@ import {
 import { auditedTransaction, inTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { assertTransition, assertVersion } from '@/shared/commerce/transitions.js';
+import { htmlText } from '@/utils/html-text.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { syncProductBalance, variantDto } from '../inventory/inventory.service.js';
 import { getProductById } from '../products/products.service.js';
@@ -61,7 +62,13 @@ export async function publishProduct(
         where: { productId: id, status: 'active' },
         transaction,
       });
-      if (!row.name.trim() || !row.slug || !row.description.trim() || !row.imageId || variants < 1)
+      if (
+        !row.name.trim() ||
+        !row.slug ||
+        !htmlText(row.description) ||
+        !row.imageId ||
+        variants < 1
+      )
         throw new BaseError('product_incomplete', 409, 'product_incomplete', {
           publication: ['Name, slug, description, cover and an active SKU are required.'],
         });
