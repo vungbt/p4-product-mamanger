@@ -1,6 +1,6 @@
 import { ToastProvider, UIProvider, type UiImageProps, type UiLinkProps } from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
-import { createBrowserRouter, Link, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Link, RouterProvider, useLocation } from 'react-router-dom';
 import { CapabilityAbilityProvider } from '@/libraries/ability';
 import { UnsavedChangesProvider } from '@/libraries/forms/unsaved-changes';
 import { OfflineBanner } from '@/libraries/offline-banner';
@@ -12,6 +12,10 @@ import AppRoutes from '@/routing/app-routes';
 // Keep kit navigation (Sidebar, Breadcrumb) on React Router.
 function RouterUiLink({ href, ...props }: UiLinkProps) {
   return <Link {...props} to={href} />;
+}
+
+function useRouterAdapter() {
+  return { pathname: useLocation().pathname };
 }
 
 function WebImage({ alt, ...props }: UiImageProps) {
@@ -26,6 +30,7 @@ function Root() {
       theme={uiTheme}
       image={WebImage}
       link={RouterUiLink}
+      router={useRouterAdapter}
       locale={i18n.resolvedLanguage === 'en' ? 'en-US' : 'vi-VN'}
     >
       <ToastProvider position="top-center" duration={3000}>

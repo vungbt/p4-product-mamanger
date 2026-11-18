@@ -214,5 +214,37 @@
     "generateSlug": "From name",
     "slugHint": "Generated from the name for new categories. Edit the slug or regenerate it from the name.",
     "refresh": "Refresh list"
+  },
+  "adminDashboard": {
+    "greeting": "Hello, {{name}}",
+    "description": "Store revenue, orders and inventory.",
+    "range": "Time range",
+    "lastDays": "Last {{days}} days",
+    "versusPrevious": "vs previous {{days}} days",
+    "netRevenue": "Net revenue",
+    "newOrders": "New orders",
+    "completionRate": "Completion rate",
+    "completionHint": "Completed out of all new orders",
+    "lowStock": "Low stock",
+    "lowStockHint": "Variants with 5 units or fewer",
+    "revenueChart": "Revenue by day",
+    "orderStatus": "Order status",
+    "topProducts": "Best sellers",
+    "topProductsHint": "Units fulfilled, net of returns",
+    "viewProducts": "View products",
+    "unitsLeft": "{{value}} left",
+    "outOfStock": "Out of stock",
+    "noLowStock": "Stock levels look healthy",
+    "noOrders": "No orders in this range",
+    "noProducts": "No fulfilled products in this range",
+    "loadError": "Dashboard figures could not be loaded",
+    "retry": "Try again",
+    "status": {
+      "pending_confirmation": "Pending confirmation",
+      "confirmed": "Confirmed",
+      "processing": "Processing",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
   }
 }

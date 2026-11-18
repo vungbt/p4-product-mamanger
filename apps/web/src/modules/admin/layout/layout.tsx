@@ -6,6 +6,7 @@ export default function AdminLayout() {
   return (
     <SidebarProvider>
       <WorkspaceShell
+        variant="soft"
         className="admin-shell w-full max-w-none"
         data-portal="admin"
         sidebar={<AdminSidebar />}
