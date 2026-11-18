@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, NotFound } from '@p4/server-core';
 import type {
   OrderQuantityInput,
   ReturnInspection,
@@ -7,7 +8,7 @@ import type {
   User,
 } from '@p4/shared';
 import { Op } from 'sequelize';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   FileModel,
   OrderItemModel,
@@ -16,12 +17,9 @@ import {
   ShipmentItemModel,
   ShipmentModel,
 } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { jsonValue } from '@/shared/commerce/persistence.js';
 import { assertTransition, assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { moveInventory } from '../inventory/inventory.service.js';
 import { orderEvent, ownedOrder } from '../orders/order-lifecycle.service.js';
@@ -30,6 +28,7 @@ import { settings } from '../settings/settings.service.js';
 export function returnDto(row: ReturnRequestModel): ReturnRequest {
   return {
     ...selectFields(row, [
+      'userId',
       'id',
       'orderId',
       'status',
@@ -47,8 +46,7 @@ export function returnDto(row: ReturnRequestModel): ReturnRequest {
 export async function getReturn(user: User, id: string) {
   const row = await ReturnRequestModel.findByPk(id);
   if (!row) throw new NotFound();
-  if (row.userId !== user.id && !permissionsFor(user).includes('return:read'))
-    throw new Forbidden();
+  if (!canAccessRecord(user, 'read', 'Return', row)) throw new Forbidden();
   return row;
 }
 

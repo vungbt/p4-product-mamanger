@@ -1,24 +1,31 @@
 import { randomUUID } from 'node:crypto';
+import {
+  applyAuditPolicies,
+  BaseError,
+  buildPaginationMeta,
+  currentUser,
+  listSearch,
+  NotFound,
+  queryText,
+  requestBody,
+  routeId,
+  searchPattern,
+  uuidQueryRule,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
 import type { ContentKind, ListQuery } from '@p4/shared';
 import { CONTENT_STATUS_VALUES, type ContentListQuery, type TaxonomyListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import {
   ContentEntryModel,
   ContentRevisionModel,
   ContentTaxonomyModel,
 } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler, optionalListHandler } from '@/shared/api-handler.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
-import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
-import { searchPattern } from '@/shared/list-filters.js';
-import { queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
-import { listSearch } from '@/shared/list-search.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { normalizedSlug } from '../catalog/catalog.service.js';
 import { auditPolicies } from './content.audit.js';
@@ -26,9 +33,9 @@ import * as content from './content.service.js';
 import { contentInput } from './content.validation.js';
 
 const router = Router();
-const read = [authRequired, requirePermission('content:read')];
-const write = [authRequired, requirePermission('content:write')];
-const publish = [authRequired, requirePermission('content:publish')];
+const read = [authRequired, requireAbility('read', 'Content')];
+const write = [authRequired, requireAbility('write', 'Content')];
+const publish = [authRequired, requireAbility('publish', 'Content')];
 const list = validateListQuery({
   sortFields: ['title', 'createdAt'],
   defaultSort: 'createdAt',
@@ -207,7 +214,9 @@ router.get(
       offset: (query.page - 1) * query.pageSize,
     });
     return {
-      data: result.rows.map((row) => row.publishedSnapshot),
+      data: await content.withContentMedia(
+        result.rows.flatMap((row) => (row.publishedSnapshot ? [row.publishedSnapshot] : [])),
+      ),
       meta: buildPaginationMeta(query.page, query.pageSize, result.count),
     };
   }),
@@ -285,7 +294,9 @@ router.get(
       },
       order: [['slug', 'ASC']],
     });
-    return rows.map((row) => row.publishedSnapshot);
+    return content.withContentMedia(
+      rows.flatMap((row) => (row.publishedSnapshot ? [row.publishedSnapshot] : [])),
+    );
   }),
 );
 export default applyAuditPolicies(router, auditPolicies);

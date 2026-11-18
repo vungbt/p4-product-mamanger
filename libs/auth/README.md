@@ -1,20 +1,19 @@
 # `@p4/auth`
 
-Auth provider cho p4.
+React auth context for the P4 web app. Better Auth owns the session (HttpOnly cookie); this package only mirrors the current user in memory for the UI.
 
 ```tsx
-import { refreshAuthSession, revokeAuthSession } from '@p4/api-client';
-import { AuthProvider, useAuth, AUTH_STORAGE_KEY } from '@p4/auth';
+import {
+  loginAuthSession,
+  loginGoogleAuthSession,
+  refreshAuthSession,
+  revokeAuthSession,
+} from '@p4/api-client';
+import { AuthProvider, useAuth } from '@p4/auth';
 
 <AuthProvider
-  onLogin={async (email, password) => {
-    // POST /api/auth/login → { token, refreshToken, user }
-    return session;
-  }}
-  onGoogleLogin={async (credential) => {
-    // POST /api/auth/google
-    return session;
-  }}
+  onLogin={loginAuthSession}
+  onGoogleLogin={loginGoogleAuthSession}
   onRefresh={refreshAuthSession}
   onLogout={revokeAuthSession}
 >
@@ -22,10 +21,9 @@ import { AuthProvider, useAuth, AUTH_STORAGE_KEY } from '@p4/auth';
 </AuthProvider>
 ```
 
-Password login dùng **email** (khớp API). Portal check: admin chỉ `role=admin`, storefront chỉ `role=user`.
+- Sessions live in memory only (`session-store.ts`). Never write tokens to `localStorage`; `clearAuthSession` removes keys left by releases before Better Auth.
+- Password login uses **email**. Portal check: admin requires `role=admin`, storefront requires `role=user`.
+- The provider restores the cookie session on mount, on focus, every 5 minutes and when another tab signs in or out (`BroadcastChannel`).
+- Use `@p4/ability/browser` for permissions; `useAuth` only reports the role.
 
-Provider chủ động refresh trước khi access token hết hạn 60 giây và kiểm tra lại khi tab được focus/visible. Interceptor 401 vẫn là fallback; mọi nguồn refresh dùng chung một request đang chạy. Session mới hoặc trạng thái logout được đồng bộ ngay giữa API client và React context.
-
-Seed demo API:
-- `admin@demo.com` / `admin123`
-- `user@demo.com` / `user123`
+Demo accounts come from the API seeders (`apps/api/src/sequelize/seeders`).

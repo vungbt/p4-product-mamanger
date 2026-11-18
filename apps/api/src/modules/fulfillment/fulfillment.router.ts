@@ -1,12 +1,16 @@
+import {
+  applyAuditPolicies,
+  currentUser,
+  NotFound,
+  requestBody,
+  uuidRouteId,
+} from '@p4/server-core';
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { ShipmentEventModel, ShipmentModel } from '@/sequelize/models/index.js';
 import { apiHandler } from '@/shared/api-handler.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { orderQuantities } from '@/shared/commerce/input.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { NotFound } from '@/utils/errors/index.js';
 import { ownedOrder } from '../orders/order-lifecycle.service.js';
 import { auditPolicies } from './fulfillment.audit.js';
 import * as fulfillment from './fulfillment.service.js';
@@ -15,7 +19,7 @@ const router = Router();
 router.post(
   '/orders/:id/shipments',
   authRequired,
-  requirePermission('fulfillment:manage'),
+  requireAbility('manage', 'Fulfillment'),
   apiHandler(async (req) => {
     const body = requestBody(req);
     return fulfillment.createShipment(
@@ -46,7 +50,7 @@ for (const [action, state] of [
   router.post(
     `/shipments/:id/${action}`,
     authRequired,
-    requirePermission('fulfillment:manage'),
+    requireAbility('manage', 'Fulfillment'),
     apiHandler(async (req) => {
       const body = requestBody(req);
       return fulfillment.transitionShipment(

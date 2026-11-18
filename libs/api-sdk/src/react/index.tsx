@@ -1,5 +1,6 @@
 'use client';
 
+export { useCapabilities } from './capabilities.js';
 export {
   categoryKeys,
   categoryMutationOptions,
@@ -11,18 +12,6 @@ export {
   useDeleteCategory,
   useUpdateCategory,
 } from './categories.js';
-
-export {
-  productKeys,
-  productMutationOptions,
-  productQueryOptions,
-  useCreateProduct,
-  useDeleteProduct,
-  useProduct,
-  useProducts,
-  useProductVariants,
-  useUpdateProduct,
-  useUpdateProductPublication,
-} from './products.js';
-
+export * from './products.js';
 export { ApiSdkProvider, useApiSdk } from './provider.js';
+export * from './resources.js';

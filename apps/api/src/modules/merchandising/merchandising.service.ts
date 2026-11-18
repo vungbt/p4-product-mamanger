@@ -1,11 +1,9 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, NotFound } from '@p4/server-core';
 import type { MerchandisingEntry, MerchandisingPayload } from '@p4/shared';
 import { FileModel, MerchandisingEntryModel, ProductModel } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { getCatalogProduct } from '../catalog/catalog.service.js';
 export function merchandisingDto(row: MerchandisingEntryModel): MerchandisingEntry {

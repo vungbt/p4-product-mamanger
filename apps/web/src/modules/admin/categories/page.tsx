@@ -10,6 +10,7 @@ import {
   Select,
   Tooltip,
 } from '@itclabs/react-ui';
+import { useCanAccess } from '@p4/ability/browser';
 import { type Category, DESCRIPTION_FILTER_VALUES, type DescriptionFilter } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
 import CategoryDetails from './components/category-details';
@@ -23,6 +24,7 @@ const descriptionLabels: Record<DescriptionFilter, string> = {
 };
 
 export default function AdminCategoriesPage() {
+  const canWrite = useCanAccess('write', 'Catalog');
   const {
     rows,
     rowCount,
@@ -78,16 +80,18 @@ export default function AdminCategoriesPage() {
       enableGlobalFilter: false,
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-1">
-          <Tooltip content={t('categories.delete')}>
-            <IconButton
-              icon="delete"
-              variant="ghost"
-              size="sm"
-              className="bg-danger-50 text-danger-700 hover:bg-danger-50 hover:text-danger-800"
-              label={`${t('categories.delete')}: ${row.original.name}`}
-              onClick={() => openDelete(row.original)}
-            />
-          </Tooltip>
+          {canWrite && (
+            <Tooltip content={t('categories.delete')}>
+              <IconButton
+                icon="delete"
+                variant="ghost"
+                size="sm"
+                className="bg-danger-50 text-danger-700 hover:bg-danger-50 hover:text-danger-800"
+                label={`${t('categories.delete')}: ${row.original.name}`}
+                onClick={() => openDelete(row.original)}
+              />
+            </Tooltip>
+          )}
           <Tooltip content={t('categories.details')}>
             <IconButton
               icon="view"
@@ -98,16 +102,18 @@ export default function AdminCategoriesPage() {
               onClick={() => openDetails(row.original)}
             />
           </Tooltip>
-          <Tooltip content={t('categories.edit')}>
-            <IconButton
-              icon="edit"
-              variant="ghost"
-              size="sm"
-              className="bg-warning-50 text-warning-700 hover:bg-warning-50 hover:text-warning-700"
-              label={`${t('categories.edit')}: ${row.original.name}`}
-              onClick={() => openEdit(row.original)}
-            />
-          </Tooltip>
+          {canWrite && (
+            <Tooltip content={t('categories.edit')}>
+              <IconButton
+                icon="edit"
+                variant="ghost"
+                size="sm"
+                className="bg-warning-50 text-warning-700 hover:bg-warning-50 hover:text-warning-700"
+                label={`${t('categories.edit')}: ${row.original.name}`}
+                onClick={() => openEdit(row.original)}
+              />
+            </Tooltip>
+          )}
         </div>
       ),
     },
@@ -188,10 +194,12 @@ export default function AdminCategoriesPage() {
                 onCheckedChange: (checked) => changeColumnVisibility(id, checked),
               }))}
             />
-            <Button size="sm" onClick={openCreate}>
-              <Icon name="plus" />
-              {t('categories.add')}
-            </Button>
+            {canWrite && (
+              <Button size="sm" onClick={openCreate}>
+                <Icon name="plus" />
+                {t('categories.add')}
+              </Button>
+            )}
           </div>
         </div>
         <DataTable
@@ -217,7 +225,7 @@ export default function AdminCategoriesPage() {
         />
       </div>
       {viewing && <CategoryDetails id={viewing} onClose={closeDetails} />}
-      {deleting && (
+      {canWrite && deleting && (
         <Dialog
           open
           onOpenChange={(open) => {
@@ -243,7 +251,7 @@ export default function AdminCategoriesPage() {
           ]}
         />
       )}
-      {editor && (
+      {canWrite && editor && (
         <CategoryEditor
           initial={editor}
           pending={saving}

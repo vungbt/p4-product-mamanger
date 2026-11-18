@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, NotFound } from '@p4/server-core';
 import type {
   CancellationRequest,
   OrderLifecycleStatus,
@@ -6,7 +7,7 @@ import type {
   User,
 } from '@p4/shared';
 import { Op, type Transaction } from 'sequelize';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   CancellationRequestModel,
   InventoryReservationModel,
@@ -17,12 +18,9 @@ import {
   PaymentModel,
   RefundModel,
 } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent, jsonValue } from '@/shared/commerce/persistence.js';
 import { assertTransition, assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { moveInventory } from '../inventory/inventory.service.js';
 import { settleCoupon } from '../promotions/promotions.service.js';
@@ -33,7 +31,7 @@ export async function ownedOrder(user: User, id: string, transaction?: Transacti
     ...(lock && transaction ? { lock: transaction.LOCK.UPDATE } : {}),
   });
   if (!row) throw new NotFound();
-  if (row.userId !== user.id && !permissionsFor(user).includes('order:read')) throw new Forbidden();
+  if (!canAccessRecord(user, 'read', 'Order', row)) throw new Forbidden();
   return row;
 }
 
@@ -117,7 +115,16 @@ export async function transitionOrder(
 
 export function cancellationDto(row: CancellationRequestModel): CancellationRequest {
   return {
-    ...selectFields(row, ['id', 'orderId', 'status', 'reason', 'resolution', 'items', 'version']),
+    ...selectFields(row, [
+      'id',
+      'userId',
+      'orderId',
+      'status',
+      'reason',
+      'resolution',
+      'items',
+      'version',
+    ]),
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -136,8 +143,7 @@ export async function requestCancellation(
 ) {
   return auditedTransaction(async (transaction) => {
     const order = await ownedOrder(user, orderId, transaction, true);
-    if (order.userId !== user.id && !permissionsFor(user).includes('order:manage'))
-      throw new Forbidden();
+    if (!canAccessRecord(user, 'manage', 'Order', order)) throw new Forbidden();
     assertVersion(order.version, expectedVersion);
     cancellable(order);
     for (const input of items) {
@@ -410,8 +416,7 @@ export async function resolveCancellation(
 export async function cancelAll(user: User, id: string) {
   return auditedTransaction(async (transaction) => {
     const order = await ownedOrder(user, id, transaction, true);
-    if (order.userId !== user.id && !permissionsFor(user).includes('order:manage'))
-      throw new Forbidden();
+    if (!canAccessRecord(user, 'manage', 'Order', order)) throw new Forbidden();
     if (order.lifecycleStatus === 'cancelled') return { id, cancelled: true };
     if (
       order.lifecycleStatus !== 'pending_confirmation' ||

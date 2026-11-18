@@ -22,8 +22,6 @@
     "@p4/shared": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
-    "axios": "catalog:",
-    "query-string": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "@p4/api-sdk": "workspace:*"
@@ -32,5 +30,9 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "typescript": "catalog:"
+  },
+  "scripts": {
+    "pretypecheck": "pnpm --filter @p4/api-sdk build",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   }
 }

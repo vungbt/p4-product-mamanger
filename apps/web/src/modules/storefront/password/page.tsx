@@ -1,6 +1,7 @@
 import { Button, Form, FormField, FormSubmit, InputPassword, useAppForm } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
-import { axiosClient } from '@p4/api-client';
+import { getApiSdk } from '@p4/api-client';
+import { getErrorMessage, unwrap } from '@p4/api-sdk/shared';
 import type { UpdatePasswordInput } from '@p4/shared';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -40,19 +41,12 @@ export default function StorefrontPasswordPage() {
           currentPassword: hasPassword ? value.currentPassword : undefined,
           newPassword: value.newPassword,
         };
-        await axiosClient.patch<UpdatePasswordInput, { data: { changed: true } }>(
-          '/auth/password',
-          body,
-        );
+        unwrap(await getApiSdk().PATCH('/api/auth/password', { body }));
         logout();
         toast.success(t('auth.passwordUpdated'));
         navigate(ROUTES.storefront.login, { replace: true });
       } catch (error) {
-        const message =
-          error && typeof error === 'object' && 'message' in error
-            ? String((error as { message?: string }).message)
-            : t('auth.passwordUpdateFailed');
-        toast.error(message);
+        toast.error(getErrorMessage(error, t('auth.passwordUpdateFailed')));
       }
     },
   });

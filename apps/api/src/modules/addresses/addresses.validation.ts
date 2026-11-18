@@ -1,7 +1,6 @@
+import { queryText, validate, validateListQuery } from '@p4/server-core';
 import type { AddressListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
-import { queryText, validateListQuery } from '@/shared/list-query.js';
-import validate from '@/shared/validation.js';
 
 export const validateAddressBody = (req: Request, res: Response, next: NextFunction) =>
   validate({

@@ -1,5 +1,14 @@
 import { randomUUID } from 'node:crypto';
-import type { Product, ProductImage, ProductInput, ProductListQuery } from '@p4/shared';
+import {
+  BaseError,
+  buildPaginationMeta,
+  InputValidError,
+  NotFound,
+  numberRange,
+  requestStore,
+  searchPattern,
+} from '@p4/server-core';
+import type { AdminProductListQuery, Product, ProductImage, ProductInput } from '@p4/shared';
 import type { Transaction, WhereOptions } from 'sequelize';
 import { literal, Op } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
@@ -16,16 +25,9 @@ import {
 } from '@/sequelize/models/index.js';
 import type { ProductAttributes } from '@/sequelize/models/product.model.js';
 import type { ProductImageAttributes } from '@/sequelize/models/product-image.model.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, inTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { numberRange, searchPattern } from '@/shared/list-filters.js';
-import { requestStore } from '@/shared/request-store.js';
-import { inTransaction } from '@/shared/transaction.js';
 import type { ModelOrder } from '@/types/database.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { InputValidError, NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { createDefaultVariant, normalizedSlug } from '../catalog/catalog.service.js';
 import { eligibleVariantSql } from '../discovery/discovery.service.js';
@@ -71,6 +73,15 @@ function toGalleryImage(row: GalleryRow): ProductImage {
 }
 
 const productFields = [
+  'slug',
+  'status',
+  'brand',
+  'material',
+  'careInstructions',
+  'seoTitle',
+  'seoDescription',
+  'sizeGuideId',
+  'version',
   'id',
   'name',
   'price',
@@ -80,13 +91,15 @@ const productFields = [
   'stock',
 ] satisfies (keyof Product)[];
 
-function toProduct(row: ProductEager): Product {
+export function productDto(row: ProductEager): Product {
   const images = (row.gallery ?? [])
     .slice()
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map(toGalleryImage);
   return {
     ...selectFields(row, productFields),
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
     imageUrl: row.image?.url ?? images[0]?.url ?? '',
     category: row.category
       ? selectFields(row.category, ['id', 'name', 'slug', 'description'])
@@ -95,7 +108,7 @@ function toProduct(row: ProductEager): Product {
   };
 }
 
-const productInclude = [imageInclude, categoryInclude, galleryInclude];
+export const productInclude = [imageInclude, categoryInclude, galleryInclude];
 
 async function resolveImageId(imageStorageId?: string, fallback?: string | null) {
   if (!imageStorageId?.trim()) return fallback ?? null;
@@ -103,8 +116,12 @@ async function resolveImageId(imageStorageId?: string, fallback?: string | null)
   return file.id;
 }
 
-export async function listProducts(query: ProductListQuery, admin = false) {
-  const conditions: WhereOptions<ProductAttributes>[] = admin ? [] : [{ status: 'active' }];
+export async function listProducts(query: AdminProductListQuery, admin = false) {
+  const conditions: WhereOptions<ProductAttributes>[] = admin
+    ? query.status
+      ? [{ status: query.status }]
+      : []
+    : [{ status: 'active' }];
 
   const order: ModelOrder<ProductAttributes> = [
     [query.sortBy ?? 'createdAt', query.sortOrder === 'desc' ? 'DESC' : 'ASC'],
@@ -149,7 +166,7 @@ export async function listProducts(query: ProductListQuery, admin = false) {
   });
 
   return {
-    data: rows.map(toProduct),
+    data: rows.map(productDto),
     meta: buildPaginationMeta(query.page, query.pageSize, count),
   };
 }
@@ -160,7 +177,7 @@ export async function getProductById(id: string, admin = false, transaction?: Tr
     transaction,
   })) as ProductEager | null;
   if (!row || (!admin && row.status !== 'active')) throw new NotFound(errorKeys.productNotFound);
-  return toProduct(row);
+  return productDto(row);
 }
 
 async function validateReferences(input: Partial<ProductInput>) {

@@ -157,3 +157,64 @@ void sdk.GET('/api/admin/posts/{id}/revisions', {
   // @ts-expect-error Revision lists must use revision fields rather than parent entry fields.
   params: { path: { id: 'post' }, query: { sortBy: 'title' } },
 });
+
+import { useGetAdminProducts, usePutProductsId } from '../src/react/index.js';
+// Every operation has a named helper and hook, with method-specific input types.
+import {
+  getAdminProducts,
+  patchProductsIdPublication,
+  postAdminImportsResource,
+  putProductsId,
+} from '../src/shared/index.js';
+
+void getAdminProducts(sdk, { params: { query: { sortBy: 'stock', pageSize: 10 } } });
+void putProductsId(sdk, {
+  params: { path: { id: 'p' } },
+  body: { name: 'Renamed', expectedVersion: 2 },
+});
+void postAdminImportsResource(sdk, {
+  params: { path: { resource: 'products' }, header: { 'Idempotency-Key': 'import-1' } },
+  body: new FormData(),
+});
+// @ts-expect-error PUT requires the product path parameter.
+void putProductsId(sdk, { body: { name: 'Renamed' } });
+void patchProductsIdPublication(sdk, {
+  params: { path: { id: 'p' } },
+  // @ts-expect-error Publication status is an API enum.
+  body: { status: 'published', expectedVersion: 1 },
+});
+function checkOperationHooks() {
+  const query = useGetAdminProducts({ params: { query: { sortBy: 'stock' } } }, { enabled: false });
+  const update = usePutProductsId();
+  update.mutate({ params: { path: { id: 'p' } }, body: { name: 'New' } });
+  // @ts-expect-error Invalid sort field must not pass through a hook.
+  useGetAdminProducts({ params: { query: { sortBy: 'random' } } });
+  // @ts-expect-error Version must be numeric.
+  update.mutate({ params: { path: { id: 'p' } }, body: { expectedVersion: 'old' } });
+  return query.data?.meta?.total;
+}
+void checkOperationHooks;
+
+import {
+  useCreateProductVariant,
+  useProduct,
+  useProducts,
+  useUpdateProduct,
+} from '../src/react/index.js';
+
+function checkProductResourceTypes() {
+  const query = useProducts({ sortBy: 'stock', pageSize: 10 });
+  const detail = useProduct('product');
+  const update = useUpdateProduct();
+  update.mutate({ id: 'product', body: { name: 'Renamed', expectedVersion: 2 } });
+  update.mutate({ id: 'product', body: { categoryId: 'category' } });
+  // @ts-expect-error Product update API rejects stock; use inventory operations.
+  update.mutate({ id: 'product', body: { stock: 10 } });
+  const status: string | undefined = query.data?.data[0]?.status;
+  const detailStatus: string | undefined = detail.data?.data.status;
+  const variants = useCreateProductVariant();
+  // @ts-expect-error Creating a variant needs the product ID.
+  variants.mutate({ body: { sku: 'SKU' } });
+  return { status, detailStatus };
+}
+void checkProductResourceTypes;

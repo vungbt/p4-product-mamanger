@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, buildPaginationMeta, NotFound, searchPattern } from '@p4/server-core';
 import type {
   InventoryBalance,
   InventoryListQuery,
@@ -14,13 +15,9 @@ import {
   sequelize,
 } from '@/sequelize/models/index.js';
 import type { ProductVariantAttributes } from '@/sequelize/models/product-variant.model.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent, runIdempotent } from '@/shared/commerce/persistence.js';
-import { searchPattern } from '@/shared/list-filters.js';
 import type { ModelOrder } from '@/types/database.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 
 export function variantDto(row: ProductVariantModel): ProductVariant {

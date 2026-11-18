@@ -5,8 +5,8 @@ export {
   useAuth,
   useAuthContext,
 } from './auth-context';
-export { AUTH_STORAGE_KEY, FAKE_AUTH, type FakeAuthAccounts } from './fake-auth';
 export {
+  AUTH_SESSION_KEY,
   type AuthSession,
   broadcastAuthChange,
   clearAuthSession,

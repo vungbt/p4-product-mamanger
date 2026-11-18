@@ -1,12 +1,10 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, InputValidError, NotFound } from '@p4/server-core';
 import type { UploadPurpose, UploadTicket, User } from '@p4/shared';
 import { env } from '@/configs/env.js';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { hasAccess } from '@/middlewares/ability.middleware.js';
 import { FileModel, UploadTicketModel } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, InputValidError, NotFound } from '@/utils/errors/index.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { selectFields } from '@/utils/select-fields.js';
 import * as provider from './cloudinary.service.js';
 
@@ -27,9 +25,8 @@ export function uploadDto(row: UploadTicketModel): UploadTicket {
 
 export async function createUpload(user: User, purpose: UploadPurpose, resourceId: string | null) {
   return auditedTransaction(async () => {
-    const permissions = permissionsFor(user);
-    if (purpose === 'product' && !permissions.includes('catalog:write')) throw new Forbidden();
-    if (purpose === 'blog' && !permissions.includes('content:write')) throw new Forbidden();
+    if (purpose === 'product' && !hasAccess(user, 'write', 'Catalog')) throw new Forbidden();
+    if (purpose === 'blog' && !hasAccess(user, 'write', 'Content')) throw new Forbidden();
     const id = randomUUID();
     const storageId = `${env.cloudinary.tempFolder}/${user.id}/${id}`;
     const privateAsset = purpose === 'return' || purpose === 'support';
@@ -144,11 +141,10 @@ export async function ownedFile(user: User, id: string) {
   const metadata = file.metadata;
   const permitted =
     ticket?.purpose === 'blog'
-      ? 'content:write'
+      ? hasAccess(user, 'write', 'Content')
       : ticket?.private
-        ? 'support:manage'
-        : 'catalog:write';
-  if (metadata?.ownerId !== user.id && !permissionsFor(user).includes(permitted))
-    throw new Forbidden();
+        ? hasAccess(user, 'manage', 'Support')
+        : hasAccess(user, 'write', 'Catalog');
+  if (metadata?.ownerId !== user.id && !permitted) throw new Forbidden();
   return file;
 }

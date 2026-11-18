@@ -1,10 +1,10 @@
+import { applyAuditPolicies } from '@p4/server-core';
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired, requireRole } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { validateProductsListQuery } from '@/modules/products/products.validation.js';
 import * as reviewsController from '@/modules/reviews/reviews.controller.js';
 import { validateReview, validateReviewsListQuery } from '@/modules/reviews/reviews.validation.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { auditPolicies } from './products.audit.js';
 import * as productsController from './products.controller.js';
 import {
@@ -35,29 +35,29 @@ router.delete(
 router.post(
   '/',
   authRequired,
-  requirePermission('catalog:write'),
+  requireAbility('write', 'Catalog'),
   validateCreateProduct,
   productsController.create,
 );
 router.put(
   '/:id',
   authRequired,
-  requirePermission('catalog:write'),
+  requireAbility('write', 'Catalog'),
   validateUpdateProduct,
   productsController.update,
 );
-router.delete('/:id', authRequired, requirePermission('catalog:write'), productsController.remove);
+router.delete('/:id', authRequired, requireAbility('write', 'Catalog'), productsController.remove);
 router.post(
   '/:id/images',
   authRequired,
-  requirePermission('catalog:write'),
+  requireAbility('write', 'Catalog'),
   validateAddImage,
   productsController.addImage,
 );
 router.delete(
   '/:id/images/:imageId',
   authRequired,
-  requirePermission('catalog:write'),
+  requireAbility('write', 'Catalog'),
   productsController.removeImage,
 );
 

@@ -1,7 +1,15 @@
+import {
+  buildPaginationMeta,
+  dateRange,
+  Forbidden,
+  NotFound,
+  numberRange,
+  searchPattern,
+} from '@p4/server-core';
 import type { Order, OrderItem, OrderListQuery, Payment, Shipment, User } from '@p4/shared';
 import { cast, col, literal, Op, type WhereOptions, where } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import { sequelize } from '@/sequelize/index.js';
 import {
   OrderCouponModel,
@@ -11,10 +19,7 @@ import {
   ShipmentModel,
 } from '@/sequelize/models/index.js';
 import type { OrderAttributes } from '@/sequelize/models/order.model.js';
-import { dateRange, numberRange, searchPattern } from '@/shared/list-filters.js';
 import type { ModelOrder } from '@/types/database.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 
 type OrderEager = OrderModel & {
@@ -50,6 +55,8 @@ function toPayment(row: PaymentModel): Payment {
 }
 
 const shipmentFields = [
+  'fulfillmentStatus',
+  'version',
   'id',
   'orderId',
   'status',
@@ -196,7 +203,7 @@ export async function listMyOrders(userId: string, query: OrderListQuery) {
 export async function getOrderById(id: string, user?: User) {
   const row = (await OrderModel.findByPk(id, { include: orderInclude })) as OrderEager | null;
   if (!row) throw new NotFound(errorKeys.orderNotFound);
-  if (user && row.userId !== user.id && !permissionsFor(user).includes('order:read')) {
+  if (user && !canAccessRecord(user, 'read', 'Order', row)) {
     throw new Forbidden(errorKeys.forbidden);
   }
   return toOrder(row);

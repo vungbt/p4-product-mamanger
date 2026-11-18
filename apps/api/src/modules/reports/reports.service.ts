@@ -1,12 +1,11 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, InputValidError, NotFound } from '@p4/server-core';
 import type { ReportExport, ReportKind, ReportQuery } from '@p4/shared';
 import type { Request } from 'express';
 import { QueryTypes } from 'sequelize';
 import { type DomainEventModel, ReportExportModel, sequelize } from '@/sequelize/models/index.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent, runIdempotent } from '@/shared/commerce/persistence.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { InputValidError, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 
 export function reportQuery(raw: Record<string, unknown>): ReportQuery {

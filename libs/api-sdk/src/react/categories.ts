@@ -38,13 +38,12 @@ export function categoryQueryOptions(sdk: ApiSdk) {
         queryFn: async ({ signal }) => {
           const res1 = await api.list({ page: 1, pageSize: 100 }, signal);
           const totalPages = res1.meta?.totalPages ?? 1;
-          if (totalPages <= 1) return res1.data;
-          const rest = await Promise.all(
-            Array.from({ length: totalPages - 1 }, (_, i) =>
-              api.list({ page: i + 2, pageSize: 100 }, signal),
-            ),
-          );
-          return [...res1.data, ...rest.flatMap((r) => r.data)];
+          const allData = [...res1.data];
+          for (let page = 2; page <= totalPages; page++) {
+            const nextRes = await api.list({ page, pageSize: 100 }, signal);
+            allData.push(...nextRes.data);
+          }
+          return allData;
         },
       }),
     detail: (id: string) =>

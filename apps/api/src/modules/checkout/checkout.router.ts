@@ -1,9 +1,8 @@
+import { applyAuditPolicies, currentUser, requestBody, uuidRouteId } from '@p4/server-core';
 import { Router } from 'express';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { apiHandler } from '@/shared/api-handler.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { cartLines } from '@/shared/commerce/input.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
 import { getCart } from '../cart/cart.service.js';
 import { auditPolicies } from './checkout.audit.js';
 import * as checkout from './checkout.service.js';

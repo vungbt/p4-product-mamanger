@@ -1,4 +1,3 @@
-import type { RefundListQuery } from '@p4/shared';
 import {
   dateFilters,
   dateQueryRule,
@@ -6,7 +5,8 @@ import {
   queryText,
   uuidQueryRule,
   validateListQuery,
-} from '@/shared/list-query.js';
+} from '@p4/server-core';
+import type { RefundListQuery } from '@p4/shared';
 
 const sortFields: NonNullable<RefundListQuery['sortBy']>[] = ['amount', 'status', 'createdAt'];
 const statuses: NonNullable<RefundListQuery['status']>[] = ['pending', 'completed', 'failed'];

@@ -10,13 +10,14 @@ import {
   Tag,
   type TagTone,
   Tooltip,
+  useFormatters,
 } from '@itclabs/react-ui';
 import { useAllCategories } from '@p4/api-sdk/react';
-import type { Product, ProductPublicationStatus } from '@p4/shared';
+import type { Product } from '@p4/api-sdk/shared';
+import type { ProductPublicationStatus } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
 import ProductDetails from './components/products-details';
-import ProductsImage from './components/products-image';
-import { extractRichText } from './helpers/rich-text';
+import ProductImage from './components/products-image';
 import useProductsPage from './hooks/use-products-page';
 
 const statusTone: Record<ProductPublicationStatus, TagTone> = {
@@ -28,6 +29,7 @@ const statusTone: Record<ProductPublicationStatus, TagTone> = {
 
 export default function AdminProductsPage() {
   const { t } = useTranslation();
+  const { formatCurrency } = useFormatters();
   const categoriesQuery = useAllCategories();
   const categoryOptions = (categoriesQuery.data ?? []).map((cat) => ({
     value: cat.id,
@@ -61,31 +63,28 @@ export default function AdminProductsPage() {
       accessorKey: 'imageUrl',
       header: t('products.image', 'Ảnh'),
       enableSorting: false,
-      cell: ({ row }) => {
-        return row.original.imageUrl ? (
-          <ProductsImage src={row.original.imageUrl} alt={row.original.name} />
-        ) : (
-          <span className="text-ui-xs text-muted">{t('products.noImage', 'Không có ảnh')}</span>
-        );
-      },
+      cell: ({ row }) => <ProductImage src={row.original.imageUrl} alt={row.original.name} />,
     },
     { accessorKey: 'name', header: t('products.name', 'Tên sản phẩm'), enableHiding: false },
     {
       accessorKey: 'price',
       header: t('products.price', 'Giá bán'),
-      cell: ({ row }) => `${row.original.price?.toLocaleString('vi-VN') ?? 0}đ`,
+      cell: ({ row }) => `${formatCurrency(row.original.price, 'VND')}`,
     },
     {
       accessorKey: 'stock',
       header: t('products.stock', 'Số lượng tồn kho'),
-      cell: ({ row }) => row.original.stock ?? 0,
+      cell: ({ row }) => row.original.stock,
     },
     {
       accessorKey: 'description',
-      header: t('products.description', 'Mô tả sản phẩm'),
+      header: t('products.description', 'Mô tả'),
       enableSorting: false,
       cell: ({ row }) => {
-        const text = extractRichText(row.original.description).replace(/\s+/g, ' ').trim();
+        const text = (row.original.description ?? '')
+          .replace(/<[^>]*>/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
         return (
           <span className="block max-w-sm truncate" title={text}>
             {text || t('products.noDescription', 'Chưa có mô tả')}
@@ -98,7 +97,7 @@ export default function AdminProductsPage() {
       header: t('products.status', 'Trạng thái'),
       enableSorting: false,
       cell: ({ row }) => {
-        const status = (row.original as Product & { status?: ProductPublicationStatus }).status;
+        const status = row.original.status;
         if (!status) return null;
         return (
           <Tag tone={statusTone[status] ?? 'neutral'} size="sm">
@@ -126,9 +125,8 @@ export default function AdminProductsPage() {
               icon="view"
               variant="ghost"
               size="sm"
-              className="bg-info-50 text-info-700 hover:bg-info-100 hover:text-info-800"
               label={`${t('products.details', 'Xem chi tiết')}: ${row.original.name}`}
-              onClick={() => openDetails(row.original)}
+              onClick={() => openDetails(row.original.id)}
             />
           </Tooltip>
         </div>

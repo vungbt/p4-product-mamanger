@@ -1,5 +1,5 @@
+import { requestBody } from '@p4/server-core';
 import type { Request } from 'express';
-import { requestBody } from '@/shared/http-input.js';
 
 export function ruleInput(req: Request) {
   const body = requestBody(req);

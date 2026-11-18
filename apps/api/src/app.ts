@@ -1,3 +1,4 @@
+import { baseMiddleware, handleErrorApi, notFoundHandler, requestContext } from '@p4/server-core';
 import { toNodeHandler } from 'better-auth/node';
 import compression from 'compression';
 import cors from 'cors';
@@ -8,9 +9,6 @@ import { auth } from '@/configs/better-auth.js';
 import { env } from '@/configs/env.js';
 import { i18nMiddleware } from '@/configs/i18n.js';
 import { mountOpenApiDocs } from '@/configs/openapi-docs.js';
-import { baseMiddleware } from '@/middlewares/base.middleware.js';
-import { handleErrorApi, notFoundHandler } from '@/middlewares/error.middleware.js';
-import { requestContext } from '@/middlewares/request-context.middleware.js';
 import apiRouter from '@/modules/index.js';
 import * as paymentsController from '@/modules/payments/payments.controller.js';
 

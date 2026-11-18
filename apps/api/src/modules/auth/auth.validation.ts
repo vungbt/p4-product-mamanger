@@ -1,5 +1,5 @@
+import { validate } from '@p4/server-core';
 import type { NextFunction, Request, Response } from 'express';
-import validate from '@/shared/validation.js';
 
 export const validateLoginBody = (req: Request, res: Response, next: NextFunction) =>
   validate({

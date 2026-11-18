@@ -1,8 +1,8 @@
+import type { ListLocals } from '@p4/server-core';
+import { Unauthorized } from '@p4/server-core';
 import type { AddressListQuery, ShippingAddressInput } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import type { ListLocals } from '@/shared/list-query.js';
-import { Unauthorized } from '@/utils/errors/index.js';
 import * as addressesService from './addresses.service.js';
 
 export async function list(

@@ -1,13 +1,27 @@
 import { randomUUID } from 'node:crypto';
 import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  dateFilters,
+  dateQueryRule,
+  dateRange,
+  listSearch,
+  NotFound,
+  queryText,
+  requestBody,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
+import {
   NOTIFICATION_READ_STATUS_VALUES,
   type NotificationListQuery,
   type NotificationTemplateListQuery,
 } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import {
   NotificationModel,
   NotificationPreferencesModel,
@@ -15,16 +29,8 @@ import {
   sequelize,
 } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler, optionalListHandler } from '@/shared/api-handler.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { dateRange } from '@/shared/list-filters.js';
-import { dateFilters, dateQueryRule, queryText, validateListQuery } from '@/shared/list-query.js';
-import { listSearch } from '@/shared/list-search.js';
-import { NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { auditPolicies } from './notifications.audit.js';
 import * as notifications from './notifications.service.js';
@@ -163,7 +169,7 @@ const templateList = validateListQuery({
 router.get(
   '/admin/notification-templates',
   authRequired,
-  requirePermission('notification:read'),
+  requireAbility('read', 'Notification'),
   templateList,
   optionalListHandler(async (_req, query: NotificationTemplateListQuery | undefined) => {
     const result = await NotificationTemplateModel.findAndCountAll({
@@ -191,7 +197,7 @@ router.get(
 router.put(
   '/admin/notification-templates',
   authRequired,
-  requirePermission('notification:manage'),
+  requireAbility('manage', 'Notification'),
   apiHandler(async (req) => {
     const body = requestBody(req);
     const type = body.enum('type', notifications.TEMPLATE_TYPES);

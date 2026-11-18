@@ -1,16 +1,20 @@
+import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  listSearch,
+  NotFound,
+  requestBody,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
 import type { ListQuery } from '@p4/shared';
 import { Router } from 'express';
+import { hasAccess, requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { permissionsFor, requirePermission } from '@/middlewares/permission.middleware.js';
 import { CancellationRequestModel, OrderEventModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { orderQuantities } from '@/shared/commerce/input.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { validateListQuery } from '@/shared/list-query.js';
-import { listSearch } from '@/shared/list-search.js';
-import { NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './order-lifecycle.audit.js';
 import * as orders from './order-lifecycle.service.js';
 
@@ -22,7 +26,7 @@ for (const [path, state] of [
   router.post(
     `/orders/:id/${path}`,
     authRequired,
-    requirePermission('order:manage'),
+    requireAbility('manage', 'Order'),
     apiHandler(async (req) =>
       orders.transitionOrder(
         currentUser(req).id,
@@ -51,7 +55,7 @@ router.get(
       where: {
         orderId: id,
         ...listSearch(OrderEventModel, query.q, ['type', 'detail']),
-        ...(permissionsFor(user).includes('order:read') ? {} : { public: true }),
+        ...(hasAccess(user, 'read', 'Order') ? {} : { public: true }),
       },
       order: [
         ['createdAt', query.sortOrder === 'desc' ? 'DESC' : 'ASC'],
@@ -99,7 +103,7 @@ for (const action of ['approve', 'reject'] as const) {
   router.post(
     `/cancellation-requests/:id/${action}`,
     authRequired,
-    requirePermission('order:manage'),
+    requireAbility('manage', 'Order'),
     apiHandler(async (req) => {
       const body = requestBody(req);
       return orders.resolveCancellation(

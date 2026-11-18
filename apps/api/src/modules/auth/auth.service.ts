@@ -1,4 +1,5 @@
 import type { IncomingHttpHeaders } from 'node:http';
+import { BadRequest, Unauthorized } from '@p4/server-core';
 import type { LoginResponse, UpdatePasswordInput, UpdateProfileInput, User } from '@p4/shared';
 import bcrypt from 'bcryptjs';
 import { fromNodeHeaders } from 'better-auth/node';
@@ -7,7 +8,6 @@ import { errorKeys } from '@/constants/index.js';
 import { createFromStorageId, deleteFileIfUnreferenced } from '@/modules/files/files.service.js';
 import { AuthSessionModel, FileModel, UserModel } from '@/sequelize/models/index.js';
 import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { BadRequest, Unauthorized } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 
 type UserWithAvatar = UserModel & { avatar?: FileModel | null };

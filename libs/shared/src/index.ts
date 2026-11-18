@@ -58,6 +58,17 @@ export interface ProductImage {
 }
 
 export interface Product {
+  slug: string;
+  status: ProductPublicationStatus;
+  brand: string;
+  material: string;
+  careInstructions: string;
+  seoTitle: string;
+  seoDescription: string;
+  sizeGuideId: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
   id: string;
   name: string;
   price: number;
@@ -138,6 +149,8 @@ export interface Payment {
 }
 
 export interface Shipment {
+  fulfillmentStatus: FulfillmentStatus;
+  version: number;
   id: string;
   orderId: string;
   status: ShipmentStatus;
@@ -188,6 +201,13 @@ export interface OrderCouponInfo {
 }
 
 export interface Refund {
+  attemptId: string | null;
+  externalId: string | null;
+  manualReference: string | null;
+  returnId: string | null;
+  processingStatus: RefundAttemptStatus;
+  attemptNumber: number;
+  version: number;
   id: string;
   paymentId: string;
   orderId: string;
@@ -326,6 +346,10 @@ export interface ProductListQuery
   maxStock?: number;
 }
 
+export interface AdminProductListQuery extends ProductListQuery {
+  status?: ProductPublicationStatus;
+}
+
 export interface OrderListQuery
   extends ListQuery<keyof Pick<Order, 'id' | 'userEmail' | 'status' | 'total' | 'createdAt'>> {
   status?: OrderStatus;
@@ -364,44 +388,6 @@ export interface AddressListQuery
   city?: string;
   isDefault?: boolean;
 }
-
-export type Permission =
-  | 'system:read'
-  | 'system:manage'
-  | 'staff:read'
-  | 'staff:manage'
-  | 'customer:read'
-  | 'customer:manage'
-  | 'audit:read'
-  | 'catalog:read'
-  | 'catalog:write'
-  | 'inventory:read'
-  | 'inventory:write'
-  | 'settings:manage'
-  | 'promotion:read'
-  | 'promotion:write'
-  | 'order:read'
-  | 'order:manage'
-  | 'payment:read'
-  | 'payment:manage'
-  | 'fulfillment:read'
-  | 'fulfillment:manage'
-  | 'return:read'
-  | 'return:manage'
-  | 'refund:read'
-  | 'refund:manage'
-  | 'review:read'
-  | 'review:moderate'
-  | 'review:reply'
-  | 'content:read'
-  | 'content:write'
-  | 'content:publish'
-  | 'support:read'
-  | 'support:manage'
-  | 'notification:read'
-  | 'notification:manage'
-  | 'report:read'
-  | 'report:export';
 
 export type StaffRole =
   | 'owner'
@@ -464,7 +450,46 @@ export type JsonValue =
   | null
   | JsonValue[]
   | { [key: string]: JsonValue };
-export type CapabilityResponse = { contractVersion: string; permissions: Permission[] };
+/** Actions checked by CASL. `manage` is an ordinary action here; `*` matches every action. */
+export type AbilityAction =
+  | 'read'
+  | 'write'
+  | 'manage'
+  | 'publish'
+  | 'moderate'
+  | 'reply'
+  | 'export';
+
+/** Subjects checked by CASL; `all` matches every subject. */
+export type AbilitySubject =
+  | 'System'
+  | 'Staff'
+  | 'Customer'
+  | 'AuditLog'
+  | 'Catalog'
+  | 'Inventory'
+  | 'Settings'
+  | 'Promotion'
+  | 'Order'
+  | 'Payment'
+  | 'Fulfillment'
+  | 'Return'
+  | 'Refund'
+  | 'Review'
+  | 'Content'
+  | 'Support'
+  | 'Notification'
+  | 'Report';
+
+/** Serializable CASL rule sent to clients. Conditions use CASL's Mongo query syntax. */
+export interface AbilityRule {
+  action: AbilityAction | '*' | Array<AbilityAction | '*'>;
+  subject: AbilitySubject | 'all' | Array<AbilitySubject | 'all'>;
+  conditions?: Record<string, JsonValue>;
+  inverted?: boolean;
+}
+
+export type CapabilityResponse = { contractVersion: string; rules: AbilityRule[] };
 
 export interface ProfilePreferences {
   locale: 'vi' | 'en';
@@ -546,19 +571,10 @@ export interface InventoryListQuery
   productId?: string;
   status?: 'active' | 'inactive';
 }
-export interface CatalogProduct extends Product {
-  slug: string;
-  status: ProductPublicationStatus;
-  brand: string;
-  material: string;
-  careInstructions: string;
-  seoTitle: string;
-  seoDescription: string;
-  sizeGuideId: string | null;
-  version: number;
-}
+export type CatalogProduct = Product;
 
 export interface ShopSettings {
+  logoUrl: string;
   name: string;
   supportEmail: string;
   supportPhone: string;
@@ -601,6 +617,8 @@ export interface CartLineInput {
 }
 export type CartWarning = 'unavailable' | 'insufficient_stock' | 'price_changed';
 export interface CartItem {
+  productSlug: string | null;
+  imageUrl: string;
   id: string;
   variantId: string;
   productId: string | null;
@@ -697,6 +715,7 @@ export interface OrderQuantityInput {
   quantity: number;
 }
 export interface CancellationRequest {
+  userId: string;
   id: string;
   orderId: string;
   status: 'requested' | 'approved' | 'rejected';
@@ -739,6 +758,7 @@ export interface ReturnInspection {
   damagedQuantity: number;
 }
 export interface ReturnRequest {
+  userId: string;
   id: string;
   orderId: string;
   status: ReturnStatus;
@@ -799,6 +819,7 @@ export interface Notification {
 
 export type SupportTicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 export interface SupportTicket {
+  userId: string;
   id: string;
   orderId: string | null;
   subject: string;
@@ -809,6 +830,8 @@ export interface SupportTicket {
   createdAt: string;
 }
 export interface SupportMessage {
+  ticketId: string;
+  authorId: string;
   id: string;
   body: string;
   internal: boolean;
@@ -860,6 +883,7 @@ export interface ExchangeLine {
   quantity: number;
 }
 export interface ExchangeRequest {
+  userId: string;
   id: string;
   orderId: string;
   returnId: string;

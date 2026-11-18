@@ -1,0 +1,136 @@
+{
+  "save": "Save changes",
+  "saving": "Saving…",
+  "discard": "Discard changes",
+  "cancel": "Cancel",
+  "actions": "Actions",
+  "saveFailed": "Could not save. Please try again.",
+  "validation": {
+    "required": "This field is required.",
+    "maxLength": "At most {{max}} characters.",
+    "integer": "The price must be a whole number.",
+    "priceRange": "The price must be between 0 and 1,000,000,000 ₫."
+  },
+  "hub": {
+    "title": "Settings",
+    "description": "Configuration shared by every building.",
+    "links": {
+      "services": {
+        "title": "Services & prices",
+        "description": "Electricity, water, internet… and default prices."
+      },
+      "billing": {
+        "title": "Billing cycle",
+        "description": "Meter reading day, issue day, due day, rounding."
+      },
+      "buildings": {
+        "title": "Buildings",
+        "description": "Building details, payee account and building prices."
+      },
+      "members": {
+        "title": "Members",
+        "description": "Managers and their buildings."
+      },
+      "expenseCategories": {
+        "title": "Expense categories",
+        "description": "Manage operating expense categories."
+      },
+      "announcements": {
+        "title": "Tenant announcements",
+        "description": "Notices for the whole building or rooms, pinned, with an expiry, on the tenant portal."
+      },
+      "landlord": {
+        "title": "Landlord & signature",
+        "description": "Private profile and saved signature."
+      },
+      "contractTemplates": {
+        "title": "Contract templates",
+        "description": "Edit templates and manage versions."
+      }
+    }
+  },
+  "billing": {
+    "title": "Billing cycle",
+    "description": "System defaults; each building may override them.",
+    "cycleTitle": "Billing schedule",
+    "readingDayMonth": "Readings taken",
+    "readingDayMonths": {
+      "same": "End of the consumption month",
+      "next": "Early next month"
+    },
+    "readingDayMonthHint": "Early next month: e.g. readings on 5 Dec close November.",
+    "readingDay": "Meter reading day",
+    "issueDay": "Issue day",
+    "dueDay": "Due day",
+    "graceDays": "Grace days before overdue",
+    "graceDaysHint": "0 = overdue the day after the due date. The printed due date does not change.",
+    "graceDaysNone": "No grace period",
+    "graceDaysValue": "{{count}} days",
+    "dayOfMonth": "Day {{day}}",
+    "endOfMonth": "End of month",
+    "preview": "Readings on {{reading}} close consumption month {{usageMonth}}; invoices of period {{period}} are issued {{issue}}, due {{due}}, overdue from {{overdue}}.",
+    "moneyTitle": "Money and bank transfer",
+    "roundingUnit": "Invoice total rounding",
+    "roundingHint": "Rounded half-up; the difference shows as a \"Rounding\" line.",
+    "transferTemplate": "Transfer content",
+    "transferTemplateHint": "{invoiceCode} is replaced by the invoice code, e.g. A-202611-001.",
+    "refundUnusedRent": "Refund rent on early move-out",
+    "refundHint": "On: refund rent and services of unused days pro rata.",
+    "saved": "Billing cycle saved.",
+    "dueBeforeIssue": "The due day must be on or after the issue day.",
+    "readingAfterIssue": "When readings are taken early next month, the reading day must be on or before the issue day.",
+    "moveOutFee": "Facility depreciation fee on move-out",
+    "moveOutFeeHint": "Added as a \"Khấu hao cơ sở vật chất\" surcharge on settlement; the owner can edit or remove it before issuing. 0 = off.",
+    "moveOutFeeRange": "Enter a whole number from 0 to 100,000,000 ₫."
+  },
+  "services": {
+    "title": "Services & prices",
+    "description": "Default prices for every building; buildings may set their own.",
+    "add": "Add service",
+    "addTitle": "Add service",
+    "priceWarning": "Applies to invoices created from now on; issued invoices do not change.",
+    "emptyTitle": "No services yet",
+    "emptyDescription": "Add electricity, water and other monthly services.",
+    "order": "Order",
+    "orderHint": "Drag the handle at the start of a row (or use Space and the arrow keys) to change the order on invoices.",
+    "dragHandle": "Drag to reorder {{name}}",
+    "reordered": "Service order updated.",
+    "name": "Service name",
+    "descriptionLabel": "Description (optional)",
+    "descriptionPlaceholder": "E.g. elevator, washing machine, garbage",
+    "descriptionHint": "{{count}}/{{max}} characters · shown under the service name and on invoices.",
+    "kind": "Billing method",
+    "kindPlaceholder": "Choose a billing method",
+    "unit": "Unit",
+    "defaultPrice": "Default price",
+    "status": "Status",
+    "active": "On",
+    "inactive": "Off",
+    "activeLabel": "Service on",
+    "toggle": "Turn {{name}} on/off",
+    "edit": "Edit {{name}}",
+    "editTitle": "Edit {{name}}",
+    "meteredRule": "Only one Electricity and one Water service can be on at a time.",
+    "saved": "{{name}} saved.",
+    "created": "{{name}} added.",
+    "activated": "{{name}} turned on.",
+    "deactivated": "{{name}} turned off.",
+    "deactivate": "Turn off",
+    "deactivateTitle": "Turn off {{name}}?",
+    "deactivateDescription": "A service that is off is not added to new invoices; issued invoices do not change. Removing it from contracts that use it will be asked once contracts exist.",
+    "kinds": {
+      "electricity": "Electricity per kWh",
+      "water": "Water per m³",
+      "per_room": "Per room",
+      "per_person": "Per person",
+      "per_vehicle": "Per vehicle"
+    },
+    "defaultUnits": {
+      "electricity": "kWh",
+      "water": "m³",
+      "per_room": "room",
+      "per_person": "person",
+      "per_vehicle": "vehicle"
+    }
+  }
+}

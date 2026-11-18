@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { after, before, describe, test } from 'node:test';
+import { canAccess, createAppAbility } from '@p4/ability/shared';
 import { Op } from 'sequelize';
 import {
   AccountTokenModel,
@@ -162,8 +163,9 @@ describe('account/profile/staff APIs on the local stack', { skip: !base }, () =>
     await call('POST', '/staff/invitations/accept', { token: raw }, staff.session);
     staff.session = await login(staff.email);
     const caps = await call('GET', '/me/capabilities', undefined, staff.session);
-    assert.ok(caps.permissions.includes('content:write'));
-    assert.ok(!caps.permissions.includes('catalog:write'));
+    const ability = createAppAbility(caps.rules);
+    assert.ok(canAccess(ability, 'write', 'Content'));
+    assert.equal(canAccess(ability, 'write', 'Catalog'), false);
     await call('POST', '/products', { name: 'Forbidden', price: 1, stock: 1 }, staff.session, 403);
     await call('GET', '/orders', undefined, staff.session, 403);
     await call('GET', '/admin/audit-logs', undefined, staff.session, 403);

@@ -53,7 +53,11 @@ describe('list API integration against the existing local database (read-only re
     );
     await sequelize.authenticate();
     admin = await login('admin@example.com');
-    const account = await UserModel.findOne({ where: { role: 'user' }, order: [['id', 'ASC']] });
+    // Seeded customers only; other suites create temporary users with other passwords.
+    const account = await UserModel.findOne({
+      where: { role: 'user', email: { [Op.like]: '%@example.com' } },
+      order: [['id', 'ASC']],
+    });
     assert.ok(account, 'Existing local seed user required');
     user = await login(account.email);
     product = await ProductModel.findOne({ order: [['id', 'ASC']] });
@@ -73,7 +77,10 @@ describe('list API integration against the existing local database (read-only re
     const detail = await get(`/products/${product.id}`);
     assert.equal(typeof detail.data.imageUrl, 'string');
     assert.ok(Array.isArray(detail.data.images));
-    assert.equal(Object.hasOwn(detail.data, 'createdAt'), false);
+    assert.equal(typeof detail.data.createdAt, 'string');
+    assert.equal(typeof detail.data.slug, 'string');
+    assert.equal(typeof detail.data.version, 'number');
+    assert.equal(Object.hasOwn(detail.data, '_previousDataValues'), false);
     const dashboard = await get('/dashboard/stats');
     assert.equal(typeof dashboard.data.totalRevenue, 'number');
     assert.ok(dashboard.data.lowStockProducts.every((row) => typeof row.imageUrl === 'string'));

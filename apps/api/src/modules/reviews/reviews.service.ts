@@ -1,7 +1,15 @@
+import {
+  BadRequest,
+  BaseError,
+  buildPaginationMeta,
+  Forbidden,
+  NotFound,
+  searchPattern,
+} from '@p4/server-core';
 import type { Review, ReviewInput, ReviewListQuery, User } from '@p4/shared';
 import { Op, type WhereOptions } from 'sequelize';
 import { errorKeys } from '@/constants/index.js';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord, hasAccess } from '@/middlewares/ability.middleware.js';
 import {
   FileModel,
   OrderItemModel,
@@ -12,14 +20,9 @@ import {
   UserModel,
 } from '@/sequelize/models/index.js';
 import type { ReviewAttributes } from '@/sequelize/models/review.model.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { searchPattern } from '@/shared/list-filters.js';
 import type { ModelOrder } from '@/types/database.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { BadRequest, Forbidden, NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 
 type ReviewWithUser = ReviewModel & { user?: UserModel };
@@ -159,8 +162,7 @@ export async function deleteReview(user: User, reviewId: string) {
       lock: transaction.LOCK.UPDATE,
     });
     if (!row) throw new NotFound(errorKeys.notFound);
-    if (row.userId !== user.id && !permissionsFor(user).includes('review:moderate'))
-      throw new Forbidden();
+    if (!canAccessRecord(user, 'moderate', 'Review', row)) throw new Forbidden();
     await row.update({ moderationStatus: 'hidden', version: row.version + 1 }, { transaction });
     await recordAudit(
       { actorId: user.id, action: 'review.removed', resourceType: 'review', resourceId: row.id },
@@ -195,10 +197,10 @@ export async function changeReview(
         { transaction },
       );
     } else if ('reply' in input) {
-      if (!permissionsFor(user).includes('review:reply')) throw new Forbidden();
+      if (!hasAccess(user, 'reply', 'Review')) throw new Forbidden();
       await row.update({ reply: input.reply, version: row.version + 1 }, { transaction });
     } else {
-      if (!permissionsFor(user).includes('review:moderate')) throw new Forbidden();
+      if (!hasAccess(user, 'moderate', 'Review')) throw new Forbidden();
       await row.update(
         {
           moderationStatus: input.moderationStatus,

@@ -1,9 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, NotFound } from '@p4/server-core';
 import type { PaymentAttempt, PaymentProvider, User } from '@p4/shared';
 import { Op, type Transaction } from 'sequelize';
 import type Stripe from 'stripe';
 import { env } from '@/configs/env.js';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   type DomainEventModel,
   InventoryReservationModel,
@@ -16,11 +17,8 @@ import {
   sequelize,
   WebhookReceiptModel,
 } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent, runIdempotent } from '@/shared/commerce/persistence.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { moveInventory } from '../inventory/inventory.service.js';
 import { expireOrder } from '../jobs/jobs.service.js';
@@ -364,8 +362,7 @@ export async function markMockPaid(user: User, id: string) {
   const attempt = await PaymentAttemptModel.findByPk(id);
   if (attempt?.provider !== 'mock') throw new NotFound();
   const order = await ownedOrder(user, attempt.orderId);
-  if (order.userId !== user.id && !permissionsFor(user).includes('payment:manage'))
-    throw new Forbidden();
+  if (!canAccessRecord(user, 'manage', 'Payment', order)) throw new Forbidden();
   return auditedTransaction(async (transaction) =>
     capturePayment(
       {

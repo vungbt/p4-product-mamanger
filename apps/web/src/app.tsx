@@ -8,9 +8,10 @@ import {
   revokeAuthSession,
 } from '@p4/api-client';
 import { useTranslation } from 'react-i18next';
-import { BrowserRouter, Link } from 'react-router-dom';
+import { BrowserRouter, Link, useLocation } from 'react-router-dom';
 import { API_BASE_URL } from '@/constants/constants';
 import { AuthProvider } from '@/contexts/auth-context';
+import CapabilityAbilityProvider from '@/libraries/capability-ability-provider';
 import { uiTheme } from '@/libraries/ui-theme';
 import RouteConfigs from '@/routing/config.route';
 import MasterRoutes from '@/routing/master.route';
@@ -26,6 +27,10 @@ function WebImage({ alt, ...props }: UiImageProps) {
   return <img decoding="async" loading="lazy" {...props} alt={alt} />;
 }
 
+function useRouterAdapter() {
+  return { pathname: useLocation().pathname };
+}
+
 export default function App() {
   const { i18n } = useTranslation();
   return (
@@ -34,6 +39,7 @@ export default function App() {
         theme={uiTheme}
         image={WebImage}
         link={RouterUiLink}
+        router={useRouterAdapter}
         locale={i18n.resolvedLanguage === 'en' ? 'en-US' : 'vi-VN'}
       >
         <ToastProvider position="top-right" duration={3000}>
@@ -44,7 +50,9 @@ export default function App() {
               onRefresh={refreshAuthSession}
               onLogout={revokeAuthSession}
             >
-              <MasterRoutes routes={RouteConfigs} />
+              <CapabilityAbilityProvider>
+                <MasterRoutes routes={RouteConfigs} />
+              </CapabilityAbilityProvider>
             </AuthProvider>
           </ApiQueryProvider>
         </ToastProvider>

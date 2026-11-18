@@ -1,6 +1,5 @@
+import { type ListLocals, queryText, validate, validateListQuery } from '@p4/server-core';
 import { type CategoryListQuery, DESCRIPTION_FILTER_VALUES } from '@p4/shared';
-import { type ListLocals, queryText, validateListQuery } from '@/shared/list-query.js';
-import validate from '@/shared/validation.js';
 
 export const validateCategory = validate({
   rules: {

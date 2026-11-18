@@ -1,13 +1,22 @@
-import { Alert, Button, Dialog, Spinner, Tag, type TagTone } from '@itclabs/react-ui';
+import {
+  Alert,
+  Button,
+  Dialog,
+  Spinner,
+  Tag,
+  type TagTone,
+  useFormatters,
+} from '@itclabs/react-ui';
+import { RichTextView } from '@itclabs/react-ui/rich-text-view';
 import { toast } from '@itclabs/react-ui/toast';
 import { useProduct, useProductVariants, useUpdateProductPublication } from '@p4/api-sdk/react';
 import { ApiSdkError, getErrorMessage } from '@p4/api-sdk/shared';
+import type { ProductPublicationStatus } from '@p4/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { extractRichText } from '../helpers/rich-text';
 import ProductImage from './products-image';
 
-const statusTone: Record<string, TagTone> = {
+const statusTone: Record<ProductPublicationStatus, TagTone> = {
   draft: 'neutral',
   active: 'success',
   inactive: 'warning',
@@ -16,6 +25,7 @@ const statusTone: Record<string, TagTone> = {
 
 export default function ProductDetails({ id, onClose }: { id: string; onClose: () => void }) {
   const { t } = useTranslation();
+  const { formatCurrency } = useFormatters();
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
   const query = useProduct(id);
   const variantsQuery = useProductVariants(id);
@@ -24,7 +34,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
   const variants = variantsQuery.data?.data ?? [];
   const updateProductPublication = useUpdateProductPublication();
 
-  const changeStatus = async (status: 'active' | 'inactive' | 'archived'): Promise<boolean> => {
+  const changeStatus = async (status: ProductPublicationStatus): Promise<boolean> => {
     if (!products) {
       return false;
     }
@@ -105,7 +115,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                 <span className="text-ui-sm font-medium">
                   {t('products.status', 'Trạng thái')}:
                 </span>
-                <Tag tone={statusTone[products.status] ?? 'neutral'} size="sm">
+                <Tag tone={statusTone[products.status]} size="sm">
                   {t(`products.statuses.${products.status}`, products.status)}
                 </Tag>
               </div>
@@ -168,11 +178,11 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.price', 'Giá bán')}</dt>
-                <dd>{products.price?.toLocaleString('vi-VN') ?? 0}đ</dd>
+                <dd>{formatCurrency(products.price, 'VND')}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.stock', 'Số lượng tồn kho')}</dt>
-                <dd>{products.stock ?? 0}</dd>
+                <dd>{products.stock}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.brand', 'Thương hiệu')}</dt>
@@ -206,9 +216,11 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
               )}
               <div className="sm:col-span-2">
                 <dt className="text-ui-sm text-muted">{t('products.description', 'Mô tả')}</dt>
-                <dd className="whitespace-pre-line">
-                  {extractRichText(products.description) ||
-                    t('products.noDescription', 'Chưa có mô tả.')}
+                <dd>
+                  <RichTextView
+                    html={products.description ?? ''}
+                    emptyFallback={t('products.noDescription', 'Chưa có mô tả.')}
+                  />
                 </dd>
               </div>
             </dl>
@@ -263,7 +275,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                         <td className="p-2">{v.color || '-'}</td>
                         <td className="p-2">{v.size || '-'}</td>
                         <td className="p-2">{v.available}</td>
-                        <td className="p-2">{v.price?.toLocaleString('vi-VN')}đ</td>
+                        <td className="p-2">{formatCurrency(v.price, 'VND')}</td>
                         <td className="p-2">
                           <Tag tone={v.status === 'active' ? 'success' : 'neutral'} size="sm">
                             {v.status}
@@ -303,9 +315,8 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
               variant: 'danger',
               loading: updateProductPublication.isPending,
               onClick: async () => {
-                try {
-                  await changeStatus('archived');
-                } finally {
+                const ok = await changeStatus('archived');
+                if (ok) {
                   setArchiveConfirmOpen(false);
                 }
               },

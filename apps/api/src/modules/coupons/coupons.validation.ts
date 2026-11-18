@@ -1,6 +1,5 @@
+import { queryText, validate, validateListQuery } from '@p4/server-core';
 import type { CouponListQuery } from '@p4/shared';
-import { queryText, validateListQuery } from '@/shared/list-query.js';
-import validate from '@/shared/validation.js';
 
 export const validateCoupon = validate({
   rules: {

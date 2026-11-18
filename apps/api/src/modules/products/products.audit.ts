@@ -1,5 +1,5 @@
+import type { RouteAuditPolicies } from '@p4/server-core';
 import * as reviewsController from '@/modules/reviews/reviews.controller.js';
-import type { RouteAuditPolicies } from '@/shared/audit/types.js';
 import * as productsController from './products.controller.js';
 
 export const auditPolicies = {

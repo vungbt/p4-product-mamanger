@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, NotFound } from '@p4/server-core';
 import type { CheckoutQuoteInput, User } from '@p4/shared';
 import type { Transaction } from 'sequelize';
 import {
@@ -11,10 +12,8 @@ import {
   ProductModel,
   ProductVariantModel,
 } from '@/sequelize/models/index.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent, jsonValue, runIdempotent } from '@/shared/commerce/persistence.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { buildQuoteSnapshot, quoteFingerprint } from '../checkout/checkout.service.js';
 import { moveInventory } from '../inventory/inventory.service.js';

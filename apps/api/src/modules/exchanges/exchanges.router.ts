@@ -1,15 +1,21 @@
+import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  listSearch,
+  queryText,
+  requestBody,
+  uuidQueryRule,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
 import type { ExchangeLine } from '@p4/shared';
 import { EXCHANGE_STATUS_VALUES, type ExchangeListQuery } from '@p4/shared';
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { ExchangeRequestModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { queryText, uuidQueryRule, validateListQuery } from '@/shared/list-query.js';
-import { listSearch } from '@/shared/list-search.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './exchanges.audit.js';
 import * as exchanges from './exchanges.service.js';
 
@@ -74,7 +80,7 @@ for (const admin of [false, true])
   router.get(
     admin ? '/admin/exchanges' : '/exchanges/mine',
     authRequired,
-    ...(admin ? [requirePermission('return:read')] : []),
+    ...(admin ? [requireAbility('read', 'Return')] : []),
     list,
     listHandler(async (req, query: ExchangeListQuery) => {
       const result = await ExchangeRequestModel.findAndCountAll({
@@ -107,7 +113,7 @@ router.get(
 router.post(
   '/exchanges/:id/approve',
   authRequired,
-  requirePermission('return:manage'),
+  requireAbility('manage', 'Return'),
   apiHandler(async (req) =>
     exchanges.approveExchange(
       currentUser(req).id,
@@ -119,7 +125,7 @@ router.post(
 router.post(
   '/exchanges/:id/reject',
   authRequired,
-  requirePermission('return:manage'),
+  requireAbility('manage', 'Return'),
   apiHandler(async (req) => {
     const body = requestBody(req);
     return exchanges.rejectExchange(
@@ -133,7 +139,7 @@ router.post(
 router.post(
   '/exchanges/:id/create-replacement',
   authRequired,
-  requirePermission('return:manage'),
+  requireAbility('manage', 'Return'),
   apiHandler(
     async (req) =>
       exchanges.createReplacement(

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, NotFound } from '@p4/server-core';
 import type { ExchangeLine, ExchangeRequest, User } from '@p4/shared';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   CheckoutQuoteModel,
   ExchangeRequestModel,
@@ -9,12 +10,9 @@ import {
   RefundModel,
   ReturnRequestModel,
 } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { getMe } from '../auth/auth.service.js';
 import { buildQuoteSnapshot, quoteFingerprint } from '../checkout/checkout.service.js';
@@ -26,6 +24,7 @@ import { settings } from '../settings/settings.service.js';
 export function exchangeDto(row: ExchangeRequestModel): ExchangeRequest {
   return {
     ...selectFields(row, [
+      'userId',
       'id',
       'orderId',
       'returnId',
@@ -45,8 +44,7 @@ export function exchangeDto(row: ExchangeRequestModel): ExchangeRequest {
 export async function ownedExchange(user: User, id: string) {
   const row = await ExchangeRequestModel.findByPk(id);
   if (!row) throw new NotFound();
-  if (row.userId !== user.id && !permissionsFor(user).includes('return:read'))
-    throw new Forbidden();
+  if (!canAccessRecord(user, 'read', 'Return', row)) throw new Forbidden();
   return row;
 }
 export async function requestExchange(

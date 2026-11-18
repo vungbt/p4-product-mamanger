@@ -1,0 +1,14 @@
+{
+  "invoiceLine": {
+    "rent": "Tiền phòng tháng {{period}}",
+    "service": "{{name}} tháng {{period}}",
+    "electricity": "Tiền điện tháng {{period}}",
+    "water": "Tiền nước tháng {{period}}",
+    "surcharge": "Phụ thu: {{reason}}",
+    "discount": "Giảm trừ: {{reason}}",
+    "adjustment": "Điều chỉnh: {{reason}}",
+    "refundRent": "Hoàn tiền phòng {{from}} – {{to}}",
+    "refundService": "Hoàn {{name}} {{from}} – {{to}}",
+    "rounding": "Làm tròn ({{roundingUnit}} ₫)"
+  }
+}

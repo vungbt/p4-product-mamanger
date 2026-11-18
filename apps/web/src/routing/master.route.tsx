@@ -6,7 +6,7 @@ import { ROUTES } from '@/constants/constants';
 import BrandLogo from '@/libraries/brand-logo';
 import type { IRoute } from '@/routing/route.types';
 import { flattenRouteElements } from '@/routing/route.types';
-import { GuestRoute, ProtectedRoute } from '@/routing/route-guards';
+import { CapabilityRoute, GuestRoute, ProtectedRoute } from '@/routing/route-guards';
 
 function PageLoading() {
   const { t } = useTranslation();
@@ -50,7 +50,13 @@ function LazyPage({ component: Page }: { component: LazyExoticComponent<Componen
 
 function renderLeafRoutes(routes: IRoute[]): React.ReactNode {
   return flattenRouteElements(routes).map((route) => {
-    const page = <LazyPage component={route.component} />;
+    const page = route.ability ? (
+      <CapabilityRoute ability={route.ability}>
+        <LazyPage component={route.component} />
+      </CapabilityRoute>
+    ) : (
+      <LazyPage component={route.component} />
+    );
 
     if (route.authority?.length) {
       return (

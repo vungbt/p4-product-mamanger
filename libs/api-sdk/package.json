@@ -27,8 +27,8 @@
     }
   },
   "scripts": {
-    "generate": "node scripts/generate.mjs",
-    "check:generated": "node scripts/generate.mjs --check",
+    "generate": "node scripts/generate.mjs && node scripts/generate-resources.mjs",
+    "check:generated": "node scripts/generate.mjs --check && node scripts/generate-resources.mjs --check",
     "build": "pnpm check:generated && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "dev": "tsc -p tsconfig.build.json --watch",
@@ -48,7 +48,8 @@
     "typescript": "catalog:",
     "@types/react": "catalog:",
     "@types/node": "catalog:",
-    "@tanstack/react-query": "catalog:"
+    "@tanstack/react-query": "catalog:",
+    "yaml": "catalog:"
   },
   "sideEffects": false,
   "peerDependenciesMeta": {

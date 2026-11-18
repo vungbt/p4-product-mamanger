@@ -1,23 +1,22 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, NotFound } from '@p4/server-core';
 import type { SupportMessage, SupportTicket, User } from '@p4/shared';
 import type { Transaction } from 'sequelize';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord, hasAccess } from '@/middlewares/ability.middleware.js';
 import {
   FileModel,
   OrderModel,
   SupportMessageModel,
   SupportTicketModel,
 } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
 import { selectFields } from '@/utils/select-fields.js';
 export function ticketDto(row: SupportTicketModel): SupportTicket {
   return {
     ...selectFields(row, [
+      'userId',
       'id',
       'orderId',
       'subject',
@@ -31,7 +30,7 @@ export function ticketDto(row: SupportTicketModel): SupportTicket {
 }
 export function messageDto(row: SupportMessageModel): SupportMessage {
   return {
-    ...selectFields(row, ['id', 'body', 'internal', 'attachmentIds']),
+    ...selectFields(row, ['id', 'ticketId', 'authorId', 'body', 'internal', 'attachmentIds']),
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -41,8 +40,7 @@ export async function ownedTicket(user: User, id: string, transaction?: Transact
     ...(transaction && lock ? { lock: transaction.LOCK.UPDATE } : {}),
   });
   if (!row) throw new NotFound();
-  if (row.userId !== user.id && !permissionsFor(user).includes('support:read'))
-    throw new Forbidden();
+  if (!canAccessRecord(user, 'read', 'Support', row)) throw new Forbidden();
   return row;
 }
 async function validateAttachments(userId: string, ids: string[], transaction: Transaction) {
@@ -123,9 +121,8 @@ export async function addMessage(
     const row = await ownedTicket(user, id, transaction, true);
     assertVersion(row.version, expectedVersion);
     if (row.status === 'closed') throw new BaseError('ticket_closed', 409, 'ticket_closed');
-    if (input.internal && !permissionsFor(user).includes('support:manage')) throw new Forbidden();
-    if (row.userId !== user.id && !permissionsFor(user).includes('support:manage'))
-      throw new Forbidden();
+    if (input.internal && !hasAccess(user, 'manage', 'Support')) throw new Forbidden();
+    if (!canAccessRecord(user, 'manage', 'Support', row)) throw new Forbidden();
     await validateAttachments(user.id, input.attachmentIds, transaction);
     const message = await SupportMessageModel.create(
       { id: randomUUID(), ticketId: id, authorId: user.id, ...input },

@@ -1,4 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
+import { BadRequest, BaseError, Unauthorized } from '@p4/server-core';
 import type {
   AccountTokenPurpose,
   ProfilePreferences,
@@ -10,13 +11,10 @@ import type { Transaction } from 'sequelize';
 import { getMe } from '@/modules/auth/auth.service.js';
 import { createFromStorageId } from '@/modules/files/files.service.js';
 import { AccountTokenModel, RefreshTokenModel, UserModel } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { seal } from '@/shared/commerce/encryption.js';
 import { enqueueEvent, jsonValue } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { BadRequest, Unauthorized } from '@/utils/errors/index.js';
 import { hashToken } from '@/utils/token-hash.js';
 
 export async function issueAccountToken(

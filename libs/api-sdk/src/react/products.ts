@@ -1,102 +1,144 @@
 import {
   mutationOptions,
   type QueryClient,
-  queryOptions,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import type { ApiSdk } from '../shared/client.js';
-import { createProductApi, type ProductListQuery } from '../shared/products.js';
+import {
+  createProductApi,
+  type ProductListQuery,
+  type StorefrontProductListQuery,
+} from '../shared/products.js';
 import { useApiSdk } from './provider.js';
+import {
+  type ApiMutationSettings,
+  apiKeys,
+  getAdminProductsIdQueryOptions,
+  getAdminProductsIdVariantsQueryOptions,
+  getAdminProductsQueryOptions,
+  getProductsBySlugSlugQueryOptions,
+  getProductsIdQueryOptions,
+  getProductsQueryOptions,
+} from './resources.js';
 
-function key<const T extends readonly unknown[]>(...parts: T): T {
-  return parts;
-}
-
+// Share operation keys with generated hooks, including separate admin/storefront scopes.
 export const productKeys = {
-  all: key('products'),
-  lists: () => key('products', 'list'),
-  list: (query?: ProductListQuery) => key('products', 'list', query ?? {}),
-  details: () => key('products', 'detail'),
-  detail: (id: string) => key('products', 'detail', id),
-  variants: (id: string) => key('products', 'variants', id),
+  all: apiKeys.all,
+  lists: () => ['api', 'get_api_admin_products'] as const,
+  list: (query?: ProductListQuery) => apiKeys.operation('get_api_admin_products', { query }),
+  details: () => ['api', 'get_api_admin_products_id'] as const,
+  detail: (id: string) => apiKeys.operation('get_api_admin_products_id', { path: { id } }),
+  variants: (id: string) =>
+    apiKeys.operation('get_api_admin_products_id_variants', { path: { id } }),
+  storefrontList: (query?: StorefrontProductListQuery) =>
+    apiKeys.operation('get_api_products', { query }),
+  storefrontDetail: (id: string) => apiKeys.operation('get_api_products_id', { path: { id } }),
+  bySlug: (slug: string) => apiKeys.operation('get_api_products_by_slug_slug', { path: { slug } }),
 };
-
 export function productQueryOptions(sdk: ApiSdk) {
-  const api = createProductApi(sdk);
-
   return {
-    list: (query?: ProductListQuery) =>
-      queryOptions({
-        queryKey: productKeys.list(query),
-        queryFn: ({ signal }) => api.list(query, signal),
-      }),
+    list: (query?: ProductListQuery) => getAdminProductsQueryOptions(sdk, { params: { query } }),
     detail: (id: string) =>
-      queryOptions({
-        queryKey: productKeys.detail(id),
-        queryFn: ({ signal }) => api.detail(id, signal),
-        enabled: Boolean(id),
-      }),
+      getAdminProductsIdQueryOptions(sdk, { params: { path: { id } } }, { enabled: Boolean(id) }),
     variants: (id: string) =>
-      queryOptions({
-        queryKey: productKeys.variants(id),
-        queryFn: ({ signal }) => api.variants(id, signal),
-        enabled: Boolean(id),
-      }),
+      getAdminProductsIdVariantsQueryOptions(
+        sdk,
+        { params: { path: { id } } },
+        { enabled: Boolean(id) },
+      ),
+    storefrontList: (query?: StorefrontProductListQuery) =>
+      getProductsQueryOptions(sdk, { params: { query } }),
+    storefrontDetail: (id: string) =>
+      getProductsIdQueryOptions(sdk, { params: { path: { id } } }, { enabled: Boolean(id) }),
+    bySlug: (slug: string) =>
+      getProductsBySlugSlugQueryOptions(
+        sdk,
+        { params: { path: { slug } } },
+        { enabled: Boolean(slug) },
+      ),
   };
 }
-
-export function productMutationOptions(sdk: ApiSdk, client: QueryClient) {
+export function productMutationOptions(
+  sdk: ApiSdk,
+  client: QueryClient,
+  settings?: ApiMutationSettings,
+) {
   const api = createProductApi(sdk);
   const refresh = () =>
-    client.invalidateQueries({
-      queryKey: productKeys.all,
-    });
+    Promise.all(
+      (settings?.invalidate ?? [apiKeys.all]).map((queryKey) =>
+        client.invalidateQueries({ queryKey }),
+      ),
+    );
   return {
     create: () => mutationOptions({ mutationFn: api.create, retry: false, onSuccess: refresh }),
     update: () => mutationOptions({ mutationFn: api.update, retry: false, onSuccess: refresh }),
     remove: () => mutationOptions({ mutationFn: api.remove, retry: false, onSuccess: refresh }),
     updatePublication: () =>
       mutationOptions({ mutationFn: api.updatePublication, retry: false, onSuccess: refresh }),
+    createVariant: () =>
+      mutationOptions({ mutationFn: api.createVariant, retry: false, onSuccess: refresh }),
+    updateVariant: () =>
+      mutationOptions({ mutationFn: api.updateVariant, retry: false, onSuccess: refresh }),
+    updateVariantImages: () =>
+      mutationOptions({ mutationFn: api.updateVariantImages, retry: false, onSuccess: refresh }),
+    addImage: () => mutationOptions({ mutationFn: api.addImage, retry: false, onSuccess: refresh }),
+    removeImage: () =>
+      mutationOptions({ mutationFn: api.removeImage, retry: false, onSuccess: refresh }),
   };
 }
-
 export function useProducts(query?: ProductListQuery) {
-  const sdk = useApiSdk();
-  return useQuery(productQueryOptions(sdk).list(query));
+  return useQuery(productQueryOptions(useApiSdk()).list(query));
 }
-
 export function useProduct(id: string) {
-  const sdk = useApiSdk();
-  return useQuery(productQueryOptions(sdk).detail(id));
+  return useQuery(productQueryOptions(useApiSdk()).detail(id));
 }
-
 export function useProductVariants(id: string) {
-  const sdk = useApiSdk();
-  return useQuery(productQueryOptions(sdk).variants(id));
+  return useQuery(productQueryOptions(useApiSdk()).variants(id));
 }
-
-export function useCreateProduct() {
-  const sdk = useApiSdk();
-  const client = useQueryClient();
-  return useMutation(productMutationOptions(sdk, client).create());
+export function useStorefrontProducts(query?: StorefrontProductListQuery) {
+  return useQuery(productQueryOptions(useApiSdk()).storefrontList(query));
 }
-
-export function useUpdateProduct() {
-  const sdk = useApiSdk();
-  const client = useQueryClient();
-  return useMutation(productMutationOptions(sdk, client).update());
+export function useStorefrontProduct(id: string) {
+  return useQuery(productQueryOptions(useApiSdk()).storefrontDetail(id));
 }
-
-export function useDeleteProduct() {
-  const sdk = useApiSdk();
-  const client = useQueryClient();
-  return useMutation(productMutationOptions(sdk, client).remove());
+export function useProductBySlug(slug: string) {
+  return useQuery(productQueryOptions(useApiSdk()).bySlug(slug));
 }
-
-export function useUpdateProductPublication() {
-  const sdk = useApiSdk();
-  const client = useQueryClient();
-  return useMutation(productMutationOptions(sdk, client).updatePublication());
+export function useCreateProduct(settings?: ApiMutationSettings) {
+  return useMutation(productMutationOptions(useApiSdk(), useQueryClient(), settings).create());
+}
+export function useUpdateProduct(settings?: ApiMutationSettings) {
+  return useMutation(productMutationOptions(useApiSdk(), useQueryClient(), settings).update());
+}
+export function useDeleteProduct(settings?: ApiMutationSettings) {
+  return useMutation(productMutationOptions(useApiSdk(), useQueryClient(), settings).remove());
+}
+export function useUpdateProductPublication(settings?: ApiMutationSettings) {
+  return useMutation(
+    productMutationOptions(useApiSdk(), useQueryClient(), settings).updatePublication(),
+  );
+}
+export function useCreateProductVariant(settings?: ApiMutationSettings) {
+  return useMutation(
+    productMutationOptions(useApiSdk(), useQueryClient(), settings).createVariant(),
+  );
+}
+export function useUpdateProductVariant(settings?: ApiMutationSettings) {
+  return useMutation(
+    productMutationOptions(useApiSdk(), useQueryClient(), settings).updateVariant(),
+  );
+}
+export function useUpdateProductVariantImages(settings?: ApiMutationSettings) {
+  return useMutation(
+    productMutationOptions(useApiSdk(), useQueryClient(), settings).updateVariantImages(),
+  );
+}
+export function useAddProductImage(settings?: ApiMutationSettings) {
+  return useMutation(productMutationOptions(useApiSdk(), useQueryClient(), settings).addImage());
+}
+export function useRemoveProductImage(settings?: ApiMutationSettings) {
+  return useMutation(productMutationOptions(useApiSdk(), useQueryClient(), settings).removeImage());
 }

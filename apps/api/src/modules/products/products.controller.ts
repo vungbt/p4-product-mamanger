@@ -1,8 +1,8 @@
+import type { ListLocals } from '@p4/server-core';
+import { requestBody } from '@p4/server-core';
 import type { ProductInput, ProductListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { requestBody } from '@/shared/http-input.js';
-import type { ListLocals } from '@/shared/list-query.js';
 import * as productsService from './products.service.js';
 
 function productInput(req: Request, create = false): Partial<ProductInput> {

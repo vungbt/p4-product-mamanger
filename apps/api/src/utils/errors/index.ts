@@ -1,6 +1,3 @@
-export { BadRequest } from './bad-request.js';
-export { AppError, BaseError, isAppError } from './base-error.js';
-export { Forbidden } from './forbidden.js';
-export { InputValidError } from './input-valid-error.js';
-export { NotFound } from './not-found.js';
-export { Unauthorized } from './unauthorized.js';
+// Kept for `middlewares/ability.middleware.ts` (refactored separately with @p4/ability);
+// new code imports the error classes from @p4/server-core.
+export { Forbidden, Unauthorized } from '@p4/server-core';

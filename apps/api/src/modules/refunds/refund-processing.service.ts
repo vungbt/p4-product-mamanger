@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, NotFound } from '@p4/server-core';
 import type { User } from '@p4/shared';
 import { Op, type Transaction } from 'sequelize';
-import { permissionsFor } from '@/middlewares/permission.middleware.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import {
   type DomainEventModel,
   OrderItemModel,
@@ -11,38 +12,22 @@ import {
   RefundModel,
   ReturnRequestModel,
 } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent, runIdempotent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, NotFound } from '@/utils/errors/index.js';
-import { selectFields } from '@/utils/select-fields.js';
 import { quantityAmount } from '../orders/order-lifecycle.service.js';
 import { getStripe } from '../payments/stripe.service.js';
+import { toRefund } from './refunds.service.js';
 
-export function refundDto(row: RefundModel) {
-  return {
-    ...selectFields(row, [
-      'id',
-      'orderId',
-      'amount',
-      'status',
-      'reason',
-      'processingStatus',
-      'returnId',
-      'version',
-    ]),
-    createdAt: row.createdAt.toISOString(),
-  };
+export function refundDto(row: RefundModel): import('@p4/shared').Refund {
+  return toRefund(row);
 }
 
 export async function ownedRefund(user: User, id: string) {
   const row = await RefundModel.findByPk(id);
   if (!row) throw new NotFound();
   const order = await OrderModel.findByPk(row.orderId);
-  if (!order || (order.userId !== user.id && !permissionsFor(user).includes('refund:read')))
-    throw new Forbidden();
+  if (!order || !canAccessRecord(user, 'read', 'Refund', order)) throw new Forbidden();
   return row;
 }
 

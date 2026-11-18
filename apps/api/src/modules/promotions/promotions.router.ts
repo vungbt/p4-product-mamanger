@@ -1,21 +1,25 @@
 import { randomUUID } from 'node:crypto';
+import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  listSearch,
+  NotFound,
+  queryText,
+  requestBody,
+  searchPattern,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
 import type { ListQuery, PromotionListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { CouponModel, CouponRedemptionModel, PromotionModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { searchPattern } from '@/shared/list-filters.js';
-import { queryText, validateListQuery } from '@/shared/list-query.js';
-import { listSearch } from '@/shared/list-search.js';
-import { NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { toCoupon } from '../coupons/coupons.service.js';
 import { auditPolicies } from './promotions.audit.js';
@@ -23,8 +27,8 @@ import { promotionDto } from './promotions.service.js';
 import { ruleInput } from './promotions.validation.js';
 
 const router = Router();
-const read = [authRequired, requirePermission('promotion:read')];
-const write = [authRequired, requirePermission('promotion:write')];
+const read = [authRequired, requireAbility('read', 'Promotion')];
+const write = [authRequired, requireAbility('write', 'Promotion')];
 const list = validateListQuery({
   sortFields: ['name', 'priority', 'createdAt'],
   defaultSort: 'createdAt',

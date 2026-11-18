@@ -8,8 +8,8 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { AUTH_STORAGE_KEY } from './fake-auth';
 import {
+  AUTH_SESSION_KEY,
   type AuthSession,
   broadcastAuthChange,
   clearAuthSession,
@@ -47,7 +47,8 @@ function assertPortalRole(user: User, portal: AuthPortal) {
 
 export type AuthProviderProps = {
   children: ReactNode;
-  storageKey?: string;
+  /** Separates the in-memory session when several providers share a page. */
+  sessionKey?: string;
   /** Better Auth email/password sign-in. */
   onLogin: (email: string, password: string) => Promise<AuthSession>;
   /** Better Auth Google ID-token sign-in — storefront. */
@@ -60,18 +61,18 @@ export type AuthProviderProps = {
 
 export function AuthProvider({
   children,
-  storageKey = AUTH_STORAGE_KEY,
+  sessionKey = AUTH_SESSION_KEY,
   onLogin,
   onGoogleLogin,
   onRefresh,
   onLogout,
 }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(Boolean(onRefresh));
-  const [session, setSession] = useState<AuthSession | null>(() => readAuthSession(storageKey));
+  const [session, setSession] = useState<AuthSession | null>(() => readAuthSession(sessionKey));
 
   useEffect(() => {
     let active = true;
-    clearAuthSession(storageKey);
+    clearAuthSession(sessionKey);
     const sync = () => {
       if (onRefresh)
         void onRefresh().finally(() => {
@@ -93,26 +94,26 @@ export function AuthProvider({
       channel?.close();
       window.removeEventListener('focus', sync);
     };
-  }, [onRefresh, storageKey]);
+  }, [onRefresh, sessionKey]);
 
-  useEffect(() => subscribeAuthSession(setSession, storageKey), [storageKey]);
+  useEffect(() => subscribeAuthSession(setSession), []);
 
   const persistSession = useCallback(
     (nextSession: AuthSession) => {
-      writeAuthSession(nextSession, storageKey);
+      writeAuthSession(nextSession, sessionKey);
       broadcastAuthChange();
     },
-    [storageKey],
+    [sessionKey],
   );
 
   const logout = useCallback(() => {
-    const current = readAuthSession(storageKey);
-    clearAuthSession(storageKey);
+    const current = readAuthSession(sessionKey);
+    clearAuthSession(sessionKey);
     if (onLogout)
       void onLogout(current ?? undefined)
         .finally(broadcastAuthChange)
         .catch(() => undefined);
-  }, [onLogout, storageKey]);
+  }, [onLogout, sessionKey]);
 
   const login = useCallback(
     async (email: string, password: string, portal: AuthPortal) => {
@@ -120,13 +121,13 @@ export function AuthProvider({
       try {
         assertPortalRole(nextSession.user, portal);
       } catch (error) {
-        clearAuthSession(storageKey);
+        clearAuthSession(sessionKey);
         await onLogout?.(nextSession);
         throw error;
       }
       persistSession(nextSession);
     },
-    [onLogin, persistSession, onLogout, storageKey],
+    [onLogin, persistSession, onLogout, sessionKey],
   );
 
   const loginWithGoogle = useCallback(

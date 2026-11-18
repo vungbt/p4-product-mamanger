@@ -1,5 +1,5 @@
+import type { RouteAuditPolicies } from '@p4/server-core';
 import * as refundsController from '@/modules/refunds/refunds.controller.js';
-import type { RouteAuditPolicies } from '@/shared/audit/types.js';
 import * as ordersController from './orders.controller.js';
 
 export const auditPolicies = {

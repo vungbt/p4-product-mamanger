@@ -7,6 +7,9 @@ Web proxy: `/api` → API (cấu hình trong `apps/web/vite.config.ts`)
 
 ### OpenAPI / docs
 
+Scalar chia theo Storefront/Admin/Shared/Integration/Operations. Mỗi operation có tên hook, helper, input và ví dụ React Query.
+Tra [API/hook theo platform](../../documents/backend/api-sdk-reference.md) và [upload một/nhiều ảnh](../../documents/backend/uploads.md).
+
 - Spec: [`openapi.yaml`](./openapi.yaml) · raw: `GET /api/openapi.yaml`
 - UI (Scalar): [http://localhost:3001/api/docs](http://localhost:3001/api/docs) · prod: https://p4-api.couponlinkh.com/api/docs
 - Server trong docs theo origin đang chạy, hoặc `PUBLIC_API_URL` nếu có cấu hình. Code sample mặc định là Node.js Axios.

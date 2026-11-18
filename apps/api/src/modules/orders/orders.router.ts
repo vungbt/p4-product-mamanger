@@ -1,9 +1,9 @@
+import { applyAuditPolicies } from '@p4/server-core';
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired, requireRole } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { validateOrdersListQuery } from '@/modules/orders/orders.validation.js';
 import * as refundsController from '@/modules/refunds/refunds.controller.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
 import { auditPolicies } from './orders.audit.js';
 import * as ordersController from './orders.controller.js';
 import { validateCheckoutBody } from './orders.validation.js';
@@ -13,7 +13,7 @@ const router = Router();
 router.get(
   '/',
   authRequired,
-  requirePermission('order:read'),
+  requireAbility('read', 'Order'),
   validateOrdersListQuery,
   ordersController.list,
 );
@@ -30,7 +30,7 @@ router.post('/:id/cancel', authRequired, requireRole('user', 'admin'), ordersCon
 router.post(
   '/:id/refunds',
   authRequired,
-  requirePermission('refund:manage'),
+  requireAbility('manage', 'Refund'),
   refundsController.create,
 );
 

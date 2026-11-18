@@ -1,0 +1,14 @@
+{
+  "invoiceLine": {
+    "rent": "Rent for {{period}}",
+    "service": "{{name}} for {{period}}",
+    "electricity": "Electricity for {{period}}",
+    "water": "Water for {{period}}",
+    "surcharge": "Surcharge: {{reason}}",
+    "discount": "Discount: {{reason}}",
+    "adjustment": "Adjustment: {{reason}}",
+    "refundRent": "Rent refund {{from}} – {{to}}",
+    "refundService": "{{name}} refund {{from}} – {{to}}",
+    "rounding": "Rounding ({{roundingUnit}} ₫)"
+  }
+}

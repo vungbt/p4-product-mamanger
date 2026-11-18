@@ -1,29 +1,30 @@
+import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  dateFilters,
+  dateQueryRule,
+  dateRange,
+  listSearch,
+  queryText,
+  requestBody,
+  uuidQueryRule,
+  validateListQuery,
+} from '@p4/server-core';
 import type { InventoryListQuery } from '@p4/shared';
 import { INVENTORY_MOVEMENT_KIND_VALUES, type InventoryMovementListQuery } from '@p4/shared';
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { validateVariantList } from '@/modules/catalog/catalog.router.js';
 import { InventoryMovementModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
-import { currentUser, requestBody } from '@/shared/http-input.js';
-import { dateRange } from '@/shared/list-filters.js';
-import {
-  dateFilters,
-  dateQueryRule,
-  queryText,
-  uuidQueryRule,
-  validateListQuery,
-} from '@/shared/list-query.js';
-import { listSearch } from '@/shared/list-search.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { auditPolicies } from './inventory.audit.js';
 import * as inventory from './inventory.service.js';
 
 const router = Router();
-const read = [authRequired, requirePermission('inventory:read')];
+const read = [authRequired, requireAbility('read', 'Inventory')];
 router.get(
   '/admin/inventory',
   ...read,
@@ -97,7 +98,7 @@ for (const [path, kind] of [
   router.post(
     `/admin/inventory/${path}`,
     authRequired,
-    requirePermission('inventory:write'),
+    requireAbility('write', 'Inventory'),
     apiHandler(async (req) => {
       const body = requestBody(req);
       const variantId = body.text('variantId', 36);
@@ -116,7 +117,7 @@ for (const [path, kind] of [
 router.get(
   '/admin/inventory/reconciliation',
   authRequired,
-  requirePermission('inventory:read'),
+  requireAbility('read', 'Inventory'),
   apiHandler(async () => inventory.reconcileInventory()),
 );
 export default applyAuditPolicies(router, auditPolicies);

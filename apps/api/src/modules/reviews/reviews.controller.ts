@@ -1,9 +1,8 @@
+import type { ListLocals } from '@p4/server-core';
+import { requestBody, Unauthorized } from '@p4/server-core';
 import type { ReviewListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { requestBody } from '@/shared/http-input.js';
-import type { ListLocals } from '@/shared/list-query.js';
-import { Unauthorized } from '@/utils/errors/index.js';
 import * as reviewsService from './reviews.service.js';
 
 export async function listByProduct(

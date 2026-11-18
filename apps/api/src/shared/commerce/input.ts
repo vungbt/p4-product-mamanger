@@ -1,5 +1,5 @@
+import { InputValidError } from '@p4/server-core';
 import type { CartLineInput } from '@p4/shared';
-import { InputValidError } from '@/utils/errors/index.js';
 
 export function cartLines(value: unknown): CartLineInput[] {
   const invalid = (): never => {

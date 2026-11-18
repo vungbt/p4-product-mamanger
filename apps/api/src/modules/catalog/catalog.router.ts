@@ -1,29 +1,34 @@
 import { randomUUID } from 'node:crypto';
-import type { InventoryListQuery, ListQuery, ProductListQuery } from '@p4/shared';
+import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  NotFound,
+  queryText,
+  requestBody,
+  routeId,
+  searchPattern,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
+import type { AdminProductListQuery, InventoryListQuery, ListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import { listInventory } from '@/modules/inventory/inventory.service.js';
 import { listProducts } from '@/modules/products/products.service.js';
-import { validateProductsListQuery } from '@/modules/products/products.validation.js';
+import { validateAdminProductsListQuery } from '@/modules/products/products.validation.js';
 import { SizeGuideModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { currentUser, requestBody, routeId, uuidRouteId } from '@/shared/http-input.js';
-import { searchPattern } from '@/shared/list-filters.js';
-import { queryText, validateListQuery } from '@/shared/list-query.js';
-import { NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './catalog.audit.js';
 import * as catalog from './catalog.service.js';
 
 const router = Router();
-const read = [authRequired, requirePermission('catalog:read')];
-const write = [authRequired, requirePermission('catalog:write')];
+const read = [authRequired, requireAbility('read', 'Catalog')];
+const write = [authRequired, requireAbility('write', 'Catalog')];
 
 export const validateVariantList = validateListQuery({
   sortFields: ['sku', 'price', 'onHand', 'reserved', 'createdAt'] satisfies NonNullable<
@@ -45,8 +50,8 @@ export const validateVariantList = validateListQuery({
 router.get(
   '/admin/products',
   ...read,
-  validateProductsListQuery,
-  listHandler(async (_req, query: ProductListQuery) => listProducts(query, true)),
+  validateAdminProductsListQuery,
+  listHandler(async (_req, query: AdminProductListQuery) => listProducts(query, true)),
 );
 router.get(
   '/admin/products/:id',

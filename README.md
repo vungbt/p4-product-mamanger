@@ -18,7 +18,7 @@ p4-product-manager/
 │   ├── blocks/       ← 18 block nghiệp vụ P4 (@p4/blocks), dùng kit npm
 │   ├── api-sdk/      ← SDK TypeScript sinh từ OpenAPI (@p4/api-sdk)
 │   ├── auth/         ← AuthProvider / useAuth (@p4/auth)
-│   └── api-client/   ← Axios + TanStack Query (@p4/api-client)
+│   └── api-client/   ← Typed SDK session + TanStack Query (@p4/api-client)
 ├── tsconfig.base.json
 ├── pnpm-workspace.yaml
 └── turbo.json
@@ -136,7 +136,7 @@ Page được tổ chức theo feature: `modules/{portal}/{feature}/page.tsx`. C
 
 ## Thứ tự làm (web)
 
-Làm theo [62 task Admin + Storefront](documents/frontend/README.md), mỗi task một file; STT thực hiện đã tính phụ thuộc và xen kẽ hai portal.
+Làm theo [62 task Admin + Storefront](documents/p4/frontend/README.md), mỗi task một file; STT thực hiện đã tính phụ thuộc và xen kẽ hai portal.
 
 1. Types/constants + đọc API README
 2. `@p4/api-client` + `use-auth`
@@ -172,14 +172,17 @@ Requires Node.js >= 22.12 và React 19. Chạy `pnpm install` để cài depende
 - Storybook block P4: `pnpm storybook` → http://localhost:6006 (54 stories); build tĩnh bằng `pnpm build:storybook`.
 - Web import `@p4/blocks/styles.css` để Tailwind quét class của block và đăng ký `blockResources` vào namespace `blocks` của i18next.
 
-## Task frontend
+## Tài liệu theo dự án
 
-Thứ tự triển khai Admin và Storefront: [62 task riêng](documents/frontend/README.md).
+[Mục lục tài liệu](documents/README.md) tách theo dự án:
+
+- **P4:** thứ tự triển khai Admin và Storefront — [62 task riêng](documents/p4/frontend/README.md).
+- **Stay (quản lý nhà trọ):** [backlog 29 task](documents/stay/README.md), [quy tắc tính tiền](documents/stay/rules.md), [mô hình dữ liệu](documents/stay/data-model.md).
 
 ## SDK, auth và audit
 
 - SDK build sẵn: [@p4/api-sdk](libs/api-sdk/README.md), contract sinh từ OpenAPI;
-  màn danh mục đã sử dụng client này. `@p4/api-client` giữ TanStack Query và các service cũ.
+  mọi request của web đi qua client này (`getApiSdk()`); `@p4/api-client` chỉ giữ session và TanStack Query.
 - Auth dùng Better Auth; migration giữ user ID và mật khẩu bcrypt, thu hồi phiên cũ
   để đăng nhập lại. Token chỉ ở memory, phiên browser dùng cookie HttpOnly.
 - Audit nghiệp vụ dùng command/transaction chung; mỗi route khai báo action cụ thể.

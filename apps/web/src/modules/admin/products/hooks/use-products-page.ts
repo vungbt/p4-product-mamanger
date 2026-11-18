@@ -1,7 +1,6 @@
 import { type DataTableState, useDebouncedCallback } from '@itclabs/react-ui';
 import { useProducts } from '@p4/api-sdk/react';
 import { getErrorMessage, type ProductListQuery } from '@p4/api-sdk/shared';
-import type { Product } from '@p4/shared';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
@@ -41,11 +40,8 @@ const productQuerySchema = v.object({
   ),
   q: v.optional(v.fallback(v.pipe(v.string(), v.trim()), '')),
   categoryId: v.optional(v.fallback(v.pipe(v.string(), v.trim()), '')),
-  sortBy: v.fallback(v.optional(v.pipe(v.string(), v.trim(), v.picklist(sortFields))), undefined),
-  sortOrder: v.fallback(
-    v.optional(v.pipe(v.string(), v.trim(), v.toLowerCase(), v.picklist(['asc', 'desc']))),
-    undefined,
-  ),
+  sortBy: v.optional(v.fallback(v.picklist(sortFields), 'createdAt')),
+  sortOrder: v.optional(v.fallback(v.picklist(['asc', 'desc']), 'desc')),
 });
 
 export default function useProductsPage() {
@@ -149,7 +145,7 @@ export default function useProductsPage() {
   const changeColumnVisibility = (id: string, checked: boolean) =>
     setColumnVisibility((previous) => ({ ...previous, [id]: checked }));
 
-  const openDetails = (product: Product) => setViewing(product.id);
+  const openDetails = (id: string) => setViewing(id);
   const closeDetails = () => setViewing(null);
 
   return {

@@ -1,29 +1,33 @@
 import { randomUUID } from 'node:crypto';
+import {
+  applyAuditPolicies,
+  buildPaginationMeta,
+  currentUser,
+  InputValidError,
+  listSearch,
+  NotFound,
+  requestBody,
+  uuidRouteId,
+  validateListQuery,
+} from '@p4/server-core';
 import type { ListQuery } from '@p4/shared';
 import { Router } from 'express';
+import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
-import { requirePermission } from '@/middlewares/permission.middleware.js';
 import {
   ProductModel,
   ProductVariantModel,
   ShippingMethodModel,
 } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
-import { applyAuditPolicies } from '@/shared/audit/route-policy.js';
+import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { cartLines } from '@/shared/commerce/input.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { currentUser, requestBody, uuidRouteId } from '@/shared/http-input.js';
-import { validateListQuery } from '@/shared/list-query.js';
-import { listSearch } from '@/shared/list-search.js';
-import { InputValidError, NotFound } from '@/utils/errors/index.js';
-import { buildPaginationMeta } from '@/utils/pagination.js';
 import { auditPolicies } from './settings.audit.js';
 import * as service from './settings.service.js';
 
 const router = Router();
-const manage = [authRequired, requirePermission('settings:manage')];
+const manage = [authRequired, requireAbility('manage', 'Settings')];
 router.get(
   '/shop/config',
   apiHandler(async () => service.shopDto(await service.settings())),

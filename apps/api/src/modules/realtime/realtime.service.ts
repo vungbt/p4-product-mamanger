@@ -2,12 +2,12 @@ import { EventEmitter } from 'node:events';
 import type { Server as HttpServer } from 'node:http';
 import { createRealtimeServer } from '@p4/realtime/server';
 import { REALTIME_CHANNEL, type RealtimeEvent } from '@p4/realtime/shared';
+import { NotFound } from '@p4/server-core';
 import pg from 'pg';
 import { Op, type Transaction } from 'sequelize';
 import { env } from '@/configs/env.js';
 import { NotificationModel, RealtimeEventModel, sequelize } from '@/sequelize/models/index.js';
 import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { NotFound } from '@/utils/errors/index.js';
 import { findUserByToken } from '../auth/auth.service.js';
 
 export async function publishRealtime(

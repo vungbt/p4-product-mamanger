@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, Forbidden, InputValidError, NotFound } from '@p4/server-core';
 import type {
   CatalogProduct,
   ProductPublicationStatus,
@@ -15,13 +16,10 @@ import {
   ProductVariantModel,
   type SizeGuideModel,
 } from '@/sequelize/models/index.js';
-import { auditedTransaction } from '@/shared/audit/audited-command.js';
-import { recordAudit } from '@/shared/audit/record.js';
+import { auditedTransaction, inTransaction, recordAudit } from '@/shared/audit/audited-command.js';
 import { enqueueEvent } from '@/shared/commerce/persistence.js';
 import { assertTransition, assertVersion } from '@/shared/commerce/transitions.js';
-import { inTransaction } from '@/shared/transaction.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { Forbidden, InputValidError, NotFound } from '@/utils/errors/index.js';
+import { htmlText } from '@/utils/html-text.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { syncProductBalance, variantDto } from '../inventory/inventory.service.js';
 import { getProductById } from '../products/products.service.js';
@@ -36,22 +34,7 @@ export function normalizedSlug(value: string) {
 }
 
 export async function getCatalogProduct(id: string, admin = false): Promise<CatalogProduct> {
-  const row = await ProductModel.findByPk(id);
-  if (!row || (!admin && row.status !== 'active')) throw new NotFound('product_not_found');
-  return {
-    ...(await getProductById(id, admin)),
-    ...selectFields(row, [
-      'slug',
-      'status',
-      'brand',
-      'material',
-      'careInstructions',
-      'seoTitle',
-      'seoDescription',
-      'sizeGuideId',
-      'version',
-    ]),
-  };
+  return getProductById(id, admin);
 }
 
 export async function getProductBySlug(slug: string) {
@@ -79,7 +62,13 @@ export async function publishProduct(
         where: { productId: id, status: 'active' },
         transaction,
       });
-      if (!row.name.trim() || !row.slug || !row.description.trim() || !row.imageId || variants < 1)
+      if (
+        !row.name.trim() ||
+        !row.slug ||
+        !htmlText(row.description) ||
+        !row.imageId ||
+        variants < 1
+      )
         throw new BaseError('product_incomplete', 409, 'product_incomplete', {
           publication: ['Name, slug, description, cover and an active SKU are required.'],
         });

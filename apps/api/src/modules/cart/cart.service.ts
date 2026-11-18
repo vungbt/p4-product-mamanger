@@ -1,9 +1,11 @@
 import { randomUUID } from 'node:crypto';
+import { BaseError, NotFound } from '@p4/server-core';
 import type { Cart, CartLineInput, CartWarning, JsonValue } from '@p4/shared';
-import type { Transaction } from 'sequelize';
+import { Op, type Transaction } from 'sequelize';
 import {
   CartItemModel,
   CartModel,
+  FileModel,
   ProductModel,
   ProductVariantModel,
   sequelize,
@@ -11,8 +13,6 @@ import {
 import { auditedTransaction } from '@/shared/audit/audited-command.js';
 import { jsonValue, runIdempotent } from '@/shared/commerce/persistence.js';
 import { assertVersion } from '@/shared/commerce/transitions.js';
-import { BaseError } from '@/utils/errors/base-error.js';
-import { NotFound } from '@/utils/errors/index.js';
 import { settings } from '../settings/settings.service.js';
 
 export async function lockCart(userId: string, transaction: Transaction) {
@@ -38,12 +38,36 @@ export async function cartSnapshot(cart: CartModel, transaction?: Transaction): 
       ['id', 'ASC'],
     ],
   });
+  const variants = await ProductVariantModel.findAll({
+    where: { id: { [Op.in]: rows.map((row) => row.variantId) } },
+    transaction,
+  });
+  const products = await ProductModel.findAll({
+    where: { id: { [Op.in]: [...new Set(variants.map((variant) => variant.productId))] } },
+    transaction,
+  });
+  const imageIds = [
+    ...new Set([
+      ...variants.flatMap((variant) => variant.imageIds.slice(0, 1)),
+      ...products.flatMap((product) => (product.imageId ? [product.imageId] : [])),
+    ]),
+  ];
+  const images = await FileModel.findAll({ where: { id: { [Op.in]: imageIds } }, transaction });
+  const variantMap = new Map(variants.map((variant) => [variant.id, variant]));
+  const productMap = new Map(products.map((product) => [product.id, product]));
+  const imageMap = new Map(
+    images
+      .filter((image) => image.metadata?.private !== true)
+      .map((image) => [image.id, image.url]),
+  );
   const items = [];
   for (const row of rows) {
-    const variant = await ProductVariantModel.findByPk(row.variantId, { transaction });
-    const product = variant
-      ? await ProductModel.findByPk(variant.productId, { transaction })
-      : null;
+    const variant = variantMap.get(row.variantId);
+    const product = variant ? productMap.get(variant.productId) : undefined;
+    const imageUrl =
+      (variant?.imageIds[0] ? imageMap.get(variant.imageIds[0]) : undefined) ??
+      (product?.imageId ? imageMap.get(product.imageId) : undefined) ??
+      '';
     const warnings: CartWarning[] = [];
     const available = variant ? variant.onHand - variant.reserved : 0;
     if (variant?.status !== 'active' || product?.status !== 'active') warnings.push('unavailable');
@@ -54,6 +78,8 @@ export async function cartSnapshot(cart: CartModel, transaction?: Transaction): 
       variantId: row.variantId,
       productId: product?.id ?? null,
       productName: product?.name ?? '',
+      productSlug: product?.slug ?? null,
+      imageUrl,
       sku: variant?.sku ?? '',
       size: variant?.size ?? '',
       color: variant?.color ?? '',
