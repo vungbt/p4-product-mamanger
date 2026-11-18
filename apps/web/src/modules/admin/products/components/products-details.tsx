@@ -5,6 +5,7 @@ import { ApiSdkError, getErrorMessage } from '@p4/api-sdk/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { extractRichText } from '../helpers/rich-text';
+import ProductImage from './products-image';
 
 const statusTone: Record<string, TagTone> = {
   draft: 'neutral',
@@ -23,8 +24,11 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
   const variants = variantsQuery.data?.data ?? [];
   const updateProductPublication = useUpdateProductPublication();
 
-  const changeStatus = async (status: 'active' | 'inactive' | 'archived') => {
-    if (!products || typeof products.version !== 'number') return;
+  const changeStatus = async (status: 'active' | 'inactive' | 'archived'): Promise<boolean> => {
+    if (!products || typeof products.version !== 'number') {
+      toast.error(t('products.invalidProduct', 'Phiên bản sản phẩm không hợp lệ.'));
+      return false;
+    }
     try {
       await updateProductPublication.mutateAsync({
         id: products.id,
@@ -35,6 +39,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
       });
       toast.success(t('products.statusUpdated', 'Đã cập nhật trạng thái sản phẩm.'));
       void query.refetch();
+      return true;
     } catch (error: unknown) {
       if (error instanceof ApiSdkError && error.status === 409) {
         switch (error.code) {
@@ -46,7 +51,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
               ),
             );
             void query.refetch();
-            return;
+            return false;
 
           case 'product_incomplete':
             toast.error(
@@ -55,18 +60,19 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                 'Sản phẩm chưa đủ điều kiện xuất bản (cần có tên, slug, mô tả, ảnh đại diện và ít nhất một biến thể SKU đang hoạt động).',
               ),
             );
-            return;
+            return false;
 
           case 'invalid_state_transition':
             toast.error(
               t('products.invalidTransition', 'Không thể chuyển đổi sang trạng thái này.'),
             );
-            return;
+            return false;
         }
       }
       toast.error(
         getErrorMessage(error, t('products.statusUpdateFailed', 'Không thể đổi trạng thái.')),
       );
+      return false;
     }
   };
 
@@ -122,7 +128,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                     loading={updateProductPublication.isPending}
                     onClick={() => void changeStatus('inactive')}
                   >
-                    {t('products.deactivate', 'Tạm ngưng')}
+                    {t('products.status.inactive', 'Tạm ngưng')}
                   </Button>
                 )}
                 {products.status !== 'archived' && (
@@ -140,13 +146,10 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
 
             {products.imageUrl && (
               <div className="mb-4 flex items-center gap-4">
-                <img
+                <ProductImage
                   src={products.imageUrl}
                   alt={products.name}
                   className="size-20 rounded border border-line object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
                 />
                 <div>
                   <h3 className="font-semibold text-ui-base">{products.name}</h3>

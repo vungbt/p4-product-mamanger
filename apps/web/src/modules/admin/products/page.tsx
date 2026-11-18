@@ -9,35 +9,17 @@ import {
   Select,
   Tooltip,
 } from '@itclabs/react-ui';
-import { useQuery } from '@p4/api-client';
-import { useApiSdk } from '@p4/api-sdk/react';
-import { createCategoryApi } from '@p4/api-sdk/shared';
+import { useAllCategories } from '@p4/api-sdk/react';
 import type { Product } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
 import ProductDetails from './components/products-details';
+import ProductsImage from './components/products-image';
 import { extractRichText } from './helpers/rich-text';
 import useProductsPage from './hooks/use-products-page';
 
 export default function AdminProductsPage() {
   const { t } = useTranslation();
-  const sdk = useApiSdk();
-  const categoriesQuery = useQuery({
-    queryKey: ['categories', 'dropdown-options'],
-    queryFn: async ({ signal }) => {
-      const api = createCategoryApi(sdk);
-      const res1 = await api.list({ page: 1, pageSize: 100 }, signal);
-      const totalPages = res1.meta?.totalPages ?? 1;
-      if (totalPages <= 1) return res1.data;
-
-      const rest = await Promise.all(
-        Array.from({ length: totalPages - 1 }, (_, i) =>
-          api.list({ page: i + 2, pageSize: 100 }, signal),
-        ),
-      );
-      return [...res1.data, ...rest.flatMap((r) => r.data)];
-    },
-  });
-
+  const categoriesQuery = useAllCategories();
   const categoryOptions = (categoriesQuery.data ?? []).map((cat) => ({
     value: cat.id,
     label: cat.name,
@@ -71,16 +53,8 @@ export default function AdminProductsPage() {
       header: t('products.image', 'Ảnh'),
       enableSorting: false,
       cell: ({ row }) => {
-        const url = row.original.imageUrl;
-        return url ? (
-          <img
-            src={url}
-            alt={row.original.name}
-            className="size-10 rounded border border-line object-cover"
-            onError={(e) => {
-              (e.target as HTMLElement).style.display = 'none';
-            }}
-          />
+        return row.original.imageUrl ? (
+          <ProductsImage src={row.original.imageUrl} alt={row.original.name} />
         ) : (
           <span className="text-ui-xs text-muted">{t('products.noImage', 'Không có ảnh')}</span>
         );

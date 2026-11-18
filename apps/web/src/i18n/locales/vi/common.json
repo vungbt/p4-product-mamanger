@@ -281,6 +281,13 @@
       "active": "Đang hoạt động",
       "inactive": "Tạm ngưng",
       "archived": "Đã lưu trữ"
-    }
+    },
+    "invalidProduct": "Phiên bản sản phẩm không hợp lệ.",
+    "archiveTitle": "Xác nhận lưu trữ sản phẩm",
+    "none": "Chưa phân loại",
+    "archive": "Lưu trữ",
+    "archiveConfirm": "Lưu trữ sản phẩm sẽ ẩn khỏi cửa hàng nhưng vẫn bảo toàn lịch sử đơn hàng cũ. Bạn có chắc chắn muốn lưu trữ?",
+    "skus": "Danh sách biến thể SKU",
+    "activate": "Kích hoạt"
   }
 }

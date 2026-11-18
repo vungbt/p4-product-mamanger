@@ -4,6 +4,7 @@ export {
   categoryKeys,
   categoryMutationOptions,
   categoryQueryOptions,
+  useAllCategories,
   useCategories,
   useCategory,
   useCreateCategory,

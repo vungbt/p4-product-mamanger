@@ -280,6 +280,15 @@
       "active": "Active",
       "inactive": "Inactive",
       "archived": "Archived"
-    }
+    },
+    "noDescription": "No description",
+    "invalidProduct": "Invalid product version.",
+    "archiveTitle": "Confirm product archive",
+    "none": "Uncategorized",
+    "archive": "Archive",
+    "archiveConfirm": "Archiving will hide this product from the storefront while preserving past order history. Are you sure you want to archive?",
+    "skus": "SKU variants list",
+    "activate": "Activate",
+    "deactivate": "Deactivate"
   }
 }

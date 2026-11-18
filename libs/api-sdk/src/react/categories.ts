@@ -20,6 +20,7 @@ export const categoryKeys = {
   list: (query?: CategoryListQuery) => key('categories', 'list', query ?? {}),
   details: () => key('categories', 'detail'),
   detail: (id: string) => key('categories', 'detail', id),
+  allList: () => key('categories', 'all-list'),
 };
 
 export function categoryQueryOptions(sdk: ApiSdk) {
@@ -30,6 +31,21 @@ export function categoryQueryOptions(sdk: ApiSdk) {
       queryOptions({
         queryKey: categoryKeys.list(query),
         queryFn: ({ signal }) => api.list(query, signal),
+      }),
+    all: () =>
+      queryOptions({
+        queryKey: categoryKeys.allList(),
+        queryFn: async ({ signal }) => {
+          const res1 = await api.list({ page: 1, pageSize: 100 }, signal);
+          const totalPages = res1.meta?.totalPages ?? 1;
+          if (totalPages <= 1) return res1.data;
+          const rest = await Promise.all(
+            Array.from({ length: totalPages - 1 }, (_, i) =>
+              api.list({ page: i + 2, pageSize: 100 }, signal),
+            ),
+          );
+          return [...res1.data, ...rest.flatMap((r) => r.data)];
+        },
       }),
     detail: (id: string) =>
       queryOptions({
@@ -82,4 +98,10 @@ export function useDeleteCategory() {
   const client = useQueryClient();
 
   return useMutation(categoryMutationOptions(sdk, client).remove());
+}
+
+export function useAllCategories() {
+  const sdk = useApiSdk();
+
+  return useQuery(categoryQueryOptions(sdk).all());
 }

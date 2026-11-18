@@ -22,7 +22,13 @@ export function extractRichText(value?: string | null): string {
 
       if (Array.isArray(n.children)) {
         const text = n.children.map(extractNode).join('');
-        if (n.type === 'paragraph' || n.type === 'heading' || n.type === 'listitem') {
+        if (
+          n.type === 'paragraph' ||
+          n.type === 'heading' ||
+          n.type === 'listitem' ||
+          n.type === 'quote' ||
+          n.type === 'code'
+        ) {
           return text ? `${text}\n` : '';
         }
         return text;
@@ -31,7 +37,7 @@ export function extractRichText(value?: string | null): string {
     };
 
     const result = extractNode(parsed.root).trim();
-    return result || trimmed;
+    return result;
   } catch {
     return trimmed;
   }

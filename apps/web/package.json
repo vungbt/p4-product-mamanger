@@ -13,13 +13,6 @@
   },
   "dependencies": {
     "@itclabs/react-ui": "0.10.0",
-    "@lexical/code": "^0.53.0",
-    "@lexical/headless": "^0.53.0",
-    "@lexical/html": "^0.53.0",
-    "@lexical/link": "^0.53.0",
-    "@lexical/list": "^0.53.0",
-    "@lexical/react": "^0.53.0",
-    "@lexical/rich-text": "^0.53.0",
     "@p4/api-client": "workspace:*",
     "@p4/api-sdk": "workspace:*",
     "@p4/auth": "workspace:*",
