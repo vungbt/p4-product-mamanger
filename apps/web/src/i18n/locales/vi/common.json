@@ -282,6 +282,16 @@
       "inactive": "Tạm ngưng",
       "archived": "Đã lưu trữ"
     },
+    "variantStatuses": {
+      "active": "Đang hoạt động",
+      "inactive": "Tạm ngưng"
+    },
+    "publishMissing": "Chưa đủ điều kiện kích hoạt. Còn thiếu: {{missing}}.",
+    "missingName": "tên sản phẩm",
+    "missingSlug": "slug",
+    "missingDescription": "mô tả",
+    "missingImage": "ảnh đại diện",
+    "missingActiveSku": "ít nhất 1 biến thể SKU đang hoạt động",
     "invalidProduct": "Phiên bản sản phẩm không hợp lệ.",
     "archiveTitle": "Xác nhận lưu trữ sản phẩm",
     "none": "Chưa phân loại",

@@ -1,13 +1,16 @@
 import {
   Alert,
+  AlertDialog,
   Button,
+  type ColumnDef,
+  DataTable,
   Dialog,
   Spinner,
   Tag,
   type TagTone,
+  Tooltip,
   useFormatters,
 } from '@itclabs/react-ui';
-import { RichTextView } from '@itclabs/react-ui/rich-text-view';
 import { toast } from '@itclabs/react-ui/toast';
 import { useProduct, useProductVariants, useUpdateProductPublication } from '@p4/api-sdk/react';
 import { ApiSdkError, getErrorMessage } from '@p4/api-sdk/shared';
@@ -30,24 +33,74 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
   const query = useProduct(id);
   const variantsQuery = useProductVariants(id);
 
-  const products = query.data?.data;
+  const product = query.data?.data;
   const variants = variantsQuery.data?.data ?? [];
   const updateProductPublication = useUpdateProductPublication();
 
+  const missingRequirements: string[] = [];
+  if (!product?.name?.trim()) missingRequirements.push(t('products.missingName', 'tên sản phẩm'));
+  if (!product?.slug?.trim()) missingRequirements.push(t('products.missingSlug', 'slug'));
+  if (!product?.description?.trim())
+    missingRequirements.push(t('products.missingDescription', 'mô tả'));
+  if (!product?.imageUrl?.trim())
+    missingRequirements.push(t('products.missingImage', 'ảnh đại diện'));
+  if (!variants.some((v) => v.status === 'active')) {
+    missingRequirements.push(
+      t('products.missingActiveSku', 'ít nhất 1 biến thể SKU đang hoạt động'),
+    );
+  }
+  const isPublishDisabled = missingRequirements.length > 0;
+
+  const variantColumns: ColumnDef<(typeof variants)[number], unknown>[] = [
+    {
+      id: 'sku',
+      header: t('products.sku', 'Mã SKU'),
+      cell: ({ row }) => <span className="font-mono font-medium">{row.original.sku}</span>,
+    },
+    {
+      id: 'color',
+      header: t('products.color', 'Màu sắc'),
+      cell: ({ row }) => row.original.color || '-',
+    },
+    {
+      id: 'size',
+      header: t('products.size', 'Kích cỡ'),
+      cell: ({ row }) => row.original.size || '-',
+    },
+    {
+      id: 'available',
+      header: t('products.available', 'Khả dụng'),
+      cell: ({ row }) => row.original.available,
+    },
+    {
+      id: 'price',
+      header: t('products.price', 'Giá bán'),
+      cell: ({ row }) => formatCurrency(row.original.price, 'VND'),
+    },
+    {
+      id: 'status',
+      header: t('products.status', 'Trạng thái'),
+      cell: ({ row }) => (
+        <Tag tone={row.original.status === 'active' ? 'success' : 'neutral'} size="sm">
+          {t(`products.variantStatuses.${row.original.status}`, row.original.status)}
+        </Tag>
+      ),
+    },
+  ];
+
   const changeStatus = async (status: ProductPublicationStatus): Promise<boolean> => {
-    if (!products) {
+    if (!product) {
       return false;
     }
     try {
       await updateProductPublication.mutateAsync({
-        id: products.id,
+        id: product.id,
         body: {
           status,
-          expectedVersion: products.version,
+          expectedVersion: product.version,
         },
       });
       toast.success(t('products.statusUpdated', 'Đã cập nhật trạng thái sản phẩm.'));
-      void query.refetch();
       return true;
     } catch (error: unknown) {
       if (error instanceof ApiSdkError && error.status === 409) {
@@ -107,7 +160,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
             {t('products.retry', 'Thử lại')}
           </Button>
         </div>
-      ) : products ? (
+      ) : product ? (
         <div className="grid gap-6">
           <div>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3">
@@ -115,22 +168,45 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                 <span className="text-ui-sm font-medium">
                   {t('products.status', 'Trạng thái')}:
                 </span>
-                <Tag tone={statusTone[products.status]} size="sm">
-                  {t(`products.statuses.${products.status}`, products.status)}
+                <Tag tone={statusTone[product.status]} size="sm">
+                  {t(`products.statuses.${product.status}`, product.status)}
                 </Tag>
               </div>
               <div className="flex items-center gap-1.5">
-                {products.status !== 'active' && products.status !== 'archived' && (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    loading={updateProductPublication.isPending}
-                    onClick={() => void changeStatus('active')}
-                  >
-                    {t('products.activate', 'Kích hoạt')}
-                  </Button>
-                )}
-                {products.status === 'active' && (
+                {product.status !== 'active' &&
+                  product.status !== 'archived' &&
+                  (isPublishDisabled ? (
+                    <Tooltip
+                      content={t(
+                        'products.publishMissing',
+                        'Chưa đủ điều kiện kích hoạt. Còn thiếu: {{missing}}.',
+                        {
+                          missing: missingRequirements.join(', '),
+                        },
+                      )}
+                    >
+                      <span className="inline-block cursor-not-allowed">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled
+                          loading={updateProductPublication.isPending}
+                        >
+                          {t('products.activate', 'Kích hoạt')}
+                        </Button>
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      loading={updateProductPublication.isPending}
+                      onClick={() => void changeStatus('active')}
+                    >
+                      {t('products.activate', 'Kích hoạt')}
+                    </Button>
+                  ))}
+                {product.status === 'active' && (
                   <Button
                     size="sm"
                     variant="secondary"
@@ -140,7 +216,7 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
                     {t('products.statuses.inactive', 'Tạm ngưng')}
                   </Button>
                 )}
-                {products.status !== 'archived' && (
+                {product.status !== 'archived' && (
                   <Button
                     size="sm"
                     variant="danger"
@@ -153,74 +229,70 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
               </div>
             </div>
 
-            {products.imageUrl && (
-              <div className="mb-4 flex items-center gap-4">
-                <ProductImage
-                  src={products.imageUrl}
-                  alt={products.name}
-                  className="size-20 rounded border border-line object-cover"
-                />
-                <div>
-                  <h3 className="font-semibold text-ui-base">{products.name}</h3>
-                  <p className="font-mono text-ui-xs text-muted">{products.slug}</p>
-                </div>
+            <div className="mb-4 flex items-center gap-4">
+              <ProductImage
+                src={product.imageUrl}
+                alt={product.name}
+                className="size-20 rounded border border-line object-cover"
+                fallbackClassName="flex size-20 items-center justify-center rounded border border-line bg-muted/10 text-center text-ui-xs text-muted"
+              />
+              <div>
+                <h3 className="font-semibold text-ui-base">{product.name}</h3>
+                <p className="font-mono text-ui-xs text-muted">{product.slug}</p>
               </div>
-            )}
+            </div>
 
             <dl className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.name', 'Tên sản phẩm')}</dt>
-                <dd className="font-medium">{products.name}</dd>
+                <dd className="font-medium">{product.name}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.slug', 'Đường dẫn')}</dt>
-                <dd className="font-mono text-ui-sm">{products.slug || '-'}</dd>
+                <dd className="font-mono text-ui-sm">{product.slug || '-'}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.price', 'Giá bán')}</dt>
-                <dd>{formatCurrency(products.price, 'VND')}</dd>
+                <dd>{formatCurrency(product.price, 'VND')}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.stock', 'Số lượng tồn kho')}</dt>
-                <dd>{products.stock}</dd>
+                <dd>{product.stock}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.brand', 'Thương hiệu')}</dt>
-                <dd>{products.brand || '-'}</dd>
+                <dd>{product.brand || '-'}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.material', 'Chất liệu')}</dt>
-                <dd>{products.material || '-'}</dd>
+                <dd>{product.material || '-'}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.category', 'Danh mục')}</dt>
-                <dd>{products.category?.name || t('products.none', 'Chưa phân loại')}</dd>
+                <dd>{product.category?.name || t('products.none', 'Chưa phân loại')}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">{t('products.status', 'Trạng thái')}</dt>
-                <dd>{products.status}</dd>
+                <dd>{product.status}</dd>
               </div>
               <div>
                 <dt className="text-ui-sm text-muted">
                   {t('products.version', 'Phiên bản (version)')}
                 </dt>
-                <dd>v{products.version}</dd>
+                <dd>v{product.version}</dd>
               </div>
-              {products.careInstructions && (
+              {product.careInstructions && (
                 <div className="sm:col-span-2">
                   <dt className="text-ui-sm text-muted">
                     {t('products.careInstructions', 'Hướng dẫn bảo quản')}
                   </dt>
-                  <dd>{products.careInstructions}</dd>
+                  <dd>{product.careInstructions}</dd>
                 </div>
               )}
               <div className="sm:col-span-2">
                 <dt className="text-ui-sm text-muted">{t('products.description', 'Mô tả')}</dt>
-                <dd>
-                  <RichTextView
-                    html={products.description ?? ''}
-                    emptyFallback={t('products.noDescription', 'Chưa có mô tả.')}
-                  />
+                <dd className="whitespace-pre-line text-ui-sm">
+                  {product.description || t('products.noDescription', 'Chưa có mô tả.')}
                 </dd>
               </div>
             </dl>
@@ -231,99 +303,51 @@ export default function ProductDetails({ id, onClose }: { id: string; onClose: (
               {t('products.skus', 'Danh sách biến thể SKU')}
               {!variantsQuery.isPending && !variantsQuery.isError ? ` (${variants.length})` : ''}
             </h4>
-            {variantsQuery.isPending ? (
-              <Spinner label={t('products.loadingSkus', 'Đang tải SKU...')} />
-            ) : variantsQuery.isError ? (
-              <div className="grid gap-2">
-                <Alert tone="danger">
-                  {getErrorMessage(
-                    variantsQuery.error,
-                    t('products.loadSkusFailed', 'Không thể tải danh sách biến thể SKU.'),
-                  )}
-                </Alert>
-                <div>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => void variantsQuery.refetch()}
-                  >
-                    {t('products.retry', 'Thử lại')}
-                  </Button>
-                </div>
-              </div>
-            ) : variants.length === 0 ? (
-              <p className="text-ui-sm text-muted">
-                {t('products.noVariants', 'Chưa có biến thể SKU nào.')}
-              </p>
-            ) : (
-              <div className="overflow-x-auto rounded border border-line">
-                <table className="w-full text-left text-ui-sm">
-                  <thead className="border-b border-line bg-table-header text-ink">
-                    <tr>
-                      <th className="p-2 font-medium">{t('products.sku', 'Mã SKU')}</th>
-                      <th className="p-2 font-medium">{t('products.color', 'Màu sắc')}</th>
-                      <th className="p-2 font-medium">{t('products.size', 'Kích cỡ')}</th>
-                      <th className="p-2 font-medium">{t('products.available', 'Khả dụng')}</th>
-                      <th className="p-2 font-medium">{t('products.price', 'Giá bán')}</th>
-                      <th className="p-2 font-medium">{t('products.status', 'Trạng thái')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {variants.map((v) => (
-                      <tr key={v.id} className="border-line last:border-b-0 hover:bg-hover">
-                        <td className="p-2 font-mono font-medium">{v.sku}</td>
-                        <td className="p-2">{v.color || '-'}</td>
-                        <td className="p-2">{v.size || '-'}</td>
-                        <td className="p-2">{v.available}</td>
-                        <td className="p-2">{formatCurrency(v.price, 'VND')}</td>
-                        <td className="p-2">
-                          <Tag tone={v.status === 'active' ? 'success' : 'neutral'} size="sm">
-                            {v.status}
-                          </Tag>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <DataTable
+              mode="client"
+              pagination={false}
+              caption={t('products.skus', 'Danh sách biến thể SKU')}
+              rows={variants}
+              columns={variantColumns}
+              rowId={(row) => row.id}
+              loading={variantsQuery.isPending}
+              error={
+                variantsQuery.isError
+                  ? getErrorMessage(
+                      variantsQuery.error,
+                      t('products.loadSkusFailed', 'Không thể tải danh sách biến thể SKU.'),
+                    )
+                  : undefined
+              }
+              onRetry={() => void variantsQuery.refetch()}
+              emptyText={t('products.noVariants', 'Chưa có biến thể SKU nào.')}
+            />
           </div>
         </div>
       ) : null}
 
-      {archiveConfirmOpen && (
-        <Dialog
-          open
-          onOpenChange={(open) => {
-            if (!open) setArchiveConfirmOpen(false);
-          }}
-          title={t('products.archiveTitle', 'Xác nhận lưu trữ sản phẩm')}
-          description={t(
-            'products.archiveConfirm',
-            'Lưu trữ sản phẩm sẽ ẩn khỏi cửa hàng nhưng vẫn bảo toàn lịch sử đơn hàng cũ. Bạn có chắc chắn muốn lưu trữ?',
-          )}
-          actions={[
-            {
-              id: 'cancel',
-              label: t('products.cancel', 'Hủy'),
-              variant: 'secondary',
-              onClick: () => setArchiveConfirmOpen(false),
-            },
-            {
-              id: 'archive',
-              label: t('products.archive', 'Lưu trữ'),
-              variant: 'danger',
-              loading: updateProductPublication.isPending,
-              onClick: async () => {
-                const ok = await changeStatus('archived');
-                if (ok) {
-                  setArchiveConfirmOpen(false);
-                }
-              },
-            },
-          ]}
-        />
-      )}
+      <AlertDialog
+        open={archiveConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open) setArchiveConfirmOpen(false);
+        }}
+        title={t('products.archiveTitle', 'Xác nhận lưu trữ sản phẩm')}
+        description={t(
+          'products.archiveConfirm',
+          'Lưu trữ sản phẩm sẽ ẩn khỏi cửa hàng nhưng vẫn bảo toàn lịch sử đơn hàng cũ. Bạn có chắc chắn muốn lưu trữ?',
+        )}
+        confirmLabel={t('products.archive', 'Lưu trữ')}
+        cancelLabel={t('products.cancel', 'Hủy')}
+        confirmVariant="danger"
+        confirmLoading={updateProductPublication.isPending}
+        closeOnConfirm={false}
+        onConfirm={async () => {
+          const ok = await changeStatus('archived');
+          if (ok) {
+            setArchiveConfirmOpen(false);
+          }
+        }}
+      />
     </Dialog>
   );
 }

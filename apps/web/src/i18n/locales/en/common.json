@@ -281,6 +281,16 @@
       "inactive": "Inactive",
       "archived": "Archived"
     },
+    "variantStatuses": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "publishMissing": "Cannot activate product yet. Missing: {{missing}}.",
+    "missingName": "product name",
+    "missingSlug": "slug",
+    "missingDescription": "description",
+    "missingImage": "cover image",
+    "missingActiveSku": "at least 1 active SKU",
     "noDescription": "No description",
     "invalidProduct": "Invalid product version.",
     "archiveTitle": "Confirm product archive",
