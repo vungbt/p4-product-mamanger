@@ -9,7 +9,7 @@
     "./styles.css": "./styles.css"
   },
   "peerDependencies": {
-    "@itclabs/react-ui": "0.13.0",
+    "@itclabs/react-ui": "0.24.1",
     "i18next": "catalog:",
     "react": "catalog:react-peer",
     "react-dom": "catalog:react-peer",
@@ -19,7 +19,7 @@
     "date-fns": "catalog:"
   },
   "devDependencies": {
-    "@itclabs/react-ui": "0.13.0",
+    "@itclabs/react-ui": "0.24.1",
     "@storybook/addon-a11y": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/react-vite": "catalog:",

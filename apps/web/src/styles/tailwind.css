@@ -1,4 +1,6 @@
 @import "@itclabs/react-ui/theme/styles.css";
+/* The kit defaults to system fonts; P4 keeps Be Vietnam Pro (weights 400–700). */
+@import "@itclabs/react-ui/theme/fonts.css";
 /* Product/checkout blocks use font-extrabold (800), an optional kit font entry. */
 @import "@itclabs/react-ui/theme/fonts-800.css";
 @import "./p4-theme.css";
