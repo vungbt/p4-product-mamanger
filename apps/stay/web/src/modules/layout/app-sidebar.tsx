@@ -1,9 +1,7 @@
-import { Sidebar, type SidebarEntry } from '@itclabs/react-ui';
+import type { SidebarEntry, SidebarProps } from '@itclabs/react-ui';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
-import { BRAND } from '@/brand';
 import { usePendingRequestCount } from '@/libraries/use-pending-requests';
-import { ROUTES } from '@/routing/route-configs';
 import { useMenuRoutes } from '@/routing/use-routes';
 
 /**
@@ -16,8 +14,8 @@ const MENU_GROUPS = [
   { id: 'management', routes: ['maintenance', 'expenses', 'reports', 'audit', 'settings'] },
 ] as const;
 
-/** Desktop navigation (lg and up); mobile uses `BottomNav`. */
-export default function AppSidebar() {
+/** Desktop navigation (lg and up); mobile uses `BottomNav`, so the drawer trigger stays off. */
+export function useAppSidebar(): SidebarProps {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const routes = useMenuRoutes();
@@ -55,23 +53,14 @@ export default function AppSidebar() {
     }),
   ];
 
-  return (
-    <Sidebar
-      data-testid="app-sidebar"
-      collapseToggle="none"
-      itemVariant="indicator"
-      groupLabel="caps"
-      groupDividers
-      header={{
-        // The kit draws the rounded accent square; the logo (with its own background) fills it.
-        logo: <img src={BRAND.logo} alt="" className="size-full" draggable={false} />,
-        title: BRAND.name,
-        subtitle: t('app.tagline'),
-        href: ROUTES.overview,
-      }}
-      items={items}
-      currentPath={pathname}
-      navigationLabel={t('nav.main')}
-    />
-  );
+  return {
+    'data-testid': 'app-sidebar',
+    collapseToggle: 'none',
+    mobileTrigger: false,
+    groupLabel: 'caps',
+    groupDividers: true,
+    items,
+    currentPath: pathname,
+    navigationLabel: t('nav.main'),
+  };
 }

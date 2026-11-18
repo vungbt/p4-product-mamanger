@@ -21,13 +21,6 @@
   }
 }
 
-@layer utilities {
-  /* Mobile uses the bottom navigation: drop the kit Sidebar's drawer trigger. */
-  .stay-shell > div:first-child {
-    display: none;
-  }
-}
-
 /* Keep page content clear of the fixed bottom navigation and the iOS home indicator. */
 @utility pb-bottom-nav {
   padding-bottom: calc(var(--spacing) * 24 + env(safe-area-inset-bottom));

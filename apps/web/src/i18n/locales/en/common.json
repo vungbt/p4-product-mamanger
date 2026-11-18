@@ -216,8 +216,6 @@
     "refresh": "Refresh list"
   },
   "adminDashboard": {
-    "greeting": "Hello, {{name}}",
-    "description": "Store revenue, orders and inventory.",
     "range": "Time range",
     "lastDays": "Last {{days}} days",
     "versusPrevious": "vs previous {{days}} days",
@@ -244,7 +242,18 @@
       "confirmed": "Confirmed",
       "processing": "Processing",
       "completed": "Completed",
-      "cancelled": "Cancelled"
-    }
+      "cancelled": "Cancelled",
+      "paid": "Paid",
+      "pending": "Pending",
+      "shipping": "Shipping"
+    },
+    "title": "Sales overview",
+    "recentOrders": "Recent orders",
+    "orderId": "Order",
+    "customer": "Customer",
+    "total": "Total",
+    "createdAt": "Created",
+    "statusColumn": "Status",
+    "noRecentOrders": "No orders yet"
   }
 }

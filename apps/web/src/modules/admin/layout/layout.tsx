@@ -1,23 +1,30 @@
-import { SidebarProvider, WorkspaceBody, WorkspaceMain, WorkspaceShell } from '@itclabs/react-ui';
-import { Outlet } from 'react-router-dom';
-import AdminHeader from './header';
-import AdminSidebar from './sidebar';
+import { DashboardShell } from '@itclabs/react-ui/templates';
+import { Outlet, useLocation } from 'react-router-dom';
+import { ROUTES } from '@/constants/constants';
+import { DashboardRangeSelect, DashboardTitle } from '../dashboard/dashboard-header';
+import AdminBreadcrumb from './breadcrumb';
+import { useAdminSidebar } from './sidebar';
+import AdminTopbar from './topbar';
+
 export default function AdminLayout() {
+  const { pathname } = useLocation();
+  const sidebar = useAdminSidebar();
+
+  const isDashboard = pathname === ROUTES.admin.dashboard;
+
   return (
-    <SidebarProvider>
-      <WorkspaceShell
-        variant="soft"
-        className="admin-shell w-full max-w-none"
-        data-portal="admin"
-        sidebar={<AdminSidebar />}
-      >
-        <WorkspaceBody>
-          <AdminHeader />
-          <WorkspaceMain className="w-full max-w-none px-4 py-6 sm:px-6 sm:py-6 lg:px-6">
-            <Outlet />
-          </WorkspaceMain>
-        </WorkspaceBody>
-      </WorkspaceShell>
-    </SidebarProvider>
+    <DashboardShell
+      variant="floating"
+      className="w-full max-w-none"
+      classNames={{ header: 'lg:px-10' }}
+      data-portal="admin"
+      sidebarToggle
+      topbar={<AdminTopbar />}
+      sidebar={sidebar}
+      header={isDashboard ? <DashboardTitle /> : <AdminBreadcrumb />}
+      headerActions={isDashboard ? <DashboardRangeSelect /> : undefined}
+    >
+      <Outlet />
+    </DashboardShell>
   );
 }

@@ -11,14 +11,3 @@
   --color-white: #fff;
   --color-black: #000;
 }
-
-@layer utilities {
-  /* Position the library's mobile drawer trigger beside the application header. */
-  .admin-shell > div:first-child {
-    position: fixed;
-    inset-block-start: calc(var(--spacing) * 5);
-    inset-inline-start: calc(var(--spacing) * 3);
-    z-index: var(--z-index-header);
-    padding: 0;
-  }
-}

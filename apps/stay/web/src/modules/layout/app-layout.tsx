@@ -1,15 +1,36 @@
-import { SidebarProvider, WorkspaceBody, WorkspaceMain, WorkspaceShell } from '@itclabs/react-ui';
+import { SidebarProvider } from '@itclabs/react-ui';
+import { DashboardShell } from '@itclabs/react-ui/templates';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 import { BuildingProvider } from '@/libraries/buildings/building-provider';
 import { PageMetaProvider } from '@/libraries/page-meta';
-import AppHeader from './app-header';
-import AppSidebar from './app-sidebar';
+import { AppBreadcrumb, AppTopbar } from './app-header';
+import { useAppSidebar } from './app-sidebar';
 import BottomNav from './bottom-nav';
 
 const MAIN_ID = 'main-content';
 
-/** C-02 shell: sidebar on desktop (lg+), bottom navigation on mobile. */
+function AppShell() {
+  const sidebar = useAppSidebar();
+
+  return (
+    <DashboardShell
+      variant="floating"
+      className="w-full max-w-none"
+      classNames={{ header: 'max-lg:hidden lg:px-10' }}
+      sidebarToggle
+      topbar={<AppTopbar />}
+      sidebar={sidebar}
+      header={<AppBreadcrumb />}
+    >
+      <div id={MAIN_ID} tabIndex={-1} className="pb-bottom-nav outline-none lg:pb-0">
+        <Outlet />
+      </div>
+    </DashboardShell>
+  );
+}
+
+/** C-02 shell: floating sidebar on desktop (lg+), bottom navigation on mobile. */
 export default function AppLayout() {
   const { t } = useTranslation();
 
@@ -22,24 +43,9 @@ export default function AppLayout() {
         >
           {t('app.skipToContent')}
         </a>
-        <WorkspaceShell
-          variant="floating"
-          className="stay-shell w-full max-w-none"
-          sidebar={<AppSidebar />}
-        >
-          <WorkspaceBody>
-            <PageMetaProvider>
-              <AppHeader />
-              <WorkspaceMain
-                id={MAIN_ID}
-                tabIndex={-1}
-                className="px-4 py-5 pb-bottom-nav outline-none sm:px-6 lg:px-8 lg:py-8"
-              >
-                <Outlet />
-              </WorkspaceMain>
-            </PageMetaProvider>
-          </WorkspaceBody>
-        </WorkspaceShell>
+        <PageMetaProvider>
+          <AppShell />
+        </PageMetaProvider>
         <BottomNav />
       </SidebarProvider>
     </BuildingProvider>

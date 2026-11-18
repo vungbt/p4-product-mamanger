@@ -216,8 +216,6 @@
     "refresh": "Tải lại danh sách"
   },
   "adminDashboard": {
-    "greeting": "Xin chào, {{name}}",
-    "description": "Doanh thu, đơn hàng và tồn kho của cửa hàng.",
     "range": "Khoảng thời gian",
     "lastDays": "{{days}} ngày gần nhất",
     "versusPrevious": "so với {{days}} ngày trước",
@@ -244,7 +242,18 @@
       "confirmed": "Đã xác nhận",
       "processing": "Đang xử lý",
       "completed": "Hoàn tất",
-      "cancelled": "Đã hủy"
-    }
+      "cancelled": "Đã hủy",
+      "paid": "Đã thanh toán",
+      "pending": "Chờ xử lý",
+      "shipping": "Đang giao"
+    },
+    "title": "Tổng quan bán hàng",
+    "recentOrders": "Đơn hàng gần đây",
+    "orderId": "Mã đơn",
+    "customer": "Khách hàng",
+    "total": "Tổng tiền",
+    "createdAt": "Ngày tạo",
+    "statusColumn": "Trạng thái",
+    "noRecentOrders": "Chưa có đơn hàng"
   }
 }
