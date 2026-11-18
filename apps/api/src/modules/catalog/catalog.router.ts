@@ -11,14 +11,14 @@ import {
   uuidRouteId,
   validateListQuery,
 } from '@p4/server-core';
-import type { InventoryListQuery, ListQuery, ProductListQuery } from '@p4/shared';
+import type { AdminProductListQuery, InventoryListQuery, ListQuery } from '@p4/shared';
 import { Router } from 'express';
 import { Op } from 'sequelize';
 import { requireAbility } from '@/middlewares/ability.middleware.js';
 import { authRequired } from '@/middlewares/auth.middleware.js';
 import { listInventory } from '@/modules/inventory/inventory.service.js';
 import { listProducts } from '@/modules/products/products.service.js';
-import { validateProductsListQuery } from '@/modules/products/products.validation.js';
+import { validateAdminProductsListQuery } from '@/modules/products/products.validation.js';
 import { SizeGuideModel } from '@/sequelize/models/index.js';
 import { apiHandler, listHandler } from '@/shared/api-handler.js';
 import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.js';
@@ -50,8 +50,8 @@ export const validateVariantList = validateListQuery({
 router.get(
   '/admin/products',
   ...read,
-  validateProductsListQuery,
-  listHandler(async (_req, query: ProductListQuery) => listProducts(query, true)),
+  validateAdminProductsListQuery,
+  listHandler(async (_req, query: AdminProductListQuery) => listProducts(query, true)),
 );
 router.get(
   '/admin/products/:id',

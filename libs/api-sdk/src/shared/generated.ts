@@ -14937,6 +14937,7 @@ export interface operations {
         size?: string;
         sortBy?: 'name' | 'price' | 'stock' | 'createdAt';
         sortOrder?: 'asc' | 'desc';
+        status?: 'active' | 'archived' | 'draft' | 'inactive';
       };
       header?: never;
       path?: never;
