@@ -214,5 +214,37 @@
     "generateSlug": "Tạo từ tên",
     "slugHint": "Tự tạo theo tên khi thêm mới. Bạn có thể chỉnh slug hoặc tạo lại từ tên.",
     "refresh": "Tải lại danh sách"
+  },
+  "adminDashboard": {
+    "greeting": "Xin chào, {{name}}",
+    "description": "Doanh thu, đơn hàng và tồn kho của cửa hàng.",
+    "range": "Khoảng thời gian",
+    "lastDays": "{{days}} ngày gần nhất",
+    "versusPrevious": "so với {{days}} ngày trước",
+    "netRevenue": "Doanh thu ròng",
+    "newOrders": "Đơn hàng mới",
+    "completionRate": "Tỉ lệ hoàn tất",
+    "completionHint": "Đơn đã hoàn tất trên tổng đơn mới",
+    "lowStock": "Sắp hết hàng",
+    "lowStockHint": "Biến thể còn từ 5 sản phẩm trở xuống",
+    "revenueChart": "Doanh thu theo ngày",
+    "orderStatus": "Trạng thái đơn hàng",
+    "topProducts": "Bán chạy nhất",
+    "topProductsHint": "Số lượng đã giao, trừ hàng trả lại",
+    "viewProducts": "Xem sản phẩm",
+    "unitsLeft": "Còn {{value}}",
+    "outOfStock": "Hết hàng",
+    "noLowStock": "Tồn kho đang ổn định",
+    "noOrders": "Chưa có đơn hàng trong khoảng này",
+    "noProducts": "Chưa có sản phẩm được giao trong khoảng này",
+    "loadError": "Không tải được số liệu dashboard",
+    "retry": "Thử lại",
+    "status": {
+      "pending_confirmation": "Chờ xác nhận",
+      "confirmed": "Đã xác nhận",
+      "processing": "Đang xử lý",
+      "completed": "Hoàn tất",
+      "cancelled": "Đã hủy"
+    }
   }
 }

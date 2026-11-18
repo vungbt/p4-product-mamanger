@@ -37,7 +37,7 @@ export default function AdminSidebar() {
   return (
     <Sidebar
       data-testid="admin-sidebar"
-      itemVariant="bar"
+      appearance="soft"
       header={{
         logo: <BrandLogo variant="mark-white" height={36} />,
         title: t('app.admin'),
