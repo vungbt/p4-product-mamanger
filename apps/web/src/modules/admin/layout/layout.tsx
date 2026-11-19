@@ -1,30 +1,45 @@
+import { IconButton } from '@itclabs/react-ui';
 import { DashboardShell } from '@itclabs/react-ui/templates';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation } from 'react-router-dom';
 import { ROUTES } from '@/constants/constants';
+import LanguageSwitcher from '@/libraries/language-switcher';
+import UserAccountMenu from '@/libraries/user-account-menu';
 import { DashboardRangeSelect, DashboardTitle } from '../dashboard/dashboard-header';
 import AdminBreadcrumb from './breadcrumb';
-import { useAdminSidebar } from './sidebar';
-import AdminTopbar from './topbar';
+import AdminPageSearch from './page-search';
+import { toPageLinks, useAdminMenu, useAdminSidebar } from './sidebar';
 
+/** Admin frame from the kit's "Sidebar search" dashboard template. */
 export default function AdminLayout() {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
-  const sidebar = useAdminSidebar();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const menu = useAdminMenu();
+  const sidebar = useAdminSidebar(menu, () => setSearchOpen(true));
 
   const isDashboard = pathname === ROUTES.admin.dashboard;
 
   return (
     <DashboardShell
-      variant="floating"
+      variant="classic"
       className="w-full max-w-none"
-      classNames={{ header: 'lg:px-10' }}
       data-portal="admin"
       sidebarToggle
-      topbar={<AdminTopbar />}
       sidebar={sidebar}
       header={isDashboard ? <DashboardTitle /> : <AdminBreadcrumb />}
-      headerActions={isDashboard ? <DashboardRangeSelect /> : undefined}
+      headerActions={
+        <>
+          {isDashboard ? <DashboardRangeSelect /> : null}
+          <LanguageSwitcher />
+          <IconButton variant="ghost" size="sm" icon="bell" label={t('common.notifications')} />
+          <UserAccountMenu portal="admin" />
+        </>
+      }
     >
       <Outlet />
+      <AdminPageSearch open={searchOpen} onOpenChange={setSearchOpen} pages={toPageLinks(menu)} />
     </DashboardShell>
   );
 }

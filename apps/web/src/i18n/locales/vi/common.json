@@ -255,5 +255,13 @@
     "createdAt": "Ngày tạo",
     "statusColumn": "Trạng thái",
     "noRecentOrders": "Chưa có đơn hàng"
+  },
+  "adminSearch": {
+    "trigger": "Tìm trang",
+    "title": "Đi tới trang",
+    "description": "Nhập tên trang để tìm.",
+    "label": "Tên trang",
+    "placeholder": "Tìm trang…",
+    "empty": "Không có trang phù hợp"
   }
 }
