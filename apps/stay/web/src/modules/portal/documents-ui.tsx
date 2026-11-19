@@ -42,7 +42,21 @@ export function DocumentStatusTag({ status }: { status: DocumentStatus }) {
 
   return (
     <Tag tone={STATUS_TONES[status]} size="sm">
-      {t(`status.${status}`)}
+      {(
+        {
+          draft: t('status.draft'),
+          owner_signed: t('status.owner_signed'),
+          sent: t('status.sent'),
+          viewed: t('status.viewed'),
+          signed_by_tenant: t('status.signed_by_tenant'),
+          completed: t('status.completed'),
+          rejected: t('status.rejected'),
+          cancelled: t('status.cancelled'),
+          completed_paper: t('status.completed_paper'),
+          superseded: t('status.superseded'),
+          expired: t('status.expired'),
+        } as Record<string, string>
+      )[status] ?? String(status)}
     </Tag>
   );
 }

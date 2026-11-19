@@ -74,6 +74,7 @@ const LINKS: SettingsLink[] = [
 /** Cài đặt hub (owner): links to the system settings screens the user may open. */
 export default function SettingsPage() {
   const { t } = useTranslation('settings');
+
   const ability = useAbility();
 
   const links = LINKS.filter((link) => canOpen(ability, link.ability));
@@ -94,9 +95,33 @@ export default function SettingsPage() {
                 <Icon name={link.icon} className="size-5" aria-hidden />
               </span>
               <span className="grid min-w-0 gap-1">
-                <span className="font-semibold text-ink">{t(`hub.links.${link.key}.title`)}</span>
+                <span className="font-semibold text-ink">
+                  {(
+                    {
+                      services: t('hub.links.services.title'),
+                      billing: t('hub.links.billing.title'),
+                      buildings: t('hub.links.buildings.title'),
+                      members: t('hub.links.members.title'),
+                      expenseCategories: t('hub.links.expenseCategories.title'),
+                      announcements: t('hub.links.announcements.title'),
+                      landlord: t('hub.links.landlord.title'),
+                      contractTemplates: t('hub.links.contractTemplates.title'),
+                    } as Record<string, string>
+                  )[link.key] ?? String(link.key)}
+                </span>
                 <span className="text-ui-sm text-muted">
-                  {t(`hub.links.${link.key}.description`)}
+                  {(
+                    {
+                      services: t('hub.links.services.description'),
+                      billing: t('hub.links.billing.description'),
+                      buildings: t('hub.links.buildings.description'),
+                      members: t('hub.links.members.description'),
+                      expenseCategories: t('hub.links.expenseCategories.description'),
+                      announcements: t('hub.links.announcements.description'),
+                      landlord: t('hub.links.landlord.description'),
+                      contractTemplates: t('hub.links.contractTemplates.description'),
+                    } as Record<string, string>
+                  )[link.key] ?? String(link.key)}
                 </span>
               </span>
             </Link>

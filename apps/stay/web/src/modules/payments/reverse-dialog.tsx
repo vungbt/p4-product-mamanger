@@ -9,7 +9,7 @@ import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/librarie
 import { FormError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
-import { Overlay } from '../invoices/invoice-dialogs';
+import { Overlay } from '@/modules/invoices/invoice-dialogs';
 import { PAYMENT_METHOD_LABELS, paymentErrorMessage } from './payment-ui';
 
 const schema = {
@@ -30,6 +30,7 @@ export function ReversePaymentDialog({
   onClose: () => void;
 }) {
   const reverse = useReversePayment();
+
   const [error, setError] = useState<string | null>(null);
 
   const form = useAppForm({

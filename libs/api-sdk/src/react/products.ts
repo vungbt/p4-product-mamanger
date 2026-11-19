@@ -21,6 +21,7 @@ import {
   getProductsBySlugSlugQueryOptions,
   getProductsIdQueryOptions,
   getProductsQueryOptions,
+  resourceInvalidationKeys,
 } from './resources.js';
 
 // Share operation keys with generated hooks, including separate admin/storefront scopes.
@@ -37,6 +38,7 @@ export const productKeys = {
   storefrontDetail: (id: string) => apiKeys.operation('get_api_products_id', { path: { id } }),
   bySlug: (slug: string) => apiKeys.operation('get_api_products_by_slug_slug', { path: { slug } }),
 };
+
 export function productQueryOptions(sdk: ApiSdk) {
   return {
     list: (query?: ProductListQuery) => getAdminProductsQueryOptions(sdk, { params: { query } }),
@@ -60,18 +62,21 @@ export function productQueryOptions(sdk: ApiSdk) {
       ),
   };
 }
+
 export function productMutationOptions(
   sdk: ApiSdk,
   client: QueryClient,
   settings?: ApiMutationSettings,
 ) {
   const api = createProductApi(sdk);
+
   const refresh = () =>
     Promise.all(
-      (settings?.invalidate ?? [apiKeys.all]).map((queryKey) =>
+      (settings?.invalidate ?? resourceInvalidationKeys.products ?? []).map((queryKey) =>
         client.invalidateQueries({ queryKey }),
       ),
     );
+
   return {
     create: () => mutationOptions({ mutationFn: api.create, retry: false, onSuccess: refresh }),
     update: () => mutationOptions({ mutationFn: api.update, retry: false, onSuccess: refresh }),
@@ -89,56 +94,71 @@ export function productMutationOptions(
       mutationOptions({ mutationFn: api.removeImage, retry: false, onSuccess: refresh }),
   };
 }
+
 export function useProducts(query?: ProductListQuery) {
   return useQuery(productQueryOptions(useApiSdk()).list(query));
 }
+
 export function useProduct(id: string) {
   return useQuery(productQueryOptions(useApiSdk()).detail(id));
 }
+
 export function useProductVariants(id: string) {
   return useQuery(productQueryOptions(useApiSdk()).variants(id));
 }
+
 export function useStorefrontProducts(query?: StorefrontProductListQuery) {
   return useQuery(productQueryOptions(useApiSdk()).storefrontList(query));
 }
+
 export function useStorefrontProduct(id: string) {
   return useQuery(productQueryOptions(useApiSdk()).storefrontDetail(id));
 }
+
 export function useProductBySlug(slug: string) {
   return useQuery(productQueryOptions(useApiSdk()).bySlug(slug));
 }
+
 export function useCreateProduct(settings?: ApiMutationSettings) {
   return useMutation(productMutationOptions(useApiSdk(), useQueryClient(), settings).create());
 }
+
 export function useUpdateProduct(settings?: ApiMutationSettings) {
   return useMutation(productMutationOptions(useApiSdk(), useQueryClient(), settings).update());
 }
+
 export function useDeleteProduct(settings?: ApiMutationSettings) {
   return useMutation(productMutationOptions(useApiSdk(), useQueryClient(), settings).remove());
 }
+
 export function useUpdateProductPublication(settings?: ApiMutationSettings) {
   return useMutation(
     productMutationOptions(useApiSdk(), useQueryClient(), settings).updatePublication(),
   );
 }
+
 export function useCreateProductVariant(settings?: ApiMutationSettings) {
   return useMutation(
     productMutationOptions(useApiSdk(), useQueryClient(), settings).createVariant(),
   );
 }
+
 export function useUpdateProductVariant(settings?: ApiMutationSettings) {
   return useMutation(
     productMutationOptions(useApiSdk(), useQueryClient(), settings).updateVariant(),
   );
 }
+
 export function useUpdateProductVariantImages(settings?: ApiMutationSettings) {
   return useMutation(
     productMutationOptions(useApiSdk(), useQueryClient(), settings).updateVariantImages(),
   );
 }
+
 export function useAddProductImage(settings?: ApiMutationSettings) {
   return useMutation(productMutationOptions(useApiSdk(), useQueryClient(), settings).addImage());
 }
+
 export function useRemoveProductImage(settings?: ApiMutationSettings) {
   return useMutation(productMutationOptions(useApiSdk(), useQueryClient(), settings).removeImage());
 }

@@ -26,7 +26,7 @@ export const validateRefreshBody = (req: Request, res: Response, next: NextFunct
 export const validateUpdateProfileBody = (req: Request, res: Response, next: NextFunction) =>
   validate({
     rules: {
-      imageStorageId: 'string',
+      avatarStorageId: 'string',
     },
   })(req, res, next);
 

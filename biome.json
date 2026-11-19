@@ -75,6 +75,26 @@
           }
         }
       }
+    },
+    {
+      "includes": ["apps/web/src/**", "apps/stay/web/src/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../*", "../**"],
+                    "message": "Use the @/ alias for imports outside the current folder."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

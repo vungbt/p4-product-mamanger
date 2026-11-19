@@ -28,8 +28,10 @@ Nhiều ảnh: \`POST /api/files/uploads/batch\` với \`purpose\`, \`names\` (1
 POST từng file tới URL tương ứng, rồi \`POST /api/files/uploads/batch/complete\` với \`ticketIds\`
 và \`Idempotency-Key\`. API trả 202/process, worker verify từng ảnh; theo dõi
 \`GET /api/processes/{id}\` và \`GET /api/processes/{id}/items\`.
-Chỉ gắn ảnh completed. Product nhận \`imageStorageId\`/\`imageStorageIds\` từ publicId khi tạo;
-thêm gallery dùng \`POST /api/products/{id}/images\`, xóa dùng endpoint ảnh riêng.
+Chỉ gắn ảnh completed. Product nhận \`thumbnailStorageId\`/\`imageStorageIds\` từ publicId khi tạo hoặc cập nhật (PATCH/PUT; gallery đầy đủ theo thứ tự, bỏ ảnh không có trong danh sách);
+thumbnailStorageId nhận upload product của actor hoặc file đã gắn với sản phẩm; null để xóa thumbnail. File thumbnail không lặp trong gallery.
+Response có thumbnailUrl (fallback ảnh gallery đầu tiên khi thiếu thumbnail), thumbnail { fileId, url, storageId } hoặc null và images[] có storageId.
+thêm gallery dùng \`POST /api/products/{id}/images\` với storageId, xóa dùng endpoint ảnh riêng. Profile/account dùng avatarStorageId.
 \`product\` cần quyền \`write:Catalog\`; \`blog\` cần \`write:Content\`; purpose support/return là private.
 Hooks API không tự gửi file tới storage hoặc tự thực thi toàn workflow batch.
 
@@ -388,6 +390,7 @@ export const OPERATIONS = {
   'POST /api/products': ['Tạo sản phẩm'],
   'GET /api/products/{id}': ['Chi tiết sản phẩm'],
   'PUT /api/products/{id}': ['Cập nhật sản phẩm'],
+  'PATCH /api/products/{id}': ['Cập nhật sản phẩm'],
   'DELETE /api/products/{id}': ['Xoá sản phẩm'],
   'GET /api/products/{id}/reviews': ['Danh sách đánh giá của sản phẩm'],
   'POST /api/products/{id}/reviews': ['Đánh giá sản phẩm (luồng cũ)'],
@@ -516,7 +519,7 @@ const MERCHANDISING_ONLY = {
   },
   banner: {
     title: { schema: { type: 'string', minLength: 1, maxLength: 200 }, required: true },
-    imageFileId: { schema: { type: 'string', minLength: 1, maxLength: 36 }, required: true },
+    thumbnailFileId: { schema: { type: 'string', minLength: 1, maxLength: 36 }, required: true },
     href: { schema: { type: 'string', minLength: 1, maxLength: 1000 }, required: true },
     placement: { schema: { type: 'string', enum: ['home', 'shop'] }, required: true },
   },
@@ -543,7 +546,7 @@ const MERCHANDISING_ONLY = {
 const MERCHANDISING_FIELDS = [
   'title',
   'productIds',
-  'imageFileId',
+  'thumbnailFileId',
   'href',
   'placement',
   'items',
@@ -607,7 +610,115 @@ const discrepancies = {
   responseFields: { discrepancies: arrayOf(object({ id: { type: 'string' } })) },
 };
 
+const variantProperties = {
+  sku: { type: 'string', minLength: 1, maxLength: 120 },
+  barcode: { type: ['string', 'null'], maxLength: 120 },
+  size: { type: 'string', minLength: 1, maxLength: 80 },
+  color: { type: 'string', minLength: 1, maxLength: 80 },
+  price: { type: 'integer', minimum: 0, maximum: 2147483647 },
+  status: { type: 'string', enum: ['active', 'inactive'] },
+  isDefault: { type: 'boolean' },
+  imageIds: { type: 'array', maxItems: 20, items: { type: 'string', format: 'uuid' } },
+  imageStorageIds: {
+    type: 'array',
+    maxItems: 20,
+    items: { type: 'string', minLength: 1, maxLength: 1024 },
+    description:
+      'Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached product images return 422 at the variant row path.',
+  },
+};
+const variantChanges = (createOnly = false) => ({
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    description:
+      'Atomic SKU diff. Delete deactivates (history and inventory retained). Stock is create-only. Sold identity and reservation rules apply. Exactly one active default is ensured.',
+    properties: {
+      create: {
+        type: 'array',
+        maxItems: 500,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            ...variantProperties,
+            stock: { type: 'integer', minimum: 0, maximum: 2147483647 },
+          },
+          required: ['sku', 'size', 'color', 'price'],
+        },
+      },
+      ...(!createOnly
+        ? {
+            update: {
+              type: 'array',
+              maxItems: 500,
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                properties: {
+                  ...variantProperties,
+                  id: { type: 'string', format: 'uuid' },
+                  expectedVersion: { type: 'integer', minimum: 1 },
+                },
+                required: ['id'],
+              },
+            },
+            delete: { type: 'array', maxItems: 500, items: { type: 'string', format: 'uuid' } },
+          }
+        : {}),
+    },
+  },
+});
+
 export const OVERRIDES = {
+  'POST /api/products': {
+    fields: { variants: variantChanges() },
+    errorResponses: { 422: { $ref: '#/components/responses/ValidationError' } },
+  },
+  'PUT /api/products/{id}': {
+    errorResponses: { 422: { $ref: '#/components/responses/ValidationError' } },
+    fields: {
+      variants: variantChanges(),
+      imageStorageIds: {
+        schema: {
+          type: 'array',
+          items: { type: 'string' },
+          maxItems: 20,
+          description:
+            'Complete ordered gallery excluding the thumbnail. Omission preserves it; an empty list detaches all images. Existing product files need no upload ticket; new files require an owned completed product upload.',
+        },
+      },
+      thumbnailStorageId: {
+        schema: {
+          type: ['string', 'null'],
+          description:
+            'Owned product upload or storage ID already attached to this product. Null clears the thumbnail; omission preserves it. The thumbnail is excluded from the gallery.',
+        },
+      },
+    },
+  },
+  'PATCH /api/products/{id}': {
+    errorResponses: { 422: { $ref: '#/components/responses/ValidationError' } },
+    fields: {
+      variants: variantChanges(),
+      imageStorageIds: {
+        schema: {
+          type: 'array',
+          items: { type: 'string' },
+          maxItems: 20,
+          description:
+            'Complete ordered gallery excluding the thumbnail. Omission preserves it; an empty list detaches all images. Existing product files need no upload ticket; new files require an owned completed product upload.',
+        },
+      },
+      thumbnailStorageId: {
+        schema: {
+          type: ['string', 'null'],
+          description:
+            'Owned product upload or storage ID already attached to this product. Null clears the thumbnail; omission preserves it. The thumbnail is excluded from the gallery.',
+        },
+      },
+    },
+  },
   'GET /api/products/facets': {
     responseFields: {
       sizes: arrayOf(facetCount),

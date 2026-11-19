@@ -14,7 +14,7 @@ import {
 } from '@stay/shared';
 import { useState } from 'react';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
-import { Overlay } from '../invoice-dialogs';
+import { Overlay } from '@/modules/invoices/invoice-dialogs';
 import { InvoiceCard } from './invoice-card';
 
 /** Same limit as the API's transfer content (VietQR additional data). */
@@ -118,8 +118,11 @@ export function toPublicPreview({
 
 function PreviewContent({ invoiceId }: { invoiceId: string }) {
   const invoice = useInvoice(invoiceId);
+
   const building = useBuilding(invoice.data?.buildingId ?? '');
+
   const contract = useContract(invoice.data?.contractId ?? '');
+
   const settings = useStaySettings();
 
   if (invoice.isPending || (invoice.data && building.isPending)) return <LoadingRows rows={3} />;

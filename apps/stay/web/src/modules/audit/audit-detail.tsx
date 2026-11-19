@@ -77,6 +77,7 @@ function ChangesTable({ entry }: { entry: AuditEntry }) {
 
 function DetailBody({ id }: { id: string }) {
   const { t } = useTranslation();
+
   const detail = useAuditLog(id);
 
   if (detail.isPending) return <LoadingRows rows={3} />;
@@ -125,7 +126,33 @@ function DetailBody({ id }: { id: string }) {
         </Meta>
         <Meta label="Kết quả">
           <Tag tone={entry.outcome === 'success' ? 'success' : 'danger'} size="sm">
-            {t(`audit.${entry.outcome}`)}
+            {(
+              {
+                search: t('audit.search'),
+                actorId: t('audit.actorId'),
+                action: t('audit.action'),
+                resourceType: t('audit.resourceType'),
+                resourceId: t('audit.resourceId'),
+                from: t('audit.from'),
+                to: t('audit.to'),
+                apply: t('audit.apply'),
+                clear: t('audit.clear'),
+                sortBy: t('audit.sortBy'),
+                createdAt: t('audit.createdAt'),
+                oldest: t('audit.oldest'),
+                newest: t('audit.newest'),
+                empty: t('audit.empty'),
+                system: t('audit.system'),
+                success: t('audit.success'),
+                failure: t('audit.failure'),
+                details: t('audit.details'),
+                close: t('audit.close'),
+                pagination: t('audit.pagination'),
+                previous: t('audit.previous'),
+                next: t('audit.next'),
+                page: t('audit.page'),
+              } as Record<string, string>
+            )[entry.outcome] ?? String(entry.outcome)}
           </Tag>
         </Meta>
         <Meta label="Mã yêu cầu">

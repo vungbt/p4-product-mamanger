@@ -1,11 +1,12 @@
 import { type DataTableState, useDebouncedCallback } from '@itclabs/react-ui';
-import { useCategories, useProducts } from '@p4/api-sdk/react';
+import { useProducts } from '@p4/api-sdk/react';
 import { getErrorMessage, type ProductListQuery } from '@p4/api-sdk/shared';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import useQueryParam from '@/hooks/use-query-param';
-import { PRODUCT_STATUSES } from '../components/product-status';
+import { PRODUCT_STATUSES } from '@/modules/admin/products/components/product-status';
 
 const sortFields: NonNullable<ProductListQuery['sortBy']>[] = [
   'name',
@@ -13,8 +14,6 @@ const sortFields: NonNullable<ProductListQuery['sortBy']>[] = [
   'stock',
   'createdAt',
 ];
-
-const PAGE_SIZES = [10, 20, 50];
 
 const productQuerySchema = v.object({
   page: v.optional(
@@ -29,11 +28,11 @@ const productQuerySchema = v.object({
       v.pipe(
         v.string(),
         v.transform(Number),
-        v.check((value) => PAGE_SIZES.includes(value)),
+        v.check((value) => PAGE_SIZE_OPTIONS.some((size) => size === value)),
       ),
-      10,
+      DEFAULT_PAGE_SIZE,
     ),
-    '10',
+    String(DEFAULT_PAGE_SIZE),
   ),
   q: v.optional(v.fallback(v.pipe(v.string(), v.trim()), '')),
   status: v.fallback(v.optional(v.picklist(PRODUCT_STATUSES)), undefined),
@@ -52,6 +51,7 @@ export default function useProductsPage() {
   const globalFilter = params.q ?? '';
 
   const [columnVisibility, setColumnVisibility] = useState<DataTableState['columnVisibility']>({});
+
   const [search, setSearch] = useState(globalFilter);
 
   const state: DataTableState = {
@@ -73,11 +73,9 @@ export default function useProductsPage() {
     sortOrder,
   });
 
-  const categories = useCategories({ page: 1, pageSize: 100, sortBy: 'name', sortOrder: 'asc' });
-
   const applySearch = (value: string) => setQuery({ q: value, page: 1 }, { replace: true });
 
-  const debouncedSearch = useDebouncedCallback(applySearch, 300);
+  const debouncedSearch = useDebouncedCallback(applySearch, SEARCH_DEBOUNCE_MS);
 
   useEffect(() => {
     debouncedSearch.cancel();
@@ -153,7 +151,6 @@ export default function useProductsPage() {
     state,
     search,
     filters: { status, categoryId, availability },
-    categories: categories.data?.data ?? [],
     hasFilters,
     hasAppliedFilters,
     loading: query.isPending,

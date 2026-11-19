@@ -98,7 +98,7 @@ async function placeQuote(user: User, quoteId: string, transaction: Transaction)
           'sku',
           'size',
           'color',
-          'imageUrl',
+          'thumbnailUrl',
           'discountAmount',
           'lineTotal',
         ]),

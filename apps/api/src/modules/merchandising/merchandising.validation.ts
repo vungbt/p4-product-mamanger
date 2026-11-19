@@ -24,7 +24,7 @@ export function merchandisingInput(
     return {
       kind,
       title: body.text('title', 200),
-      imageFileId: body.text('imageFileId', 36),
+      thumbnailFileId: body.text('thumbnailFileId', 36),
       href,
       placement: body.enum('placement', ['home', 'shop']),
     };
@@ -32,6 +32,7 @@ export function merchandisingInput(
   if (kind === 'navigation') {
     let count = 0;
     const ids = new Set<string>();
+
     const nodes = (raw: unknown, depth: number): NavigationItem[] => {
       if (depth > 5 || !Array.isArray(raw) || raw.length > 30) return body.invalid('items');
       return raw.map((value: unknown): NavigationItem => {
@@ -65,6 +66,7 @@ export function merchandisingInput(
         };
       });
     };
+
     return { kind, items: nodes(body.data.items, 0) };
   }
   const raw: unknown = body.data.sections;

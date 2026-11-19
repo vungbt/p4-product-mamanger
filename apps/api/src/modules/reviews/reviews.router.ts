@@ -51,7 +51,7 @@ router.post(
       orderItemId: item.id,
       rating: body.integer('rating', 1, 5),
       comment: body.text('comment', 10000),
-      mediaIds: body.data.mediaIds === undefined ? [] : body.strings('mediaIds', 10, 36),
+      imageIds: body.data.imageIds === undefined ? [] : body.strings('imageIds', 10, 36),
     });
   }, 201),
 );

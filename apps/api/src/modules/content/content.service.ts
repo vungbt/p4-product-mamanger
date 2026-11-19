@@ -29,7 +29,7 @@ export function contentDto(row: ContentEntryModel): ContentEntry {
       'title',
       'excerpt',
       'body',
-      'coverFileId',
+      'thumbnailFileId',
       'taxonomyIds',
       'seoTitle',
       'seoDescription',
@@ -41,12 +41,13 @@ export function contentDto(row: ContentEntryModel): ContentEntry {
   };
 }
 /** Resolve published media in one query without exposing private upload metadata. */
+
 export async function withContentMedia<T extends ContentDraftInput>(items: T[]) {
   const ids = [
     ...new Set(
       items
         .flatMap((item) => [
-          item.coverFileId,
+          item.thumbnailFileId,
           ...item.body.flatMap((block) => (block.type === 'image' ? [block.fileId] : [])),
         ])
         .filter((id): id is string => Boolean(id)),
@@ -60,15 +61,15 @@ export async function withContentMedia<T extends ContentDraftInput>(items: T[]) 
     const itemIds = [
       ...new Set(
         [
-          item.coverFileId,
+          item.thumbnailFileId,
           ...item.body.flatMap((block) => (block.type === 'image' ? [block.fileId] : [])),
         ].filter((id): id is string => Boolean(id)),
       ),
     ];
     return {
       ...item,
-      coverUrl: item.coverFileId ? (urls.get(item.coverFileId) ?? '') : '',
-      media: itemIds.flatMap((id) => {
+      thumbnailUrl: item.thumbnailFileId ? (urls.get(item.thumbnailFileId) ?? '') : '',
+      images: itemIds.flatMap((id) => {
         const url = urls.get(id);
         return url ? [{ id, url }] : [];
       }),
@@ -82,9 +83,10 @@ async function revision(row: ContentEntryModel, actorId: string, transaction: Tr
     { transaction },
   );
 }
+
 async function validateMedia(input: ContentDraftInput, actorId: string, transaction: Transaction) {
   const ids = [
-    input.coverFileId,
+    input.thumbnailFileId,
     ...input.body.flatMap((block) => (block.type === 'image' ? [block.fileId] : [])),
   ].filter((id): id is string => id !== null);
   for (const id of ids) {
@@ -103,6 +105,7 @@ async function validateMedia(input: ContentDraftInput, actorId: string, transact
       throw new BaseError('invalid_taxonomy');
   }
 }
+
 export async function saveContent(
   actorId: string,
   kind: ContentKind,
@@ -160,6 +163,7 @@ export async function saveContent(
     return contentDto(row);
   });
 }
+
 export async function publishContent(
   actorId: string,
   id: string,
@@ -188,7 +192,7 @@ export async function publishContent(
         'title',
         'excerpt',
         'body',
-        'coverFileId',
+        'thumbnailFileId',
         'taxonomyIds',
         'seoTitle',
         'seoDescription',
@@ -219,6 +223,7 @@ export async function publishContent(
     return contentDto(row);
   });
 }
+
 export async function publicContent(kind: ContentKind, slug: string) {
   let row = await ContentEntryModel.findOne({
     where: { kind, 'publishedSnapshot.slug': slug, status: { [Op.ne]: 'archived' } },
@@ -243,6 +248,7 @@ export async function publicContent(kind: ContentKind, slug: string) {
   if (!published) throw new NotFound();
   return { ...published, redirect };
 }
+
 export async function publishScheduledContent() {
   const rows = await ContentEntryModel.findAll({
     where: { status: 'scheduled', scheduledAt: { [Op.lte]: new Date() } },

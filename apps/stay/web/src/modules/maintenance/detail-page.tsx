@@ -34,22 +34,31 @@ import { ScreenHeader } from '@/libraries/screen-header';
 
 export default function MaintenanceDetailPage() {
   const { id = '' } = useParams();
+
   const query = useMaintenanceDetail(id);
 
   if (query.isPending) return <LoadingRows />;
   if (query.isError) return <LoadError error={query.error} onRetry={() => void query.refetch()} />;
   if (!query.data) return null;
+
   return <JobDetail key={`${id}-${query.data.version}`} job={query.data} />;
 }
 
 function JobDetail({ job }: { job: StayMaintenance }) {
   const { t, i18n } = useTranslation('maintenance');
+
   const navigate = useNavigate();
+
   const { update } = useMaintenanceMutations();
+
   const canEdit = useCanOn('update', 'Maintenance', { buildingId: job.buildingId });
+
   const canExpense = useCanOn('create', 'Expense', { buildingId: job.buildingId });
+
   const canReadExpenses = useCanOn('manage', 'Expense', { buildingId: job.buildingId });
+
   const [expenseForm, setExpenseForm] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const next: Partial<Record<MaintenanceStatus, MaintenanceStatus[]>> = {
@@ -57,6 +66,7 @@ function JobDetail({ job }: { job: StayMaintenance }) {
     open: ['in_progress'],
     in_progress: ['done', 'cancelled'],
   };
+
   const date = (value: string) =>
     new Date(value).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'vi-VN');
 
@@ -73,7 +83,25 @@ function JobDetail({ job }: { job: StayMaintenance }) {
     <div className="grid min-w-0 gap-5">
       <ScreenHeader
         title={job.title}
-        description={`${job.roomCode ?? ''} · ${t(`sources.${job.source}`)} · ${t(`statuses.${job.status}`)}`}
+        description={`${job.roomCode ?? ''} · ${
+          (
+            {
+              owner: t('sources.owner'),
+              tenant: t('sources.tenant'),
+            } as Record<string, string>
+          )[job.source] ?? String(job.source)
+        } · ${
+          (
+            {
+              'new': t('statuses.new'),
+              open: t('statuses.open'),
+              in_progress: t('statuses.in_progress'),
+              done: t('statuses.done'),
+              cancelled: t('statuses.cancelled'),
+              rejected: t('statuses.rejected'),
+            } as Record<string, string>
+          )[job.status] ?? String(job.status)
+        }`}
         action={
           canEdit ? (
             <>
@@ -88,7 +116,16 @@ function JobDetail({ job }: { job: StayMaintenance }) {
                   disabled={update.isPending}
                   onClick={() => void transition(status)}
                 >
-                  {t(`statuses.${status}`)}
+                  {(
+                    {
+                      'new': t('statuses.new'),
+                      open: t('statuses.open'),
+                      in_progress: t('statuses.in_progress'),
+                      done: t('statuses.done'),
+                      cancelled: t('statuses.cancelled'),
+                      rejected: t('statuses.rejected'),
+                    } as Record<string, string>
+                  )[status] ?? String(status)}
                 </Button>
               ))}
             </>
@@ -99,7 +136,24 @@ function JobDetail({ job }: { job: StayMaintenance }) {
       <section className="grid gap-3 rounded-panel border border-line bg-surface p-4">
         <h2 className="break-words font-semibold">{job.title}</h2>
         <p>
-          {job.roomCode} · {t(`sources.${job.source}`)} · {t(`statuses.${job.status}`)}
+          {job.roomCode} ·{' '}
+          {(
+            {
+              owner: t('sources.owner'),
+              tenant: t('sources.tenant'),
+            } as Record<string, string>
+          )[job.source] ?? String(job.source)}{' '}
+          ·{' '}
+          {(
+            {
+              'new': t('statuses.new'),
+              open: t('statuses.open'),
+              in_progress: t('statuses.in_progress'),
+              done: t('statuses.done'),
+              cancelled: t('statuses.cancelled'),
+              rejected: t('statuses.rejected'),
+            } as Record<string, string>
+          )[job.status] ?? String(job.status)}
         </p>
         <p className="whitespace-pre-wrap break-words">{job.description}</p>
         <div className="flex flex-wrap gap-3">
@@ -126,7 +180,17 @@ function JobDetail({ job }: { job: StayMaintenance }) {
         <ol className="grid gap-2">
           {job.history.map((entry, index) => (
             <li key={`${entry.at}-${index}`}>
-              {date(entry.at)} · {t(`statuses.${entry.status}`)}
+              {date(entry.at)} ·{' '}
+              {(
+                {
+                  'new': t('statuses.new'),
+                  open: t('statuses.open'),
+                  in_progress: t('statuses.in_progress'),
+                  done: t('statuses.done'),
+                  cancelled: t('statuses.cancelled'),
+                  rejected: t('statuses.rejected'),
+                } as Record<string, string>
+              )[entry.status] ?? String(entry.status)}
             </li>
           ))}
         </ol>
@@ -184,8 +248,11 @@ const EXPENSE_FIELDS = ['amount', 'spentOn', 'categoryId', 'note'] as const;
 
 function MaintenanceExpenseForm({ job, onCancel }: { job: StayMaintenance; onCancel: () => void }) {
   const { t } = useTranslation('maintenance');
+
   const categories = useMaintenanceCategories();
+
   const { expense } = useMaintenanceMutations();
+
   const [error, setError] = useState<string | null>(null);
 
   const form = useAppForm({
@@ -281,7 +348,9 @@ function MaintenanceExpenseForm({ job, onCancel }: { job: StayMaintenance; onCan
 
 function ReplyForm({ job }: { job: StayMaintenance }) {
   const { t } = useTranslation('maintenance');
+
   const { update } = useMaintenanceMutations();
+
   const [error, setError] = useState<string | null>(null);
 
   const form = useAppForm({

@@ -4,6 +4,7 @@ import { useCreateMoveInInvoice, useInvoices } from '@stay/sdk/react';
 import type { StayContract } from '@stay/shared';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { CONTRACT_INVOICES_PAGE_SIZE } from '@/constants/list';
 import { useCanOn } from '@/libraries/ability';
 import { formatVnd } from '@/libraries/format';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
@@ -19,7 +20,7 @@ import {
 export function ContractInvoices({ contract }: { contract: StayContract }) {
   const query = useInvoices({
     contractId: contract.id,
-    pageSize: 100,
+    pageSize: CONTRACT_INVOICES_PAGE_SIZE,
     sortBy: 'createdAt',
     sortOrder: 'desc',
   });

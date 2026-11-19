@@ -31,7 +31,7 @@ export function createApiSdk(options: ApiSdkOptions) {
       return response;
     },
   });
-  return client;
+  return Object.assign(client, { baseUrl: options.baseUrl });
 }
 
 export type ApiSdk = ReturnType<typeof createApiSdk>;

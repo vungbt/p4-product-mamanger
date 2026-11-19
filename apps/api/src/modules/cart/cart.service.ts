@@ -49,7 +49,7 @@ export async function cartSnapshot(cart: CartModel, transaction?: Transaction): 
   const imageIds = [
     ...new Set([
       ...variants.flatMap((variant) => variant.imageIds.slice(0, 1)),
-      ...products.flatMap((product) => (product.imageId ? [product.imageId] : [])),
+      ...products.flatMap((product) => (product.thumbnailId ? [product.thumbnailId] : [])),
     ]),
   ];
   const images = await FileModel.findAll({ where: { id: { [Op.in]: imageIds } }, transaction });
@@ -64,9 +64,9 @@ export async function cartSnapshot(cart: CartModel, transaction?: Transaction): 
   for (const row of rows) {
     const variant = variantMap.get(row.variantId);
     const product = variant ? productMap.get(variant.productId) : undefined;
-    const imageUrl =
+    const thumbnailUrl =
       (variant?.imageIds[0] ? imageMap.get(variant.imageIds[0]) : undefined) ??
-      (product?.imageId ? imageMap.get(product.imageId) : undefined) ??
+      (product?.thumbnailId ? imageMap.get(product.thumbnailId) : undefined) ??
       '';
     const warnings: CartWarning[] = [];
     const available = variant ? variant.onHand - variant.reserved : 0;
@@ -79,7 +79,7 @@ export async function cartSnapshot(cart: CartModel, transaction?: Transaction): 
       productId: product?.id ?? null,
       productName: product?.name ?? '',
       productSlug: product?.slug ?? null,
-      imageUrl,
+      thumbnailUrl,
       sku: variant?.sku ?? '',
       size: variant?.size ?? '',
       color: variant?.color ?? '',

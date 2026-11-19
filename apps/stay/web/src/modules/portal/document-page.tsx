@@ -26,21 +26,32 @@ import { PortalQuery } from './portal-ui';
 
 function SigningDocument({ data }: { data: PortalDocument }) {
   const { t, i18n } = useTranslation('portalDocuments');
+
   const sign = usePortalSignDocument();
+
   const reject = usePortalRejectDocument();
+
   const [read, setRead] = useState(false);
+
   const [percent, setPercent] = useState(0);
+
   const [agree, setAgree] = useState(false);
+
   const [method, setMethod] = useState<'typed' | 'drawn'>('drawn');
+
   const [signature, setSignature] = useState<string | null>(null);
+
   const [rejecting, setRejecting] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+
   const content = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const element = content.current;
 
     if (!element) return;
+
     const update = () => {
       const remaining = element.scrollHeight - element.clientHeight;
       const progress =
@@ -49,6 +60,7 @@ function SigningDocument({ data }: { data: PortalDocument }) {
       setPercent(progress);
       if (element.scrollTop + element.clientHeight >= element.scrollHeight - 4) setRead(true);
     };
+
     const observer = new ResizeObserver(update);
 
     observer.observe(element);
@@ -90,6 +102,7 @@ function SigningDocument({ data }: { data: PortalDocument }) {
       }
     },
   });
+
   const rejection = useAppForm({
     defaultValues: { reason: '' },
     onSubmit: async ({ value }) => {
@@ -259,8 +272,22 @@ function SigningDocument({ data }: { data: PortalDocument }) {
         <ul className="grid gap-2">
           {data.signers.map((signer, index) => (
             <li key={`${signer.role}-${index}`}>
-              {signer.name} · {t(`detail.signerRole.${signer.role}`)} ·{' '}
-              {t(`detail.signerStatus.${signer.status}`)}
+              {signer.name} ·{' '}
+              {(
+                {
+                  tenant: t('detail.signerRole.tenant'),
+                  owner: t('detail.signerRole.owner'),
+                } as Record<string, string>
+              )[signer.role] ?? String(signer.role)}{' '}
+              ·{' '}
+              {(
+                {
+                  pending: t('detail.signerStatus.pending'),
+                  viewed: t('detail.signerStatus.viewed'),
+                  signed: t('detail.signerStatus.signed'),
+                  rejected: t('detail.signerStatus.rejected'),
+                } as Record<string, string>
+              )[signer.status] ?? String(signer.status)}
               {signer.signedAt && ` · ${documentDateTime(signer.signedAt, i18n.language)}`}
             </li>
           ))}
@@ -272,6 +299,7 @@ function SigningDocument({ data }: { data: PortalDocument }) {
 
 export default function PortalDocumentPage() {
   const { id = '' } = useParams();
+
   const query = usePortalDocument(id);
 
   return (

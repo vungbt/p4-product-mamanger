@@ -7,7 +7,7 @@ import type {
   StayPayment,
 } from '@stay/shared';
 import { formatVnd } from '@/libraries/format';
-import { invoiceErrorMessage } from '../invoices/invoice-ui';
+import { invoiceErrorMessage } from '@/modules/invoices/invoice-ui';
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cash: 'Tiền mặt',

@@ -9,6 +9,7 @@ import {
 import { type CategoryListQuery, createCategoryApi } from '../shared/categories.js';
 import type { ApiSdk } from '../shared/client.js';
 import { useApiSdk } from './provider.js';
+import { type ApiMutationSettings, resourceInvalidationKeys } from './resources.js';
 
 function key<const T extends readonly unknown[]>(...parts: T): T {
   return parts;
@@ -40,9 +41,19 @@ export function categoryQueryOptions(sdk: ApiSdk) {
   };
 }
 
-export function categoryMutationOptions(sdk: ApiSdk, client: QueryClient) {
+export function categoryMutationOptions(
+  sdk: ApiSdk,
+  client: QueryClient,
+  settings?: ApiMutationSettings,
+) {
   const api = createCategoryApi(sdk);
-  const refresh = () => client.invalidateQueries({ queryKey: categoryKeys.all });
+
+  const refresh = () =>
+    Promise.all(
+      (settings?.invalidate ?? resourceInvalidationKeys.categories ?? []).map((queryKey) =>
+        client.invalidateQueries({ queryKey }),
+      ),
+    );
 
   return {
     create: () => mutationOptions({ mutationFn: api.create, retry: false, onSuccess: refresh }),
@@ -63,23 +74,26 @@ export function useCategory(id: string) {
   return useQuery(categoryQueryOptions(sdk).detail(id));
 }
 
-export function useCreateCategory() {
+export function useCreateCategory(settings?: ApiMutationSettings) {
   const sdk = useApiSdk();
+
   const client = useQueryClient();
 
-  return useMutation(categoryMutationOptions(sdk, client).create());
+  return useMutation(categoryMutationOptions(sdk, client, settings).create());
 }
 
-export function useUpdateCategory() {
+export function useUpdateCategory(settings?: ApiMutationSettings) {
   const sdk = useApiSdk();
+
   const client = useQueryClient();
 
-  return useMutation(categoryMutationOptions(sdk, client).update());
+  return useMutation(categoryMutationOptions(sdk, client, settings).update());
 }
 
-export function useDeleteCategory() {
+export function useDeleteCategory(settings?: ApiMutationSettings) {
   const sdk = useApiSdk();
+
   const client = useQueryClient();
 
-  return useMutation(categoryMutationOptions(sdk, client).remove());
+  return useMutation(categoryMutationOptions(sdk, client, settings).remove());
 }

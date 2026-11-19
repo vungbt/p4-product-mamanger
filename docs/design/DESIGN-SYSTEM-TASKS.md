@@ -297,7 +297,7 @@ Components dùng chung trên nhiều page nhưng thuộc web app (không phải 
 **Flow upload:**
 1. Gọi `GET /api/files/sign-upload-url`
 2. POST file lên Cloudinary (`uploadUrl`)
-3. Gửi `imageStorageId` (publicId) trong body create/update
+3. Gửi `thumbnailStorageId` (publicId) trong body create/update
 
 **Độ khó:** ⭐⭐⭐⭐
 

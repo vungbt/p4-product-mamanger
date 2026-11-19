@@ -4,9 +4,6 @@ import { useSearchParams } from 'react-router-dom';
 import { latestSearchParams } from '@/libraries/search-params';
 import { isRoomStatus } from './room-status';
 
-/** The room map shows a whole building on one page; larger ones paginate. */
-export const ROOM_MAP_PAGE_SIZE = 100;
-
 export type RoomFilters = {
   q: string;
   status: RoomStatus | null;

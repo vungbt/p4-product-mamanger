@@ -35,6 +35,7 @@ function VehicleForm({
   onCancel?: () => void;
 }) {
   const { t } = useTranslation();
+
   const [error, setError] = useState<unknown>(null);
 
   const schema = useMemo(
@@ -45,7 +46,20 @@ function VehicleForm({
   );
 
   const typeOptions = useMemo(
-    () => VEHICLE_TYPES.map((value) => ({ value, label: t(`tenants.vehicleTypes.${value}`) })),
+    () =>
+      VEHICLE_TYPES.map((value) => ({
+        value,
+        label:
+          (
+            {
+              motorbike: t('tenants.vehicleTypes.motorbike'),
+              electric_bike: t('tenants.vehicleTypes.electric_bike'),
+              bicycle: t('tenants.vehicleTypes.bicycle'),
+              car: t('tenants.vehicleTypes.car'),
+              other: t('tenants.vehicleTypes.other'),
+            } as Record<string, string>
+          )[value] ?? String(value),
+      })),
     [t],
   );
 
@@ -113,10 +127,15 @@ export function VehiclesSection({
   editable: boolean;
 }) {
   const { t } = useTranslation();
+
   const addVehicle = useAddVehicle();
+
   const updateVehicle = useUpdateVehicle();
+
   const removeVehicle = useRemoveVehicle();
+
   const [editingId, setEditingId] = useState<string | null>(null);
+
   const [adding, setAdding] = useState(false);
 
   const body = (values: VehicleValues) => ({
@@ -182,7 +201,15 @@ export function VehiclesSection({
                 <div className="grid min-w-0 flex-1">
                   <span className="font-semibold text-ink">{vehicle.plate}</span>
                   <span className="text-ui-sm text-muted">
-                    {t(`tenants.vehicleTypes.${vehicle.type}`)}
+                    {(
+                      {
+                        motorbike: t('tenants.vehicleTypes.motorbike'),
+                        electric_bike: t('tenants.vehicleTypes.electric_bike'),
+                        bicycle: t('tenants.vehicleTypes.bicycle'),
+                        car: t('tenants.vehicleTypes.car'),
+                        other: t('tenants.vehicleTypes.other'),
+                      } as Record<string, string>
+                    )[vehicle.type] ?? String(vehicle.type)}
                     {vehicle.note ? ` · ${vehicle.note}` : ''}
                   </span>
                 </div>

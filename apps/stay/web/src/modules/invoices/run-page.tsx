@@ -21,6 +21,7 @@ import {
 import { type BillingPreviewRow, isPeriod, type StayInvoiceSummary } from '@stay/shared';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { INVOICE_RUN_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '@/constants/list';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
@@ -28,7 +29,6 @@ import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states
 import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ListTable, rowTestId } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
-import { PAGE_SIZE_OPTIONS } from '@/libraries/table-params';
 import { useIsDesktop } from '@/libraries/use-media-query';
 import {
   displayPeriod,
@@ -305,7 +305,7 @@ function Drafts({ buildingId, period }: { buildingId: string; period: string }) 
   const issue = useIssueInvoices();
   const [state, setState] = useState<DataTableState>({
     sorting: [],
-    pagination: { pageIndex: 0, pageSize: 100 },
+    pagination: { pageIndex: 0, pageSize: INVOICE_RUN_PAGE_SIZE },
   });
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [confirm, setConfirm] = useState(false);

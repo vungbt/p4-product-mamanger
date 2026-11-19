@@ -28,15 +28,19 @@ const productValues = {
   seoDescription: 'SEO',
   sizeGuideId: null,
   version: 3,
-  imageId: 'cover',
+  thumbnailId: 'cover',
   categoryId: 'cat',
   createdAt: date,
   updatedAt: date,
 };
 
-test('product DTO consistently returns catalog metadata, category, cover and sorted gallery', () => {
+test('product DTO consistently returns catalog metadata, category, thumbnail and sorted gallery', () => {
   const row = db.ProductModel.build(productValues);
-  row.image = db.FileModel.build({ id: 'cover', url: 'https://images.example/cover' });
+  row.thumbnail = db.FileModel.build({
+    id: 'cover',
+    url: 'https://images.example/cover',
+    storageId: 'catalog/thumbnail',
+  });
   row.category = db.CategoryModel.build({
     id: 'cat',
     name: 'Clothes',
@@ -45,7 +49,12 @@ test('product DTO consistently returns catalog metadata, category, cover and sor
   });
   row.gallery = [
     { id: 'second', fileId: 'f2', sortOrder: 2, file: { url: 'https://images.example/2' } },
-    { id: 'first', fileId: 'f1', sortOrder: 1, file: { url: 'https://images.example/1' } },
+    {
+      id: 'first',
+      fileId: 'f1',
+      sortOrder: 1,
+      file: { url: 'https://images.example/1', storageId: 'catalog/first' },
+    },
   ];
   const dto = productDto(row);
   for (const key of [
@@ -58,11 +67,19 @@ test('product DTO consistently returns catalog metadata, category, cover and sor
     'seoDescription',
     'sizeGuideId',
     'version',
-    'imageId',
+    'thumbnailId',
     'categoryId',
   ])
     assert.equal(dto[key], productValues[key], key);
-  assert.equal(dto.imageUrl, 'https://images.example/cover');
+  assert.equal(dto.thumbnailUrl, 'https://images.example/cover');
+  assert.deepEqual(dto.thumbnail, {
+    fileId: 'cover',
+    url: 'https://images.example/cover',
+    storageId: 'catalog/thumbnail',
+  });
+  assert.equal(dto.images[0].storageId, 'catalog/first');
+  assert.equal('imageUrl' in dto, false);
+  assert.equal('imageId' in dto, false);
   assert.equal(dto.category.slug, 'clothes');
   assert.deepEqual(
     dto.images.map((image) => image.fileId),
@@ -70,8 +87,11 @@ test('product DTO consistently returns catalog metadata, category, cover and sor
   );
   assert.equal(dto.createdAt, date.toISOString());
   assert.equal(dto.updatedAt, date.toISOString());
-  row.image = null;
-  assert.equal(productDto(row).imageUrl, 'https://images.example/1');
+  row.thumbnail = null;
+  assert.equal(productDto(row).thumbnailUrl, 'https://images.example/1');
+  assert.equal(productDto(row).thumbnail, null);
+  row.gallery = [];
+  assert.equal(productDto(row).thumbnailUrl, '');
   assert.equal('_previousDataValues' in dto, false);
 });
 
@@ -195,7 +215,7 @@ test('cart snapshot adds product link and public variant image with bounded batc
   try {
     const result = await cartSnapshot({ id: 'cart', version: 1 });
     assert.equal(result.items[0].productSlug, 'shirt');
-    assert.equal(result.items[0].imageUrl, 'https://images.example/sku');
+    assert.equal(result.items[0].thumbnailUrl, 'https://images.example/sku');
     assert.equal(result.items[0].available, 3);
     assert.equal(result.subtotal, 100);
     assert.equal(imageReads, 1);
@@ -204,7 +224,7 @@ test('cart snapshot adds product link and public variant image with bounded batc
       { id: 'cover', url: 'https://images.example/cover', metadata: {} },
     ]);
     assert.equal(
-      (await cartSnapshot({ id: 'cart', version: 1 })).items[0].imageUrl,
+      (await cartSnapshot({ id: 'cart', version: 1 })).items[0].thumbnailUrl,
       'https://images.example/cover',
     );
   } finally {
@@ -221,6 +241,25 @@ test('OpenAPI distinguishes signed URL JSON from byte downloads and declares ful
     assert.ok(spec.paths[path].get.responses['200'].content['application/octet-stream']);
   const resolve = (schema) =>
     schema.$ref ? spec.components.schemas[schema.$ref.split('/').at(-1)] : schema;
+  for (const method of ['patch', 'put']) {
+    const updateSchema =
+      spec.paths['/api/products/{id}'][method].requestBody.content['application/json'].schema;
+    const fields =
+      updateSchema.properties ?? updateSchema.allOf.find((schema) => schema.properties)?.properties;
+    assert.deepEqual(fields.thumbnailStorageId.type, ['string', 'null']);
+    assert.ok(!(updateSchema.required ?? []).includes('thumbnailStorageId'));
+    assert.equal(fields.imageStorageIds.type, 'array');
+    assert.equal(fields.imageStorageIds.items.type, 'string');
+    assert.match(fields.imageStorageIds.description, /Complete ordered gallery/);
+    for (const operation of ['create', 'update']) {
+      const variant = fields.variants.properties[operation].items;
+      assert.equal(variant.properties.imageStorageIds.type, 'array');
+      assert.equal(variant.properties.imageStorageIds.items.type, 'string');
+      assert.equal(variant.properties.imageStorageIds.maxItems, 20);
+    }
+  }
+  const variantImages = spec.components.schemas.ProductVariant.properties.images.items;
+  assert.deepEqual(Object.keys(variantImages.properties).sort(), ['fileId', 'storageId', 'url']);
   for (const path of ['/api/products', '/api/admin/products']) {
     const envelope = resolve(
       spec.paths[path].get.responses['200'].content['application/json'].schema,
@@ -234,7 +273,7 @@ test('OpenAPI distinguishes signed URL JSON from byte downloads and declares ful
       'material',
       'seoTitle',
       'images',
-      'imageUrl',
+      'thumbnailUrl',
     ])
       assert.ok(product.properties[key], `${path}: ${key}`);
   }
@@ -265,7 +304,7 @@ test('published content and shop resolve renderable URLs without private file me
     const [entry] = await withContentMedia([
       {
         slug: 'post',
-        coverFileId: 'cover',
+        thumbnailFileId: 'cover',
         body: [
           { type: 'image', fileId: 'private', alt: 'Private' },
           { type: 'image', fileId: 'cover', alt: 'Public' },
@@ -273,8 +312,8 @@ test('published content and shop resolve renderable URLs without private file me
       },
     ]);
     assert.equal(batches, 1);
-    assert.equal(entry.coverUrl, 'https://images.example/cover');
-    assert.deepEqual(entry.media, [{ id: 'cover', url: 'https://images.example/cover' }]);
+    assert.equal(entry.thumbnailUrl, 'https://images.example/cover');
+    assert.deepEqual(entry.images, [{ id: 'cover', url: 'https://images.example/cover' }]);
     const shop = await shopDto(
       db.ShopSettingsModel.build({ id: 'shop', name: 'Shop', logoFileId: 'logo', version: 1 }),
     );

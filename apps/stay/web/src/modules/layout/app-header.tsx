@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { BRAND, BrandMark } from '@/brand';
 import { useCanAccessSome } from '@/libraries/ability';
 import { BuildingSelector } from '@/libraries/buildings/building-selector';
+import { useNavigationLabels } from '@/libraries/navigation-labels';
 import { usePageDescription } from '@/libraries/page-meta';
 import { appRoutes, ROUTES } from '@/routing/route-configs';
 import { routeTrail, useCurrentRoute } from '@/routing/use-routes';
@@ -19,14 +20,19 @@ function hasHistory() {
 /** Full-width bar. Desktop: brand. Mobile: back button and screen title. Both: building + account. */
 export function AppTopbar() {
   const { t } = useTranslation();
+
+  const routeLabels = useNavigationLabels();
+
   const navigate = useNavigate();
   // Notifications are per building (API: read Building); tenants have none.
+
   const canReadNotifications = useCanAccessSome('read', 'Building');
+
   const route = useCurrentRoute();
 
   const parent = route?.parent ? appRoutes.find(({ name }) => name === route.parent) : undefined;
 
-  const title = route ? t(`nav.${route.name}`) : '';
+  const title = route ? (routeLabels[route.name] ?? route.name) : '';
   const isHome = route?.path === ROUTES.overview;
 
   const goBack = () => {
@@ -65,10 +71,14 @@ export function AppTopbar() {
 /** Page header on desktop: where the user is and what the screen is for. */
 export function AppBreadcrumb() {
   const { t } = useTranslation();
+
+  const routeLabels = useNavigationLabels();
+
   const route = useCurrentRoute();
+
   const description = usePageDescription();
 
-  const title = route ? t(`nav.${route.name}`) : '';
+  const title = route ? (routeLabels[route.name] ?? route.name) : '';
   const isHome = route?.path === ROUTES.overview;
 
   return (
@@ -82,7 +92,11 @@ export function AppBreadcrumb() {
                 ...routeTrail(route).map((item) =>
                   item === route
                     ? { key: item.name, title }
-                    : { key: item.name, title: t(`nav.${item.name}`), href: item.path },
+                    : {
+                        key: item.name,
+                        title: routeLabels[item.name] ?? item.name,
+                        href: item.path,
+                      },
                 ),
               ]
             : [{ key: 'overview', title: t('nav.overview') }]

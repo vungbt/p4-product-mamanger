@@ -27,7 +27,14 @@ export function TenantStatusTag({
 
   return (
     <Tag size="sm" tone={STATUS_TONES[status]}>
-      {t(`tenants.status.${status}`)}
+      {(
+        {
+          living: t('tenants.status.living'),
+          left: t('tenants.status.left'),
+          no_contract: t('tenants.status.no_contract'),
+          archived: t('tenants.status.archived'),
+        } as Record<string, string>
+      )[status] ?? String(status)}
     </Tag>
   );
 }

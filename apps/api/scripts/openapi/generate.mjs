@@ -846,6 +846,9 @@ function applyOperation({ key, tag, openPath, method, spec }) {
         : {}),
   };
 
+  if (override.errorResponses)
+    Object.assign(paths[openPath][method].responses, override.errorResponses);
+
   if (override.response !== undefined) {
     const status = Object.keys(paths[openPath][method].responses).find((code) => /^2/.test(code));
     const content = override.response === null ? undefined : resolveRefs(override.response);

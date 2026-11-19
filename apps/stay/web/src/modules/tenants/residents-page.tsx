@@ -17,6 +17,7 @@ import { downloadBlob, getErrorMessage } from '@stay/sdk/shared';
 import { isIsoDate, maskIdNumber, type StayResident } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { DEFAULT_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
@@ -87,7 +88,7 @@ export default function ResidentsPage() {
     q: q || undefined,
     status,
     page,
-    pageSize: 20,
+    pageSize: DEFAULT_PAGE_SIZE,
   });
 
   const rows = residents.data?.data ?? [];
@@ -136,7 +137,7 @@ export default function ResidentsPage() {
         },
         { replace: true },
       );
-    }, 300);
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
   }, [search, q, setParams]);
@@ -271,7 +272,10 @@ export default function ResidentsPage() {
               columns={columns}
               rowId={(row) => row.occupantId}
               paginationPlacement="none"
-              state={{ sorting: [], pagination: { pageIndex: page - 1, pageSize: 20 } }}
+              state={{
+                sorting: [],
+                pagination: { pageIndex: page - 1, pageSize: DEFAULT_PAGE_SIZE },
+              }}
               onStateChange={(next) => update({ page: String(next.pagination.pageIndex + 1) })}
             />
           </div>

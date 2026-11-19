@@ -16,6 +16,7 @@ import { TENANT_STATUS_FILTERS, type TenantStatusFilter } from '@stay/shared';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { DEFAULT_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useCanOpen } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
@@ -26,8 +27,6 @@ import { ContactLinks, formatPhone, TenantStatusTag } from './tenant-ui';
 
 type Tenant = components['schemas']['StayTenant'];
 
-const PAGE_SIZE = 20;
-
 function parseStatus(value: string | null): TenantStatusFilter {
   return TENANT_STATUS_FILTERS.find((status) => status === value) ?? 'all';
 }
@@ -35,15 +34,21 @@ function parseStatus(value: string | null): TenantStatusFilter {
 /** O-11: tenants of the active building; search, status filter and page live in the URL. */
 export default function TenantListPage() {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
+
   const { buildingId, isLoading: buildingLoading } = useActiveBuilding();
+
   const [params, setParams] = useSearchParams();
+
   const canCreate = useCanOpen({ action: 'create', subject: 'Tenant' });
+
   const canImport = useCanOpen({ action: 'manage', subject: 'Tenant' });
 
   const q = params.get('q') ?? '';
   const status = parseStatus(params.get('status'));
   const page = Math.max(1, Number(params.get('page')) || 1);
+
   const [search, setSearch] = useState(q);
 
   const tenants = useTenants({
@@ -51,7 +56,7 @@ export default function TenantListPage() {
     q: q || undefined,
     status,
     page,
-    pageSize: PAGE_SIZE,
+    pageSize: DEFAULT_PAGE_SIZE,
   });
 
   const rows = tenants.data?.data ?? [];
@@ -72,7 +77,7 @@ export default function TenantListPage() {
     );
   };
 
-  // Debounced search (300 ms) that also resets the page.
+  // Shared search debounce also resets the page.
   useEffect(() => {
     const timer = setTimeout(() => {
       const value = search.trim();
@@ -89,7 +94,7 @@ export default function TenantListPage() {
           },
           { replace: true },
         );
-    }, 300);
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
   }, [search, q, setParams]);
@@ -98,7 +103,16 @@ export default function TenantListPage() {
     () =>
       TENANT_STATUS_FILTERS.map((value) => ({
         value,
-        label: t(`tenants.filter.${value}`),
+        label:
+          (
+            {
+              all: t('tenants.filter.all'),
+              living: t('tenants.filter.living'),
+              left: t('tenants.filter.left'),
+              no_contract: t('tenants.filter.no_contract'),
+              archived: t('tenants.filter.archived'),
+            } as Record<string, string>
+          )[value] ?? String(value),
       })),
     [t],
   );
@@ -238,7 +252,10 @@ export default function TenantListPage() {
               loading={tenants.isPending}
               emptyState={empty}
               paginationPlacement="none"
-              state={{ sorting: [], pagination: { pageIndex: page - 1, pageSize: PAGE_SIZE } }}
+              state={{
+                sorting: [],
+                pagination: { pageIndex: page - 1, pageSize: DEFAULT_PAGE_SIZE },
+              }}
               onStateChange={(next) =>
                 update({
                   page:

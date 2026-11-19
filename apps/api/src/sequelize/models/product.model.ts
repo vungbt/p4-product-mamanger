@@ -5,7 +5,7 @@ export interface ProductAttributes {
   name: string;
   price: number;
   description: string;
-  imageId: string | null;
+  thumbnailId: string | null;
   categoryId: string | null;
   stock: number;
   slug: string;
@@ -33,7 +33,7 @@ export type ProductCreation = Optional<
   | 'sizeGuideId'
   | 'version'
   | 'id'
-  | 'imageId'
+  | 'thumbnailId'
   | 'categoryId'
   | 'createdAt'
   | 'updatedAt'
@@ -47,7 +47,7 @@ export class ProductModel
   declare name: string;
   declare price: number;
   declare description: string;
-  declare imageId: string | null;
+  declare thumbnailId: string | null;
   declare categoryId: string | null;
   declare stock: number;
   declare slug: string;
@@ -97,10 +97,10 @@ export function initProductModel(sequelize: Sequelize) {
         allowNull: false,
         defaultValue: '',
       },
-      imageId: {
+      thumbnailId: {
         type: DataTypes.UUID,
         allowNull: true,
-        field: 'image_id',
+        field: 'thumbnail_id',
       },
       categoryId: {
         type: DataTypes.UUID,

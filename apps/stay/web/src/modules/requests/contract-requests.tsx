@@ -2,13 +2,14 @@ import { EmptyState } from '@itclabs/react-ui';
 import { useRequestInbox } from '@stay/sdk/react';
 import type { InboxItem } from '@stay/shared';
 import { useState } from 'react';
+import { DEFAULT_PAGE_SIZE } from '@/constants/list';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { RequestDetailDialog } from './request-detail';
 import { RequestList } from './request-list';
 
 /** O-17 tab "Yêu cầu": everything the contract's tenants sent, with the inbox actions. */
 export function ContractRequests({ contractId }: { contractId: string }) {
-  const query = useRequestInbox({ contractId, pageSize: 20 });
+  const query = useRequestInbox({ contractId, pageSize: DEFAULT_PAGE_SIZE });
   const [selected, setSelected] = useState<InboxItem | null>(null);
 
   const rows = query.data?.data ?? [];

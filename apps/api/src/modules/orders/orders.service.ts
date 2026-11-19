@@ -117,7 +117,7 @@ function toOrder(row: OrderEager): Order {
           'sku',
           'size',
           'color',
-          'imageUrl',
+          'thumbnailUrl',
           'discountAmount',
           'lineTotal',
           'cancelledQuantity',

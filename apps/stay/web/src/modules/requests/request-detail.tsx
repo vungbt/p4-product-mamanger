@@ -28,8 +28,8 @@ import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
 import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError } from '@/libraries/forms/page-states';
-import { Overlay } from '../invoices/invoice-dialogs';
-import { displayPeriod } from '../invoices/invoice-ui';
+import { Overlay } from '@/modules/invoices/invoice-dialogs';
+import { displayPeriod } from '@/modules/invoices/invoice-ui';
 import {
   CATEGORY_LABELS,
   displayDateTime,
@@ -172,6 +172,7 @@ function FormActions({ onCancel, children }: { onCancel: () => void; children: R
 
 function ReplyForm({ item, onDone, onCancel }: FormProps) {
   const reply = useReplyRequest();
+
   const [error, setError] = useState<string | null>(null);
 
   const form = useAppForm({
@@ -222,7 +223,9 @@ function ReplyForm({ item, onDone, onCancel }: FormProps) {
 
 function RejectForm({ item, onDone, onCancel }: FormProps) {
   const rejectRequest = useRejectRequest();
+
   const rejectClaim = useRejectPaymentClaim();
+
   const [error, setError] = useState<string | null>(null);
 
   const form = useAppForm({
@@ -284,8 +287,11 @@ const ACCEPT_FIELDS = [
 /** Accepting a tenant request runs the contract change (occupants, vehicles, notice). */
 function AcceptForm({ item, onDone, onCancel }: FormProps) {
   const accept = useAcceptRequest();
+
   const contract = useContract(item.contractId ?? '');
+
   const [error, setError] = useState<string | null>(null);
+
   const type = item.request?.type;
 
   const occupants = (contract.data?.occupants ?? []).filter((row) => !row.toDate);
@@ -403,7 +409,9 @@ function AcceptForm({ item, onDone, onCancel }: FormProps) {
 /** "Xác nhận đã nhận tiền": records the payment (ST-15) for the claimed invoice. */
 function ClaimForm({ item, onDone, onCancel }: FormProps) {
   const confirm = useConfirmPaymentClaim();
+
   const [error, setError] = useState<string | null>(null);
+
   const claim = item.claim;
   const remaining = claim?.invoiceRemaining ?? 0;
 
@@ -504,8 +512,11 @@ function ClaimForm({ item, onDone, onCancel }: FormProps) {
 /** O-26 detail: what the tenant sent and the actions allowed for its kind and status. */
 export function RequestDetailDialog({ item, onClose }: { item: InboxItem; onClose: () => void }) {
   const [current, setCurrent] = useState(item);
+
   const [mode, setMode] = useState<Mode>(null);
+
   const [error, setError] = useState<string | null>(null);
+
   const accept = useAcceptRequest();
 
   const done = (next: InboxItem, message: string) => {

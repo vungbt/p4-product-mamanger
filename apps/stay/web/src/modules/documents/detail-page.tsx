@@ -54,16 +54,19 @@ function DocumentPortalLinks({ contractId }: { contractId: string }) {
   if (contract.isPending) return <Skeleton className="h-24" />;
   if (!contract.data)
     return <LoadError error={contract.error} onRetry={() => void contract.refetch()} />;
+
   return <PortalLinksPanel contract={contract.data} />;
 }
 
 function OwnerSignaturePreview() {
   const { t } = useTranslation('documents');
+
   const profile = useLandlordProfile();
 
   if (profile.isPending) return <Skeleton className="h-24" />;
   if (!profile.data)
     return <LoadError error={profile.error} onRetry={() => void profile.refetch()} />;
+
   return (
     <div className="grid gap-2">
       <p>{profile.data.fullName}</p>
@@ -98,6 +101,7 @@ function ActionForm({
   children?: ReactNode;
 }) {
   const { t } = useTranslation('documents');
+
   const [error, setError] = useState<string | null>(null);
 
   const form = useAppForm({
@@ -149,21 +153,37 @@ function ActionForm({
 
 function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
   const { t, i18n } = useTranslation('documents');
+
   const api = createDocumentApi(useStaySdk());
+
   const update = useUpdateContractDocument();
+
   const send = useSendContractDocument();
+
   const sign = useOwnerSignDocument();
+
   const cancel = useCancelContractDocument();
+
   const paper = useMarkDocumentPaper();
+
   const supersede = useSupersedeDocument();
+
   const navigate = useNavigate();
+
   const canUpdate = useCanOn('update', 'Contract', { buildingId: data.buildingId });
+
   const [error, setError] = useState<string | null>(null);
+
   const [body, setBody] = useState<string | null>(null);
+
   const [linksOpen, setLinksOpen] = useState(false);
+
   const [coSigners, setCoSigners] = useState<string[]>([]);
+
   const [paperFile, setPaperFile] = useState<File | null>(null);
+
   const [action, setAction] = useState<'send' | 'sign' | 'paper' | 'cancel' | null>(null);
+
   const { prompt } = useUnsavedChanges(body !== null && body !== data.bodyHtml);
 
   const final = DOCUMENT_FINAL_STATUSES.some((status) => status === data.status);
@@ -439,8 +459,22 @@ function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
         <ul className="grid gap-2">
           {data.signers.map((signer) => (
             <li key={signer.id}>
-              {signer.name} · {t(`portalDocuments:detail.signerRole.${signer.role}`)} ·{' '}
-              {t(`portalDocuments:detail.signerStatus.${signer.status}`)}
+              {signer.name} ·{' '}
+              {(
+                {
+                  tenant: t('portalDocuments:detail.signerRole.tenant'),
+                  owner: t('portalDocuments:detail.signerRole.owner'),
+                } as Record<string, string>
+              )[signer.role] ?? String(signer.role)}{' '}
+              ·{' '}
+              {(
+                {
+                  pending: t('portalDocuments:detail.signerStatus.pending'),
+                  viewed: t('portalDocuments:detail.signerStatus.viewed'),
+                  signed: t('portalDocuments:detail.signerStatus.signed'),
+                  rejected: t('portalDocuments:detail.signerStatus.rejected'),
+                } as Record<string, string>
+              )[signer.status] ?? String(signer.status)}
               {signer.signedAt && ` · ${documentDateTime(signer.signedAt, i18n.language)}`}
               {signer.rejectReason && <p>{signer.rejectReason}</p>}
             </li>
@@ -451,8 +485,24 @@ function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
         <ol className="grid gap-3">
           {data.events.map((event) => (
             <li key={event.id}>
-              {t(`events.${event.type}`)} · {event.actorName} ·{' '}
-              {documentDateTime(event.createdAt, i18n.language)}
+              {(
+                {
+                  created: t('events.created'),
+                  edited: t('events.edited'),
+                  sent: t('events.sent'),
+                  viewed: t('events.viewed'),
+                  signed: t('events.signed'),
+                  rejected: t('events.rejected'),
+                  owner_signed: t('events.owner_signed'),
+                  completed: t('events.completed'),
+                  cancelled: t('events.cancelled'),
+                  paper: t('events.paper'),
+                  superseded: t('events.superseded'),
+                  downloaded: t('events.downloaded'),
+                  verification_failed: t('events.verification_failed'),
+                } as Record<string, string>
+              )[event.type] ?? String(event.type)}{' '}
+              · {event.actorName} · {documentDateTime(event.createdAt, i18n.language)}
               <p className="break-words text-ui-sm text-muted">{event.userAgent}</p>
             </li>
           ))}
@@ -471,9 +521,11 @@ function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
 
 export default function DocumentDetailPage() {
   const { documentId = '' } = useParams();
+
   const query = useContractDocument(documentId);
 
   if (query.isPending) return <Skeleton className="h-64" />;
   if (!query.data) return <LoadError error={query.error} onRetry={() => void query.refetch()} />;
+
   return <DocumentDetail key={documentId} data={query.data} />;
 }

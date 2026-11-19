@@ -89,7 +89,7 @@ router.patch(
         expectedVersion: body.integer('expectedVersion', 1),
         displayName: body.optionalText('displayName', 120),
         phone: body.data.phone === null ? null : body.optionalText('phone', 30),
-        imageStorageId: body.optionalText('imageStorageId'),
+        avatarStorageId: body.optionalText('avatarStorageId'),
       })
     ).user;
   }),

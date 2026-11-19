@@ -2,6 +2,7 @@ import { Badge, cn, Drawer, Icon, type IconName } from '@itclabs/react-ui';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useNavigationLabels } from '@/libraries/navigation-labels';
 import { usePendingRequestCount } from '@/libraries/use-pending-requests';
 import type { StayRoute } from '@/routing/route-configs';
 import { useMenuRoutes } from '@/routing/use-routes';
@@ -27,9 +28,15 @@ function ItemContent({ icon, label, badge }: { icon: IconName; label: ReactNode;
 /** Mobile navigation (below lg): Tổng quan · Phòng · Chốt số · Hoá đơn · Thêm. */
 export default function BottomNav() {
   const { t } = useTranslation();
+
+  const routeLabels = useNavigationLabels();
+
   const { pathname } = useLocation();
+
   const routes = useMenuRoutes();
+
   const [moreOpen, setMoreOpen] = useState(false);
+
   const pending = usePendingRequestCount();
 
   const primary = routes.filter((route) => route.bottomNav);
@@ -46,7 +53,7 @@ export default function BottomNav() {
     >
       <ItemContent
         icon={route.icon}
-        label={t(`nav.${route.name}`)}
+        label={routeLabels[route.name] ?? route.name}
         badge={route.name === 'requests' ? pending : undefined}
       />
     </NavLink>

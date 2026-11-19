@@ -5,28 +5,38 @@ import * as operations from './resources.js';
 export type ProductListQuery = NonNullable<
   paths['/api/admin/products']['get']['parameters']['query']
 >;
+
 export type StorefrontProductListQuery = NonNullable<
   paths['/api/products']['get']['parameters']['query']
 >;
+
 export type ProductInput =
   paths['/api/products']['post']['requestBody']['content']['application/json'];
-// The update service rejects stock even though the current OpenAPI PUT schema includes it.
+// The update service rejects stock even though the current OpenAPI PATCH schema includes it.
+
 export type ProductUpdateInput = Omit<
-  NonNullable<paths['/api/products/{id}']['put']['requestBody']>['content']['application/json'],
+  NonNullable<paths['/api/products/{id}']['patch']['requestBody']>['content']['application/json'],
   'stock'
 > & { stock?: never };
+
 export type ProductPublicationInput =
   paths['/api/products/{id}/publication']['patch']['requestBody']['content']['application/json'];
+
 export type ProductVariantInput =
   paths['/api/products/{id}/variants']['post']['requestBody']['content']['application/json'];
+
 export type ProductVariantUpdateInput =
   paths['/api/products/{id}/variants/{variantId}']['patch']['requestBody']['content']['application/json'];
+
 export type ProductVariantImagesInput =
   paths['/api/products/{id}/variants/{variantId}/images']['patch']['requestBody']['content']['application/json'];
+
 export type ProductImageInput =
   paths['/api/products/{id}/images']['post']['requestBody']['content']['application/json'];
+
 export type Product =
   paths['/api/admin/products']['get']['responses'][200]['content']['application/json']['data'][number];
+
 export type ProductDetail =
   paths['/api/admin/products/{id}']['get']['responses'][200]['content']['application/json']['data'];
 
@@ -46,7 +56,7 @@ export function createProductApi(sdk: ApiSdk) {
       operations.getProductsBySlugSlug(sdk, { params: { path: { slug } }, signal }),
     create: (body: ProductInput) => operations.postProducts(sdk, { body }),
     update: ({ id, body }: { id: string; body: ProductUpdateInput }) =>
-      operations.putProductsId(sdk, { params: { path: { id } }, body }),
+      operations.patchProductsId(sdk, { params: { path: { id } }, body }),
     remove: (id: string) => operations.deleteProductsId(sdk, { params: { path: { id } } }),
     updatePublication: ({ id, body }: { id: string; body: ProductPublicationInput }) =>
       operations.patchProductsIdPublication(sdk, { params: { path: { id } }, body }),

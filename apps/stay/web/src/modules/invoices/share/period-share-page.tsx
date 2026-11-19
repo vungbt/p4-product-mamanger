@@ -4,6 +4,7 @@ import { useInvoices, useSharePeriodInvoices } from '@stay/sdk/react';
 import { type InvoicePeriodShareResult, type InvoiceStatus, isPeriod } from '@stay/shared';
 import { type ReactNode, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { INVOICE_SHARE_PAGE_SIZE } from '@/constants/list';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FilterBar } from '@/libraries/filter-bar';
 import { formatVnd, todayIsoDate } from '@/libraries/format';
@@ -17,13 +18,10 @@ import {
   INVOICE_STATUS_LABELS,
   invoiceErrorMessage,
   invoicePath,
-} from '../invoice-ui';
+} from '@/modules/invoices/invoice-ui';
 import { InvoicePreviewButton } from './invoice-preview';
 import { ShareLinkActions } from './share-dialog';
 import { copyWithToast } from './share-tools';
-
-/** At most one page of a building's invoices of a period is listed before sharing. */
-const PAGE_SIZE = 100;
 
 const SHAREABLE: InvoiceStatus[] = ['issued', 'partially_paid', 'paid'];
 
@@ -33,6 +31,7 @@ const SHAREABLE: InvoiceStatus[] = ['issued', 'partially_paid', 'paid'];
  */
 export default function PeriodSharePage() {
   const { buildingId } = useActiveBuilding();
+
   const [params, setParams] = useSearchParams();
 
   const raw = params.get('period');
@@ -95,13 +94,17 @@ function PeriodShares({
     buildingId,
     period,
     page: 1,
-    pageSize: PAGE_SIZE,
+    pageSize: INVOICE_SHARE_PAGE_SIZE,
     sortBy: 'code',
     sortOrder: 'asc',
   });
+
   const sharePeriod = useSharePeriodInvoices();
+
   const [result, setResult] = useState<InvoicePeriodShareResult | null>(null);
+
   const [confirm, setConfirm] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const shareable = (query.data?.data ?? []).filter((row) => SHAREABLE.includes(row.status));

@@ -7,12 +7,16 @@ import { inventoryDelta, moveInventory } from '../dist/modules/inventory/invento
 import {
   AuditLogModel,
   DomainEventModel,
+  FileModel,
   IdempotencyRecordModel,
   InventoryMovementModel,
+  ProductImageModel,
   ProductModel,
   ProductSlugRedirectModel,
   ProductVariantModel,
   sequelize,
+  UploadTicketModel,
+  UserModel,
 } from '../dist/sequelize/models/index.js';
 
 const base = process.env.P4_TEST_API_URL;
@@ -100,6 +104,97 @@ describe('catalog and SKU inventory on local API', { skip: !base }, () => {
       });
     }
     await sequelize.close();
+  });
+  test('product batch variants are atomic, stock is audited and duplicate paths identify rows', async () => {
+    const batch = await call(
+      'POST',
+      '/products',
+      {
+        name: 'Batch variants',
+        slug: `batch-${suffix}`,
+        price: 100,
+        stock: 0,
+        variants: {
+          create: [
+            { sku: `BATCH-S-RED-${suffix}`, size: 'S', color: 'red', price: 100, stock: 3 },
+            { sku: `BATCH-M-RED-${suffix}`, size: 'M', color: 'red', price: 110, stock: 2 },
+          ],
+        },
+      },
+      201,
+    );
+    try {
+      let skus = await call('GET', `/admin/products/${batch.id}/variants`);
+      assert.equal(skus.length, 2);
+      assert.equal(skus.filter((row) => row.isDefault).length, 1);
+      const opening = await InventoryMovementModel.findAll({
+        where: { variantId: skus.map((row) => row.id), kind: 'opening' },
+      });
+      assert.equal(opening.length, 2);
+      const before = await call('GET', `/admin/products/${batch.id}`);
+      const response = await fetch(`${base}/products/${batch.id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: 'Must roll back',
+          expectedVersion: before.version,
+          variants: {
+            update: [{ id: skus[0].id, price: 999 }],
+            create: [{ sku: skus[1].sku, size: 'L', color: 'blue', price: 100 }],
+          },
+        }),
+      });
+      assert.equal(response.status, 409);
+      const error = await response.json();
+      assert.ok(error.extensions['variants.create.0.sku']);
+      assert.equal((await call('GET', `/admin/products/${batch.id}`)).name, before.name);
+      assert.equal((await call('GET', `/admin/products/${batch.id}`)).version, before.version);
+      assert.equal(
+        (await call('GET', `/admin/products/${batch.id}/variants`)).find(
+          (row) => row.id === skus[0].id,
+        ).price,
+        skus[0].price,
+      );
+      const saved = await call('PATCH', `/products/${batch.id}`, {
+        expectedVersion: before.version,
+        variants: {
+          delete: [skus[0].id],
+          update: [{ id: skus[1].id, price: 120, isDefault: true }],
+          create: [
+            { sku: `BATCH-L-BLUE-${suffix}`, size: 'L', color: 'blue', price: 130, stock: 4 },
+          ],
+        },
+      });
+      assert.equal(saved.version, before.version + 1);
+      skus = await call('GET', `/admin/products/${batch.id}/variants`);
+      assert.equal(skus.filter((row) => row.status === 'active').length, 2);
+      assert.equal(skus.filter((row) => row.isDefault).length, 1);
+      // A reservation must reject both delete and deactivate without persisting product edits.
+      const reserved = skus.find((row) => row.status === 'active');
+      await ProductVariantModel.update({ reserved: 1 }, { where: { id: reserved.id } });
+      for (const changes of [
+        { delete: [reserved.id] },
+        { update: [{ id: reserved.id, status: 'inactive' }] },
+      ])
+        await call(
+          'PATCH',
+          `/products/${batch.id}`,
+          { name: 'Must roll back', variants: changes },
+          409,
+        );
+      assert.equal((await call('GET', `/admin/products/${batch.id}`)).name, before.name);
+    } finally {
+      const rows = await ProductVariantModel.findAll({ where: { productId: batch.id } });
+      await InventoryMovementModel.destroy({ where: { variantId: rows.map((row) => row.id) } });
+      await ProductVariantModel.destroy({ where: { productId: batch.id } });
+      await ProductModel.destroy({ where: { id: batch.id } });
+      await DomainEventModel.destroy({
+        where: { aggregateId: [batch.id, ...rows.map((row) => row.id)] },
+      });
+      await AuditLogModel.destroy({
+        where: { resourceId: [batch.id, ...rows.map((row) => row.id)] },
+      });
+    }
   });
   test('drafts are private; publication requires a cover; admin read remains available', async () => {
     await call('GET', `/products/${product.id}`, undefined, 404, undefined, true);
@@ -208,6 +303,133 @@ describe('catalog and SKU inventory on local API', { skip: !base }, () => {
     );
     assert.equal(await InventoryMovementModel.count({ where: { variantId: variant.id } }), before);
     assert.equal((await call('GET', '/admin/inventory/reconciliation')).consistent, true);
+  });
+  test('PUT replaces the gallery with owned files in order, once, and rolls back invalid attachments', async () => {
+    const actor = await UserModel.findOne({ where: { email: 'admin@example.com' } });
+    const foreign = await UserModel.findOne({ where: { email: 'user001@example.com' } });
+    assert.ok(actor);
+    assert.ok(foreign);
+    const files = [];
+    const tickets = [];
+    const original = await call('GET', `/admin/products/${product.id}`);
+    try {
+      for (let index = 0; index < 5; index++) {
+        const storageId = `test-${suffix}-${index}`;
+        const file = await FileModel.create({
+          storageId,
+          provider: 'system',
+          url: 'https://example.invalid/photo.png',
+        });
+        files.push(file);
+        tickets.push(
+          await UploadTicketModel.create({
+            id: randomUUID(),
+            storageId,
+            fileId: file.id,
+            ownerId: index === 3 ? foreign.id : actor.id,
+            purpose: 'product',
+            resourceId: product.id,
+            status: 'completed',
+            private: false,
+            maxBytes: 100,
+            expiresAt: new Date(Date.now() + 60000),
+          }),
+        );
+      }
+      await call(
+        'POST',
+        `/products/${product.id}/images`,
+        { storageId: files[0].storageId, sortOrder: 7 },
+        201,
+      );
+      const before = await call('GET', `/admin/products/${product.id}`);
+      const auditCount = await AuditLogModel.count({
+        where: { resourceId: product.id, action: 'product.updated' },
+      });
+      const updated = await call('PUT', `/products/${product.id}`, {
+        expectedVersion: before.version,
+        imageStorageIds: [
+          files[0].storageId,
+          files[1].storageId,
+          files[1].storageId,
+          files[2].storageId,
+        ],
+      });
+      assert.equal(updated.version, before.version + 1);
+      assert.deepEqual(
+        updated.images.map((image) => image.fileId),
+        files.slice(0, 3).map((file) => file.id),
+      );
+      assert.deepEqual(
+        updated.images.map((image) => image.sortOrder),
+        [0, 1, 2],
+      );
+      assert.equal(updated.thumbnailId, original.thumbnailId);
+      assert.equal(
+        await AuditLogModel.count({ where: { resourceId: product.id, action: 'product.updated' } }),
+        auditCount + 1,
+      );
+      const replay = await call('PUT', `/products/${product.id}`, {
+        expectedVersion: updated.version,
+        imageStorageIds: files.slice(0, 3).map((file) => file.storageId),
+      });
+      assert.equal(replay.images.length, 3);
+      await call(
+        'PUT',
+        `/products/${product.id}`,
+        { expectedVersion: updated.version, imageStorageIds: [files[0].storageId] },
+        409,
+      );
+      await call(
+        'PUT',
+        `/products/${product.id}`,
+        {
+          name: 'Must roll back',
+          expectedVersion: replay.version,
+          imageStorageIds: [files[2].storageId, files[3].storageId],
+        },
+        403,
+      );
+      const after = await call('GET', `/admin/products/${product.id}`);
+      assert.equal(after.name, before.name);
+      assert.equal(after.version, replay.version);
+      assert.deepEqual(after.images, replay.images);
+      const thumbnailOnly = await call('PUT', `/products/${product.id}`, {
+        expectedVersion: after.version,
+        thumbnailStorageId: files[4].storageId,
+      });
+      assert.equal(thumbnailOnly.thumbnail.fileId, files[4].id);
+      assert.ok(thumbnailOnly.images.every((image) => image.fileId !== files[4].id));
+      assert.deepEqual(thumbnailOnly.images, after.images);
+      const cleared = await call('PUT', `/products/${product.id}`, {
+        expectedVersion: thumbnailOnly.version,
+        thumbnailStorageId: null,
+      });
+      assert.equal(cleared.thumbnailId, null);
+      assert.equal(cleared.thumbnail, null);
+      assert.equal(cleared.thumbnailUrl, cleared.images[0].url);
+      assert.deepEqual(cleared.images, after.images);
+      const listed = await call('GET', `/admin/products?q=Test%20clothing`);
+      assert.equal(listed.find((row) => row.id === product.id).thumbnailUrl, cleared.images[0].url);
+      await call(
+        'PUT',
+        `/products/${product.id}`,
+        {
+          thumbnailStorageId: files[3].storageId,
+        },
+        403,
+      );
+    } finally {
+      await ProductModel.update(
+        { thumbnailId: original.thumbnailId },
+        { where: { id: product.id } },
+      );
+      await ProductImageModel.destroy({
+        where: { productId: product.id, fileId: files.map((file) => file.id) },
+      });
+      await UploadTicketModel.destroy({ where: { id: tickets.map((ticket) => ticket.id) } });
+      await FileModel.destroy({ where: { id: files.map((file) => file.id) } });
+    }
   });
   test('archiving preserves records and keeps public lookup unavailable', async () => {
     await call('DELETE', `/products/${product.id}`);

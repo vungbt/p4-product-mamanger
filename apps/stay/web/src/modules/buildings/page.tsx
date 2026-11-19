@@ -16,15 +16,13 @@ import type { StayBuilding } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { BUILDINGS_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useCanAccess } from '@/libraries/ability';
 import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
 import { LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { buildingEditPath, buildingPricesPath, ROUTES } from '@/routing/route-configs';
 import { ArchiveBuildingDialog } from './archive-dialog';
-
-const PAGE_SIZE = 12;
-const SEARCH_DEBOUNCE_MS = 300;
 
 type StatusFilter = 'active' | 'archived';
 
@@ -42,6 +40,7 @@ function BuildingCard({
   onArchive: () => void;
 }) {
   const { t } = useTranslation('buildings');
+
   const navigate = useNavigate();
 
   const rate = occupancy(building.stats);
@@ -123,21 +122,27 @@ function BuildingCard({
 /** O-04 Danh sách toà. With a single building the owner goes straight to its form (O-05). */
 export default function BuildingsPage() {
   const { t } = useTranslation('buildings');
+
   const navigate = useNavigate();
+
   const canManage = useCanAccess('manage', 'Building');
+
   const [params, setParams] = useSearchParams();
+
   const [archiving, setArchiving] = useState<StayBuilding | null>(null);
 
   const status: StatusFilter = params.get('status') === 'archived' ? 'archived' : 'active';
   const page = Math.max(1, Number(params.get('page')) || 1);
   const urlQuery = params.get('q') ?? '';
+
   const [search, setSearch] = useState(urlQuery);
+
   const debouncedSearch = useDebounce(search, SEARCH_DEBOUNCE_MS);
 
   const query = useBuildings({
     status,
     page,
-    pageSize: PAGE_SIZE,
+    pageSize: BUILDINGS_PAGE_SIZE,
     ...(urlQuery ? { q: urlQuery } : {}),
   });
 
@@ -229,7 +234,16 @@ export default function BuildingsPage() {
         <EmptyState
           icon="buildings"
           variant={urlQuery ? 'no-results' : 'empty'}
-          title={urlQuery ? t('list.noResults') : t(`list.empty.${status}`)}
+          title={
+            urlQuery
+              ? t('list.noResults')
+              : ((
+                  {
+                    active: t('list.empty.active'),
+                    archived: t('list.empty.archived'),
+                  } as Record<string, string>
+                )[status] ?? String(status))
+          }
           description={urlQuery ? t('list.noResultsDescription') : undefined}
           action={
             canManage && status === 'active' && !urlQuery ? (

@@ -179,3 +179,38 @@ test('mutations invalidate generated caches only on success, never retry and pre
     client.clear();
   }
 });
+
+test('every generated mutation invalidates only its resource family and respects overrides', async () => {
+  const sdk = shared.createApiSdk({ baseUrl: 'https://example.invalid' });
+
+  const familyOf = (op) => {
+    if (op.path.includes('/size-guides')) return 'size-guides';
+    if (op.path.includes('/reviews') || op.path.includes('/review-summary')) return 'reviews';
+    if (op.path.includes('/products') && op.tag === 'catalog') return 'products';
+    if (op.path.includes('/admin/variants')) return 'products';
+    return op.tag;
+  };
+
+  const reads = manifest.filter((op) => op.method === 'get');
+  for (const op of manifest.filter((op) => op.method !== 'get')) {
+    const invalidated = [];
+    const client = {
+      invalidateQueries: ({ queryKey }) => {
+        invalidated.push(queryKey);
+      },
+    };
+    // biome-ignore lint/performance/noDynamicNamespaceImportAccess: Check every generated mutation factory.
+    const factory = react[`${op.name}MutationOptions`];
+    await factory(sdk, client).onSuccess();
+    const expected = reads
+      .filter((read) => familyOf(read) === familyOf(op))
+      .map((read) => ['api', read.operationId]);
+    if (familyOf(op) === 'categories') expected.push(['categories']);
+    assert.deepEqual(invalidated, expected, op.operationId);
+    invalidated.length = 0;
+    await factory(sdk, client, { invalidate: [] }).onSuccess();
+    assert.deepEqual(invalidated, [], op.operationId);
+    await factory(sdk, client, { invalidate: [['custom']] }).onSuccess();
+    assert.deepEqual(invalidated, [['custom']], op.operationId);
+  }
+});

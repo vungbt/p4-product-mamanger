@@ -11,8 +11,8 @@ import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCanAccess } from '@/libraries/ability';
+import { ROOM_STATUS_STYLES, type Room, RoomStatusBadge } from '@/modules/rooms/room-status';
 import { roomEditPath, roomPath } from '@/routing/route-configs';
-import { ROOM_STATUS_STYLES, type Room, RoomStatusBadge } from '../room-status';
 
 type QuickActionOptions = {
   room: Room;
@@ -91,8 +91,11 @@ type RoomTileProps = {
 /** One room of the map: a compact row on mobile, a card in the floor grid from `sm` up. */
 export function RoomTile({ room, canManage, onMaintenance, onCollect }: RoomTileProps) {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
+
   const { formatCurrency } = useFormatters();
+
   const canSettle = useCanAccess('settle', 'Contract');
 
   const style = ROOM_STATUS_STYLES[room.status];

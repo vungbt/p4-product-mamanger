@@ -41,8 +41,8 @@ export async function createFromStorageId(storageId: string, purpose: UploadPurp
 }
 
 export async function countFileReferences(fileId: string) {
-  const [asCover, asGallery, asAvatar, asVariant, asReturn] = await Promise.all([
-    ProductModel.count({ where: { imageId: fileId } }),
+  const [asThumbnail, asGallery, asAvatar, asVariant, asReturn] = await Promise.all([
+    ProductModel.count({ where: { thumbnailId: fileId } }),
     ProductImageModel.count({ where: { fileId } }),
     UserModel.count({ where: { avatarId: fileId } }),
     ProductVariantModel.count({ where: { imageIds: { [Op.contains]: [fileId] } } }),
@@ -50,24 +50,24 @@ export async function countFileReferences(fileId: string) {
   ]);
   const other = await sequelize.query<{ count: number }>(
     `SELECT (
-    (SELECT COUNT(*) FROM reviews WHERE media_ids @> ARRAY[:id]::uuid[]) +
+    (SELECT COUNT(*) FROM reviews WHERE image_ids @> ARRAY[:id]::uuid[]) +
     (SELECT COUNT(*) FROM support_messages WHERE attachment_ids @> ARRAY[:id]::uuid[]) +
-    (SELECT COUNT(*) FROM content_entries WHERE cover_file_id = :id OR body @> :body::jsonb OR published_snapshot @> :cover::jsonb OR published_snapshot @> :publishedBody::jsonb) +
-    (SELECT COUNT(*) FROM content_revisions WHERE snapshot @> :cover::jsonb OR snapshot @> :publishedBody::jsonb) +
+    (SELECT COUNT(*) FROM content_entries WHERE thumbnail_file_id = :id OR body @> :body::jsonb OR published_snapshot @> :thumbnail::jsonb OR published_snapshot @> :publishedBody::jsonb) +
+    (SELECT COUNT(*) FROM content_revisions WHERE snapshot @> :thumbnail::jsonb OR snapshot @> :publishedBody::jsonb) +
     (SELECT COUNT(*) FROM merchandising_entries WHERE payload @> :banner::jsonb)
   )::int AS count`,
     {
       replacements: {
         id: fileId,
         body: JSON.stringify([{ type: 'image', fileId }]),
-        cover: JSON.stringify({ coverFileId: fileId }),
+        thumbnail: JSON.stringify({ thumbnailFileId: fileId }),
         publishedBody: JSON.stringify({ body: [{ type: 'image', fileId }] }),
-        banner: JSON.stringify({ kind: 'banner', imageFileId: fileId }),
+        banner: JSON.stringify({ kind: 'banner', thumbnailFileId: fileId }),
       },
       type: QueryTypes.SELECT,
     },
   );
-  return asCover + asGallery + asAvatar + asVariant + asReturn + (other[0]?.count ?? 0);
+  return asThumbnail + asGallery + asAvatar + asVariant + asReturn + (other[0]?.count ?? 0);
 }
 
 /**

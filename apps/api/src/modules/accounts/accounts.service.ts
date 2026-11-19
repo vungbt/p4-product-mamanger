@@ -162,8 +162,8 @@ export async function patchProfile(
   userId: string,
   input: UpdateProfileInput & { expectedVersion: number },
 ) {
-  const file = input.imageStorageId
-    ? await createFromStorageId(input.imageStorageId, 'avatar')
+  const file = input.avatarStorageId
+    ? await createFromStorageId(input.avatarStorageId, 'avatar')
     : undefined;
   await auditedTransaction(async (transaction) => {
     const user = await UserModel.findByPk(userId, { transaction, lock: transaction.LOCK.UPDATE });

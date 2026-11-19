@@ -46,6 +46,13 @@ router.put(
   validateUpdateProduct,
   productsController.update,
 );
+router.patch(
+  '/:id',
+  authRequired,
+  requireAbility('write', 'Catalog'),
+  validateUpdateProduct,
+  productsController.update,
+);
 router.delete('/:id', authRequired, requireAbility('write', 'Catalog'), productsController.remove);
 router.post(
   '/:id/images',

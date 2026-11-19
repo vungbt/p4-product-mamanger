@@ -20,10 +20,192 @@ export const apiKeys = {
 };
 
 type QuerySettings<T> = Omit<UseQueryOptions<T>, 'queryFn' | 'queryKey'> & { queryKey?: QueryKey };
+
 export type ApiMutationSettings = { invalidate?: readonly QueryKey[] };
-const invalidate = (client: QueryClient, settings?: ApiMutationSettings) =>
+
+export const resourceInvalidationKeys: Record<string, readonly QueryKey[]> = {
+  'auth-native': [
+    ['api', 'auth_get__account_info'],
+    ['api', 'auth_get__callback_id_'],
+    ['api', 'auth_get__delete_user_callback'],
+    ['api', 'auth_get__error'],
+    ['api', 'auth_get__get_session'],
+    ['api', 'auth_get__list_accounts'],
+    ['api', 'auth_get__list_sessions'],
+    ['api', 'auth_get__ok'],
+    ['api', 'auth_get__reset_password_token_'],
+    ['api', 'auth_get__verify_email'],
+  ],
+  addresses: [['api', 'get_api_addresses']],
+  audit: [
+    ['api', 'get_api_admin_audit_logs'],
+    ['api', 'get_api_admin_audit_logs_id'],
+  ],
+  merchandising: [
+    ['api', 'get_api_admin_banners'],
+    ['api', 'get_api_admin_banners_id'],
+    ['api', 'get_api_admin_collections'],
+    ['api', 'get_api_admin_collections_id'],
+    ['api', 'get_api_admin_home_layout'],
+    ['api', 'get_api_admin_navigation_placement'],
+    ['api', 'get_api_collections'],
+    ['api', 'get_api_collections_slug'],
+    ['api', 'get_api_navigation_placement'],
+    ['api', 'get_api_storefront_home'],
+  ],
+  promotions: [
+    ['api', 'get_api_admin_coupons_id'],
+    ['api', 'get_api_admin_coupons_id_redemptions'],
+    ['api', 'get_api_admin_promotions'],
+    ['api', 'get_api_admin_promotions_id'],
+  ],
+  staff: [
+    ['api', 'get_api_admin_customers'],
+    ['api', 'get_api_admin_roles'],
+    ['api', 'get_api_admin_staff'],
+  ],
+  exchanges: [
+    ['api', 'get_api_admin_exchanges'],
+    ['api', 'get_api_exchanges_id'],
+    ['api', 'get_api_exchanges_mine'],
+  ],
+  processes: [
+    ['api', 'get_api_admin_import_templates_resource'],
+    ['api', 'get_api_processes'],
+    ['api', 'get_api_processes_id'],
+    ['api', 'get_api_processes_id_download'],
+    ['api', 'get_api_processes_id_items'],
+  ],
+  inventory: [
+    ['api', 'get_api_admin_inventory'],
+    ['api', 'get_api_admin_inventory_movements'],
+    ['api', 'get_api_admin_inventory_reconciliation'],
+  ],
+  jobs: [
+    ['api', 'get_api_admin_jobs'],
+    ['api', 'get_api_admin_jobs_id'],
+  ],
+  notifications: [
+    ['api', 'get_api_admin_notification_templates'],
+    ['api', 'get_api_me_notification_preferences'],
+    ['api', 'get_api_notifications'],
+    ['api', 'get_api_notifications_unread_count'],
+  ],
+  content: [
+    ['api', 'get_api_admin_pages'],
+    ['api', 'get_api_admin_pages_id'],
+    ['api', 'get_api_admin_pages_id_revisions'],
+    ['api', 'get_api_admin_posts'],
+    ['api', 'get_api_admin_posts_id'],
+    ['api', 'get_api_admin_posts_id_revisions'],
+    ['api', 'get_api_pages_slug'],
+    ['api', 'get_api_policies_current'],
+    ['api', 'get_api_post_categories'],
+    ['api', 'get_api_posts'],
+    ['api', 'get_api_posts_slug'],
+    ['api', 'get_api_post_tags'],
+  ],
+  products: [
+    ['api', 'get_api_admin_products'],
+    ['api', 'get_api_admin_products_id'],
+    ['api', 'get_api_admin_products_id_variants'],
+    ['api', 'get_api_admin_variants'],
+    ['api', 'get_api_products'],
+    ['api', 'get_api_products_by_slug_slug'],
+    ['api', 'get_api_products_id'],
+    ['api', 'get_api_products_id_variants'],
+  ],
+  reports: [
+    ['api', 'get_api_admin_report_exports_id'],
+    ['api', 'get_api_admin_report_exports_id_download'],
+    ['api', 'get_api_admin_reports_inventory'],
+    ['api', 'get_api_admin_reports_orders'],
+    ['api', 'get_api_admin_reports_products'],
+    ['api', 'get_api_admin_reports_sales'],
+  ],
+  returns: [
+    ['api', 'get_api_admin_returns'],
+    ['api', 'get_api_returns_id'],
+    ['api', 'get_api_returns_mine'],
+  ],
+  reviews: [
+    ['api', 'get_api_admin_reviews'],
+    ['api', 'get_api_products_id_reviews'],
+    ['api', 'get_api_products_id_review_summary'],
+  ],
+  settings: [
+    ['api', 'get_api_admin_settings_commerce'],
+    ['api', 'get_api_admin_settings_shop'],
+    ['api', 'get_api_admin_shipping_methods'],
+    ['api', 'get_api_admin_shipping_methods_id'],
+    ['api', 'get_api_shop_config'],
+  ],
+  'size-guides': [
+    ['api', 'get_api_admin_size_guides'],
+    ['api', 'get_api_admin_size_guides_id'],
+  ],
+  support: [
+    ['api', 'get_api_admin_support_tickets'],
+    ['api', 'get_api_support_tickets_id'],
+    ['api', 'get_api_support_tickets_id_messages'],
+    ['api', 'get_api_support_tickets_mine'],
+  ],
+  system: [
+    ['api', 'get_api_admin_system_contracts'],
+    ['api', 'get_api_me_capabilities'],
+  ],
+  auth: [['api', 'get_api_auth_me']],
+  orders: [
+    ['api', 'get_api_cancellation_requests_id'],
+    ['api', 'get_api_orders'],
+    ['api', 'get_api_orders_id'],
+    ['api', 'get_api_orders_id_events'],
+    ['api', 'get_api_orders_mine'],
+  ],
+  cart: [['api', 'get_api_cart']],
+  categories: [['api', 'get_api_categories'], ['api', 'get_api_categories_id'], ['categories']],
+  checkout: [['api', 'get_api_checkout_quotes_id']],
+  coupons: [['api', 'get_api_coupons']],
+  dashboard: [['api', 'get_api_dashboard_stats']],
+  files: [
+    ['api', 'get_api_files_id_download'],
+    ['api', 'get_api_files_sign_upload_url'],
+    ['api', 'get_api_files_sign_upload_urls'],
+    ['api', 'get_api_files_uploads_id'],
+  ],
+  operations: [
+    ['api', 'get_health'],
+    ['api', 'get_health_live'],
+    ['api', 'get_health_ready'],
+    ['api', 'get_api_internal_metrics'],
+  ],
+  accounts: [
+    ['api', 'get_api_me_preferences'],
+    ['api', 'get_api_me_profile'],
+    ['api', 'get_api_me_sessions'],
+  ],
+  payments: [['api', 'get_api_orders_id_payments']],
+  fulfillment: [
+    ['api', 'get_api_orders_id_shipments'],
+    ['api', 'get_api_shipments_id_events'],
+  ],
+  discovery: [
+    ['api', 'get_api_products_facets'],
+    ['api', 'get_api_search_suggestions'],
+  ],
+  refunds: [
+    ['api', 'get_api_refunds'],
+    ['api', 'get_api_refunds_id'],
+  ],
+  wishlist: [
+    ['api', 'get_api_stock_alert_subscriptions_mine'],
+    ['api', 'get_api_wishlist'],
+  ],
+};
+
+const invalidate = (client: QueryClient, resource: string, settings?: ApiMutationSettings) =>
   Promise.all(
-    (settings?.invalidate ?? [apiKeys.all]).map((queryKey) =>
+    (settings?.invalidate ?? resourceInvalidationKeys[resource] ?? []).map((queryKey) =>
       client.invalidateQueries({ queryKey }),
     ),
   );
@@ -39,6 +221,7 @@ export function authGetAccountInfoQueryOptions(
     queryFn: ({ signal }) => api.authGetAccountInfo(sdk, { ...input, signal }),
   });
 }
+
 export function useAuthGetAccountInfo(
   input: api.AuthGetAccountInfoInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.authGetAccountInfo>>>,
@@ -57,6 +240,7 @@ export function authGetCallbackIdQueryOptions(
     queryFn: ({ signal }) => api.authGetCallbackId(sdk, { ...input, signal }),
   });
 }
+
 export function useAuthGetCallbackId(
   input: api.AuthGetCallbackIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.authGetCallbackId>>>,
@@ -76,6 +260,7 @@ export function authGetDeleteUserCallbackQueryOptions(
     queryFn: ({ signal }) => api.authGetDeleteUserCallback(sdk, { ...input, signal }),
   });
 }
+
 export function useAuthGetDeleteUserCallback(
   input: api.AuthGetDeleteUserCallbackInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.authGetDeleteUserCallback>>>,
@@ -94,6 +279,7 @@ export function authGetErrorQueryOptions(
     queryFn: ({ signal }) => api.authGetError(sdk, { ...input, signal }),
   });
 }
+
 export function useAuthGetError(
   input: api.AuthGetErrorInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.authGetError>>>,
@@ -112,6 +298,7 @@ export function authGetGetSessionQueryOptions(
     queryFn: ({ signal }) => api.authGetGetSession(sdk, { ...input, signal }),
   });
 }
+
 export function useAuthGetGetSession(
   input: api.AuthGetGetSessionInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.authGetGetSession>>>,
@@ -130,6 +317,7 @@ export function authGetListAccountsQueryOptions(
     queryFn: ({ signal }) => api.authGetListAccounts(sdk, { ...input, signal }),
   });
 }
+
 export function useAuthGetListAccounts(
   input: api.AuthGetListAccountsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.authGetListAccounts>>>,
@@ -148,6 +336,7 @@ export function authGetListSessionsQueryOptions(
     queryFn: ({ signal }) => api.authGetListSessions(sdk, { ...input, signal }),
   });
 }
+
 export function useAuthGetListSessions(
   input: api.AuthGetListSessionsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.authGetListSessions>>>,
@@ -166,6 +355,7 @@ export function authGetOkQueryOptions(
     queryFn: ({ signal }) => api.authGetOk(sdk, { ...input, signal }),
   });
 }
+
 export function useAuthGetOk(
   input: api.AuthGetOkInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.authGetOk>>>,
@@ -185,6 +375,7 @@ export function authGetResetPasswordTokenQueryOptions(
     queryFn: ({ signal }) => api.authGetResetPasswordToken(sdk, { ...input, signal }),
   });
 }
+
 export function useAuthGetResetPasswordToken(
   input: api.AuthGetResetPasswordTokenInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.authGetResetPasswordToken>>>,
@@ -203,6 +394,7 @@ export function authGetVerifyEmailQueryOptions(
     queryFn: ({ signal }) => api.authGetVerifyEmail(sdk, { ...input, signal }),
   });
 }
+
 export function useAuthGetVerifyEmail(
   input: api.AuthGetVerifyEmailInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.authGetVerifyEmail>>>,
@@ -218,9 +410,10 @@ export function authPostCallbackIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostCallbackIdInput) => api.authPostCallbackId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostCallbackId(settings?: ApiMutationSettings) {
   return useMutation(authPostCallbackIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -233,9 +426,10 @@ export function authPostChangeEmailMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostChangeEmailInput) => api.authPostChangeEmail(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostChangeEmail(settings?: ApiMutationSettings) {
   return useMutation(authPostChangeEmailMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -248,9 +442,10 @@ export function authPostChangePasswordMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostChangePasswordInput) => api.authPostChangePassword(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostChangePassword(settings?: ApiMutationSettings) {
   return useMutation(
     authPostChangePasswordMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -265,9 +460,10 @@ export function authPostDeleteUserMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostDeleteUserInput) => api.authPostDeleteUser(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostDeleteUser(settings?: ApiMutationSettings) {
   return useMutation(authPostDeleteUserMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -280,9 +476,10 @@ export function authPostGetAccessTokenMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostGetAccessTokenInput) => api.authPostGetAccessToken(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostGetAccessToken(settings?: ApiMutationSettings) {
   return useMutation(
     authPostGetAccessTokenMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -297,9 +494,10 @@ export function authPostGetSessionMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostGetSessionInput) => api.authPostGetSession(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostGetSession(settings?: ApiMutationSettings) {
   return useMutation(authPostGetSessionMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -312,9 +510,10 @@ export function authPostLinkSocialMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostLinkSocialInput) => api.authPostLinkSocial(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostLinkSocial(settings?: ApiMutationSettings) {
   return useMutation(authPostLinkSocialMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -327,9 +526,10 @@ export function authPostRefreshTokenMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostRefreshTokenInput) => api.authPostRefreshToken(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostRefreshToken(settings?: ApiMutationSettings) {
   return useMutation(authPostRefreshTokenMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -343,9 +543,10 @@ export function authPostRequestPasswordResetMutationOptions(
     mutationFn: (input: api.AuthPostRequestPasswordResetInput) =>
       api.authPostRequestPasswordReset(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostRequestPasswordReset(settings?: ApiMutationSettings) {
   return useMutation(
     authPostRequestPasswordResetMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -360,9 +561,10 @@ export function authPostResetPasswordMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostResetPasswordInput) => api.authPostResetPassword(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostResetPassword(settings?: ApiMutationSettings) {
   return useMutation(authPostResetPasswordMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -376,9 +578,10 @@ export function authPostRevokeOtherSessionsMutationOptions(
     mutationFn: (input: api.AuthPostRevokeOtherSessionsInput) =>
       api.authPostRevokeOtherSessions(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostRevokeOtherSessions(settings?: ApiMutationSettings) {
   return useMutation(
     authPostRevokeOtherSessionsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -393,9 +596,10 @@ export function authPostRevokeSessionMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostRevokeSessionInput) => api.authPostRevokeSession(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostRevokeSession(settings?: ApiMutationSettings) {
   return useMutation(authPostRevokeSessionMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -408,9 +612,10 @@ export function authPostRevokeSessionsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostRevokeSessionsInput) => api.authPostRevokeSessions(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostRevokeSessions(settings?: ApiMutationSettings) {
   return useMutation(
     authPostRevokeSessionsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -426,9 +631,10 @@ export function authPostSendVerificationEmailMutationOptions(
     mutationFn: (input: api.AuthPostSendVerificationEmailInput) =>
       api.authPostSendVerificationEmail(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostSendVerificationEmail(settings?: ApiMutationSettings) {
   return useMutation(
     authPostSendVerificationEmailMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -443,9 +649,10 @@ export function authPostSignInEmailMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostSignInEmailInput) => api.authPostSignInEmail(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostSignInEmail(settings?: ApiMutationSettings) {
   return useMutation(authPostSignInEmailMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -458,9 +665,10 @@ export function authPostSignInSocialMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostSignInSocialInput) => api.authPostSignInSocial(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostSignInSocial(settings?: ApiMutationSettings) {
   return useMutation(authPostSignInSocialMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -473,9 +681,10 @@ export function authPostSignOutMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostSignOutInput) => api.authPostSignOut(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostSignOut(settings?: ApiMutationSettings) {
   return useMutation(authPostSignOutMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -488,9 +697,10 @@ export function authPostSignUpEmailMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostSignUpEmailInput) => api.authPostSignUpEmail(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostSignUpEmail(settings?: ApiMutationSettings) {
   return useMutation(authPostSignUpEmailMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -503,9 +713,10 @@ export function authPostUnlinkAccountMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostUnlinkAccountInput) => api.authPostUnlinkAccount(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostUnlinkAccount(settings?: ApiMutationSettings) {
   return useMutation(authPostUnlinkAccountMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -518,9 +729,10 @@ export function authPostUpdateSessionMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostUpdateSessionInput) => api.authPostUpdateSession(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostUpdateSession(settings?: ApiMutationSettings) {
   return useMutation(authPostUpdateSessionMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -533,9 +745,10 @@ export function authPostUpdateUserMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostUpdateUserInput) => api.authPostUpdateUser(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostUpdateUser(settings?: ApiMutationSettings) {
   return useMutation(authPostUpdateUserMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -548,9 +761,10 @@ export function authPostVerifyPasswordMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.AuthPostVerifyPasswordInput) => api.authPostVerifyPassword(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth-native', settings),
   });
 }
+
 export function useAuthPostVerifyPassword(settings?: ApiMutationSettings) {
   return useMutation(
     authPostVerifyPasswordMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -565,9 +779,10 @@ export function deleteAddressesIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.DeleteAddressesIdInput) => api.deleteAddressesId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'addresses', settings),
   });
 }
+
 export function useDeleteAddressesId(settings?: ApiMutationSettings) {
   return useMutation(deleteAddressesIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -580,9 +795,10 @@ export function deleteCartItemsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.DeleteCartItemsInput) => api.deleteCartItems(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'cart', settings),
   });
 }
+
 export function useDeleteCartItems(settings?: ApiMutationSettings) {
   return useMutation(deleteCartItemsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -595,9 +811,10 @@ export function deleteCartItemsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.DeleteCartItemsIdInput) => api.deleteCartItemsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'cart', settings),
   });
 }
+
 export function useDeleteCartItemsId(settings?: ApiMutationSettings) {
   return useMutation(deleteCartItemsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -610,9 +827,10 @@ export function deleteCategoriesIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.DeleteCategoriesIdInput) => api.deleteCategoriesId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'categories', settings),
   });
 }
+
 export function useDeleteCategoriesId(settings?: ApiMutationSettings) {
   return useMutation(deleteCategoriesIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -625,9 +843,10 @@ export function deleteCouponsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.DeleteCouponsIdInput) => api.deleteCouponsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'coupons', settings),
   });
 }
+
 export function useDeleteCouponsId(settings?: ApiMutationSettings) {
   return useMutation(deleteCouponsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -640,9 +859,10 @@ export function deleteFilesIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.DeleteFilesIdInput) => api.deleteFilesId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'files', settings),
   });
 }
+
 export function useDeleteFilesId(settings?: ApiMutationSettings) {
   return useMutation(deleteFilesIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -655,9 +875,10 @@ export function deleteMeSessionsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.DeleteMeSessionsIdInput) => api.deleteMeSessionsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function useDeleteMeSessionsId(settings?: ApiMutationSettings) {
   return useMutation(deleteMeSessionsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -670,9 +891,10 @@ export function deleteProductsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.DeleteProductsIdInput) => api.deleteProductsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'products', settings),
   });
 }
+
 export function useDeleteProductsId(settings?: ApiMutationSettings) {
   return useMutation(deleteProductsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -686,9 +908,10 @@ export function deleteProductsIdImagesImageIdMutationOptions(
     mutationFn: (input: api.DeleteProductsIdImagesImageIdInput) =>
       api.deleteProductsIdImagesImageId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'products', settings),
   });
 }
+
 export function useDeleteProductsIdImagesImageId(settings?: ApiMutationSettings) {
   return useMutation(
     deleteProductsIdImagesImageIdMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -704,9 +927,10 @@ export function deleteProductsIdReviewsReviewIdMutationOptions(
     mutationFn: (input: api.DeleteProductsIdReviewsReviewIdInput) =>
       api.deleteProductsIdReviewsReviewId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'reviews', settings),
   });
 }
+
 export function useDeleteProductsIdReviewsReviewId(settings?: ApiMutationSettings) {
   return useMutation(
     deleteProductsIdReviewsReviewIdMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -722,9 +946,10 @@ export function deleteStockAlertSubscriptionsIdMutationOptions(
     mutationFn: (input: api.DeleteStockAlertSubscriptionsIdInput) =>
       api.deleteStockAlertSubscriptionsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'wishlist', settings),
   });
 }
+
 export function useDeleteStockAlertSubscriptionsId(settings?: ApiMutationSettings) {
   return useMutation(
     deleteStockAlertSubscriptionsIdMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -740,9 +965,10 @@ export function deleteWishlistItemsProductIdMutationOptions(
     mutationFn: (input: api.DeleteWishlistItemsProductIdInput) =>
       api.deleteWishlistItemsProductId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'wishlist', settings),
   });
 }
+
 export function useDeleteWishlistItemsProductId(settings?: ApiMutationSettings) {
   return useMutation(
     deleteWishlistItemsProductIdMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -760,6 +986,7 @@ export function getAddressesQueryOptions(
     queryFn: ({ signal }) => api.getAddresses(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAddresses(
   input: api.GetAddressesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAddresses>>>,
@@ -778,6 +1005,7 @@ export function getAdminAuditLogsQueryOptions(
     queryFn: ({ signal }) => api.getAdminAuditLogs(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminAuditLogs(
   input: api.GetAdminAuditLogsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminAuditLogs>>>,
@@ -796,6 +1024,7 @@ export function getAdminAuditLogsIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminAuditLogsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminAuditLogsId(
   input: api.GetAdminAuditLogsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminAuditLogsId>>>,
@@ -814,6 +1043,7 @@ export function getAdminBannersQueryOptions(
     queryFn: ({ signal }) => api.getAdminBanners(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminBanners(
   input: api.GetAdminBannersInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminBanners>>>,
@@ -832,6 +1062,7 @@ export function getAdminBannersIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminBannersId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminBannersId(
   input: api.GetAdminBannersIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminBannersId>>>,
@@ -850,6 +1081,7 @@ export function getAdminCollectionsQueryOptions(
     queryFn: ({ signal }) => api.getAdminCollections(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminCollections(
   input: api.GetAdminCollectionsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminCollections>>>,
@@ -868,6 +1100,7 @@ export function getAdminCollectionsIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminCollectionsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminCollectionsId(
   input: api.GetAdminCollectionsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminCollectionsId>>>,
@@ -886,6 +1119,7 @@ export function getAdminCouponsIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminCouponsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminCouponsId(
   input: api.GetAdminCouponsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminCouponsId>>>,
@@ -905,6 +1139,7 @@ export function getAdminCouponsIdRedemptionsQueryOptions(
     queryFn: ({ signal }) => api.getAdminCouponsIdRedemptions(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminCouponsIdRedemptions(
   input: api.GetAdminCouponsIdRedemptionsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminCouponsIdRedemptions>>>,
@@ -923,6 +1158,7 @@ export function getAdminCustomersQueryOptions(
     queryFn: ({ signal }) => api.getAdminCustomers(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminCustomers(
   input: api.GetAdminCustomersInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminCustomers>>>,
@@ -941,6 +1177,7 @@ export function getAdminExchangesQueryOptions(
     queryFn: ({ signal }) => api.getAdminExchanges(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminExchanges(
   input: api.GetAdminExchangesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminExchanges>>>,
@@ -959,6 +1196,7 @@ export function getAdminHomeLayoutQueryOptions(
     queryFn: ({ signal }) => api.getAdminHomeLayout(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminHomeLayout(
   input: api.GetAdminHomeLayoutInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminHomeLayout>>>,
@@ -979,6 +1217,7 @@ export function getAdminImportTemplatesResourceQueryOptions(
     queryFn: ({ signal }) => api.getAdminImportTemplatesResource(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminImportTemplatesResource(
   input: api.GetAdminImportTemplatesResourceInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminImportTemplatesResource>>>,
@@ -997,6 +1236,7 @@ export function getAdminInventoryQueryOptions(
     queryFn: ({ signal }) => api.getAdminInventory(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminInventory(
   input: api.GetAdminInventoryInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminInventory>>>,
@@ -1016,6 +1256,7 @@ export function getAdminInventoryMovementsQueryOptions(
     queryFn: ({ signal }) => api.getAdminInventoryMovements(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminInventoryMovements(
   input: api.GetAdminInventoryMovementsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminInventoryMovements>>>,
@@ -1036,6 +1277,7 @@ export function getAdminInventoryReconciliationQueryOptions(
     queryFn: ({ signal }) => api.getAdminInventoryReconciliation(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminInventoryReconciliation(
   input: api.GetAdminInventoryReconciliationInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminInventoryReconciliation>>>,
@@ -1054,6 +1296,7 @@ export function getAdminJobsQueryOptions(
     queryFn: ({ signal }) => api.getAdminJobs(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminJobs(
   input: api.GetAdminJobsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminJobs>>>,
@@ -1072,6 +1315,7 @@ export function getAdminJobsIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminJobsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminJobsId(
   input: api.GetAdminJobsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminJobsId>>>,
@@ -1091,6 +1335,7 @@ export function getAdminNavigationPlacementQueryOptions(
     queryFn: ({ signal }) => api.getAdminNavigationPlacement(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminNavigationPlacement(
   input: api.GetAdminNavigationPlacementInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminNavigationPlacement>>>,
@@ -1110,6 +1355,7 @@ export function getAdminNotificationTemplatesQueryOptions(
     queryFn: ({ signal }) => api.getAdminNotificationTemplates(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminNotificationTemplates(
   input: api.GetAdminNotificationTemplatesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminNotificationTemplates>>>,
@@ -1128,6 +1374,7 @@ export function getAdminPagesQueryOptions(
     queryFn: ({ signal }) => api.getAdminPages(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminPages(
   input: api.GetAdminPagesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminPages>>>,
@@ -1146,6 +1393,7 @@ export function getAdminPagesIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminPagesId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminPagesId(
   input: api.GetAdminPagesIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminPagesId>>>,
@@ -1165,6 +1413,7 @@ export function getAdminPagesIdRevisionsQueryOptions(
     queryFn: ({ signal }) => api.getAdminPagesIdRevisions(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminPagesIdRevisions(
   input: api.GetAdminPagesIdRevisionsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminPagesIdRevisions>>>,
@@ -1183,6 +1432,7 @@ export function getAdminPostsQueryOptions(
     queryFn: ({ signal }) => api.getAdminPosts(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminPosts(
   input: api.GetAdminPostsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminPosts>>>,
@@ -1201,6 +1451,7 @@ export function getAdminPostsIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminPostsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminPostsId(
   input: api.GetAdminPostsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminPostsId>>>,
@@ -1220,6 +1471,7 @@ export function getAdminPostsIdRevisionsQueryOptions(
     queryFn: ({ signal }) => api.getAdminPostsIdRevisions(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminPostsIdRevisions(
   input: api.GetAdminPostsIdRevisionsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminPostsIdRevisions>>>,
@@ -1238,6 +1490,7 @@ export function getAdminProductsQueryOptions(
     queryFn: ({ signal }) => api.getAdminProducts(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminProducts(
   input: api.GetAdminProductsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminProducts>>>,
@@ -1256,6 +1509,7 @@ export function getAdminProductsIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminProductsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminProductsId(
   input: api.GetAdminProductsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminProductsId>>>,
@@ -1275,6 +1529,7 @@ export function getAdminProductsIdVariantsQueryOptions(
     queryFn: ({ signal }) => api.getAdminProductsIdVariants(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminProductsIdVariants(
   input: api.GetAdminProductsIdVariantsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminProductsIdVariants>>>,
@@ -1293,6 +1548,7 @@ export function getAdminPromotionsQueryOptions(
     queryFn: ({ signal }) => api.getAdminPromotions(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminPromotions(
   input: api.GetAdminPromotionsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminPromotions>>>,
@@ -1311,6 +1567,7 @@ export function getAdminPromotionsIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminPromotionsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminPromotionsId(
   input: api.GetAdminPromotionsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminPromotionsId>>>,
@@ -1330,6 +1587,7 @@ export function getAdminReportExportsIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminReportExportsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminReportExportsId(
   input: api.GetAdminReportExportsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminReportExportsId>>>,
@@ -1350,6 +1608,7 @@ export function getAdminReportExportsIdDownloadQueryOptions(
     queryFn: ({ signal }) => api.getAdminReportExportsIdDownload(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminReportExportsIdDownload(
   input: api.GetAdminReportExportsIdDownloadInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminReportExportsIdDownload>>>,
@@ -1369,6 +1628,7 @@ export function getAdminReportsInventoryQueryOptions(
     queryFn: ({ signal }) => api.getAdminReportsInventory(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminReportsInventory(
   input: api.GetAdminReportsInventoryInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminReportsInventory>>>,
@@ -1387,6 +1647,7 @@ export function getAdminReportsOrdersQueryOptions(
     queryFn: ({ signal }) => api.getAdminReportsOrders(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminReportsOrders(
   input: api.GetAdminReportsOrdersInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminReportsOrders>>>,
@@ -1406,6 +1667,7 @@ export function getAdminReportsProductsQueryOptions(
     queryFn: ({ signal }) => api.getAdminReportsProducts(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminReportsProducts(
   input: api.GetAdminReportsProductsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminReportsProducts>>>,
@@ -1424,6 +1686,7 @@ export function getAdminReportsSalesQueryOptions(
     queryFn: ({ signal }) => api.getAdminReportsSales(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminReportsSales(
   input: api.GetAdminReportsSalesInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminReportsSales>>>,
@@ -1442,6 +1705,7 @@ export function getAdminReturnsQueryOptions(
     queryFn: ({ signal }) => api.getAdminReturns(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminReturns(
   input: api.GetAdminReturnsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminReturns>>>,
@@ -1460,6 +1724,7 @@ export function getAdminReviewsQueryOptions(
     queryFn: ({ signal }) => api.getAdminReviews(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminReviews(
   input: api.GetAdminReviewsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminReviews>>>,
@@ -1478,6 +1743,7 @@ export function getAdminRolesQueryOptions(
     queryFn: ({ signal }) => api.getAdminRoles(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminRoles(
   input: api.GetAdminRolesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminRoles>>>,
@@ -1497,6 +1763,7 @@ export function getAdminSettingsCommerceQueryOptions(
     queryFn: ({ signal }) => api.getAdminSettingsCommerce(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminSettingsCommerce(
   input: api.GetAdminSettingsCommerceInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminSettingsCommerce>>>,
@@ -1515,6 +1782,7 @@ export function getAdminSettingsShopQueryOptions(
     queryFn: ({ signal }) => api.getAdminSettingsShop(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminSettingsShop(
   input: api.GetAdminSettingsShopInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminSettingsShop>>>,
@@ -1534,6 +1802,7 @@ export function getAdminShippingMethodsQueryOptions(
     queryFn: ({ signal }) => api.getAdminShippingMethods(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminShippingMethods(
   input: api.GetAdminShippingMethodsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminShippingMethods>>>,
@@ -1553,6 +1822,7 @@ export function getAdminShippingMethodsIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminShippingMethodsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminShippingMethodsId(
   input: api.GetAdminShippingMethodsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminShippingMethodsId>>>,
@@ -1571,6 +1841,7 @@ export function getAdminSizeGuidesQueryOptions(
     queryFn: ({ signal }) => api.getAdminSizeGuides(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminSizeGuides(
   input: api.GetAdminSizeGuidesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminSizeGuides>>>,
@@ -1589,6 +1860,7 @@ export function getAdminSizeGuidesIdQueryOptions(
     queryFn: ({ signal }) => api.getAdminSizeGuidesId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminSizeGuidesId(
   input: api.GetAdminSizeGuidesIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminSizeGuidesId>>>,
@@ -1607,6 +1879,7 @@ export function getAdminStaffQueryOptions(
     queryFn: ({ signal }) => api.getAdminStaff(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminStaff(
   input: api.GetAdminStaffInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminStaff>>>,
@@ -1626,6 +1899,7 @@ export function getAdminSupportTicketsQueryOptions(
     queryFn: ({ signal }) => api.getAdminSupportTickets(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminSupportTickets(
   input: api.GetAdminSupportTicketsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminSupportTickets>>>,
@@ -1645,6 +1919,7 @@ export function getAdminSystemContractsQueryOptions(
     queryFn: ({ signal }) => api.getAdminSystemContracts(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminSystemContracts(
   input: api.GetAdminSystemContractsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminSystemContracts>>>,
@@ -1663,6 +1938,7 @@ export function getAdminVariantsQueryOptions(
     queryFn: ({ signal }) => api.getAdminVariants(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAdminVariants(
   input: api.GetAdminVariantsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAdminVariants>>>,
@@ -1681,6 +1957,7 @@ export function getAuthMeQueryOptions(
     queryFn: ({ signal }) => api.getAuthMe(sdk, { ...input, signal }),
   });
 }
+
 export function useGetAuthMe(
   input: api.GetAuthMeInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getAuthMe>>>,
@@ -1700,6 +1977,7 @@ export function getCancellationRequestsIdQueryOptions(
     queryFn: ({ signal }) => api.getCancellationRequestsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetCancellationRequestsId(
   input: api.GetCancellationRequestsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getCancellationRequestsId>>>,
@@ -1718,6 +1996,7 @@ export function getCartQueryOptions(
     queryFn: ({ signal }) => api.getCart(sdk, { ...input, signal }),
   });
 }
+
 export function useGetCart(
   input: api.GetCartInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getCart>>>,
@@ -1736,6 +2015,7 @@ export function getCategoriesQueryOptions(
     queryFn: ({ signal }) => api.getCategories(sdk, { ...input, signal }),
   });
 }
+
 export function useGetCategories(
   input: api.GetCategoriesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getCategories>>>,
@@ -1754,6 +2034,7 @@ export function getCategoriesIdQueryOptions(
     queryFn: ({ signal }) => api.getCategoriesId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetCategoriesId(
   input: api.GetCategoriesIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getCategoriesId>>>,
@@ -1772,6 +2053,7 @@ export function getCheckoutQuotesIdQueryOptions(
     queryFn: ({ signal }) => api.getCheckoutQuotesId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetCheckoutQuotesId(
   input: api.GetCheckoutQuotesIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getCheckoutQuotesId>>>,
@@ -1790,6 +2072,7 @@ export function getCollectionsQueryOptions(
     queryFn: ({ signal }) => api.getCollections(sdk, { ...input, signal }),
   });
 }
+
 export function useGetCollections(
   input: api.GetCollectionsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getCollections>>>,
@@ -1808,6 +2091,7 @@ export function getCollectionsSlugQueryOptions(
     queryFn: ({ signal }) => api.getCollectionsSlug(sdk, { ...input, signal }),
   });
 }
+
 export function useGetCollectionsSlug(
   input: api.GetCollectionsSlugInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getCollectionsSlug>>>,
@@ -1826,6 +2110,7 @@ export function getCouponsQueryOptions(
     queryFn: ({ signal }) => api.getCoupons(sdk, { ...input, signal }),
   });
 }
+
 export function useGetCoupons(
   input: api.GetCouponsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getCoupons>>>,
@@ -1844,6 +2129,7 @@ export function getDashboardStatsQueryOptions(
     queryFn: ({ signal }) => api.getDashboardStats(sdk, { ...input, signal }),
   });
 }
+
 export function useGetDashboardStats(
   input: api.GetDashboardStatsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getDashboardStats>>>,
@@ -1862,6 +2148,7 @@ export function getExchangesIdQueryOptions(
     queryFn: ({ signal }) => api.getExchangesId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetExchangesId(
   input: api.GetExchangesIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getExchangesId>>>,
@@ -1880,6 +2167,7 @@ export function getExchangesMineQueryOptions(
     queryFn: ({ signal }) => api.getExchangesMine(sdk, { ...input, signal }),
   });
 }
+
 export function useGetExchangesMine(
   input: api.GetExchangesMineInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getExchangesMine>>>,
@@ -1898,6 +2186,7 @@ export function getFilesIdDownloadQueryOptions(
     queryFn: ({ signal }) => api.getFilesIdDownload(sdk, { ...input, signal }),
   });
 }
+
 export function useGetFilesIdDownload(
   input: api.GetFilesIdDownloadInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getFilesIdDownload>>>,
@@ -1917,6 +2206,7 @@ export function getFilesSignUploadUrlQueryOptions(
     queryFn: ({ signal }) => api.getFilesSignUploadUrl(sdk, { ...input, signal }),
   });
 }
+
 export function useGetFilesSignUploadUrl(
   input: api.GetFilesSignUploadUrlInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getFilesSignUploadUrl>>>,
@@ -1936,6 +2226,7 @@ export function getFilesSignUploadUrlsQueryOptions(
     queryFn: ({ signal }) => api.getFilesSignUploadUrls(sdk, { ...input, signal }),
   });
 }
+
 export function useGetFilesSignUploadUrls(
   input: api.GetFilesSignUploadUrlsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getFilesSignUploadUrls>>>,
@@ -1954,6 +2245,7 @@ export function getFilesUploadsIdQueryOptions(
     queryFn: ({ signal }) => api.getFilesUploadsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetFilesUploadsId(
   input: api.GetFilesUploadsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getFilesUploadsId>>>,
@@ -1972,6 +2264,7 @@ export function getHealthQueryOptions(
     queryFn: ({ signal }) => api.getHealth(sdk, { ...input, signal }),
   });
 }
+
 export function useGetHealth(
   input: api.GetHealthInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getHealth>>>,
@@ -1990,6 +2283,7 @@ export function getHealthLiveQueryOptions(
     queryFn: ({ signal }) => api.getHealthLive(sdk, { ...input, signal }),
   });
 }
+
 export function useGetHealthLive(
   input: api.GetHealthLiveInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getHealthLive>>>,
@@ -2008,6 +2302,7 @@ export function getHealthReadyQueryOptions(
     queryFn: ({ signal }) => api.getHealthReady(sdk, { ...input, signal }),
   });
 }
+
 export function useGetHealthReady(
   input: api.GetHealthReadyInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getHealthReady>>>,
@@ -2026,6 +2321,7 @@ export function getInternalMetricsQueryOptions(
     queryFn: ({ signal }) => api.getInternalMetrics(sdk, { ...input, signal }),
   });
 }
+
 export function useGetInternalMetrics(
   input: api.GetInternalMetricsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getInternalMetrics>>>,
@@ -2044,6 +2340,7 @@ export function getMeCapabilitiesQueryOptions(
     queryFn: ({ signal }) => api.getMeCapabilities(sdk, { ...input, signal }),
   });
 }
+
 export function useGetMeCapabilities(
   input: api.GetMeCapabilitiesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getMeCapabilities>>>,
@@ -2063,6 +2360,7 @@ export function getMeNotificationPreferencesQueryOptions(
     queryFn: ({ signal }) => api.getMeNotificationPreferences(sdk, { ...input, signal }),
   });
 }
+
 export function useGetMeNotificationPreferences(
   input: api.GetMeNotificationPreferencesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getMeNotificationPreferences>>>,
@@ -2081,6 +2379,7 @@ export function getMePreferencesQueryOptions(
     queryFn: ({ signal }) => api.getMePreferences(sdk, { ...input, signal }),
   });
 }
+
 export function useGetMePreferences(
   input: api.GetMePreferencesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getMePreferences>>>,
@@ -2099,6 +2398,7 @@ export function getMeProfileQueryOptions(
     queryFn: ({ signal }) => api.getMeProfile(sdk, { ...input, signal }),
   });
 }
+
 export function useGetMeProfile(
   input: api.GetMeProfileInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getMeProfile>>>,
@@ -2117,6 +2417,7 @@ export function getMeSessionsQueryOptions(
     queryFn: ({ signal }) => api.getMeSessions(sdk, { ...input, signal }),
   });
 }
+
 export function useGetMeSessions(
   input: api.GetMeSessionsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getMeSessions>>>,
@@ -2135,6 +2436,7 @@ export function getNavigationPlacementQueryOptions(
     queryFn: ({ signal }) => api.getNavigationPlacement(sdk, { ...input, signal }),
   });
 }
+
 export function useGetNavigationPlacement(
   input: api.GetNavigationPlacementInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getNavigationPlacement>>>,
@@ -2153,6 +2455,7 @@ export function getNotificationsQueryOptions(
     queryFn: ({ signal }) => api.getNotifications(sdk, { ...input, signal }),
   });
 }
+
 export function useGetNotifications(
   input: api.GetNotificationsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getNotifications>>>,
@@ -2172,6 +2475,7 @@ export function getNotificationsUnreadCountQueryOptions(
     queryFn: ({ signal }) => api.getNotificationsUnreadCount(sdk, { ...input, signal }),
   });
 }
+
 export function useGetNotificationsUnreadCount(
   input: api.GetNotificationsUnreadCountInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getNotificationsUnreadCount>>>,
@@ -2190,6 +2494,7 @@ export function getOrdersQueryOptions(
     queryFn: ({ signal }) => api.getOrders(sdk, { ...input, signal }),
   });
 }
+
 export function useGetOrders(
   input: api.GetOrdersInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getOrders>>>,
@@ -2208,6 +2513,7 @@ export function getOrdersIdQueryOptions(
     queryFn: ({ signal }) => api.getOrdersId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetOrdersId(
   input: api.GetOrdersIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getOrdersId>>>,
@@ -2226,6 +2532,7 @@ export function getOrdersIdEventsQueryOptions(
     queryFn: ({ signal }) => api.getOrdersIdEvents(sdk, { ...input, signal }),
   });
 }
+
 export function useGetOrdersIdEvents(
   input: api.GetOrdersIdEventsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getOrdersIdEvents>>>,
@@ -2244,6 +2551,7 @@ export function getOrdersIdPaymentsQueryOptions(
     queryFn: ({ signal }) => api.getOrdersIdPayments(sdk, { ...input, signal }),
   });
 }
+
 export function useGetOrdersIdPayments(
   input: api.GetOrdersIdPaymentsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getOrdersIdPayments>>>,
@@ -2262,6 +2570,7 @@ export function getOrdersIdShipmentsQueryOptions(
     queryFn: ({ signal }) => api.getOrdersIdShipments(sdk, { ...input, signal }),
   });
 }
+
 export function useGetOrdersIdShipments(
   input: api.GetOrdersIdShipmentsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getOrdersIdShipments>>>,
@@ -2280,6 +2589,7 @@ export function getOrdersMineQueryOptions(
     queryFn: ({ signal }) => api.getOrdersMine(sdk, { ...input, signal }),
   });
 }
+
 export function useGetOrdersMine(
   input: api.GetOrdersMineInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getOrdersMine>>>,
@@ -2298,6 +2608,7 @@ export function getPagesSlugQueryOptions(
     queryFn: ({ signal }) => api.getPagesSlug(sdk, { ...input, signal }),
   });
 }
+
 export function useGetPagesSlug(
   input: api.GetPagesSlugInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getPagesSlug>>>,
@@ -2316,6 +2627,7 @@ export function getPoliciesCurrentQueryOptions(
     queryFn: ({ signal }) => api.getPoliciesCurrent(sdk, { ...input, signal }),
   });
 }
+
 export function useGetPoliciesCurrent(
   input: api.GetPoliciesCurrentInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getPoliciesCurrent>>>,
@@ -2334,6 +2646,7 @@ export function getPostCategoriesQueryOptions(
     queryFn: ({ signal }) => api.getPostCategories(sdk, { ...input, signal }),
   });
 }
+
 export function useGetPostCategories(
   input: api.GetPostCategoriesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getPostCategories>>>,
@@ -2352,6 +2665,7 @@ export function getPostsQueryOptions(
     queryFn: ({ signal }) => api.getPosts(sdk, { ...input, signal }),
   });
 }
+
 export function useGetPosts(
   input: api.GetPostsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getPosts>>>,
@@ -2370,6 +2684,7 @@ export function getPostsSlugQueryOptions(
     queryFn: ({ signal }) => api.getPostsSlug(sdk, { ...input, signal }),
   });
 }
+
 export function useGetPostsSlug(
   input: api.GetPostsSlugInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getPostsSlug>>>,
@@ -2388,6 +2703,7 @@ export function getPostTagsQueryOptions(
     queryFn: ({ signal }) => api.getPostTags(sdk, { ...input, signal }),
   });
 }
+
 export function useGetPostTags(
   input: api.GetPostTagsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getPostTags>>>,
@@ -2406,6 +2722,7 @@ export function getProcessesQueryOptions(
     queryFn: ({ signal }) => api.getProcesses(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProcesses(
   input: api.GetProcessesInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProcesses>>>,
@@ -2424,6 +2741,7 @@ export function getProcessesIdQueryOptions(
     queryFn: ({ signal }) => api.getProcessesId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProcessesId(
   input: api.GetProcessesIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProcessesId>>>,
@@ -2443,6 +2761,7 @@ export function getProcessesIdDownloadQueryOptions(
     queryFn: ({ signal }) => api.getProcessesIdDownload(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProcessesIdDownload(
   input: api.GetProcessesIdDownloadInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProcessesIdDownload>>>,
@@ -2461,6 +2780,7 @@ export function getProcessesIdItemsQueryOptions(
     queryFn: ({ signal }) => api.getProcessesIdItems(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProcessesIdItems(
   input: api.GetProcessesIdItemsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProcessesIdItems>>>,
@@ -2479,6 +2799,7 @@ export function getProductsQueryOptions(
     queryFn: ({ signal }) => api.getProducts(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProducts(
   input: api.GetProductsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProducts>>>,
@@ -2498,6 +2819,7 @@ export function getProductsBySlugSlugQueryOptions(
     queryFn: ({ signal }) => api.getProductsBySlugSlug(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProductsBySlugSlug(
   input: api.GetProductsBySlugSlugInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProductsBySlugSlug>>>,
@@ -2516,6 +2838,7 @@ export function getProductsFacetsQueryOptions(
     queryFn: ({ signal }) => api.getProductsFacets(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProductsFacets(
   input: api.GetProductsFacetsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProductsFacets>>>,
@@ -2534,6 +2857,7 @@ export function getProductsIdQueryOptions(
     queryFn: ({ signal }) => api.getProductsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProductsId(
   input: api.GetProductsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProductsId>>>,
@@ -2552,6 +2876,7 @@ export function getProductsIdReviewsQueryOptions(
     queryFn: ({ signal }) => api.getProductsIdReviews(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProductsIdReviews(
   input: api.GetProductsIdReviewsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProductsIdReviews>>>,
@@ -2571,6 +2896,7 @@ export function getProductsIdReviewSummaryQueryOptions(
     queryFn: ({ signal }) => api.getProductsIdReviewSummary(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProductsIdReviewSummary(
   input: api.GetProductsIdReviewSummaryInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProductsIdReviewSummary>>>,
@@ -2589,6 +2915,7 @@ export function getProductsIdVariantsQueryOptions(
     queryFn: ({ signal }) => api.getProductsIdVariants(sdk, { ...input, signal }),
   });
 }
+
 export function useGetProductsIdVariants(
   input: api.GetProductsIdVariantsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getProductsIdVariants>>>,
@@ -2607,6 +2934,7 @@ export function getRefundsQueryOptions(
     queryFn: ({ signal }) => api.getRefunds(sdk, { ...input, signal }),
   });
 }
+
 export function useGetRefunds(
   input: api.GetRefundsInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getRefunds>>>,
@@ -2625,6 +2953,7 @@ export function getRefundsIdQueryOptions(
     queryFn: ({ signal }) => api.getRefundsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetRefundsId(
   input: api.GetRefundsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getRefundsId>>>,
@@ -2643,6 +2972,7 @@ export function getReturnsIdQueryOptions(
     queryFn: ({ signal }) => api.getReturnsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetReturnsId(
   input: api.GetReturnsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getReturnsId>>>,
@@ -2661,6 +2991,7 @@ export function getReturnsMineQueryOptions(
     queryFn: ({ signal }) => api.getReturnsMine(sdk, { ...input, signal }),
   });
 }
+
 export function useGetReturnsMine(
   input: api.GetReturnsMineInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getReturnsMine>>>,
@@ -2679,6 +3010,7 @@ export function getSearchSuggestionsQueryOptions(
     queryFn: ({ signal }) => api.getSearchSuggestions(sdk, { ...input, signal }),
   });
 }
+
 export function useGetSearchSuggestions(
   input: api.GetSearchSuggestionsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getSearchSuggestions>>>,
@@ -2697,6 +3029,7 @@ export function getShipmentsIdEventsQueryOptions(
     queryFn: ({ signal }) => api.getShipmentsIdEvents(sdk, { ...input, signal }),
   });
 }
+
 export function useGetShipmentsIdEvents(
   input: api.GetShipmentsIdEventsInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getShipmentsIdEvents>>>,
@@ -2715,6 +3048,7 @@ export function getShopConfigQueryOptions(
     queryFn: ({ signal }) => api.getShopConfig(sdk, { ...input, signal }),
   });
 }
+
 export function useGetShopConfig(
   input: api.GetShopConfigInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getShopConfig>>>,
@@ -2735,6 +3069,7 @@ export function getStockAlertSubscriptionsMineQueryOptions(
     queryFn: ({ signal }) => api.getStockAlertSubscriptionsMine(sdk, { ...input, signal }),
   });
 }
+
 export function useGetStockAlertSubscriptionsMine(
   input: api.GetStockAlertSubscriptionsMineInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getStockAlertSubscriptionsMine>>>,
@@ -2753,6 +3088,7 @@ export function getStorefrontHomeQueryOptions(
     queryFn: ({ signal }) => api.getStorefrontHome(sdk, { ...input, signal }),
   });
 }
+
 export function useGetStorefrontHome(
   input: api.GetStorefrontHomeInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getStorefrontHome>>>,
@@ -2771,6 +3107,7 @@ export function getSupportTicketsIdQueryOptions(
     queryFn: ({ signal }) => api.getSupportTicketsId(sdk, { ...input, signal }),
   });
 }
+
 export function useGetSupportTicketsId(
   input: api.GetSupportTicketsIdInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getSupportTicketsId>>>,
@@ -2790,6 +3127,7 @@ export function getSupportTicketsIdMessagesQueryOptions(
     queryFn: ({ signal }) => api.getSupportTicketsIdMessages(sdk, { ...input, signal }),
   });
 }
+
 export function useGetSupportTicketsIdMessages(
   input: api.GetSupportTicketsIdMessagesInput,
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getSupportTicketsIdMessages>>>,
@@ -2808,6 +3146,7 @@ export function getSupportTicketsMineQueryOptions(
     queryFn: ({ signal }) => api.getSupportTicketsMine(sdk, { ...input, signal }),
   });
 }
+
 export function useGetSupportTicketsMine(
   input: api.GetSupportTicketsMineInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getSupportTicketsMine>>>,
@@ -2826,6 +3165,7 @@ export function getWishlistQueryOptions(
     queryFn: ({ signal }) => api.getWishlist(sdk, { ...input, signal }),
   });
 }
+
 export function useGetWishlist(
   input: api.GetWishlistInput = {},
   settings?: QuerySettings<Awaited<ReturnType<typeof api.getWishlist>>>,
@@ -2842,9 +3182,10 @@ export function patchAddressesIdDefaultMutationOptions(
     mutationFn: (input: api.PatchAddressesIdDefaultInput) =>
       api.patchAddressesIdDefault(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'addresses', settings),
   });
 }
+
 export function usePatchAddressesIdDefault(settings?: ApiMutationSettings) {
   return useMutation(
     patchAddressesIdDefaultMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -2859,9 +3200,10 @@ export function patchAdminBannersIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAdminBannersIdInput) => api.patchAdminBannersId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'merchandising', settings),
   });
 }
+
 export function usePatchAdminBannersId(settings?: ApiMutationSettings) {
   return useMutation(patchAdminBannersIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -2875,9 +3217,10 @@ export function patchAdminCollectionsIdMutationOptions(
     mutationFn: (input: api.PatchAdminCollectionsIdInput) =>
       api.patchAdminCollectionsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'merchandising', settings),
   });
 }
+
 export function usePatchAdminCollectionsId(settings?: ApiMutationSettings) {
   return useMutation(
     patchAdminCollectionsIdMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -2893,9 +3236,10 @@ export function patchAdminCustomersIdStatusMutationOptions(
     mutationFn: (input: api.PatchAdminCustomersIdStatusInput) =>
       api.patchAdminCustomersIdStatus(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'staff', settings),
   });
 }
+
 export function usePatchAdminCustomersIdStatus(settings?: ApiMutationSettings) {
   return useMutation(
     patchAdminCustomersIdStatusMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -2910,9 +3254,10 @@ export function patchAdminHomeLayoutMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAdminHomeLayoutInput) => api.patchAdminHomeLayout(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'merchandising', settings),
   });
 }
+
 export function usePatchAdminHomeLayout(settings?: ApiMutationSettings) {
   return useMutation(patchAdminHomeLayoutMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -2926,9 +3271,10 @@ export function patchAdminNavigationPlacementMutationOptions(
     mutationFn: (input: api.PatchAdminNavigationPlacementInput) =>
       api.patchAdminNavigationPlacement(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'merchandising', settings),
   });
 }
+
 export function usePatchAdminNavigationPlacement(settings?: ApiMutationSettings) {
   return useMutation(
     patchAdminNavigationPlacementMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -2943,9 +3289,10 @@ export function patchAdminPagesIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAdminPagesIdInput) => api.patchAdminPagesId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePatchAdminPagesId(settings?: ApiMutationSettings) {
   return useMutation(patchAdminPagesIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -2959,9 +3306,10 @@ export function patchAdminPostCategoriesIdMutationOptions(
     mutationFn: (input: api.PatchAdminPostCategoriesIdInput) =>
       api.patchAdminPostCategoriesId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePatchAdminPostCategoriesId(settings?: ApiMutationSettings) {
   return useMutation(
     patchAdminPostCategoriesIdMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -2976,9 +3324,10 @@ export function patchAdminPostsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAdminPostsIdInput) => api.patchAdminPostsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePatchAdminPostsId(settings?: ApiMutationSettings) {
   return useMutation(patchAdminPostsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -2991,9 +3340,10 @@ export function patchAdminPostTagsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAdminPostTagsIdInput) => api.patchAdminPostTagsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePatchAdminPostTagsId(settings?: ApiMutationSettings) {
   return useMutation(patchAdminPostTagsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3006,9 +3356,10 @@ export function patchAdminPromotionsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAdminPromotionsIdInput) => api.patchAdminPromotionsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'promotions', settings),
   });
 }
+
 export function usePatchAdminPromotionsId(settings?: ApiMutationSettings) {
   return useMutation(
     patchAdminPromotionsIdMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3024,9 +3375,10 @@ export function patchAdminSettingsCommerceMutationOptions(
     mutationFn: (input: api.PatchAdminSettingsCommerceInput) =>
       api.patchAdminSettingsCommerce(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'settings', settings),
   });
 }
+
 export function usePatchAdminSettingsCommerce(settings?: ApiMutationSettings) {
   return useMutation(
     patchAdminSettingsCommerceMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3041,9 +3393,10 @@ export function patchAdminSettingsShopMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAdminSettingsShopInput) => api.patchAdminSettingsShop(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'settings', settings),
   });
 }
+
 export function usePatchAdminSettingsShop(settings?: ApiMutationSettings) {
   return useMutation(
     patchAdminSettingsShopMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3059,9 +3412,10 @@ export function patchAdminShippingMethodsIdMutationOptions(
     mutationFn: (input: api.PatchAdminShippingMethodsIdInput) =>
       api.patchAdminShippingMethodsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'settings', settings),
   });
 }
+
 export function usePatchAdminShippingMethodsId(settings?: ApiMutationSettings) {
   return useMutation(
     patchAdminShippingMethodsIdMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3076,9 +3430,10 @@ export function patchAdminSizeGuidesIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAdminSizeGuidesIdInput) => api.patchAdminSizeGuidesId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'size-guides', settings),
   });
 }
+
 export function usePatchAdminSizeGuidesId(settings?: ApiMutationSettings) {
   return useMutation(
     patchAdminSizeGuidesIdMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3093,9 +3448,10 @@ export function patchAdminStaffIdRoleMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAdminStaffIdRoleInput) => api.patchAdminStaffIdRole(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'staff', settings),
   });
 }
+
 export function usePatchAdminStaffIdRole(settings?: ApiMutationSettings) {
   return useMutation(patchAdminStaffIdRoleMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3109,9 +3465,10 @@ export function patchAdminStaffIdStatusMutationOptions(
     mutationFn: (input: api.PatchAdminStaffIdStatusInput) =>
       api.patchAdminStaffIdStatus(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'staff', settings),
   });
 }
+
 export function usePatchAdminStaffIdStatus(settings?: ApiMutationSettings) {
   return useMutation(
     patchAdminStaffIdStatusMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3126,9 +3483,10 @@ export function patchAuthMeMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAuthMeInput) => api.patchAuthMe(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth', settings),
   });
 }
+
 export function usePatchAuthMe(settings?: ApiMutationSettings) {
   return useMutation(patchAuthMeMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3141,9 +3499,10 @@ export function patchAuthPasswordMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchAuthPasswordInput) => api.patchAuthPassword(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth', settings),
   });
 }
+
 export function usePatchAuthPassword(settings?: ApiMutationSettings) {
   return useMutation(patchAuthPasswordMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3156,9 +3515,10 @@ export function patchCartItemsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchCartItemsIdInput) => api.patchCartItemsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'cart', settings),
   });
 }
+
 export function usePatchCartItemsId(settings?: ApiMutationSettings) {
   return useMutation(patchCartItemsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3172,9 +3532,10 @@ export function patchMeNotificationPreferencesMutationOptions(
     mutationFn: (input: api.PatchMeNotificationPreferencesInput) =>
       api.patchMeNotificationPreferences(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'notifications', settings),
   });
 }
+
 export function usePatchMeNotificationPreferences(settings?: ApiMutationSettings) {
   return useMutation(
     patchMeNotificationPreferencesMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3189,9 +3550,10 @@ export function patchMePreferencesMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchMePreferencesInput) => api.patchMePreferences(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function usePatchMePreferences(settings?: ApiMutationSettings) {
   return useMutation(patchMePreferencesMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3204,11 +3566,28 @@ export function patchMeProfileMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchMeProfileInput) => api.patchMeProfile(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function usePatchMeProfile(settings?: ApiMutationSettings) {
   return useMutation(patchMeProfileMutationOptions(useApiSdk(), useQueryClient(), settings));
+}
+
+export function patchProductsIdMutationOptions(
+  sdk: ApiSdk,
+  client: QueryClient,
+  settings?: ApiMutationSettings,
+) {
+  return mutationOptions({
+    mutationFn: (input: api.PatchProductsIdInput) => api.patchProductsId(sdk, input),
+    retry: false,
+    onSuccess: () => invalidate(client, 'products', settings),
+  });
+}
+
+export function usePatchProductsId(settings?: ApiMutationSettings) {
+  return useMutation(patchProductsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
 
 export function patchProductsIdPublicationMutationOptions(
@@ -3220,9 +3599,10 @@ export function patchProductsIdPublicationMutationOptions(
     mutationFn: (input: api.PatchProductsIdPublicationInput) =>
       api.patchProductsIdPublication(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'products', settings),
   });
 }
+
 export function usePatchProductsIdPublication(settings?: ApiMutationSettings) {
   return useMutation(
     patchProductsIdPublicationMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3238,9 +3618,10 @@ export function patchProductsIdVariantsVariantIdMutationOptions(
     mutationFn: (input: api.PatchProductsIdVariantsVariantIdInput) =>
       api.patchProductsIdVariantsVariantId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'products', settings),
   });
 }
+
 export function usePatchProductsIdVariantsVariantId(settings?: ApiMutationSettings) {
   return useMutation(
     patchProductsIdVariantsVariantIdMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3256,9 +3637,10 @@ export function patchProductsIdVariantsVariantIdImagesMutationOptions(
     mutationFn: (input: api.PatchProductsIdVariantsVariantIdImagesInput) =>
       api.patchProductsIdVariantsVariantIdImages(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'products', settings),
   });
 }
+
 export function usePatchProductsIdVariantsVariantIdImages(settings?: ApiMutationSettings) {
   return useMutation(
     patchProductsIdVariantsVariantIdImagesMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3273,9 +3655,10 @@ export function patchReviewsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PatchReviewsIdInput) => api.patchReviewsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'reviews', settings),
   });
 }
+
 export function usePatchReviewsId(settings?: ApiMutationSettings) {
   return useMutation(patchReviewsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3288,9 +3671,10 @@ export function postAddressesMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAddressesInput) => api.postAddresses(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'addresses', settings),
   });
 }
+
 export function usePostAddresses(settings?: ApiMutationSettings) {
   return useMutation(postAddressesMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3303,9 +3687,10 @@ export function postAdminBannersMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAdminBannersInput) => api.postAdminBanners(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'merchandising', settings),
   });
 }
+
 export function usePostAdminBanners(settings?: ApiMutationSettings) {
   return useMutation(postAdminBannersMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3318,9 +3703,10 @@ export function postAdminCollectionsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAdminCollectionsInput) => api.postAdminCollections(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'merchandising', settings),
   });
 }
+
 export function usePostAdminCollections(settings?: ApiMutationSettings) {
   return useMutation(postAdminCollectionsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3333,9 +3719,10 @@ export function postAdminExportsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAdminExportsInput) => api.postAdminExports(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'processes', settings),
   });
 }
+
 export function usePostAdminExports(settings?: ApiMutationSettings) {
   return useMutation(postAdminExportsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3349,9 +3736,10 @@ export function postAdminImportsResourceMutationOptions(
     mutationFn: (input: api.PostAdminImportsResourceInput) =>
       api.postAdminImportsResource(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'processes', settings),
   });
 }
+
 export function usePostAdminImportsResource(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminImportsResourceMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3367,9 +3755,10 @@ export function postAdminInventoryAdjustmentsMutationOptions(
     mutationFn: (input: api.PostAdminInventoryAdjustmentsInput) =>
       api.postAdminInventoryAdjustments(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'inventory', settings),
   });
 }
+
 export function usePostAdminInventoryAdjustments(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminInventoryAdjustmentsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3385,9 +3774,10 @@ export function postAdminInventoryReceiptsMutationOptions(
     mutationFn: (input: api.PostAdminInventoryReceiptsInput) =>
       api.postAdminInventoryReceipts(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'inventory', settings),
   });
 }
+
 export function usePostAdminInventoryReceipts(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminInventoryReceiptsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3402,9 +3792,10 @@ export function postAdminJobsIdRetryMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAdminJobsIdRetryInput) => api.postAdminJobsIdRetry(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'jobs', settings),
   });
 }
+
 export function usePostAdminJobsIdRetry(settings?: ApiMutationSettings) {
   return useMutation(postAdminJobsIdRetryMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3418,9 +3809,10 @@ export function postAdminOperationsInventoryReconciliationMutationOptions(
     mutationFn: (input: api.PostAdminOperationsInventoryReconciliationInput) =>
       api.postAdminOperationsInventoryReconciliation(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'operations', settings),
   });
 }
+
 export function usePostAdminOperationsInventoryReconciliation(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminOperationsInventoryReconciliationMutationOptions(
@@ -3439,9 +3831,10 @@ export function postAdminPagesMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAdminPagesInput) => api.postAdminPages(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePostAdminPages(settings?: ApiMutationSettings) {
   return useMutation(postAdminPagesMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3455,9 +3848,10 @@ export function postAdminPagesIdArchiveMutationOptions(
     mutationFn: (input: api.PostAdminPagesIdArchiveInput) =>
       api.postAdminPagesIdArchive(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePostAdminPagesIdArchive(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminPagesIdArchiveMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3473,9 +3867,10 @@ export function postAdminPagesIdPublishMutationOptions(
     mutationFn: (input: api.PostAdminPagesIdPublishInput) =>
       api.postAdminPagesIdPublish(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePostAdminPagesIdPublish(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminPagesIdPublishMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3491,9 +3886,10 @@ export function postAdminPaymentsIdCodCollectionMutationOptions(
     mutationFn: (input: api.PostAdminPaymentsIdCodCollectionInput) =>
       api.postAdminPaymentsIdCodCollection(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'payments', settings),
   });
 }
+
 export function usePostAdminPaymentsIdCodCollection(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminPaymentsIdCodCollectionMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3509,9 +3905,10 @@ export function postAdminPaymentsIdReconcileMutationOptions(
     mutationFn: (input: api.PostAdminPaymentsIdReconcileInput) =>
       api.postAdminPaymentsIdReconcile(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'payments', settings),
   });
 }
+
 export function usePostAdminPaymentsIdReconcile(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminPaymentsIdReconcileMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3527,9 +3924,10 @@ export function postAdminPostCategoriesMutationOptions(
     mutationFn: (input: api.PostAdminPostCategoriesInput) =>
       api.postAdminPostCategories(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePostAdminPostCategories(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminPostCategoriesMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3544,9 +3942,10 @@ export function postAdminPostsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAdminPostsInput) => api.postAdminPosts(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePostAdminPosts(settings?: ApiMutationSettings) {
   return useMutation(postAdminPostsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3560,9 +3959,10 @@ export function postAdminPostsIdArchiveMutationOptions(
     mutationFn: (input: api.PostAdminPostsIdArchiveInput) =>
       api.postAdminPostsIdArchive(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePostAdminPostsIdArchive(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminPostsIdArchiveMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3578,9 +3978,10 @@ export function postAdminPostsIdPublishMutationOptions(
     mutationFn: (input: api.PostAdminPostsIdPublishInput) =>
       api.postAdminPostsIdPublish(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePostAdminPostsIdPublish(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminPostsIdPublishMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3595,9 +3996,10 @@ export function postAdminPostTagsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAdminPostTagsInput) => api.postAdminPostTags(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'content', settings),
   });
 }
+
 export function usePostAdminPostTags(settings?: ApiMutationSettings) {
   return useMutation(postAdminPostTagsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3610,9 +4012,10 @@ export function postAdminPromotionsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAdminPromotionsInput) => api.postAdminPromotions(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'promotions', settings),
   });
 }
+
 export function usePostAdminPromotions(settings?: ApiMutationSettings) {
   return useMutation(postAdminPromotionsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3626,9 +4029,10 @@ export function postAdminRefundsIdManualConfirmationMutationOptions(
     mutationFn: (input: api.PostAdminRefundsIdManualConfirmationInput) =>
       api.postAdminRefundsIdManualConfirmation(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'refunds', settings),
   });
 }
+
 export function usePostAdminRefundsIdManualConfirmation(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminRefundsIdManualConfirmationMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3644,9 +4048,10 @@ export function postAdminRefundsIdReconcileMutationOptions(
     mutationFn: (input: api.PostAdminRefundsIdReconcileInput) =>
       api.postAdminRefundsIdReconcile(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'refunds', settings),
   });
 }
+
 export function usePostAdminRefundsIdReconcile(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminRefundsIdReconcileMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3662,9 +4067,10 @@ export function postAdminRefundsIdRetryMutationOptions(
     mutationFn: (input: api.PostAdminRefundsIdRetryInput) =>
       api.postAdminRefundsIdRetry(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'refunds', settings),
   });
 }
+
 export function usePostAdminRefundsIdRetry(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminRefundsIdRetryMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3679,9 +4085,10 @@ export function postAdminReportExportsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAdminReportExportsInput) => api.postAdminReportExports(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'reports', settings),
   });
 }
+
 export function usePostAdminReportExports(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminReportExportsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3697,9 +4104,10 @@ export function postAdminShippingMethodsMutationOptions(
     mutationFn: (input: api.PostAdminShippingMethodsInput) =>
       api.postAdminShippingMethods(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'settings', settings),
   });
 }
+
 export function usePostAdminShippingMethods(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminShippingMethodsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3714,9 +4122,10 @@ export function postAdminSizeGuidesMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAdminSizeGuidesInput) => api.postAdminSizeGuides(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'size-guides', settings),
   });
 }
+
 export function usePostAdminSizeGuides(settings?: ApiMutationSettings) {
   return useMutation(postAdminSizeGuidesMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3730,9 +4139,10 @@ export function postAdminStaffInvitationsMutationOptions(
     mutationFn: (input: api.PostAdminStaffInvitationsInput) =>
       api.postAdminStaffInvitations(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'staff', settings),
   });
 }
+
 export function usePostAdminStaffInvitations(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminStaffInvitationsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3748,9 +4158,10 @@ export function postAdminSupportTicketsIdAssignMutationOptions(
     mutationFn: (input: api.PostAdminSupportTicketsIdAssignInput) =>
       api.postAdminSupportTicketsIdAssign(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'support', settings),
   });
 }
+
 export function usePostAdminSupportTicketsIdAssign(settings?: ApiMutationSettings) {
   return useMutation(
     postAdminSupportTicketsIdAssignMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3766,9 +4177,10 @@ export function postAuthEmailVerificationRequestsMutationOptions(
     mutationFn: (input: api.PostAuthEmailVerificationRequestsInput) =>
       api.postAuthEmailVerificationRequests(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function usePostAuthEmailVerificationRequests(settings?: ApiMutationSettings) {
   return useMutation(
     postAuthEmailVerificationRequestsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3784,9 +4196,10 @@ export function postAuthEmailVerificationsMutationOptions(
     mutationFn: (input: api.PostAuthEmailVerificationsInput) =>
       api.postAuthEmailVerifications(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function usePostAuthEmailVerifications(settings?: ApiMutationSettings) {
   return useMutation(
     postAuthEmailVerificationsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3801,9 +4214,10 @@ export function postAuthGoogleMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAuthGoogleInput) => api.postAuthGoogle(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth', settings),
   });
 }
+
 export function usePostAuthGoogle(settings?: ApiMutationSettings) {
   return useMutation(postAuthGoogleMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3816,9 +4230,10 @@ export function postAuthLoginMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAuthLoginInput) => api.postAuthLogin(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth', settings),
   });
 }
+
 export function usePostAuthLogin(settings?: ApiMutationSettings) {
   return useMutation(postAuthLoginMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3831,9 +4246,10 @@ export function postAuthLogoutMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAuthLogoutInput) => api.postAuthLogout(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth', settings),
   });
 }
+
 export function usePostAuthLogout(settings?: ApiMutationSettings) {
   return useMutation(postAuthLogoutMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3847,9 +4263,10 @@ export function postAuthPasswordResetRequestsMutationOptions(
     mutationFn: (input: api.PostAuthPasswordResetRequestsInput) =>
       api.postAuthPasswordResetRequests(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function usePostAuthPasswordResetRequests(settings?: ApiMutationSettings) {
   return useMutation(
     postAuthPasswordResetRequestsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3864,9 +4281,10 @@ export function postAuthPasswordResetsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAuthPasswordResetsInput) => api.postAuthPasswordResets(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function usePostAuthPasswordResets(settings?: ApiMutationSettings) {
   return useMutation(
     postAuthPasswordResetsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3881,9 +4299,10 @@ export function postAuthRefreshMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAuthRefreshInput) => api.postAuthRefresh(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'auth', settings),
   });
 }
+
 export function usePostAuthRefresh(settings?: ApiMutationSettings) {
   return useMutation(postAuthRefreshMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3896,9 +4315,10 @@ export function postAuthRegisterMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostAuthRegisterInput) => api.postAuthRegister(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function usePostAuthRegister(settings?: ApiMutationSettings) {
   return useMutation(postAuthRegisterMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3912,9 +4332,10 @@ export function postCancellationRequestsIdApproveMutationOptions(
     mutationFn: (input: api.PostCancellationRequestsIdApproveInput) =>
       api.postCancellationRequestsIdApprove(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'orders', settings),
   });
 }
+
 export function usePostCancellationRequestsIdApprove(settings?: ApiMutationSettings) {
   return useMutation(
     postCancellationRequestsIdApproveMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3930,9 +4351,10 @@ export function postCancellationRequestsIdRejectMutationOptions(
     mutationFn: (input: api.PostCancellationRequestsIdRejectInput) =>
       api.postCancellationRequestsIdReject(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'orders', settings),
   });
 }
+
 export function usePostCancellationRequestsIdReject(settings?: ApiMutationSettings) {
   return useMutation(
     postCancellationRequestsIdRejectMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -3947,9 +4369,10 @@ export function postCartItemsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostCartItemsInput) => api.postCartItems(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'cart', settings),
   });
 }
+
 export function usePostCartItems(settings?: ApiMutationSettings) {
   return useMutation(postCartItemsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3962,9 +4385,10 @@ export function postCartMergeMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostCartMergeInput) => api.postCartMerge(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'cart', settings),
   });
 }
+
 export function usePostCartMerge(settings?: ApiMutationSettings) {
   return useMutation(postCartMergeMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3977,9 +4401,10 @@ export function postCategoriesMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostCategoriesInput) => api.postCategories(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'categories', settings),
   });
 }
+
 export function usePostCategories(settings?: ApiMutationSettings) {
   return useMutation(postCategoriesMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -3992,9 +4417,10 @@ export function postCheckoutQuotesMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostCheckoutQuotesInput) => api.postCheckoutQuotes(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'checkout', settings),
   });
 }
+
 export function usePostCheckoutQuotes(settings?: ApiMutationSettings) {
   return useMutation(postCheckoutQuotesMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4007,9 +4433,10 @@ export function postCouponsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostCouponsInput) => api.postCoupons(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'coupons', settings),
   });
 }
+
 export function usePostCoupons(settings?: ApiMutationSettings) {
   return useMutation(postCouponsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4022,9 +4449,10 @@ export function postCouponsPreviewMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostCouponsPreviewInput) => api.postCouponsPreview(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'coupons', settings),
   });
 }
+
 export function usePostCouponsPreview(settings?: ApiMutationSettings) {
   return useMutation(postCouponsPreviewMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4037,9 +4465,10 @@ export function postExchangesIdApproveMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostExchangesIdApproveInput) => api.postExchangesIdApprove(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'exchanges', settings),
   });
 }
+
 export function usePostExchangesIdApprove(settings?: ApiMutationSettings) {
   return useMutation(
     postExchangesIdApproveMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4055,9 +4484,10 @@ export function postExchangesIdCreateReplacementMutationOptions(
     mutationFn: (input: api.PostExchangesIdCreateReplacementInput) =>
       api.postExchangesIdCreateReplacement(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'exchanges', settings),
   });
 }
+
 export function usePostExchangesIdCreateReplacement(settings?: ApiMutationSettings) {
   return useMutation(
     postExchangesIdCreateReplacementMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4072,9 +4502,10 @@ export function postExchangesIdRejectMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostExchangesIdRejectInput) => api.postExchangesIdReject(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'exchanges', settings),
   });
 }
+
 export function usePostExchangesIdReject(settings?: ApiMutationSettings) {
   return useMutation(postExchangesIdRejectMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4087,9 +4518,10 @@ export function postFilesUploadsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostFilesUploadsInput) => api.postFilesUploads(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'files', settings),
   });
 }
+
 export function usePostFilesUploads(settings?: ApiMutationSettings) {
   return useMutation(postFilesUploadsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4102,9 +4534,10 @@ export function postFilesUploadsBatchMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostFilesUploadsBatchInput) => api.postFilesUploadsBatch(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'processes', settings),
   });
 }
+
 export function usePostFilesUploadsBatch(settings?: ApiMutationSettings) {
   return useMutation(postFilesUploadsBatchMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4118,9 +4551,10 @@ export function postFilesUploadsBatchCompleteMutationOptions(
     mutationFn: (input: api.PostFilesUploadsBatchCompleteInput) =>
       api.postFilesUploadsBatchComplete(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'processes', settings),
   });
 }
+
 export function usePostFilesUploadsBatchComplete(settings?: ApiMutationSettings) {
   return useMutation(
     postFilesUploadsBatchCompleteMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4136,9 +4570,10 @@ export function postFilesUploadsIdCompleteMutationOptions(
     mutationFn: (input: api.PostFilesUploadsIdCompleteInput) =>
       api.postFilesUploadsIdComplete(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'files', settings),
   });
 }
+
 export function usePostFilesUploadsIdComplete(settings?: ApiMutationSettings) {
   return useMutation(
     postFilesUploadsIdCompleteMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4154,9 +4589,10 @@ export function postMeEmailChangeRequestsMutationOptions(
     mutationFn: (input: api.PostMeEmailChangeRequestsInput) =>
       api.postMeEmailChangeRequests(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function usePostMeEmailChangeRequests(settings?: ApiMutationSettings) {
   return useMutation(
     postMeEmailChangeRequestsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4172,9 +4608,10 @@ export function postMeEmailChangesConfirmMutationOptions(
     mutationFn: (input: api.PostMeEmailChangesConfirmInput) =>
       api.postMeEmailChangesConfirm(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function usePostMeEmailChangesConfirm(settings?: ApiMutationSettings) {
   return useMutation(
     postMeEmailChangesConfirmMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4190,9 +4627,10 @@ export function postMeSessionsRevokeOthersMutationOptions(
     mutationFn: (input: api.PostMeSessionsRevokeOthersInput) =>
       api.postMeSessionsRevokeOthers(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'accounts', settings),
   });
 }
+
 export function usePostMeSessionsRevokeOthers(settings?: ApiMutationSettings) {
   return useMutation(
     postMeSessionsRevokeOthersMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4208,9 +4646,10 @@ export function postNotificationsIdReadMutationOptions(
     mutationFn: (input: api.PostNotificationsIdReadInput) =>
       api.postNotificationsIdRead(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'notifications', settings),
   });
 }
+
 export function usePostNotificationsIdRead(settings?: ApiMutationSettings) {
   return useMutation(
     postNotificationsIdReadMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4226,9 +4665,10 @@ export function postNotificationsReadAllMutationOptions(
     mutationFn: (input: api.PostNotificationsReadAllInput) =>
       api.postNotificationsReadAll(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'notifications', settings),
   });
 }
+
 export function usePostNotificationsReadAll(settings?: ApiMutationSettings) {
   return useMutation(
     postNotificationsReadAllMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4244,9 +4684,10 @@ export function postOrderItemsIdReviewsMutationOptions(
     mutationFn: (input: api.PostOrderItemsIdReviewsInput) =>
       api.postOrderItemsIdReviews(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'reviews', settings),
   });
 }
+
 export function usePostOrderItemsIdReviews(settings?: ApiMutationSettings) {
   return useMutation(
     postOrderItemsIdReviewsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4261,9 +4702,10 @@ export function postOrdersMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostOrdersInput) => api.postOrders(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'orders', settings),
   });
 }
+
 export function usePostOrders(settings?: ApiMutationSettings) {
   return useMutation(postOrdersMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4276,9 +4718,10 @@ export function postOrdersIdCancelMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostOrdersIdCancelInput) => api.postOrdersIdCancel(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'orders', settings),
   });
 }
+
 export function usePostOrdersIdCancel(settings?: ApiMutationSettings) {
   return useMutation(postOrdersIdCancelMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4292,9 +4735,10 @@ export function postOrdersIdCancellationRequestsMutationOptions(
     mutationFn: (input: api.PostOrdersIdCancellationRequestsInput) =>
       api.postOrdersIdCancellationRequests(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'orders', settings),
   });
 }
+
 export function usePostOrdersIdCancellationRequests(settings?: ApiMutationSettings) {
   return useMutation(
     postOrdersIdCancellationRequestsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4309,9 +4753,10 @@ export function postOrdersIdConfirmMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostOrdersIdConfirmInput) => api.postOrdersIdConfirm(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'orders', settings),
   });
 }
+
 export function usePostOrdersIdConfirm(settings?: ApiMutationSettings) {
   return useMutation(postOrdersIdConfirmMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4324,9 +4769,10 @@ export function postOrdersIdExchangesMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostOrdersIdExchangesInput) => api.postOrdersIdExchanges(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'exchanges', settings),
   });
 }
+
 export function usePostOrdersIdExchanges(settings?: ApiMutationSettings) {
   return useMutation(postOrdersIdExchangesMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4340,9 +4786,10 @@ export function postOrdersIdPaymentAttemptsMutationOptions(
     mutationFn: (input: api.PostOrdersIdPaymentAttemptsInput) =>
       api.postOrdersIdPaymentAttempts(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'payments', settings),
   });
 }
+
 export function usePostOrdersIdPaymentAttempts(settings?: ApiMutationSettings) {
   return useMutation(
     postOrdersIdPaymentAttemptsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4357,9 +4804,10 @@ export function postOrdersIdRefundsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostOrdersIdRefundsInput) => api.postOrdersIdRefunds(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'orders', settings),
   });
 }
+
 export function usePostOrdersIdRefunds(settings?: ApiMutationSettings) {
   return useMutation(postOrdersIdRefundsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4372,9 +4820,10 @@ export function postOrdersIdReturnsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostOrdersIdReturnsInput) => api.postOrdersIdReturns(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'returns', settings),
   });
 }
+
 export function usePostOrdersIdReturns(settings?: ApiMutationSettings) {
   return useMutation(postOrdersIdReturnsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4387,9 +4836,10 @@ export function postOrdersIdShipmentsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostOrdersIdShipmentsInput) => api.postOrdersIdShipments(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'fulfillment', settings),
   });
 }
+
 export function usePostOrdersIdShipments(settings?: ApiMutationSettings) {
   return useMutation(postOrdersIdShipmentsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4403,9 +4853,10 @@ export function postOrdersIdStartProcessingMutationOptions(
     mutationFn: (input: api.PostOrdersIdStartProcessingInput) =>
       api.postOrdersIdStartProcessing(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'orders', settings),
   });
 }
+
 export function usePostOrdersIdStartProcessing(settings?: ApiMutationSettings) {
   return useMutation(
     postOrdersIdStartProcessingMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4420,9 +4871,10 @@ export function postPaymentsIdMockPayMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostPaymentsIdMockPayInput) => api.postPaymentsIdMockPay(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'payments', settings),
   });
 }
+
 export function usePostPaymentsIdMockPay(settings?: ApiMutationSettings) {
   return useMutation(postPaymentsIdMockPayMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4436,9 +4888,10 @@ export function postPaymentsWebhookStripeMutationOptions(
     mutationFn: (input: api.PostPaymentsWebhookStripeInput) =>
       api.postPaymentsWebhookStripe(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'payments', settings),
   });
 }
+
 export function usePostPaymentsWebhookStripe(settings?: ApiMutationSettings) {
   return useMutation(
     postPaymentsWebhookStripeMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4453,9 +4906,10 @@ export function postProcessesIdCancelMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostProcessesIdCancelInput) => api.postProcessesIdCancel(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'processes', settings),
   });
 }
+
 export function usePostProcessesIdCancel(settings?: ApiMutationSettings) {
   return useMutation(postProcessesIdCancelMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4468,9 +4922,10 @@ export function postProcessesIdConfirmMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostProcessesIdConfirmInput) => api.postProcessesIdConfirm(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'processes', settings),
   });
 }
+
 export function usePostProcessesIdConfirm(settings?: ApiMutationSettings) {
   return useMutation(
     postProcessesIdConfirmMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4485,9 +4940,10 @@ export function postProductsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostProductsInput) => api.postProducts(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'products', settings),
   });
 }
+
 export function usePostProducts(settings?: ApiMutationSettings) {
   return useMutation(postProductsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4500,9 +4956,10 @@ export function postProductsIdImagesMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostProductsIdImagesInput) => api.postProductsIdImages(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'products', settings),
   });
 }
+
 export function usePostProductsIdImages(settings?: ApiMutationSettings) {
   return useMutation(postProductsIdImagesMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4515,9 +4972,10 @@ export function postProductsIdReviewsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostProductsIdReviewsInput) => api.postProductsIdReviews(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'reviews', settings),
   });
 }
+
 export function usePostProductsIdReviews(settings?: ApiMutationSettings) {
   return useMutation(postProductsIdReviewsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4530,9 +4988,10 @@ export function postProductsIdVariantsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostProductsIdVariantsInput) => api.postProductsIdVariants(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'products', settings),
   });
 }
+
 export function usePostProductsIdVariants(settings?: ApiMutationSettings) {
   return useMutation(
     postProductsIdVariantsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4547,9 +5006,10 @@ export function postReturnsIdApproveMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostReturnsIdApproveInput) => api.postReturnsIdApprove(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'returns', settings),
   });
 }
+
 export function usePostReturnsIdApprove(settings?: ApiMutationSettings) {
   return useMutation(postReturnsIdApproveMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4562,9 +5022,10 @@ export function postReturnsIdCompleteMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostReturnsIdCompleteInput) => api.postReturnsIdComplete(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'returns', settings),
   });
 }
+
 export function usePostReturnsIdComplete(settings?: ApiMutationSettings) {
   return useMutation(postReturnsIdCompleteMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4577,9 +5038,10 @@ export function postReturnsIdInspectMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostReturnsIdInspectInput) => api.postReturnsIdInspect(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'returns', settings),
   });
 }
+
 export function usePostReturnsIdInspect(settings?: ApiMutationSettings) {
   return useMutation(postReturnsIdInspectMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4592,9 +5054,10 @@ export function postReturnsIdInTransitMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostReturnsIdInTransitInput) => api.postReturnsIdInTransit(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'returns', settings),
   });
 }
+
 export function usePostReturnsIdInTransit(settings?: ApiMutationSettings) {
   return useMutation(
     postReturnsIdInTransitMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4609,9 +5072,10 @@ export function postReturnsIdReceiveMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostReturnsIdReceiveInput) => api.postReturnsIdReceive(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'returns', settings),
   });
 }
+
 export function usePostReturnsIdReceive(settings?: ApiMutationSettings) {
   return useMutation(postReturnsIdReceiveMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4624,9 +5088,10 @@ export function postReturnsIdRejectMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostReturnsIdRejectInput) => api.postReturnsIdReject(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'returns', settings),
   });
 }
+
 export function usePostReturnsIdReject(settings?: ApiMutationSettings) {
   return useMutation(postReturnsIdRejectMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4640,9 +5105,10 @@ export function postReviewsIdModerationMutationOptions(
     mutationFn: (input: api.PostReviewsIdModerationInput) =>
       api.postReviewsIdModeration(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'reviews', settings),
   });
 }
+
 export function usePostReviewsIdModeration(settings?: ApiMutationSettings) {
   return useMutation(
     postReviewsIdModerationMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4657,9 +5123,10 @@ export function postReviewsIdReportsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostReviewsIdReportsInput) => api.postReviewsIdReports(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'reviews', settings),
   });
 }
+
 export function usePostReviewsIdReports(settings?: ApiMutationSettings) {
   return useMutation(postReviewsIdReportsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4672,9 +5139,10 @@ export function postShipmentsIdCancelMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostShipmentsIdCancelInput) => api.postShipmentsIdCancel(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'fulfillment', settings),
   });
 }
+
 export function usePostShipmentsIdCancel(settings?: ApiMutationSettings) {
   return useMutation(postShipmentsIdCancelMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4687,9 +5155,10 @@ export function postShipmentsIdDeliverMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostShipmentsIdDeliverInput) => api.postShipmentsIdDeliver(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'fulfillment', settings),
   });
 }
+
 export function usePostShipmentsIdDeliver(settings?: ApiMutationSettings) {
   return useMutation(
     postShipmentsIdDeliverMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4704,9 +5173,10 @@ export function postShipmentsIdFailMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostShipmentsIdFailInput) => api.postShipmentsIdFail(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'fulfillment', settings),
   });
 }
+
 export function usePostShipmentsIdFail(settings?: ApiMutationSettings) {
   return useMutation(postShipmentsIdFailMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4720,9 +5190,10 @@ export function postShipmentsIdHandoverMutationOptions(
     mutationFn: (input: api.PostShipmentsIdHandoverInput) =>
       api.postShipmentsIdHandover(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'fulfillment', settings),
   });
 }
+
 export function usePostShipmentsIdHandover(settings?: ApiMutationSettings) {
   return useMutation(
     postShipmentsIdHandoverMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4737,9 +5208,10 @@ export function postShipmentsIdLoseMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostShipmentsIdLoseInput) => api.postShipmentsIdLose(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'fulfillment', settings),
   });
 }
+
 export function usePostShipmentsIdLose(settings?: ApiMutationSettings) {
   return useMutation(postShipmentsIdLoseMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4753,9 +5225,10 @@ export function postShipmentsIdOutForDeliveryMutationOptions(
     mutationFn: (input: api.PostShipmentsIdOutForDeliveryInput) =>
       api.postShipmentsIdOutForDelivery(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'fulfillment', settings),
   });
 }
+
 export function usePostShipmentsIdOutForDelivery(settings?: ApiMutationSettings) {
   return useMutation(
     postShipmentsIdOutForDeliveryMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4770,9 +5243,10 @@ export function postShipmentsIdPackMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostShipmentsIdPackInput) => api.postShipmentsIdPack(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'fulfillment', settings),
   });
 }
+
 export function usePostShipmentsIdPack(settings?: ApiMutationSettings) {
   return useMutation(postShipmentsIdPackMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4785,9 +5259,10 @@ export function postShipmentsIdReadyMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostShipmentsIdReadyInput) => api.postShipmentsIdReady(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'fulfillment', settings),
   });
 }
+
 export function usePostShipmentsIdReady(settings?: ApiMutationSettings) {
   return useMutation(postShipmentsIdReadyMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4800,9 +5275,10 @@ export function postShipmentsIdReturnMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostShipmentsIdReturnInput) => api.postShipmentsIdReturn(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'fulfillment', settings),
   });
 }
+
 export function usePostShipmentsIdReturn(settings?: ApiMutationSettings) {
   return useMutation(postShipmentsIdReturnMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4815,9 +5291,10 @@ export function postShippingQuotesMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostShippingQuotesInput) => api.postShippingQuotes(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'settings', settings),
   });
 }
+
 export function usePostShippingQuotes(settings?: ApiMutationSettings) {
   return useMutation(postShippingQuotesMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4831,9 +5308,10 @@ export function postStaffInvitationsAcceptMutationOptions(
     mutationFn: (input: api.PostStaffInvitationsAcceptInput) =>
       api.postStaffInvitationsAccept(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'staff', settings),
   });
 }
+
 export function usePostStaffInvitationsAccept(settings?: ApiMutationSettings) {
   return useMutation(
     postStaffInvitationsAcceptMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4849,9 +5327,10 @@ export function postStockAlertSubscriptionsMutationOptions(
     mutationFn: (input: api.PostStockAlertSubscriptionsInput) =>
       api.postStockAlertSubscriptions(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'wishlist', settings),
   });
 }
+
 export function usePostStockAlertSubscriptions(settings?: ApiMutationSettings) {
   return useMutation(
     postStockAlertSubscriptionsMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4866,9 +5345,10 @@ export function postSupportTicketsMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PostSupportTicketsInput) => api.postSupportTickets(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'support', settings),
   });
 }
+
 export function usePostSupportTickets(settings?: ApiMutationSettings) {
   return useMutation(postSupportTicketsMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4882,9 +5362,10 @@ export function postSupportTicketsIdCloseMutationOptions(
     mutationFn: (input: api.PostSupportTicketsIdCloseInput) =>
       api.postSupportTicketsIdClose(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'support', settings),
   });
 }
+
 export function usePostSupportTicketsIdClose(settings?: ApiMutationSettings) {
   return useMutation(
     postSupportTicketsIdCloseMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4900,9 +5381,10 @@ export function postSupportTicketsIdMessagesMutationOptions(
     mutationFn: (input: api.PostSupportTicketsIdMessagesInput) =>
       api.postSupportTicketsIdMessages(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'support', settings),
   });
 }
+
 export function usePostSupportTicketsIdMessages(settings?: ApiMutationSettings) {
   return useMutation(
     postSupportTicketsIdMessagesMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4917,9 +5399,10 @@ export function putAddressesIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PutAddressesIdInput) => api.putAddressesId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'addresses', settings),
   });
 }
+
 export function usePutAddressesId(settings?: ApiMutationSettings) {
   return useMutation(putAddressesIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4933,9 +5416,10 @@ export function putAdminNotificationTemplatesMutationOptions(
     mutationFn: (input: api.PutAdminNotificationTemplatesInput) =>
       api.putAdminNotificationTemplates(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'notifications', settings),
   });
 }
+
 export function usePutAdminNotificationTemplates(settings?: ApiMutationSettings) {
   return useMutation(
     putAdminNotificationTemplatesMutationOptions(useApiSdk(), useQueryClient(), settings),
@@ -4950,9 +5434,10 @@ export function putCategoriesIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PutCategoriesIdInput) => api.putCategoriesId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'categories', settings),
   });
 }
+
 export function usePutCategoriesId(settings?: ApiMutationSettings) {
   return useMutation(putCategoriesIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4965,9 +5450,10 @@ export function putCouponsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PutCouponsIdInput) => api.putCouponsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'coupons', settings),
   });
 }
+
 export function usePutCouponsId(settings?: ApiMutationSettings) {
   return useMutation(putCouponsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4980,9 +5466,10 @@ export function putProductsIdMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PutProductsIdInput) => api.putProductsId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'products', settings),
   });
 }
+
 export function usePutProductsId(settings?: ApiMutationSettings) {
   return useMutation(putProductsIdMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -4995,9 +5482,10 @@ export function putReviewsIdReplyMutationOptions(
   return mutationOptions({
     mutationFn: (input: api.PutReviewsIdReplyInput) => api.putReviewsIdReply(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'reviews', settings),
   });
 }
+
 export function usePutReviewsIdReply(settings?: ApiMutationSettings) {
   return useMutation(putReviewsIdReplyMutationOptions(useApiSdk(), useQueryClient(), settings));
 }
@@ -5011,9 +5499,10 @@ export function putWishlistItemsProductIdMutationOptions(
     mutationFn: (input: api.PutWishlistItemsProductIdInput) =>
       api.putWishlistItemsProductId(sdk, input),
     retry: false,
-    onSuccess: () => invalidate(client, settings),
+    onSuccess: () => invalidate(client, 'wishlist', settings),
   });
 }
+
 export function usePutWishlistItemsProductId(settings?: ApiMutationSettings) {
   return useMutation(
     putWishlistItemsProductIdMutationOptions(useApiSdk(), useQueryClient(), settings),

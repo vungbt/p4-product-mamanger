@@ -10,7 +10,9 @@ import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { rowValues } from './tenant-ui';
 
 type Preview = components['schemas']['TenantImportPreview'];
+
 type ImportRow = Preview['rows'][number];
+
 type ImportResult = components['schemas']['TenantImportResult'];
 
 const STATUS_TONES: Record<ImportRow['status'], TagTone> = {
@@ -57,7 +59,9 @@ function PreviewRow({ row }: { row: ImportRow }) {
   const { t } = useTranslation();
 
   const values = rowValues(row.values);
+
   const errorOf = (column: string) => row.errors.find((error) => error.column === column);
+
   const duplicateLabel =
     row.duplicate?.field === 'idNumber'
       ? t('tenants.import.duplicateIdNumber')
@@ -73,7 +77,13 @@ function PreviewRow({ row }: { row: ImportRow }) {
       <td className="px-3 py-2">
         <div className="grid gap-1">
           <Tag size="sm" tone={STATUS_TONES[row.status]}>
-            {t(`tenants.import.rowStatus.${row.status}`)}
+            {(
+              {
+                valid: t('tenants.import.rowStatus.valid'),
+                error: t('tenants.import.rowStatus.error'),
+                duplicate: t('tenants.import.rowStatus.duplicate'),
+              } as Record<string, string>
+            )[row.status] ?? String(row.status)}
           </Tag>
           {row.status === 'duplicate' ? (
             <span className="text-ui-sm text-muted">
@@ -119,13 +129,21 @@ function PreviewRow({ row }: { row: ImportRow }) {
 /** O-14: template → file → preview (per row and column) → create the valid rows → result. */
 export default function TenantImportPage() {
   const { t } = useTranslation();
+
   const sdk = useStaySdk();
+
   const { buildingId, building } = useActiveBuilding();
+
   const preview = usePreviewTenantImport();
+
   const commit = useCommitTenantImport();
+
   const [file, setFile] = useState<File | null>(null);
+
   const [data, setData] = useState<Preview | null>(null);
+
   const [idempotencyKey, setIdempotencyKey] = useState('');
+
   const [result, setResult] = useState<ImportResult | null>(null);
 
   const download = async (format: 'xlsx' | 'csv') => {

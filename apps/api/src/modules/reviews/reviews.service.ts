@@ -35,7 +35,7 @@ const reviewFields = [
   'comment',
   'moderationStatus',
   'verifiedPurchase',
-  'mediaIds',
+  'imageIds',
   'reply',
   'version',
 ] satisfies (keyof Review)[];
@@ -120,9 +120,9 @@ export async function createReview(user: User, productId: string, input: ReviewI
       }))
     )
       throw new BaseError('delivery_required', 409, 'delivery_required');
-    const mediaIds = input.mediaIds ?? [];
-    if (mediaIds.length > 10) throw new BadRequest('review_media_limit');
-    for (const id of mediaIds) {
+    const imageIds = input.imageIds ?? [];
+    if (imageIds.length > 10) throw new BadRequest('review_media_limit');
+    for (const id of imageIds) {
       const file = await FileModel.findByPk(id, { transaction });
       if (
         !file ||
@@ -141,7 +141,7 @@ export async function createReview(user: User, productId: string, input: ReviewI
         orderItemId: purchase.id,
         rating: input.rating,
         comment: input.comment,
-        mediaIds,
+        imageIds,
         verifiedPurchase: true,
         moderationStatus: 'pending',
       },
@@ -177,7 +177,7 @@ export async function changeReview(
   id: string,
   version: number,
   input:
-    | { rating: number; comment: string; mediaIds?: string[] }
+    | { rating: number; comment: string; imageIds?: string[] }
     | { moderationStatus: 'published' | 'hidden'; reason: string }
     | { reply: string },
 ) {

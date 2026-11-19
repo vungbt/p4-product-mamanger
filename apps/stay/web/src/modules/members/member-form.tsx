@@ -16,11 +16,12 @@ import {
 } from '@stay/shared';
 import { useState } from 'react';
 import * as v from 'valibot';
+import { OPTIONS_PAGE_SIZE } from '@/constants/list';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
 import { FormError, LoadingRows } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
-import { Overlay } from '../invoices/invoice-dialogs';
+import { Overlay } from '@/modules/invoices/invoice-dialogs';
 
 const schema = {
   email: v.pipe(v.string(), v.trim(), v.email('Email không hợp lệ.')),
@@ -36,9 +37,13 @@ export function MemberDialog({
   onClose: () => void;
 }) {
   const { invite, update } = useMemberMutations();
-  const buildings = useBuildings({ pageSize: 100, status: 'active' });
+
+  const buildings = useBuildings({ pageSize: OPTIONS_PAGE_SIZE, status: 'active' });
+
   const [error, setError] = useState<string | null>(null);
+
   const busy = invite.isPending || update.isPending;
+
   const form = useAppForm({
     defaultValues: {
       email: member?.email ?? '',

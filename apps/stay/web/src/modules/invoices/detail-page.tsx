@@ -14,9 +14,13 @@ import { useCanOn } from '@/libraries/ability';
 import { displayDate, formatVnd } from '@/libraries/format';
 import { isNotFound } from '@/libraries/forms/api-errors';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
-import { PaymentDialog } from '../payments/payment-dialog';
-import { isCollectable, PAYMENT_METHOD_LABELS, PaymentStatusTag } from '../payments/payment-ui';
-import { ReversePaymentDialog } from '../payments/reverse-dialog';
+import { PaymentDialog } from '@/modules/payments/payment-dialog';
+import {
+  isCollectable,
+  PAYMENT_METHOD_LABELS,
+  PaymentStatusTag,
+} from '@/modules/payments/payment-ui';
+import { ReversePaymentDialog } from '@/modules/payments/reverse-dialog';
 import { InvoiceLineDialog, VoidInvoiceDialog } from './invoice-dialogs';
 import {
   billingRunPath,
@@ -34,6 +38,7 @@ import { ShareInvoiceDialog } from './share/share-dialog';
 /** O-22 Chi tiết hoá đơn. */
 export default function InvoiceDetailPage() {
   const { id = '' } = useParams();
+
   const query = useInvoice(id);
 
   if (query.isPending) return <LoadingRows />;
@@ -54,21 +59,34 @@ export default function InvoiceDetailPage() {
 
 function InvoiceDetail({ invoice, reload }: { invoice: StayInvoice; reload: () => void }) {
   const record = { buildingId: invoice.buildingId, contractId: invoice.contractId };
+
   const canUpdate = useCanOn('update', 'Invoice', record);
+
   const canIssue = useCanOn('issue', 'Invoice', record);
+
   const canVoid = useCanOn('void', 'Invoice', record);
+
   const canPay = useCanOn('create', 'Payment', record);
+
   const canReverse = useCanOn('void', 'Payment', record);
+
   const issue = useIssueInvoices();
+
   const remove = useDeleteInvoiceLine();
+
   const describe = useLineDescription();
+
   const [dialog, setDialog] = useState<'line' | 'void' | 'issue' | 'payment' | 'share' | null>(
     null,
   );
   // A created link is shown once (only its hash is stored): keep it while the page is open.
+
   const [shareLink, setShareLink] = useState<InvoiceShareLink | null>(null);
+
   const [deleting, setDeleting] = useState<StayInvoiceLine | null>(null);
+
   const [reversing, setReversing] = useState<StayPayment | null>(null);
+
   const [error, setError] = useState<string | null>(null);
 
   const draft = invoice.status === 'draft';

@@ -21,6 +21,7 @@ import {
 } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { PAGE_SIZE_OPTIONS, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
@@ -28,9 +29,9 @@ import { displayDate, formatVnd } from '@/libraries/format';
 import { ListTable, rowTestId } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { PAGE_SIZE_OPTIONS, type SortOrder, useTableParams } from '@/libraries/table-params';
-import { ShareInvoiceDialog } from '../invoices/share/share-dialog';
-import { InvoicesPaymentDialog } from '../payments/payment-dialog';
+import { type SortOrder, useTableParams } from '@/libraries/table-params';
+import { ShareInvoiceDialog } from '@/modules/invoices/share/share-dialog';
+import { InvoicesPaymentDialog } from '@/modules/payments/payment-dialog';
 import {
   BUCKET_LABELS,
   OverdueTag,
@@ -55,20 +56,31 @@ const SORT_OPTIONS: { value: ReceivableSortField; label: string }[] = [
 ];
 
 type Collecting = { contractId: string; invoiceId?: string };
+
 type Sharing = { contractId: string; invoiceId: string };
 
 /** O-25 Công nợ: who owes, how much and how long overdue, grouped by contract. */
 export default function ReceivablesPage() {
   const { buildingId } = useActiveBuilding();
+
   const [params, setParams] = useSearchParams();
+
   const [search, setSearch] = useState(params.get('q') ?? '');
+
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
+
   const [collecting, setCollecting] = useState<Collecting | null>(null);
+
   const [sharing, setSharing] = useState<Sharing | null>(null);
+
   const [links, setLinks] = useState<Record<string, InvoiceShareLink | null>>({});
+
   const scope = { buildingId: buildingId ?? undefined };
+
   const canPay = useCanOn('create', 'Payment', scope);
+
   const canShare = useCanOn('update', 'Invoice', scope);
+
   const table = useTableParams({
     sortFields: RECEIVABLE_SORT_FIELDS,
     defaultSort: { sortBy: 'remaining', sortOrder: 'desc' },
@@ -114,7 +126,7 @@ export default function ReceivablesPage() {
           },
           { replace: true },
         ),
-      300,
+      SEARCH_DEBOUNCE_MS,
     );
 
     return () => clearTimeout(timer);

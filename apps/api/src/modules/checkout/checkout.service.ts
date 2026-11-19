@@ -44,8 +44,8 @@ export async function priceLines(
     subtotal += lineTotal;
     if (!Number.isSafeInteger(subtotal) || subtotal > 2_147_483_647)
       throw new BaseError('amount_too_large');
-    const coverId = variant.imageIds[0] ?? product.imageId;
-    const cover = coverId ? await FileModel.findByPk(coverId, { transaction }) : null;
+    const thumbnailId = variant.imageIds[0] ?? product.thumbnailId;
+    const thumbnail = thumbnailId ? await FileModel.findByPk(thumbnailId, { transaction }) : null;
     items.push({
       variantId: variant.id,
       productId: product.id,
@@ -56,7 +56,7 @@ export async function priceLines(
       categoryId: product.categoryId,
       unitPrice: variant.price,
       quantity: line.quantity,
-      imageUrl: cover?.url ?? '',
+      thumbnailUrl: thumbnail?.url ?? '',
       discountAmount: 0,
       lineTotal,
     });

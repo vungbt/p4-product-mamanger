@@ -2,8 +2,8 @@ import { cn, Icon, IconButton, Tag, type TagTone } from '@itclabs/react-ui';
 import type { ReceivableBucket, ReceivableInvoice, StayReceivable } from '@stay/shared';
 import { Link } from 'react-router-dom';
 import { displayDate, formatVnd } from '@/libraries/format';
-import { displayExpiry, displayPeriod, invoicePath } from '../invoices/invoice-ui';
-import { formatPhone } from '../tenants/tenant-ui';
+import { displayExpiry, displayPeriod, invoicePath } from '@/modules/invoices/invoice-ui';
+import { formatPhone } from '@/modules/tenants/tenant-ui';
 
 export const BUCKET_LABELS: Record<ReceivableBucket, string> = {
   not_due: 'Chưa tới hạn',

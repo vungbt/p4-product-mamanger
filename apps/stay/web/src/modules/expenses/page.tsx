@@ -16,6 +16,7 @@ import { getErrorMessage } from '@stay/sdk/shared';
 import { isPeriod, type StayExpense } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { OPTIONS_PAGE_SIZE, PAGE_SIZE_OPTIONS, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FilterBar } from '@/libraries/filter-bar';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
@@ -24,7 +25,7 @@ import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ListTable, rowTestId } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
+import { useTableParams } from '@/libraries/table-params';
 import { ExpenseForm } from './expense-form';
 
 const TABLE_ID = 'expense-list';
@@ -56,7 +57,7 @@ function BuildingExpenses({ buildingId }: { buildingId: string | null }) {
     ? (params.get('period') ?? '')
     : todayIsoDate().slice(0, 7);
   const categories = useExpenseCategories();
-  const rooms = useRooms(buildingId ?? '', { pageSize: 100 });
+  const rooms = useRooms(buildingId ?? '', { pageSize: OPTIONS_PAGE_SIZE });
   const expenses = useExpenses({
     buildingId: buildingId ?? undefined,
     period,
@@ -101,7 +102,7 @@ function BuildingExpenses({ buildingId }: { buildingId: string | null }) {
           },
           { replace: true },
         ),
-      300,
+      SEARCH_DEBOUNCE_MS,
     );
 
     return () => clearTimeout(timer);

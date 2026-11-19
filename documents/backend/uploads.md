@@ -16,10 +16,22 @@ Cùng backend cho Admin/Storefront. Quyền phụ thuộc `purpose` và owner:
    API xác minh file từ provider: đúng owner/ticket/purpose, MIME/format, kích thước,
    số pixel và trạng thái. Lấy `fileId` từ ticket đã completed khi cần file reference.
 4. Gắn ảnh vào resource sau khi xác minh thành công. Với product:
-   `POST /api/products` nhận `imageStorageId: publicId` và
+   `POST /api/products` nhận `thumbnailStorageId: publicId` và
    `imageStorageIds: publicIds[]`; thêm gallery bằng
-   `POST /api/products/{id}/images` với `{ imageStorageId: publicId, sortOrder }`.
-   Không dùng URL, ticket ID hoặc fileId thay cho imageStorageId.
+   `POST /api/products/{id}/images` với `{ storageId: publicId, sortOrder }`.
+   Không dùng URL, ticket ID hoặc fileId thay cho thumbnailStorageId.
+
+Form quản trị dùng một danh sách ảnh có thứ tự: ảnh đầu gửi `thumbnailStorageId`,
+các ảnh còn lại gửi `imageStorageIds`. Upload chạy khi chọn; chỉ Save mới lưu danh sách.
+PATCH (hoặc PUT tương thích) nhận `imageStorageIds` là toàn bộ gallery theo thứ tự:
+ảnh không có trong danh sách được gỡ, `[]` xóa gallery, bỏ qua trường để giữ nguyên.
+`thumbnailStorageId: null` xóa thumbnail; bỏ qua trường để giữ nguyên.
+File đã gắn với chính product (thumbnail hoặc gallery) không cần ticket khi chuyển vị trí.
+File mới phải có ticket product completed thuộc actor. Thumbnail không lặp trong gallery.
+Response có `thumbnailUrl` (fallback ảnh gallery đầu tiên, hoặc chuỗi rỗng),
+`thumbnail: { fileId, url, storageId } | null` và `images[]` có storageId.
+Không có thumbnail thì `thumbnail` vẫn null; create không tự chọn từ gallery.
+Profile/account dùng `avatarStorageId`.
 
 Ticket hiện có hạn 10 phút; avatar tối đa 2 MiB, các purpose khác tối đa 10 MiB.
 Các giới hạn thực tế phải đọc từ response ticket; ảnh hỗ trợ JPEG/PNG/WebP.
@@ -49,10 +61,9 @@ Các giới hạn thực tế phải đọc từ response ticket; ảnh hỗ tr�
 5. Xử lý `completed`, `completed_with_errors`, `failed`; đọc từng item/ticket.
    Chỉ gắn các ảnh có ticket completed/fileId hợp lệ. Các ảnh lỗi cần báo riêng
    và upload lại theo ticket mới nếu ticket cũ hết hạn hoặc bị từ chối.
-6. Dùng publicId đã lưu theo từng ticket để gửi imageStorageId(s) khi tạo product
-   hoặc thêm gallery. Mỗi lần thêm gallery là một operation theo ảnh.
-   Không gửi imageStorageIds vào PUT rồi mặc định gallery sẽ được thay thế:
-   cập nhật gallery hiện dùng endpoint thêm/xóa ảnh riêng.
+6. Dùng publicId đã lưu theo từng ticket để gửi thumbnailStorageId/imageStorageIds khi tạo product
+   hoặc lưu danh sách ảnh qua một PATCH sản phẩm. Gửi toàn bộ gallery mong muốn
+   trong imageStorageIds; endpoint POST/DELETE ảnh riêng vẫn được hỗ trợ.
 
 SDK có helper/hook cho tất cả endpoint trên. Hook chỉ bọc API tương ứng;
 nó không tự upload file tới Cloudinary hay tự nối cả workflow batch.

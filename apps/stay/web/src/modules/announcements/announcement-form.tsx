@@ -15,13 +15,14 @@ import { useCreateAnnouncement, useRooms, useUpdateAnnouncement } from '@stay/sd
 import { isIsoDate, isoDateInTimeZone, type StayAnnouncement } from '@stay/shared';
 import { useState } from 'react';
 import * as v from 'valibot';
+import { OPTIONS_PAGE_SIZE } from '@/constants/list';
 import { todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
 import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError, LoadingRows } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
-import { Overlay } from '../invoices/invoice-dialogs';
+import { Overlay } from '@/modules/invoices/invoice-dialogs';
 
 const FIELDS = ['title', 'body', 'expiresOn', 'roomIds'] as const;
 
@@ -61,13 +62,25 @@ export function AnnouncementDialog({
   onClose: () => void;
 }) {
   const create = useCreateAnnouncement();
+
   const update = useUpdateAnnouncement();
-  const rooms = useRooms(buildingId, { pageSize: 100, sortBy: 'code', sortOrder: 'asc' });
+
+  const rooms = useRooms(buildingId, {
+    pageSize: OPTIONS_PAGE_SIZE,
+    sortBy: 'code',
+    sortOrder: 'asc',
+  });
+
   const [target, setTarget] = useState(announcement?.roomIds?.length ? 'rooms' : 'building');
+
   const [roomIds, setRoomIds] = useState<ReadonlySet<string>>(new Set(announcement?.roomIds ?? []));
+
   const [pinned, setPinned] = useState(announcement?.pinned ?? false);
+
   const [error, setError] = useState<string | null>(null);
+
   const [roomError, setRoomError] = useState<string | null>(null);
+
   const busy = create.isPending || update.isPending;
 
   const form = useAppForm({

@@ -10,7 +10,7 @@
 - Read installed TypeScript declarations before using props. Button supports `variant` (`primary`, `secondary`, `ghost`, `danger`) and `size` (`sm`, `md`, `lg`); render custom icons as children. IconButton requires a `label`.
 - Forms use `Form`, `FormField`, `useAppForm` and Valibot (imported directly from `valibot`).
 - Use `toast` from `@itclabs/react-ui/toast`; the root mounts `ToastProvider`.
-- Register additional named glyph imports in `apps/web/src/libraries/ui-theme.ts`; avoid importing the full icon catalog.
+- Use `<Icon name="…" />` / `icon="…"` with any catalog name; register a glyph in `apps/web/src/libraries/ui-theme.ts` only to swap a glyph or preload a hot icon.
 
 ## Styling
 
@@ -24,6 +24,8 @@
 - `UIProvider` configures React Router, images and UI locale; app translations stay in i18next.
 
 ## Layout and accessibility
+
+- In both web apps, imports leaving the current folder use `@/…`; only same-folder `./x` imports stay relative.
 
 - Derive menus from RouteConfigs; use Sidebar/Navbar rather than duplicating navigation.
 - Keep feature-specific hooks/components alongside their page; use `src/libraries` or `src/hooks` only for shared consumers.

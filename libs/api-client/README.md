@@ -37,6 +37,5 @@ Paths, params, bodies and responses are typed from the contract. `unwrap` throws
 | `loginAuthSession`, `loginGoogleAuthSession`, `refreshAuthSession`, `revokeAuthSession` | Better Auth session helpers for `AuthProvider` |
 | `ApiQueryProvider` | `QueryClientProvider` + SDK context; clears the cache when the user changes |
 | `queryKeysFactory`, `productKeys`, `orderKeys`, `categoryKeys` | Query-key factories |
-| `useUploadFile` | Signs an upload with the API, then posts the file to Cloudinary |
 
 A 401 from the SDK re-syncs the session; an expired session signs the user out in `AuthProvider`.

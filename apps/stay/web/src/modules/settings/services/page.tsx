@@ -40,13 +40,21 @@ type ServiceChange = Pick<StayService, 'active' | 'sortOrder'>;
 /** O-02 Cài đặt: dịch vụ & đơn giá — the system service catalogue and default prices. */
 export default function ServicesPage() {
   const { t } = useTranslation('settings');
+
   const query = useServices();
+
   const update = useUpdateService();
+
   const isDesktop = useIsDesktop();
+
   const [creating, setCreating] = useState(false);
+
   const [editingId, setEditingId] = useState<string | null>(null);
+
   const [deactivating, setDeactivating] = useState<StayService | null>(null);
+
   const [pendingId, setPendingId] = useState<string | null>(null);
+
   const [order, setOrder] = useState<string[] | null>(null);
 
   const services = query.data ?? [];
@@ -231,11 +239,28 @@ export default function ServicesPage() {
                         </span>
                       ) : null}
                       <span className="block text-ui-sm text-muted lg:hidden">
-                        {t(`services.kinds.${service.kind}`)} · {service.unit}
+                        {(
+                          {
+                            electricity: t('services.kinds.electricity'),
+                            water: t('services.kinds.water'),
+                            per_room: t('services.kinds.per_room'),
+                            per_person: t('services.kinds.per_person'),
+                            per_vehicle: t('services.kinds.per_vehicle'),
+                          } as Record<string, string>
+                        )[service.kind] ?? String(service.kind)}{' '}
+                        · {service.unit}
                       </span>
                     </span>
                     <span className={cn('hidden text-ui-sm text-ink lg:block', COLUMNS.kind)}>
-                      {t(`services.kinds.${service.kind}`)}
+                      {(
+                        {
+                          electricity: t('services.kinds.electricity'),
+                          water: t('services.kinds.water'),
+                          per_room: t('services.kinds.per_room'),
+                          per_person: t('services.kinds.per_person'),
+                          per_vehicle: t('services.kinds.per_vehicle'),
+                        } as Record<string, string>
+                      )[service.kind] ?? String(service.kind)}
                     </span>
                     <span className={cn('hidden text-ui-sm text-ink lg:block', COLUMNS.unit)}>
                       {service.unit}

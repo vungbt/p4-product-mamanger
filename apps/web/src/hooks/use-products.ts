@@ -1,10 +1,11 @@
 import { getApiSdk, productKeys, useQuery } from '@p4/api-client';
 import { unwrap } from '@p4/api-sdk/shared';
+import { STOREFRONT_PAGE_SIZE } from '@/constants/list';
 
 /** Public product list from the typed SDK (`GET /api/products`). */
 export default function useProducts(params?: { page?: number; pageSize?: number; q?: string }) {
   const page = params?.page ?? 1;
-  const pageSize = params?.pageSize ?? 20;
+  const pageSize = params?.pageSize ?? STOREFRONT_PAGE_SIZE;
   const q = params?.q ?? '';
 
   return useQuery({

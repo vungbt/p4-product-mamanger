@@ -29,6 +29,7 @@ const STEPS: OnboardingStep[] = [
  */
 export function OnboardingSteps({ empty }: { empty: boolean }) {
   const { t } = useTranslation();
+
   const ability = useAbility();
 
   const steps = STEPS.filter((step) => !step.ability || canOpen(ability, step.ability));
@@ -62,10 +63,22 @@ export function OnboardingSteps({ empty }: { empty: boolean }) {
                   {t('overview.stepLabel', { step: index + 1 })}
                 </span>
                 <span className="font-semibold text-ink">
-                  {t(`overview.steps.${step.key}.title`)}
+                  {(
+                    {
+                      prices: t('overview.steps.prices.title'),
+                      rooms: t('overview.steps.rooms.title'),
+                      contracts: t('overview.steps.contracts.title'),
+                    } as Record<string, string>
+                  )[step.key] ?? String(step.key)}
                 </span>
                 <span className="text-ui-sm text-muted">
-                  {t(`overview.steps.${step.key}.description`)}
+                  {(
+                    {
+                      prices: t('overview.steps.prices.description'),
+                      rooms: t('overview.steps.rooms.description'),
+                      contracts: t('overview.steps.contracts.description'),
+                    } as Record<string, string>
+                  )[step.key] ?? String(step.key)}
                 </span>
               </span>
             </Link>
