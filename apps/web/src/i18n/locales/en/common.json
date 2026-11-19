@@ -114,7 +114,8 @@
     "product-edit": "Edit",
     "admin-orders": "Orders",
     "product-categories": "Categories",
-    "product-detail": "Product details"
+    "product-detail": "Product details",
+    "product-variants": "SKUs"
   },
   "storefront": {
     "footerTagline": "Simple shopping — clear management.",
@@ -344,6 +345,36 @@
     "availability": {
       "in_stock": "In stock",
       "out_of_stock": "Out of stock"
-    }
+    },
+    "variant": {
+      "addTitle": "Add SKU",
+      "editTitle": "Edit SKU",
+      "hint": "Size and color identify the SKU. Stock changes go through inventory, not here.",
+      "barcode": "Barcode",
+      "isDefault": "Default SKU shown first in the store",
+      "images": "SKU images",
+      "imageOption": "Product image {{index}}",
+      "noImages": "Add product images first to pick some for this SKU.",
+      "save": "Save SKU",
+      "required": "Required.",
+      "tooLong": "Too long.",
+      "priceInvalid": "Enter a whole amount in VND.",
+      "created": "SKU added.",
+      "updated": "SKU saved.",
+      "saveFailed": "Could not save the SKU.",
+      "conflictTitle": "This SKU changed",
+      "conflict": "Someone saved this SKU after you opened it. Load the latest version; your changes stay in the form.",
+      "reload": "Load latest",
+      "missing": "This SKU no longer exists.",
+      "soldIdentity": "This SKU has been sold, so its code, size and color cannot change. Create a new SKU instead.",
+      "hasReservations": "This SKU has reserved stock and cannot be deactivated yet.",
+      "onHand": "On hand",
+      "reserved": "Reserved",
+      "openProduct": "Open product",
+      "search": "Search SKU",
+      "empty": "No SKUs yet.",
+      "noMatches": "No SKUs match these filters."
+    },
+    "priceVnd": "Price (VND)"
   }
 }

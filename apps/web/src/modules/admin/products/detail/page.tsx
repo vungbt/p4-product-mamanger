@@ -6,6 +6,7 @@ import {
   DescriptionList,
   EmptyState,
   Icon,
+  IconButton,
   PageHeader,
   Skeleton,
   Tag,
@@ -17,6 +18,7 @@ import { useCanAccess } from '@p4/ability/browser';
 import { useProduct, useProductVariants } from '@p4/api-sdk/react';
 import { ApiSdkError, getErrorMessage } from '@p4/api-sdk/shared';
 import type { ProductVariant } from '@p4/shared';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ROUTES } from '@/constants/constants';
@@ -25,6 +27,7 @@ import {
   productTransitions,
   useProductPublication,
 } from '../components/product-status';
+import VariantEditor from '../components/variant-editor';
 
 export default function AdminProductDetailPage() {
   const { t } = useTranslation();
@@ -38,6 +41,13 @@ export default function AdminProductDetailPage() {
   const publication = useProductPublication(() => {
     void product.refetch();
   });
+  const [editing, setEditing] = useState<{ variant?: ProductVariant } | null>(null);
+
+  const reloadVariant = async () => {
+    const result = await variants.refetch();
+
+    return result.data?.data.find((item) => item.id === editing?.variant?.id);
+  };
 
   const listSearch =
     typeof location.state?.from === 'string' ? (location.state.from as string) : '';
@@ -74,6 +84,7 @@ export default function AdminProductDetailPage() {
   const data = product.data.data;
   const images = data.images ?? [];
   const next = productTransitions(data.status);
+  const canEditVariants = canWrite && data.status !== 'archived';
 
   const variantColumns: ColumnDef<ProductVariant, unknown>[] = [
     {
@@ -115,6 +126,26 @@ export default function AdminProductDetailPage() {
         </Tag>
       ),
     },
+    ...(canEditVariants
+      ? [
+          {
+            id: 'actions',
+            header: t('adminProducts.actions'),
+            enableSorting: false,
+            cell: ({ row }: { row: { original: ProductVariant } }) => (
+              <div className="flex justify-end">
+                <IconButton
+                  icon="edit"
+                  variant="ghost"
+                  size="sm"
+                  label={`${t('adminProducts.variant.editTitle')}: ${row.original.sku}`}
+                  onClick={() => setEditing({ variant: row.original })}
+                />
+              </div>
+            ),
+          } satisfies ColumnDef<ProductVariant, unknown>,
+        ]
+      : []),
   ];
 
   return (
@@ -240,6 +271,14 @@ export default function AdminProductDetailPage() {
         title={t('adminProducts.variants')}
         description={t('adminProducts.variantsHint')}
         contentClassName="p-0"
+        action={
+          canEditVariants ? (
+            <Button size="sm" onClick={() => setEditing({})}>
+              <Icon name="plus" />
+              {t('adminProducts.variant.addTitle')}
+            </Button>
+          ) : undefined
+        }
       >
         <DataTable
           className="rounded-none border-0 shadow-none"
@@ -260,6 +299,16 @@ export default function AdminProductDetailPage() {
       </Card>
 
       {publication.confirmDialog}
+      {editing && (
+        <VariantEditor
+          key={editing.variant?.id ?? 'new'}
+          productId={data.id}
+          variant={editing.variant}
+          images={images}
+          onClose={() => setEditing(null)}
+          onReload={reloadVariant}
+        />
+      )}
     </div>
   );
 }

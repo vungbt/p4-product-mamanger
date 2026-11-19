@@ -114,7 +114,8 @@
     "product-edit": "Chỉnh sửa",
     "admin-orders": "Đơn hàng",
     "product-categories": "Danh mục",
-    "product-detail": "Chi tiết sản phẩm"
+    "product-detail": "Chi tiết sản phẩm",
+    "product-variants": "Danh sách SKU"
   },
   "storefront": {
     "footerTagline": "Mua sắm đơn giản — quản lý rõ ràng.",
@@ -344,6 +345,36 @@
     "availability": {
       "in_stock": "Còn hàng",
       "out_of_stock": "Hết hàng"
-    }
+    },
+    "variant": {
+      "addTitle": "Thêm SKU",
+      "editTitle": "Sửa SKU",
+      "hint": "Size và màu xác định SKU. Tồn kho thay đổi qua màn kho, không sửa ở đây.",
+      "barcode": "Mã vạch",
+      "isDefault": "SKU mặc định, hiển thị đầu tiên trên cửa hàng",
+      "images": "Ảnh của SKU",
+      "imageOption": "Ảnh sản phẩm {{index}}",
+      "noImages": "Thêm ảnh cho sản phẩm trước rồi chọn ảnh cho SKU.",
+      "save": "Lưu SKU",
+      "required": "Bắt buộc.",
+      "tooLong": "Quá dài.",
+      "priceInvalid": "Nhập số tiền nguyên theo VND.",
+      "created": "Đã thêm SKU.",
+      "updated": "Đã lưu SKU.",
+      "saveFailed": "Không lưu được SKU.",
+      "conflictTitle": "SKU vừa thay đổi",
+      "conflict": "Có người đã lưu SKU này sau khi bạn mở. Tải bản mới nhất, thay đổi của bạn vẫn giữ trong form.",
+      "reload": "Tải bản mới",
+      "missing": "SKU này không còn tồn tại.",
+      "soldIdentity": "SKU đã có đơn bán nên không đổi được mã, size và màu. Hãy tạo SKU mới.",
+      "hasReservations": "SKU đang có hàng giữ chỗ nên chưa ngừng bán được.",
+      "onHand": "Trong kho",
+      "reserved": "Đang giữ",
+      "openProduct": "Mở sản phẩm",
+      "search": "Tìm SKU",
+      "empty": "Chưa có SKU nào.",
+      "noMatches": "Không có SKU phù hợp bộ lọc."
+    },
+    "priceVnd": "Giá (VND)"
   }
 }
