@@ -24,6 +24,7 @@ export const ROUTES = {
     'product-categories': '/admin/products/categories',
     'product-new': '/admin/products/new',
     'product-edit': (id: string) => `/admin/products/${id}/edit`,
+    'product-detail': (id: string) => `/admin/products/${id}`,
     orders: '/admin/orders',
   },
 } as const;
