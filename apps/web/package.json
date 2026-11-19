@@ -12,7 +12,7 @@
     "predev": "pnpm --filter @p4/ability build && pnpm --filter @p4/api-sdk build"
   },
   "dependencies": {
-    "@itclabs/react-ui": "0.24.1",
+    "@itclabs/react-ui": "0.25.0",
     "@p4/ability": "workspace:*",
     "@p4/api-client": "workspace:*",
     "@p4/api-sdk": "workspace:*",
