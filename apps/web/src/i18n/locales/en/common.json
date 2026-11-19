@@ -255,5 +255,13 @@
     "createdAt": "Created",
     "statusColumn": "Status",
     "noRecentOrders": "No orders yet"
+  },
+  "adminSearch": {
+    "trigger": "Search pages",
+    "title": "Go to page",
+    "description": "Type a page name to find it.",
+    "label": "Page name",
+    "placeholder": "Search pages…",
+    "empty": "No matching pages"
   }
 }
