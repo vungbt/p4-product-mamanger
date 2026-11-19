@@ -14,12 +14,19 @@ import { DocumentStatusTag } from '@/modules/portal/documents-ui';
 /** P-01 exposes status and integrity only; the public endpoint returns no personal content. */
 export default function VerifyDocumentPage() {
   const { code = '' } = useParams();
+
   const { t } = useTranslation('portalDocuments');
+
   const sdk = useStaySdk();
+
   const [result, setResult] = useState<DocumentVerification | null>(null);
+
   const [check, setCheck] = useState<DocumentFileCheck | null>(null);
+
   const [file, setFile] = useState<File | null>(null);
+
   const [error, setError] = useState<string | null>(null);
+
   const [comparing, setComparing] = useState(false);
 
   useGenericDocumentMeta(t('verify.title'));
@@ -79,7 +86,15 @@ export default function VerifyDocumentPage() {
                 {t('verify.building')}: {result.buildingName}
               </p>
               <p>
-                {t('verify.kind')}: {t(`kind.${result.kind}`)}
+                {t('verify.kind')}:{' '}
+                {(
+                  {
+                    contract: t('kind.contract'),
+                    addendum: t('kind.addendum'),
+                    handover: t('kind.handover'),
+                    settlement: t('kind.settlement'),
+                  } as Record<string, string>
+                )[result.kind] ?? String(result.kind)}
               </p>
               <p>
                 {t('verify.signedCount', { signed: result.signedCount, total: result.signerCount })}

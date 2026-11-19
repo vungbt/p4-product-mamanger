@@ -117,8 +117,11 @@ export function ServiceEditForm({
   onReload: () => void;
 }) {
   const { t } = useTranslation('settings');
+
   const update = useUpdateService();
+
   const [formError, setFormError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
 
   const schema = useMemo(() => serviceSchema(t), [t]);
@@ -170,8 +173,11 @@ export function ServiceEditForm({
   });
 
   const dirty = useFormDirty(form);
+
   const price = useFormValue(form, (state) => state.values.defaultPrice);
+
   const editDescription = useFormValue(form, (state) => state.values.description);
+
   const { prompt } = useUnsavedChanges(dirty);
 
   return (
@@ -248,13 +254,29 @@ function isServiceKind(value: string): value is ServiceKind {
 /** Adds a service to the catalogue (dialog of O-02). */
 export function ServiceCreateForm({ onDone }: { onDone: () => void }) {
   const { t } = useTranslation('settings');
+
   const create = useCreateService();
+
   const [formError, setFormError] = useState<string | null>(null);
 
   const kindOptions = useMemo(
-    () => SERVICE_KINDS.map((kind) => ({ value: kind, label: t(`services.kinds.${kind}`) })),
+    () =>
+      SERVICE_KINDS.map((kind) => ({
+        value: kind,
+        label:
+          (
+            {
+              electricity: t('services.kinds.electricity'),
+              water: t('services.kinds.water'),
+              per_room: t('services.kinds.per_room'),
+              per_person: t('services.kinds.per_person'),
+              per_vehicle: t('services.kinds.per_vehicle'),
+            } as Record<string, string>
+          )[kind] ?? String(kind),
+      })),
     [t],
   );
+
   const schema = useMemo(
     () => ({
       ...serviceSchema(t),
@@ -264,7 +286,17 @@ export function ServiceCreateForm({ onDone }: { onDone: () => void }) {
   );
 
   const defaultUnit = (kind: string) =>
-    isServiceKind(kind) ? t(`services.defaultUnits.${kind}`) : '';
+    isServiceKind(kind)
+      ? ((
+          {
+            electricity: t('services.defaultUnits.electricity'),
+            water: t('services.defaultUnits.water'),
+            per_room: t('services.defaultUnits.per_room'),
+            per_person: t('services.defaultUnits.per_person'),
+            per_vehicle: t('services.defaultUnits.per_vehicle'),
+          } as Record<string, string>
+        )[kind] ?? String(kind))
+      : '';
 
   const form = useAppForm({
     defaultValues: {
@@ -323,7 +355,9 @@ export function ServiceCreateForm({ onDone }: { onDone: () => void }) {
   });
 
   const dirty = useFormDirty(form);
+
   const createDescription = useFormValue(form, (state) => state.values.description);
+
   const { prompt } = useUnsavedChanges(dirty);
 
   return (

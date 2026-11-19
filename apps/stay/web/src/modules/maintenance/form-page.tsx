@@ -29,6 +29,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as v from 'valibot';
+import { OPTIONS_PAGE_SIZE } from '@/constants/list';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import {
   apiFormErrors,
@@ -62,7 +63,7 @@ export default function MaintenanceFormPage() {
 function JobForm({ buildingId, job }: { buildingId: string; job?: StayMaintenance }) {
   const { t } = useTranslation('maintenance');
   const navigate = useNavigate();
-  const rooms = useRooms(buildingId, { pageSize: 100 });
+  const rooms = useRooms(buildingId, { pageSize: OPTIONS_PAGE_SIZE });
   const { create, update } = useMaintenanceMutations();
   const sdk = useStaySdk();
   const [files, setFiles] = useState<File[]>([]);

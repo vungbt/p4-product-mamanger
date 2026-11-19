@@ -9,7 +9,7 @@ import {
   lineFormula,
   lineReadings,
   useLineDescription,
-} from '../invoice-ui';
+} from '@/modules/invoices/invoice-ui';
 import { copyWithToast } from './share-tools';
 
 /** Status as the tenant reads it ("Đã thanh toán" when nothing is left). */
@@ -26,6 +26,7 @@ function PublicStatusTag({ invoice }: { invoice: PublicInvoiceBase }) {
         Quá hạn
       </Tag>
     );
+
   return invoice.status === 'partially_paid' ? (
     <Tag tone="warning" size="sm" data-status="partially_paid">
       Thanh toán một phần
@@ -196,6 +197,7 @@ export function InvoiceCard({
   ref?: Ref<HTMLElement>;
 }) {
   const titleId = useId();
+
   const describe = useLineDescription();
 
   const Heading = headingLevel === 1 ? 'h1' : 'h2';

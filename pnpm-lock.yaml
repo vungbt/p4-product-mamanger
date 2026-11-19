@@ -563,8 +563,8 @@ importers:
   apps/stay/web:
     dependencies:
       '@itclabs/react-ui':
-        specifier: 0.26.0
-        version: 0.26.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))
+        specifier: 0.32.0
+        version: 0.32.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))
       '@p4/ability':
         specifier: workspace:*
         version: link:../../../libs/ability
@@ -663,8 +663,8 @@ importers:
   apps/web:
     dependencies:
       '@itclabs/react-ui':
-        specifier: 0.26.0
-        version: 0.26.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))
+        specifier: 0.32.0
+        version: 0.32.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))
       '@p4/ability':
         specifier: workspace:*
         version: link:../../libs/ability
@@ -858,8 +858,8 @@ importers:
         version: 4.4.0
     devDependencies:
       '@itclabs/react-ui':
-        specifier: 0.26.0
-        version: 0.26.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))
+        specifier: 0.32.0
+        version: 0.32.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))
       '@storybook/addon-a11y':
         specifier: 'catalog:'
         version: 10.6.5(storybook@10.6.5(@types/react@19.2.18)(react@19.2.8))
@@ -1645,8 +1645,8 @@ packages:
   '@isaacs/nonrecursive-glob-match@1.1.0':
     resolution: {integrity: sha512-GPm/Dbvk5RLmhRnxXIa7nTpK0xtl4E0wj0MslsuNiJ1FIROU+2+9lgUC/dgF7Ey4QCWhfEsgxilMRMCdHPfDfw==}
 
-  '@itclabs/react-ui@0.26.0':
-    resolution: {integrity: sha512-m1xTynwSEhLW4FkMGuQ9ylze13g3/1EPc/HAHvhzIQHtrZvORXNtQHAq4SdcKg1THFi3ZbkZLAoZ1F6hQdNQ/g==}
+  '@itclabs/react-ui@0.32.0':
+    resolution: {integrity: sha512-rEhpKJ5aPiNguhKYBP2lbyzGfutewUQHjah6w01ro7JuDa2aQGZ+/lyrwo46Jik152XlQ1HtQyH/QjxMx2cV4A==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       '@date-fns/tz': ^1.2.0
@@ -7349,7 +7349,7 @@ snapshots:
 
   '@isaacs/nonrecursive-glob-match@1.1.0': {}
 
-  '@itclabs/react-ui@0.26.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))':
+  '@itclabs/react-ui@0.32.0(@date-fns/tz@1.5.0)(@tanstack/react-form@1.33.5(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tanstack/react-table@8.21.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/pm@3.30.5)(@tiptap/react@3.30.5(@floating-ui/dom@1.8.0)(@tiptap/pm@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@tiptap/starter-kit@3.30.5)(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(date-fns@4.4.0)(embla-carousel@8.6.0)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(recharts@3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.0)(react@19.2.8)(redux@5.0.1))(valibot@1.4.2(typescript@6.0.3))':
     dependencies:
       '@date-fns/tz': 1.5.0
       '@dnd-kit/core': 6.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

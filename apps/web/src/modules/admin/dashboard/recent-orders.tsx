@@ -10,8 +10,7 @@ import { getApiSdk, useQuery } from '@p4/api-client';
 import { unwrap } from '@p4/api-sdk/shared';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-
-const RECENT_ORDER_COUNT = 5;
+import { RECENT_ORDER_COUNT } from '@/constants/list';
 
 const STATUS_TONES: Record<string, TagTone> = {
   pending: 'warning',
@@ -36,6 +35,7 @@ type RecentOrder = Awaited<ReturnType<typeof fetchRecentOrders>>[number];
 
 export default function RecentOrders() {
   const { t } = useTranslation();
+
   const { formatCurrency, formatDate } = useFormatters();
 
   const { data = [], isPending } = useQuery({
@@ -52,9 +52,34 @@ export default function RecentOrders() {
         header: t('adminDashboard.statusColumn'),
         cell: ({ row }) => (
           <Tag tone={STATUS_TONES[row.original.status] ?? 'neutral'}>
-            {t(`adminDashboard.status.${row.original.status}`, {
-              defaultValue: row.original.status,
-            })}
+            {(
+              {
+                pending_confirmation: t('adminDashboard.status.pending_confirmation', {
+                  defaultValue: row.original.status,
+                }),
+                confirmed: t('adminDashboard.status.confirmed', {
+                  defaultValue: row.original.status,
+                }),
+                processing: t('adminDashboard.status.processing', {
+                  defaultValue: row.original.status,
+                }),
+                completed: t('adminDashboard.status.completed', {
+                  defaultValue: row.original.status,
+                }),
+                cancelled: t('adminDashboard.status.cancelled', {
+                  defaultValue: row.original.status,
+                }),
+                paid: t('adminDashboard.status.paid', {
+                  defaultValue: row.original.status,
+                }),
+                pending: t('adminDashboard.status.pending', {
+                  defaultValue: row.original.status,
+                }),
+                shipping: t('adminDashboard.status.shipping', {
+                  defaultValue: row.original.status,
+                }),
+              } as Record<string, string>
+            )[row.original.status] ?? String(row.original.status)}
           </Tag>
         ),
       },

@@ -47,7 +47,8 @@ module.exports = {
         name: product.name,
         price: money(product.price),
         description: descriptionToHtml(product.description),
-        image_id: product.imageId ? uuid(product.imageId) : null,
+        // Seeders run on the August schema; 20261119000100 renames image_id to thumbnail_id.
+        image_id: product.thumbnailId ? uuid(product.thumbnailId) : null,
         stock: product.stock,
         category_id: uuid(product.categoryId),
         created_at: now,

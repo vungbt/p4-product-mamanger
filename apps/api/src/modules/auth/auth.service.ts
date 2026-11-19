@@ -110,9 +110,9 @@ export async function updateProfile(userId: string, input: UpdateProfileInput) {
     const row = await UserModel.findByPk(userId);
     if (!row) throw new Unauthorized(errorKeys.invalidToken);
 
-    if (input.imageStorageId?.trim()) {
+    if (input.avatarStorageId?.trim()) {
       const previousAvatarId = row.avatarId;
-      const file = await createFromStorageId(input.imageStorageId.trim(), 'avatar');
+      const file = await createFromStorageId(input.avatarStorageId.trim(), 'avatar');
       await row.update({ avatarId: file.id });
       if (previousAvatarId && previousAvatarId !== file.id) {
         await deleteFileIfUnreferenced(previousAvatarId);

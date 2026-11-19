@@ -6,6 +6,7 @@ import { auditedTransaction, recordAudit } from '@/shared/audit/audited-command.
 import { assertVersion } from '@/shared/commerce/transitions.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { getCatalogProduct } from '../catalog/catalog.service.js';
+
 export function merchandisingDto(row: MerchandisingEntryModel): MerchandisingEntry {
   return {
     ...selectFields(row, ['id', 'key', 'payload', 'active', 'version']),
@@ -13,9 +14,11 @@ export function merchandisingDto(row: MerchandisingEntryModel): MerchandisingEnt
     endsAt: row.endsAt?.toISOString() ?? null,
   };
 }
+
 export function visible(row: MerchandisingEntryModel, now = new Date()) {
   return row.active && (!row.startsAt || row.startsAt <= now) && (!row.endsAt || row.endsAt > now);
 }
+
 export async function saveMerchandising(
   actorId: string,
   key: string,
@@ -33,8 +36,8 @@ export async function saveMerchandising(
         if (!(await ProductModel.findByPk(productId, { transaction })))
           throw new NotFound('product_not_found');
     if (payload.kind === 'banner') {
-      if (!/^[a-f0-9-]{36}$/i.test(payload.imageFileId)) throw new BaseError('invalid_image');
-      const file = await FileModel.findByPk(payload.imageFileId, { transaction });
+      if (!/^[a-f0-9-]{36}$/i.test(payload.thumbnailFileId)) throw new BaseError('invalid_image');
+      const file = await FileModel.findByPk(payload.thumbnailFileId, { transaction });
       if (!file || file.metadata?.ownerId !== actorId || file.metadata?.private)
         throw new Forbidden();
     }
@@ -83,6 +86,7 @@ export async function saveMerchandising(
     return merchandisingDto(row);
   });
 }
+
 export async function publicMerchandising(row: MerchandisingEntryModel) {
   if (!visible(row)) throw new NotFound();
   const payload = row.payload;
@@ -95,12 +99,12 @@ export async function publicMerchandising(row: MerchandisingEntryModel) {
     return { id: row.id, slug: row.key, title: payload.title, products };
   }
   if (payload.kind === 'banner') {
-    const file = await FileModel.findByPk(payload.imageFileId);
+    const file = await FileModel.findByPk(payload.thumbnailFileId);
     if (!file?.url) throw new NotFound();
     return {
       id: row.id,
       title: payload.title,
-      imageUrl: file.url,
+      thumbnailUrl: file.url,
       href: payload.href,
       placement: payload.placement,
     };

@@ -375,12 +375,12 @@ Body create/update:
   "name": "string",
   "price": 100000,
   "description": "string",
-  "imageStorageId": "p4-product-manager/temp/20260802-ao-thun",
+  "thumbnailStorageId": "p4-product-manager/temp/20260802-ao-thun",
   "stock": 10
 }
 ```
 
-`imageStorageId` = Cloudinary `public_id` sau khi FE upload qua signed URL (optional). Response Product có `imageUrl` + `imageId` (join bảng `files`).
+`thumbnailStorageId` là public ID ảnh đầu trong danh sách; `imageStorageIds` là các ảnh còn lại theo thứ tự. PATCH/PUT thay toàn bộ gallery khi có `imageStorageIds` (bỏ ảnh không có trong danh sách; `[]` xóa gallery); bỏ qua trường để giữ nguyên. Thumbnail nhận `null` để xóa hoặc bỏ qua để giữ nguyên. File đã gắn với chính product không cần ticket; file mới cần upload product completed thuộc actor. Thumbnail không lặp trong gallery. Response trả `thumbnailUrl` (fallback gallery đầu hoặc chuỗi rỗng), `thumbnail: { fileId, url, storageId } | null`, và `images[]` theo thứ tự có `storageId`.
 
 Create/update/delete trả `{ data: Product, message }`.
 
@@ -449,15 +449,16 @@ FE: sau `POST /api/orders` → `window.location = data.payment.checkoutUrl`.
 
 ## Files (admin — Cloudinary signed upload)
 
-Flow giống next-chapter:
+1. `POST /api/files/uploads` với `{ purpose: 'product', resourceId? }` lấy ticket, uploadUrl và publicId.
+2. FE POST file lên uploadUrl, rồi POST `/api/files/uploads/{id}/complete` để API verify.
+3. Product create/update nhận `thumbnailStorageId: publicId` và `imageStorageIds: publicIds[]`.
+   Form gửi ảnh đầu làm thumbnail và phần còn lại làm toàn bộ gallery; lưu bằng một PATCH.
+4. File mới cần ticket product của actor; file đã gắn thumbnail/gallery của chính product có thể đổi vị trí mà không cần ticket.
 
-1. `GET /api/files/sign-upload-url?name=ao-thun` → `{ data: { uploadUrl, publicId } }`
-2. FE `POST` file lên `uploadUrl` (thẳng Cloudinary, không qua API)
-3. Tạo/sửa product với `imageStorageId: publicId` → API rename `temp` → `assets`, lưu bảng `files`, gán `products.image_id`
+Batch dùng `POST /api/files/uploads/batch` rồi `/batch/complete`; xem [upload workflow](../../documents/backend/uploads.md).
+Profile/account nhận `avatarStorageId`; POST gallery `/api/products/{id}/images` nhận `{ storageId, sortOrder? }`.
 
-Batch: `GET /api/files/sign-upload-urls?names=a,b` → `{ data: [{ uploadUrl, publicId }, ...] }`
-
-Xóa file **không** expose API — service `deleteFile` / `deleteFileIfUnreferenced` được gọi nội bộ khi xóa gallery, xóa product, đổi avatar/cover (Cloudinary + DB).
+Xóa file **không** expose API — service `deleteFile` / `deleteFileIfUnreferenced` được gọi nội bộ khi xóa gallery, xóa product, đổi avatar/thumbnail (Cloudinary + DB).
 
 Env: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_FOLDER` (root; dùng `{folder}/temp` và `{folder}/assets`), optional `CLOUDINARY_DOMAIN`.
 

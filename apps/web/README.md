@@ -196,7 +196,7 @@ và metadata (xem `apps/api/README.md`); chưa deploy. Chỉ chuyển DataTable 
 server mode sau khi endpoint đích hỗ trợ contract mới.
 Mặc định 10 dòng/trang; các lựa chọn 10/20/50. Thêm/sửa/xóa lưu thật vào API.
 
-Search danh mục dùng `useDebouncedCallback` của kit (300ms), ô nhập cập nhật ngay.
+Search danh mục dùng `useDebouncedCallback` của kit với `SEARCH_DEBOUNCE_MS` từ `src/constants/list.ts` (500ms), ô nhập cập nhật ngay.
 Xóa search/reset hủy callback đang chờ; Select lọc mô tả dùng `clearable` với giá trị
 `null` khi không lọc. Đây là lọc phía client, không gửi request tìm kiếm theo từng ký tự.
 

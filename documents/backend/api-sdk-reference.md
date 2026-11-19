@@ -130,6 +130,7 @@ Hooks: `@p4/api-sdk/react`. Helpers và input: `@p4/api-sdk/shared`. Mọi helpe
 | PATCH | `/api/admin/size-guides/{id}` | `usePatchAdminSizeGuidesId` | `patchAdminSizeGuidesId` | — |
 | PATCH | `/api/admin/staff/{id}/role` | `usePatchAdminStaffIdRole` | `patchAdminStaffIdRole` | — |
 | PATCH | `/api/admin/staff/{id}/status` | `usePatchAdminStaffIdStatus` | `patchAdminStaffIdStatus` | — |
+| PATCH | `/api/products/{id}` | `usePatchProductsId` | `patchProductsId` | — |
 | PATCH | `/api/products/{id}/publication` | `usePatchProductsIdPublication` | `patchProductsIdPublication` | `useUpdateProductPublication` |
 | PATCH | `/api/products/{id}/variants/{variantId}` | `usePatchProductsIdVariantsVariantId` | `patchProductsIdVariantsVariantId` | `useUpdateProductVariant` |
 | PATCH | `/api/products/{id}/variants/{variantId}/images` | `usePatchProductsIdVariantsVariantIdImages` | `patchProductsIdVariantsVariantIdImages` | `useUpdateProductVariantImages` |

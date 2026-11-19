@@ -125,7 +125,13 @@ function DocumentPicker({
           }
           role={state.status === 'error' ? 'alert' : 'status'}
         >
-          {t(`tenants.form.upload.${state.status}`, { name: state.name })}
+          {(
+            {
+              uploading: t('tenants.form.upload.uploading', { name: state.name }),
+              done: t('tenants.form.upload.done', { name: state.name }),
+              error: t('tenants.form.upload.error', { name: state.name }),
+            } as Record<string, string>
+          )[state.status] ?? String(state.status)}
         </p>
       ) : null}
     </div>
@@ -134,19 +140,33 @@ function DocumentPicker({
 
 function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () => void }) {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
+
   const sdk = useStaySdk();
+
   const { buildingId } = useActiveBuilding();
+
   const createTenant = useCreateTenant();
+
   const updateTenant = useUpdateTenant();
+
   const attachDocument = useAttachTenantDocument();
+
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
+
   const [formError, setFormError] = useState<string | null>(null);
+
   const [duplicateId, setDuplicateId] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
+
   const [uploads, setUploads] = useState<Partial<Record<DocumentSide, UploadState>>>({});
+
   const [saved, setSaved] = useState(false);
+
   const [isDirty, setDirty] = useState(false);
+
   const [scanned, setScanned] = useState<string[] | null>(null);
 
   const uploader = useMemo(() => createUploadApi(sdk, { baseUrl: window.location.origin }), [sdk]);
@@ -177,7 +197,18 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
   );
 
   const genderOptions = useMemo(
-    () => TENANT_GENDERS.map((value) => ({ value, label: t(`tenants.genders.${value}`) })),
+    () =>
+      TENANT_GENDERS.map((value) => ({
+        value,
+        label:
+          (
+            {
+              male: t('tenants.genders.male'),
+              female: t('tenants.genders.female'),
+              other: t('tenants.genders.other'),
+            } as Record<string, string>
+          )[value] ?? String(value),
+      })),
     [t],
   );
 
@@ -353,7 +384,29 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
             <Alert tone="success" role="status" data-testid="cccd-scan-filled">
               {scanned.length
                 ? t('tenants.scan.filled', {
-                    fields: scanned.map((field) => t(`tenants.fields.${field}`)).join(', '),
+                    fields: scanned
+                      .map(
+                        (field) =>
+                          (
+                            ({
+                              fullName: t('tenants.fields.fullName'),
+                              phone: t('tenants.fields.phone'),
+                              room: t('tenants.fields.room'),
+                              status: t('tenants.fields.status'),
+                              residenceDeclared: t('tenants.fields.residenceDeclared'),
+                              email: t('tenants.fields.email'),
+                              idNumber: t('tenants.fields.idNumber'),
+                              idIssuedAt: t('tenants.fields.idIssuedAt'),
+                              birthDate: t('tenants.fields.birthDate'),
+                              gender: t('tenants.fields.gender'),
+                              hometown: t('tenants.fields.hometown'),
+                              permanentAddress: t('tenants.fields.permanentAddress'),
+                              occupation: t('tenants.fields.occupation'),
+                              note: t('tenants.fields.note'),
+                            }) as Record<string, string>
+                          )[field] ?? String(field),
+                      )
+                      .join(', '),
                   })
                 : t('tenants.scan.filledNone')}
             </Alert>
@@ -485,7 +538,9 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
 /** O-13: `/tenants/new` (name + phone is enough) and `/tenants/:id/edit`. */
 export default function TenantFormPage() {
   const { t } = useTranslation();
+
   const { id = '' } = useParams();
+
   const tenant = useTenant(id);
 
   const editing = Boolean(id);

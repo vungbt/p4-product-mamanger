@@ -4,3 +4,4 @@ export { ApiSdkError, getErrorMessage, getFieldError, unwrap } from './errors.js
 export type { components, operations, paths } from './generated.js';
 export * from './products.js';
 export * from './resources.js';
+export * from './uploads.js';

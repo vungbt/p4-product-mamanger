@@ -4,8 +4,8 @@ import { useRevokeInvoiceShare, useShareInvoice } from '@stay/sdk/react';
 import type { InvoiceShareLink, StayInvoiceSummary } from '@stay/shared';
 import { useState } from 'react';
 import { FormError } from '@/libraries/forms/page-states';
-import { Overlay } from '../invoice-dialogs';
-import { displayExpiry, displayPeriod, invoiceErrorMessage } from '../invoice-ui';
+import { Overlay } from '@/modules/invoices/invoice-dialogs';
+import { displayExpiry, displayPeriod, invoiceErrorMessage } from '@/modules/invoices/invoice-ui';
 import { InvoiceImageButton } from './invoice-image-button';
 import { InvoicePreviewButton } from './invoice-preview';
 import { canWebShare, copyWithToast, shareLink } from './share-tools';
@@ -76,8 +76,11 @@ export function ShareInvoiceDialog({
   onClose: () => void;
 }) {
   const share = useShareInvoice();
+
   const revoke = useRevokeInvoiceShare();
+
   const [confirmRevoke, setConfirmRevoke] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const activeUntil = link?.expiresAt ?? invoice.shareExpiresAt;

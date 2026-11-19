@@ -15,14 +15,15 @@ import { useInvoices, useRecordPayment } from '@stay/sdk/react';
 import { isIsoDate, type ManualPaymentMethod, type StayInvoiceSummary } from '@stay/shared';
 import { useEffect, useRef, useState } from 'react';
 import * as v from 'valibot';
+import { OPTIONS_PAGE_SIZE } from '@/constants/list';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
 import { apiFormErrors, clearServerErrorOnChange, serverError } from '@/libraries/forms/api-errors';
 import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError, LoadError, LoadingRows } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty, useFormValue } from '@/libraries/forms/use-form-value';
-import { Overlay } from '../invoices/invoice-dialogs';
-import { displayPeriod } from '../invoices/invoice-ui';
+import { Overlay } from '@/modules/invoices/invoice-dialogs';
+import { displayPeriod } from '@/modules/invoices/invoice-ui';
 import {
   exceededRemaining,
   isCollectable,
@@ -118,7 +119,13 @@ export function RoomPaymentDialog({
   onClose: () => void;
 }) {
   const [busy, setBusy] = useState(false);
-  const query = useInvoices({ roomId, pageSize: 100, sortBy: 'dueOn', sortOrder: 'asc' });
+
+  const query = useInvoices({
+    roomId,
+    pageSize: OPTIONS_PAGE_SIZE,
+    sortBy: 'dueOn',
+    sortOrder: 'asc',
+  });
 
   const invoices = (query.data?.data ?? []).filter(isCollectable);
 
@@ -158,8 +165,10 @@ function PaymentForm({
   onClose: () => void;
 }) {
   const record = useRecordPayment();
+
   const [error, setError] = useState<string | null>(null);
   // One key per dialog: a double tap or a retry of the same submit never records twice.
+
   const [key] = useState(() => crypto.randomUUID());
 
   const first = invoices.find((invoice) => invoice.id === initialInvoiceId) ?? invoices[0];
@@ -219,7 +228,9 @@ function PaymentForm({
   });
 
   const dirty = useFormDirty(form);
+
   const invoiceId = useFormValue(form, (state) => state.values.invoiceId);
+
   const previous = useRef(invoiceId);
 
   useUnsavedChanges(dirty);

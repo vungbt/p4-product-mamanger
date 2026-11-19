@@ -3,17 +3,20 @@ import { requestBody } from '@p4/server-core';
 import type { ProductInput, ProductListQuery } from '@p4/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { parseVariantChanges } from '../catalog/variant-changes.js';
 import * as productsService from './products.service.js';
 
 function productInput(req: Request, create = false): Partial<ProductInput> {
   const body = requestBody(req);
   return {
+    variants: parseVariantChanges(body.data.variants, create),
     name: create ? body.text('name') : body.optionalText('name'),
     description: body.optionalText('description', 100000),
     price: body.data.price === undefined ? undefined : body.integer('price'),
     stock: body.data.stock === undefined ? undefined : body.integer('stock'),
     categoryId: body.data.categoryId === null ? null : body.optionalText('categoryId', 36),
-    imageStorageId: body.optionalText('imageStorageId'),
+    thumbnailStorageId:
+      body.data.thumbnailStorageId === null ? null : body.optionalText('thumbnailStorageId'),
     imageStorageIds:
       body.data.imageStorageIds === undefined ? undefined : body.strings('imageStorageIds'),
     slug: body.optionalText('slug', 160),
@@ -59,7 +62,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
       name: body.text('name'),
       description: body.optionalText('description', 100000) ?? '',
       price: body.integer('price'),
-      stock: body.integer('stock'),
+      stock: body.data.stock === undefined ? 0 : body.integer('stock'),
     });
     return res.jsonApi(StatusCodes.CREATED, { data: product, message: 'message:product_created' });
   } catch (error) {

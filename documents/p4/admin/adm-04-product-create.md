@@ -21,7 +21,7 @@ Tạo sản phẩm với danh mục, giá, tồn kho, mô tả và ảnh đại 
 - Validate tên bắt buộc, giá/tồn kho theo rule BE; map lỗi BE về field,
   lỗi chung vào Alert. Disable submit khi lưu, tránh gửi trùng.
 - Upload qua signed URL; giữ `publicId` từ response ký để gửi
-  `imageStorageId`, không gửi URL thay public ID. Hook upload hiện chỉ trả URL,
+  `thumbnailStorageId`, không gửi URL thay public ID. Hook upload hiện chỉ trả URL,
   cần mở rộng tương thích với consumer cũ hoặc bổ sung flow riêng phù hợp.
 - Preview ảnh, xoá lựa chọn chưa lưu; chặn lưu khi upload đang chạy/thất bại.
 - Thành công: toast, invalidate products, quay về danh sách đúng ngữ cảnh.

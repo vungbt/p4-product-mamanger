@@ -39,9 +39,17 @@ info:
 
     `GET /api/processes/{id}` và `GET /api/processes/{id}/items`.
 
-    Chỉ gắn ảnh completed. Product nhận `imageStorageId`/`imageStorageIds` từ publicId khi tạo;
+    Chỉ gắn ảnh completed. Product nhận `thumbnailStorageId`/`imageStorageIds` từ publicId khi tạo hoặc cập nhật
+    (PATCH/PUT; gallery đầy đủ theo thứ tự, bỏ ảnh không có trong danh sách);
 
-    thêm gallery dùng `POST /api/products/{id}/images`, xóa dùng endpoint ảnh riêng.
+    thumbnailStorageId nhận upload product của actor hoặc file đã gắn với sản phẩm; null để xóa thumbnail. File
+    thumbnail không lặp trong gallery.
+
+    Response có thumbnailUrl (fallback ảnh gallery đầu tiên khi thiếu thumbnail), thumbnail { fileId, url, storageId }
+    hoặc null và images[] có storageId.
+
+    thêm gallery dùng `POST /api/products/{id}/images` với storageId, xóa dùng endpoint ảnh riêng. Profile/account dùng
+    avatarStorageId.
 
     `product` cần quyền `write:Catalog`; `blog` cần `write:Content`; purpose support/return là private.
 
@@ -5288,7 +5296,7 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 200
-                imageFileId:
+                thumbnailFileId:
                   type: string
                   minLength: 1
                   maxLength: 36
@@ -5305,7 +5313,7 @@ paths:
                 - key
                 - active
                 - title
-                - imageFileId
+                - thumbnailFileId
                 - href
                 - placement
       responses:
@@ -5523,7 +5531,7 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 200
-                imageFileId:
+                thumbnailFileId:
                   type: string
                   minLength: 1
                   maxLength: 36
@@ -5541,7 +5549,7 @@ paths:
                 - active
                 - expectedVersion
                 - title
-                - imageFileId
+                - thumbnailFileId
                 - href
                 - placement
       responses:
@@ -5696,7 +5704,7 @@ paths:
                               type: array
                               items:
                                 $ref: "#/components/schemas/Product"
-                            imageUrl:
+                            thumbnailUrl:
                               type: "null"
                             href:
                               type: "null"
@@ -5717,7 +5725,7 @@ paths:
                               type: string
                             title:
                               type: string
-                            imageUrl:
+                            thumbnailUrl:
                               type: string
                             href:
                               type: string
@@ -5737,7 +5745,7 @@ paths:
                           required:
                             - id
                             - title
-                            - imageUrl
+                            - thumbnailUrl
                             - href
                             - placement
                         - type: object
@@ -5756,7 +5764,7 @@ paths:
                               type: "null"
                             products:
                               type: "null"
-                            imageUrl:
+                            thumbnailUrl:
                               type: "null"
                             href:
                               type: "null"
@@ -5793,7 +5801,7 @@ paths:
                               type: "null"
                             products:
                               type: "null"
-                            imageUrl:
+                            thumbnailUrl:
                               type: "null"
                             href:
                               type: "null"
@@ -5906,7 +5914,7 @@ paths:
                             type: array
                             items:
                               $ref: "#/components/schemas/Product"
-                          imageUrl:
+                          thumbnailUrl:
                             type: "null"
                           href:
                             type: "null"
@@ -5927,7 +5935,7 @@ paths:
                             type: string
                           title:
                             type: string
-                          imageUrl:
+                          thumbnailUrl:
                             type: string
                           href:
                             type: string
@@ -5947,7 +5955,7 @@ paths:
                         required:
                           - id
                           - title
-                          - imageUrl
+                          - thumbnailUrl
                           - href
                           - placement
                       - type: object
@@ -5966,7 +5974,7 @@ paths:
                             type: "null"
                           products:
                             type: "null"
-                          imageUrl:
+                          thumbnailUrl:
                             type: "null"
                           href:
                             type: "null"
@@ -6003,7 +6011,7 @@ paths:
                             type: "null"
                           products:
                             type: "null"
-                          imageUrl:
+                          thumbnailUrl:
                             type: "null"
                           href:
                             type: "null"
@@ -6648,7 +6656,7 @@ paths:
                                       type: array
                                       items:
                                         $ref: "#/components/schemas/Product"
-                                    imageUrl:
+                                    thumbnailUrl:
                                       type: "null"
                                     href:
                                       type: "null"
@@ -6669,7 +6677,7 @@ paths:
                                       type: string
                                     title:
                                       type: string
-                                    imageUrl:
+                                    thumbnailUrl:
                                       type: string
                                     href:
                                       type: string
@@ -6689,7 +6697,7 @@ paths:
                                   required:
                                     - id
                                     - title
-                                    - imageUrl
+                                    - thumbnailUrl
                                     - href
                                     - placement
                                 - type: object
@@ -6708,7 +6716,7 @@ paths:
                                       type: "null"
                                     products:
                                       type: "null"
-                                    imageUrl:
+                                    thumbnailUrl:
                                       type: "null"
                                     href:
                                       type: "null"
@@ -6745,7 +6753,7 @@ paths:
                                       type: "null"
                                     products:
                                       type: "null"
-                                    imageUrl:
+                                    thumbnailUrl:
                                       type: "null"
                                     href:
                                       type: "null"
@@ -9720,7 +9728,7 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/ContentBlock"
-                      coverFileId:
+                      thumbnailFileId:
                         type:
                           - string
                           - "null"
@@ -9732,9 +9740,9 @@ paths:
                         type: string
                       seoDescription:
                         type: string
-                      coverUrl:
+                      thumbnailUrl:
                         type: string
-                      media:
+                      images:
                         type: array
                         items:
                           type: object
@@ -9756,12 +9764,12 @@ paths:
                       - title
                       - excerpt
                       - body
-                      - coverFileId
+                      - thumbnailFileId
                       - taxonomyIds
                       - seoTitle
                       - seoDescription
-                      - coverUrl
-                      - media
+                      - thumbnailUrl
+                      - images
                   message:
                     type: string
                 required:
@@ -10002,7 +10010,7 @@ paths:
                 excerpt:
                   type: string
                   maxLength: 2000
-                coverFileId:
+                thumbnailFileId:
                   type: string
                   minLength: 1
                   maxLength: 36
@@ -10243,7 +10251,7 @@ paths:
                 excerpt:
                   type: string
                   maxLength: 2000
-                coverFileId:
+                thumbnailFileId:
                   type: string
                   minLength: 1
                   maxLength: 36
@@ -10786,7 +10794,7 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/ContentBlock"
-                      coverFileId:
+                      thumbnailFileId:
                         type:
                           - string
                           - "null"
@@ -10798,9 +10806,9 @@ paths:
                         type: string
                       seoDescription:
                         type: string
-                      coverUrl:
+                      thumbnailUrl:
                         type: string
-                      media:
+                      images:
                         type: array
                         items:
                           type: object
@@ -10822,12 +10830,12 @@ paths:
                       - title
                       - excerpt
                       - body
-                      - coverFileId
+                      - thumbnailFileId
                       - taxonomyIds
                       - seoTitle
                       - seoDescription
-                      - coverUrl
-                      - media
+                      - thumbnailUrl
+                      - images
                   message:
                     type: string
                 required:
@@ -11068,7 +11076,7 @@ paths:
                 excerpt:
                   type: string
                   maxLength: 2000
-                coverFileId:
+                thumbnailFileId:
                   type: string
                   minLength: 1
                   maxLength: 36
@@ -11309,7 +11317,7 @@ paths:
                 excerpt:
                   type: string
                   maxLength: 2000
-                coverFileId:
+                thumbnailFileId:
                   type: string
                   minLength: 1
                   maxLength: 36
@@ -11883,7 +11891,7 @@ paths:
                           type: array
                           items:
                             $ref: "#/components/schemas/ContentBlock"
-                        coverFileId:
+                        thumbnailFileId:
                           type:
                             - string
                             - "null"
@@ -11895,9 +11903,9 @@ paths:
                           type: string
                         seoDescription:
                           type: string
-                        coverUrl:
+                        thumbnailUrl:
                           type: string
-                        media:
+                        images:
                           type: array
                           items:
                             type: object
@@ -11918,12 +11926,12 @@ paths:
                         - title
                         - excerpt
                         - body
-                        - coverFileId
+                        - thumbnailFileId
                         - taxonomyIds
                         - seoTitle
                         - seoDescription
-                        - coverUrl
-                        - media
+                        - thumbnailUrl
+                        - images
                   message:
                     type: string
                   meta:
@@ -12811,7 +12819,7 @@ paths:
                           type: array
                           items:
                             $ref: "#/components/schemas/ContentBlock"
-                        coverFileId:
+                        thumbnailFileId:
                           type:
                             - string
                             - "null"
@@ -12823,9 +12831,9 @@ paths:
                           type: string
                         seoDescription:
                           type: string
-                        coverUrl:
+                        thumbnailUrl:
                           type: string
-                        media:
+                        images:
                           type: array
                           items:
                             type: object
@@ -12846,12 +12854,12 @@ paths:
                         - title
                         - excerpt
                         - body
-                        - coverFileId
+                        - thumbnailFileId
                         - taxonomyIds
                         - seoTitle
                         - seoDescription
-                        - coverUrl
-                        - media
+                        - thumbnailUrl
+                        - images
                   message:
                     type: string
                 required:
@@ -13678,7 +13686,7 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 10000
-                mediaIds:
+                imageIds:
                   type: array
                   maxItems: 10
                   items:
@@ -24902,7 +24910,7 @@ paths:
                 phone:
                   type: string
                   maxLength: 30
-                imageStorageId:
+                avatarStorageId:
                   type: string
                   maxLength: 255
               required:
@@ -28115,6 +28123,137 @@ paths:
             schema:
               type: object
               properties:
+                variants:
+                  type: object
+                  additionalProperties: false
+                  description: Atomic SKU diff. Delete deactivates (history and inventory retained). Stock is create-only. Sold identity
+                    and reservation rules apply. Exactly one active default is ensured.
+                  properties:
+                    create:
+                      type: array
+                      maxItems: 500
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          sku:
+                            type: string
+                            minLength: 1
+                            maxLength: 120
+                          barcode:
+                            type:
+                              - string
+                              - "null"
+                            maxLength: 120
+                          size:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          color:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          price:
+                            type: integer
+                            minimum: 0
+                            maximum: 2147483647
+                          status:
+                            type: string
+                            enum:
+                              - active
+                              - inactive
+                          isDefault:
+                            type: boolean
+                          imageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              format: uuid
+                          imageStorageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              minLength: 1
+                              maxLength: 1024
+                            description: Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads
+                              owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached
+                              product images return 422 at the variant row path.
+                          stock:
+                            type: integer
+                            minimum: 0
+                            maximum: 2147483647
+                        required:
+                          - sku
+                          - size
+                          - color
+                          - price
+                    update:
+                      type: array
+                      maxItems: 500
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          sku:
+                            type: string
+                            minLength: 1
+                            maxLength: 120
+                          barcode:
+                            type:
+                              - string
+                              - "null"
+                            maxLength: 120
+                          size:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          color:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          price:
+                            type: integer
+                            minimum: 0
+                            maximum: 2147483647
+                          status:
+                            type: string
+                            enum:
+                              - active
+                              - inactive
+                          isDefault:
+                            type: boolean
+                          imageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              format: uuid
+                          imageStorageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              minLength: 1
+                              maxLength: 1024
+                            description: Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads
+                              owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached
+                              product images return 422 at the variant row path.
+                          id:
+                            type: string
+                            format: uuid
+                          expectedVersion:
+                            type: integer
+                            minimum: 1
+                        required:
+                          - id
+                    delete:
+                      type: array
+                      maxItems: 500
+                      items:
+                        type: string
+                        format: uuid
                 name:
                   type: string
                   minLength: 1
@@ -28131,7 +28270,7 @@ paths:
                 categoryId:
                   type: string
                   maxLength: 36
-                imageStorageId:
+                thumbnailStorageId:
                   type: string
                   maxLength: 255
                 imageStorageIds:
@@ -28168,7 +28307,6 @@ paths:
               required:
                 - name
                 - price
-                - stock
       responses:
         "201":
           description: Thành công
@@ -28191,6 +28329,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "409":
           $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
         "429":
           $ref: "#/components/responses/RateLimited"
       x-platform: admin
@@ -28371,6 +28511,137 @@ paths:
             schema:
               type: object
               properties:
+                variants:
+                  type: object
+                  additionalProperties: false
+                  description: Atomic SKU diff. Delete deactivates (history and inventory retained). Stock is create-only. Sold identity
+                    and reservation rules apply. Exactly one active default is ensured.
+                  properties:
+                    create:
+                      type: array
+                      maxItems: 500
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          sku:
+                            type: string
+                            minLength: 1
+                            maxLength: 120
+                          barcode:
+                            type:
+                              - string
+                              - "null"
+                            maxLength: 120
+                          size:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          color:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          price:
+                            type: integer
+                            minimum: 0
+                            maximum: 2147483647
+                          status:
+                            type: string
+                            enum:
+                              - active
+                              - inactive
+                          isDefault:
+                            type: boolean
+                          imageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              format: uuid
+                          imageStorageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              minLength: 1
+                              maxLength: 1024
+                            description: Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads
+                              owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached
+                              product images return 422 at the variant row path.
+                          stock:
+                            type: integer
+                            minimum: 0
+                            maximum: 2147483647
+                        required:
+                          - sku
+                          - size
+                          - color
+                          - price
+                    update:
+                      type: array
+                      maxItems: 500
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          sku:
+                            type: string
+                            minLength: 1
+                            maxLength: 120
+                          barcode:
+                            type:
+                              - string
+                              - "null"
+                            maxLength: 120
+                          size:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          color:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          price:
+                            type: integer
+                            minimum: 0
+                            maximum: 2147483647
+                          status:
+                            type: string
+                            enum:
+                              - active
+                              - inactive
+                          isDefault:
+                            type: boolean
+                          imageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              format: uuid
+                          imageStorageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              minLength: 1
+                              maxLength: 1024
+                            description: Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads
+                              owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached
+                              product images return 422 at the variant row path.
+                          id:
+                            type: string
+                            format: uuid
+                          expectedVersion:
+                            type: integer
+                            minimum: 1
+                        required:
+                          - id
+                    delete:
+                      type: array
+                      maxItems: 500
+                      items:
+                        type: string
+                        format: uuid
                 name:
                   type: string
                   minLength: 1
@@ -28387,16 +28658,19 @@ paths:
                 categoryId:
                   type: string
                   maxLength: 36
-                imageStorageId:
-                  type: string
-                  maxLength: 255
+                thumbnailStorageId:
+                  type:
+                    - string
+                    - "null"
+                  description: Owned product upload or storage ID already attached to this product. Null clears the thumbnail; omission
+                    preserves it. The thumbnail is excluded from the gallery.
                 imageStorageIds:
                   type: array
-                  maxItems: 20
                   items:
                     type: string
-                    minLength: 1
-                    maxLength: 255
+                  maxItems: 20
+                  description: Complete ordered gallery excluding the thumbnail. Omission preserves it; an empty list detaches all images.
+                    Existing product files need no upload ticket; new files require an owned completed product upload.
                 slug:
                   type: string
                   maxLength: 160
@@ -28445,6 +28719,8 @@ paths:
           $ref: "#/components/responses/NotFound"
         "409":
           $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
         "429":
           $ref: "#/components/responses/RateLimited"
       x-platform: admin
@@ -28466,6 +28742,301 @@ paths:
 
             export function useExample(input: PutProductsIdInput) {
               const mutation = usePutProductsId();
+              const submit = () => mutation.mutateAsync(input);
+              return { ...mutation, submit };
+            }
+    patch:
+      tags:
+        - Admin / products
+      operationId: patch_api_products_id
+      summary: Cập nhật sản phẩm
+      description: >-
+        **Quyền:** `write:Catalog`.
+
+
+        ### Platform và SDK
+
+        Nhóm sử dụng: **Admin**. Đây là nhãn tài liệu; quyền và owner vẫn do API kiểm tra.
+
+
+        | Export | Tên |
+
+        | --- | --- |
+
+        | Hook | `usePatchProductsId` |
+
+        | Helper | `patchProductsId` |
+
+        | Input | `PatchProductsIdInput` |
+
+        | Options | `patchProductsIdMutationOptions` |
+
+
+        Hooks import từ `@p4/api-sdk/react`; helper/input từ `@p4/api-sdk/shared`. Hooks không tự gate permission; dùng
+        capabilities và `enabled` khi cần.
+
+
+        ```tsx
+
+        import { usePatchProductsId } from '@p4/api-sdk/react';
+
+        import type { PatchProductsIdInput } from '@p4/api-sdk/shared';
+
+
+        export function useExample(input: PatchProductsIdInput) {
+          const mutation = usePatchProductsId();
+          const submit = () => mutation.mutateAsync(input);
+          return { ...mutation, submit };
+        }
+
+        ```
+      security:
+        - sessionCookie: []
+        - bearerAuth: []
+      x-audit-action: update
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                variants:
+                  type: object
+                  additionalProperties: false
+                  description: Atomic SKU diff. Delete deactivates (history and inventory retained). Stock is create-only. Sold identity
+                    and reservation rules apply. Exactly one active default is ensured.
+                  properties:
+                    create:
+                      type: array
+                      maxItems: 500
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          sku:
+                            type: string
+                            minLength: 1
+                            maxLength: 120
+                          barcode:
+                            type:
+                              - string
+                              - "null"
+                            maxLength: 120
+                          size:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          color:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          price:
+                            type: integer
+                            minimum: 0
+                            maximum: 2147483647
+                          status:
+                            type: string
+                            enum:
+                              - active
+                              - inactive
+                          isDefault:
+                            type: boolean
+                          imageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              format: uuid
+                          imageStorageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              minLength: 1
+                              maxLength: 1024
+                            description: Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads
+                              owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached
+                              product images return 422 at the variant row path.
+                          stock:
+                            type: integer
+                            minimum: 0
+                            maximum: 2147483647
+                        required:
+                          - sku
+                          - size
+                          - color
+                          - price
+                    update:
+                      type: array
+                      maxItems: 500
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          sku:
+                            type: string
+                            minLength: 1
+                            maxLength: 120
+                          barcode:
+                            type:
+                              - string
+                              - "null"
+                            maxLength: 120
+                          size:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          color:
+                            type: string
+                            minLength: 1
+                            maxLength: 80
+                          price:
+                            type: integer
+                            minimum: 0
+                            maximum: 2147483647
+                          status:
+                            type: string
+                            enum:
+                              - active
+                              - inactive
+                          isDefault:
+                            type: boolean
+                          imageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              format: uuid
+                          imageStorageIds:
+                            type: array
+                            maxItems: 20
+                            items:
+                              type: string
+                              minLength: 1
+                              maxLength: 1024
+                            description: Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads
+                              owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached
+                              product images return 422 at the variant row path.
+                          id:
+                            type: string
+                            format: uuid
+                          expectedVersion:
+                            type: integer
+                            minimum: 1
+                        required:
+                          - id
+                    delete:
+                      type: array
+                      maxItems: 500
+                      items:
+                        type: string
+                        format: uuid
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                description:
+                  type: string
+                  maxLength: 100000
+                price:
+                  type: integer
+                  minimum: 0
+                stock:
+                  type: integer
+                  minimum: 0
+                categoryId:
+                  type: string
+                  maxLength: 36
+                thumbnailStorageId:
+                  type:
+                    - string
+                    - "null"
+                  description: Owned product upload or storage ID already attached to this product. Null clears the thumbnail; omission
+                    preserves it. The thumbnail is excluded from the gallery.
+                imageStorageIds:
+                  type: array
+                  items:
+                    type: string
+                  maxItems: 20
+                  description: Complete ordered gallery excluding the thumbnail. Omission preserves it; an empty list detaches all images.
+                    Existing product files need no upload ticket; new files require an owned completed product upload.
+                slug:
+                  type: string
+                  maxLength: 160
+                brand:
+                  type: string
+                  maxLength: 255
+                material:
+                  type: string
+                  maxLength: 255
+                careInstructions:
+                  type: string
+                  maxLength: 10000
+                seoTitle:
+                  type: string
+                  maxLength: 255
+                seoDescription:
+                  type: string
+                  maxLength: 255
+                sizeGuideId:
+                  type: string
+                  maxLength: 36
+                expectedVersion:
+                  type: integer
+                  minimum: 1
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Product"
+                  message:
+                    type: string
+                required:
+                  - data
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+      x-platform: admin
+      x-resource: products
+      x-sdk:
+        helper: patchProductsId
+        hook: usePatchProductsId
+        input: PatchProductsIdInput
+        options: patchProductsIdMutationOptions
+        reactPackage: "@p4/api-sdk/react"
+        sharedPackage: "@p4/api-sdk/shared"
+      x-codeSamples:
+        - lang: TypeScript
+          label: SDK · React Query
+          source: |-
+            import { usePatchProductsId } from '@p4/api-sdk/react';
+            import type { PatchProductsIdInput } from '@p4/api-sdk/shared';
+
+            export function useExample(input: PatchProductsIdInput) {
+              const mutation = usePatchProductsId();
               const submit = () => mutation.mutateAsync(input);
               return { ...mutation, submit };
             }
@@ -28778,7 +29349,7 @@ paths:
                 orderItemId:
                   type: string
                   maxLength: 36
-                mediaIds:
+                imageIds:
                   type: array
                   maxItems: 10
                   items:
@@ -29012,21 +29583,21 @@ paths:
               allOf:
                 - type: object
                   properties:
-                    imageStorageId:
+                    storageId:
                       type: string
                     sortOrder:
                       type: number
                   required:
-                    - imageStorageId
+                    - storageId
                 - type: object
                   properties:
-                    imageStorageId:
+                    storageId:
                       type: string
                     sortOrder:
                       type: integer
                       minimum: 0
                   required:
-                    - imageStorageId
+                    - storageId
       responses:
         "201":
           description: Thành công
@@ -39050,7 +39621,7 @@ components:
           type:
             - string
             - "null"
-        imageUrl:
+        thumbnailUrl:
           type: string
         id:
           type: string
@@ -39080,7 +39651,7 @@ components:
             $ref: "#/components/schemas/CartWarning"
       required:
         - productSlug
-        - imageUrl
+        - thumbnailUrl
         - id
         - variantId
         - productId
@@ -39330,7 +39901,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ContentBlock"
-        coverFileId:
+        thumbnailFileId:
           type:
             - string
             - "null"
@@ -39353,7 +39924,7 @@ components:
         - title
         - excerpt
         - body
-        - coverFileId
+        - thumbnailFileId
         - taxonomyIds
         - seoTitle
         - seoDescription
@@ -39655,6 +40226,21 @@ components:
             - inactive
         isDefault:
           type: boolean
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              fileId:
+                type: string
+              url:
+                type: string
+              storageId:
+                type: string
+            required:
+              - fileId
+              - url
+              - storageId
         imageIds:
           type: array
           items:
@@ -39770,7 +40356,7 @@ components:
                 - banner
             title:
               type: string
-            imageFileId:
+            thumbnailFileId:
               type: string
             href:
               type: string
@@ -39782,7 +40368,7 @@ components:
           required:
             - kind
             - title
-            - imageFileId
+            - thumbnailFileId
             - href
             - placement
         - type: object
@@ -39978,7 +40564,7 @@ components:
           type: string
         color:
           type: string
-        imageUrl:
+        thumbnailUrl:
           type: string
         discountAmount:
           type: number
@@ -40181,12 +40767,27 @@ components:
           type: number
         description:
           type: string
-        imageUrl:
+        thumbnailUrl:
           type: string
-        imageId:
+        thumbnailId:
           type:
             - string
             - "null"
+        thumbnail:
+          type:
+            - object
+            - "null"
+          properties:
+            fileId:
+              type: string
+            url:
+              type: string
+            storageId:
+              type: string
+          required:
+            - fileId
+            - url
+            - storageId
         categoryId:
           type:
             - string
@@ -40217,11 +40818,14 @@ components:
         - name
         - price
         - description
-        - imageUrl
+        - thumbnailUrl
+        - thumbnail
         - stock
     ProductImage:
       type: object
       properties:
+        storageId:
+          type: string
         id:
           type: string
         fileId:
@@ -40231,6 +40835,7 @@ components:
         sortOrder:
           type: number
       required:
+        - storageId
         - id
         - fileId
         - url
@@ -40268,6 +40873,21 @@ components:
             - inactive
         isDefault:
           type: boolean
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              fileId:
+                type: string
+              url:
+                type: string
+              storageId:
+                type: string
+            required:
+              - fileId
+              - url
+              - storageId
         imageIds:
           type: array
           items:
@@ -40289,6 +40909,55 @@ components:
         - imageIds
         - available
         - version
+    ProductVariantChanges:
+      type: object
+      properties:
+        create:
+          type: array
+          items:
+            $ref: "#/components/schemas/VariantInput"
+        update:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+                enum:
+                  - active
+                  - inactive
+              price:
+                type: number
+              sku:
+                type: string
+              barcode:
+                type:
+                  - string
+                  - "null"
+              size:
+                type: string
+              color:
+                type: string
+              isDefault:
+                type: boolean
+              imageIds:
+                type: array
+                items:
+                  type: string
+              imageStorageIds:
+                type: array
+                items:
+                  type: string
+              id:
+                type: string
+              expectedVersion:
+                type: number
+            required:
+              - id
+        delete:
+          type: array
+          items:
+            type: string
     Promotion:
       type: object
       properties:
@@ -40355,7 +41024,7 @@ components:
           type: string
         color:
           type: string
-        imageUrl:
+        thumbnailUrl:
           type: string
         discountAmount:
           type: number
@@ -40377,7 +41046,7 @@ components:
         - sku
         - size
         - color
-        - imageUrl
+        - thumbnailUrl
         - discountAmount
         - lineTotal
         - variantId
@@ -40580,7 +41249,7 @@ components:
             - published
         verifiedPurchase:
           type: boolean
-        mediaIds:
+        imageIds:
           type: array
           items:
             type: string
@@ -40870,7 +41539,7 @@ components:
           type:
             - string
             - "null"
-        imageStorageId:
+        avatarStorageId:
           type: string
     UploadTicket:
       type: object
@@ -40970,6 +41639,43 @@ components:
         - id
         - email
         - role
+    VariantInput:
+      type: object
+      properties:
+        sku:
+          type: string
+        barcode:
+          type:
+            - string
+            - "null"
+        size:
+          type: string
+        color:
+          type: string
+        price:
+          type: number
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+        isDefault:
+          type: boolean
+        imageIds:
+          type: array
+          items:
+            type: string
+        imageStorageIds:
+          type: array
+          items:
+            type: string
+        stock:
+          type: number
+      required:
+        - sku
+        - size
+        - color
+        - price
     Auth_User:
       type: object
       properties:

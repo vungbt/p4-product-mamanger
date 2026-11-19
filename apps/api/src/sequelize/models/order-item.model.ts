@@ -11,7 +11,7 @@ export interface OrderItemAttributes {
   sku: string;
   size: string;
   color: string;
-  imageUrl: string;
+  thumbnailUrl: string;
   discountAmount: number;
   lineTotal: number;
   cancelledQuantity: number;
@@ -26,7 +26,7 @@ export type OrderItemCreation = Optional<
   | 'sku'
   | 'size'
   | 'color'
-  | 'imageUrl'
+  | 'thumbnailUrl'
   | 'discountAmount'
   | 'lineTotal'
   | 'cancelledQuantity'
@@ -51,7 +51,7 @@ export class OrderItemModel
   declare sku: string;
   declare size: string;
   declare color: string;
-  declare imageUrl: string;
+  declare thumbnailUrl: string;
   declare discountAmount: number;
   declare lineTotal: number;
   declare cancelledQuantity: number;
@@ -68,7 +68,7 @@ export function initOrderItemModel(sequelize: Sequelize) {
       sku: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
       size: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
       color: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
-      imageUrl: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
+      thumbnailUrl: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
       discountAmount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
       lineTotal: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
       cancelledQuantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },

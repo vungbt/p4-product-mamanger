@@ -1,7 +1,7 @@
 import { Alert, Button, Dialog, Form, FormField, Icon, Input, Textarea } from '@itclabs/react-ui';
 import type { CategoryInput } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
-import useCategoryEditor from '../hooks/use-category-editor';
+import useCategoryEditor from '@/modules/admin/categories/hooks/use-category-editor';
 
 export type CategoryEditorProps = {
   initial: CategoryInput & { id?: string };
@@ -13,16 +13,7 @@ export type CategoryEditorProps = {
 export default function CategoryEditor({ initial, pending, onClose, onSave }: CategoryEditorProps) {
   const { t } = useTranslation();
 
-  const {
-    form,
-    schema,
-    error,
-    changeOpen,
-    changeName,
-    changeSlug,
-    generateSlug,
-    changeDescription,
-  } = useCategoryEditor({
+  const { form, schema, error, changeOpen, generateSlug } = useCategoryEditor({
     initial,
     pending,
     onClose,
@@ -39,11 +30,7 @@ export default function CategoryEditor({ initial, pending, onClose, onSave }: Ca
       <Form form={form} schema={schema} className="grid gap-4">
         {error && <Alert tone="danger">{error}</Alert>}
         <FormField name="name" label={t('categories.categoryName')} required className="mb-0">
-          <Input
-            maxLength={255}
-            disabled={pending}
-            onChange={(event) => changeName(event.target.value)}
-          />
+          <Input maxLength={255} disabled={pending} />
         </FormField>
         <div className="grid gap-1.5">
           <FormField name="slug" className="mb-0">
@@ -58,10 +45,7 @@ export default function CategoryEditor({ initial, pending, onClose, onSave }: Ca
                   disabled={pending}
                   value={field.state.value}
                   aria-invalid={field.state.meta.errors.length > 0}
-                  onChange={(event) => {
-                    changeSlug();
-                    field.handleChange(event.target.value);
-                  }}
+                  onChange={(event) => field.handleChange(event.target.value)}
                   onBlur={field.handleBlur}
                 />
                 <Button
@@ -80,7 +64,7 @@ export default function CategoryEditor({ initial, pending, onClose, onSave }: Ca
           <p className="text-ui-sm text-muted">{t('categories.slugHint')}</p>
         </div>
         <FormField name="description" label={t('categories.description')} className="mb-0">
-          <Textarea rows={3} disabled={pending} onChange={changeDescription} />
+          <Textarea rows={3} disabled={pending} />
         </FormField>
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" disabled={pending} onClick={onClose}>

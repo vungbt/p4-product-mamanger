@@ -26,7 +26,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
       rating: body.integer('rating', 1, 5),
       comment: body.text('comment', 10000),
       orderItemId: body.optionalText('orderItemId', 36),
-      mediaIds: body.data.mediaIds === undefined ? [] : body.strings('mediaIds', 10, 36),
+      imageIds: body.data.imageIds === undefined ? [] : body.strings('imageIds', 10, 36),
     });
     return res.jsonApi(StatusCodes.CREATED, { data, message: 'message:review_created' });
   } catch (error) {

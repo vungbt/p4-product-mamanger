@@ -2,7 +2,6 @@ import {
   Button,
   type ColumnDef,
   DataTable,
-  Dialog,
   DropdownMenu,
   Icon,
   IconButton,
@@ -13,6 +12,7 @@ import {
 import { useCanAccess } from '@p4/ability/browser';
 import { type Category, DESCRIPTION_FILTER_VALUES, type DescriptionFilter } from '@p4/shared';
 import { useTranslation } from 'react-i18next';
+import { PAGE_SIZE_OPTIONS } from '@/constants/list';
 import CategoryDetails from './components/category-details';
 import CategoryEditor from './components/category-editor';
 import useCategoryPage from './hooks/use-category-page';
@@ -25,6 +25,7 @@ const descriptionLabels: Record<DescriptionFilter, string> = {
 
 export default function AdminCategoriesPage() {
   const canWrite = useCanAccess('write', 'Catalog');
+
   const {
     rows,
     rowCount,
@@ -34,12 +35,10 @@ export default function AdminCategoriesPage() {
     hasFilters,
     hasAppliedFilters,
     viewing,
-    deleting,
     editor,
     loading,
     error,
     saving,
-    deletingPending,
     changeTableState,
     changeSearch,
     clearSearch,
@@ -52,9 +51,7 @@ export default function AdminCategoriesPage() {
     openEdit,
     closeEditor,
     openDelete,
-    closeDelete,
     saveCategory,
-    deleteCategory,
     retry,
   } = useCategoryPage();
 
@@ -221,36 +218,10 @@ export default function AdminCategoriesPage() {
           caption={t('menu.product-categories')}
           state={state}
           onStateChange={changeTableState}
-          pageSizeOptions={[10, 20, 50]}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
         />
       </div>
       {viewing && <CategoryDetails id={viewing} onClose={closeDetails} />}
-      {canWrite && deleting && (
-        <Dialog
-          open
-          onOpenChange={(open) => {
-            if (!open) closeDelete();
-          }}
-          title={t('categories.delete')}
-          description={t('categories.deleteConfirm', { name: deleting.name })}
-          actions={[
-            {
-              id: 'cancel',
-              label: t('categories.cancel'),
-              variant: 'secondary',
-              disabled: deletingPending,
-              onClick: closeDelete,
-            },
-            {
-              id: 'delete',
-              label: t('categories.delete'),
-              variant: 'danger',
-              loading: deletingPending,
-              onClick: deleteCategory,
-            },
-          ]}
-        />
-      )}
       {canWrite && editor && (
         <CategoryEditor
           initial={editor}

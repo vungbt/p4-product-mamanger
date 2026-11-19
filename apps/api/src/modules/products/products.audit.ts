@@ -35,6 +35,11 @@ export const auditPolicies = {
     action: 'update',
     resourceType: 'product',
   },
+  'PATCH /:id': {
+    auditedHandler: productsController.update,
+    action: 'update',
+    resourceType: 'product',
+  },
   'DELETE /:id': {
     auditedHandler: productsController.remove,
     action: 'delete',

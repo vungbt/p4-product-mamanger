@@ -1,10 +1,5 @@
 import type { SelectOption } from '@itclabs/react-ui';
-import {
-  BILLING_DAY_END_OF_MONTH,
-  GRACE_DAYS_MAX,
-  READING_DAY_MONTHS,
-  ROUNDING_UNITS,
-} from '@stay/shared';
+import { BILLING_DAY_END_OF_MONTH, GRACE_DAYS_MAX, ROUNDING_UNITS } from '@stay/shared';
 import type { TFunction } from 'i18next';
 import { BILLING_DAYS, formatVnd } from '@/libraries/format';
 
@@ -25,10 +20,10 @@ export function roundingUnitOptions(): SelectOption[] {
 
 /** "Cuối tháng tiêu thụ" (`same`) / "Đầu tháng sau" (`next`). */
 export function readingDayMonthOptions(t: TFunction<'settings'>): SelectOption[] {
-  return READING_DAY_MONTHS.map((value) => ({
-    value,
-    label: t(`billing.readingDayMonths.${value}`),
-  }));
+  return [
+    { value: 'same', label: t('billing.readingDayMonths.same') },
+    { value: 'next', label: t('billing.readingDayMonths.next') },
+  ];
 }
 
 /** "Không ân hạn", "1 ngày" … "31 ngày" (value = number of days as text). */

@@ -11,7 +11,9 @@ import { type Category, type CategoryInput, DESCRIPTION_FILTER_VALUES } from '@p
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import useQueryParam from '@/hooks/use-query-param';
+import { useConfirm } from '@/libraries/confirm';
 
 const sortFields: NonNullable<CategoryListQuery['sortBy']>[] = ['name', 'slug', 'description'];
 
@@ -23,7 +25,7 @@ const categoryQuerySchema = v.object({
         v.transform(Number),
         v.safeInteger(),
         v.minValue(1),
-        v.maxValue(Math.floor(Number.MAX_SAFE_INTEGER / 50)),
+        v.maxValue(Math.floor(Number.MAX_SAFE_INTEGER / Math.max(...PAGE_SIZE_OPTIONS))),
       ),
       1,
     ),
@@ -34,11 +36,11 @@ const categoryQuerySchema = v.object({
       v.pipe(
         v.string(),
         v.transform(Number),
-        v.check((value) => [10, 20, 50].includes(value)),
+        v.check((value) => PAGE_SIZE_OPTIONS.some((size) => size === value)),
       ),
-      10,
+      DEFAULT_PAGE_SIZE,
     ),
-    '10',
+    String(DEFAULT_PAGE_SIZE),
   ),
   q: v.optional(v.fallback(v.pipe(v.string(), v.trim()), '')),
   description: v.optional(v.fallback(v.picklist(DESCRIPTION_FILTER_VALUES), 'all')),
@@ -49,6 +51,8 @@ const categoryQuerySchema = v.object({
 export default function useCategoryPage() {
   const { t } = useTranslation();
 
+  const confirm = useConfirm();
+
   const [params, setQuery] = useQueryParam(categoryQuerySchema);
 
   const { page, pageSize, sortBy } = params;
@@ -57,9 +61,11 @@ export default function useCategoryPage() {
   const descriptionFilter = params.description === 'all' ? undefined : params.description;
 
   const [columnVisibility, setColumnVisibility] = useState<DataTableState['columnVisibility']>({});
+
   const [search, setSearch] = useState(globalFilter);
+
   const [viewing, setViewing] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<Category | null>(null);
+
   const [editor, setEditor] = useState<(CategoryInput & { id?: string }) | null>(null);
 
   const state: DataTableState = {
@@ -80,7 +86,9 @@ export default function useCategoryPage() {
   });
 
   const create = useCreateCategory();
+
   const update = useUpdateCategory();
+
   const remove = useDeleteCategory();
 
   const changeTableState = (next: DataTableState) => {
@@ -112,7 +120,7 @@ export default function useCategoryPage() {
 
   const applySearch = (value: string) => setQuery({ q: value, page: 1 }, { replace: true });
 
-  const debouncedSearch = useDebouncedCallback(applySearch, 300);
+  const debouncedSearch = useDebouncedCallback(applySearch, SEARCH_DEBOUNCE_MS);
 
   const clearSearch = () => {
     debouncedSearch.cancel();
@@ -171,10 +179,6 @@ export default function useCategoryPage() {
     if (!create.isPending && !update.isPending) setEditor(null);
   };
 
-  const closeDelete = () => {
-    if (!remove.isPending) setDeleting(null);
-  };
-
   const saveCategory = async (body: CategoryInput) => {
     if (!editor) return;
     if (editor.id) await update.mutateAsync({ id: editor.id, body });
@@ -184,16 +188,22 @@ export default function useCategoryPage() {
     setEditor(null);
   };
 
-  const deleteCategory = async () => {
-    if (!deleting || remove.isPending) return;
-    try {
-      await remove.mutateAsync(deleting.id);
-      toast.success(t('categories.deleted'));
-      setDeleting(null);
-    } catch (error) {
-      toast.error(getErrorMessage(error, t('categories.deleteFailed')));
-    }
-  };
+  const openDelete = (category: Category) =>
+    void confirm({
+      title: t('categories.delete'),
+      description: t('categories.deleteConfirm', { name: category.name }),
+      tone: 'danger',
+      confirmLabel: t('categories.delete'),
+      onConfirm: async () => {
+        try {
+          await remove.mutateAsync(category.id);
+          toast.success(t('categories.deleted'));
+        } catch (error) {
+          toast.error(getErrorMessage(error, t('categories.deleteFailed')));
+          throw error;
+        }
+      },
+    });
 
   return {
     rows,
@@ -204,12 +214,10 @@ export default function useCategoryPage() {
     hasFilters,
     hasAppliedFilters,
     viewing,
-    deleting,
     editor,
     loading: query.isPending || query.isFetching,
     error: query.isError ? getErrorMessage(query.error, t('categories.loadFailed')) : undefined,
     saving: create.isPending || update.isPending,
-    deletingPending: remove.isPending,
     changeTableState,
     changeSearch,
     clearSearch,
@@ -221,10 +229,8 @@ export default function useCategoryPage() {
     closeDetails,
     openEdit: setEditor,
     closeEditor,
-    openDelete: setDeleting,
-    closeDelete,
+    openDelete,
     saveCategory,
-    deleteCategory,
     retry: () => {
       void query.refetch();
     },

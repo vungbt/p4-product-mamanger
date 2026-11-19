@@ -20,13 +20,14 @@ import {
 } from '@stay/shared';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { PAGE_SIZE_OPTIONS } from '@/constants/list';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FilterBar } from '@/libraries/filter-bar';
 import { displayDate } from '@/libraries/format';
 import { ListTable, rowTestId } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
+import { useTableParams } from '@/libraries/table-params';
 import { AnnouncementDialog } from './announcement-form';
 
 const TABLE_ID = 'announcement-list';

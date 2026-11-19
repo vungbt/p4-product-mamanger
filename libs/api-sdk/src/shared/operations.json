@@ -2003,6 +2003,17 @@
     "multipart": false
   },
   {
+    "operationId": "patch_api_products_id",
+    "name": "patchProductsId",
+    "method": "patch",
+    "path": "/api/products/{id}",
+    "tag": "products",
+    "platform": "admin",
+    "hook": "usePatchProductsId",
+    "response": "json",
+    "multipart": false
+  },
+  {
     "operationId": "patch_api_products_id_publication",
     "name": "patchProductsIdPublication",
     "method": "patch",

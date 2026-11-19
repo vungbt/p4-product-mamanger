@@ -42,7 +42,9 @@ function InfoList({ items }: { items: [string, ReactNode][] }) {
 /** CCCD masked in the middle; "Hiện" asks the API (audited) and keeps it in this component only. */
 function IdNumberBlock({ tenant }: { tenant: TenantDetail }) {
   const { t } = useTranslation();
+
   const reveal = useRevealTenantIdNumber();
+
   const [full, setFull] = useState<string | null>(null);
 
   const front = tenant.documents.find((document) => document.kind === 'id_front');
@@ -104,13 +106,19 @@ function IdNumberBlock({ tenant }: { tenant: TenantDetail }) {
 /** O-12: personal info, CCCD, vehicles, contracts and portal access of one tenant. */
 export default function TenantProfilePage() {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
+
   const { id = '' } = useParams();
+
   const tenant = useTenant(id);
+
   const archive = useArchiveTenant();
 
   const data = tenant.data;
+
   const canUpdate = useCanOn('update', 'Tenant', { buildingId: data?.buildingId });
+
   const canArchive = useCanOn('delete', 'Tenant', { buildingId: data?.buildingId });
 
   if (tenant.isPending) return <PageSpinner />;
@@ -201,7 +209,18 @@ export default function TenantProfilePage() {
           items={[
             [t('tenants.fields.email'), data.email],
             [t('tenants.fields.birthDate'), data.birthDate ? formatDate(data.birthDate) : null],
-            [t('tenants.fields.gender'), data.gender ? t(`tenants.genders.${data.gender}`) : null],
+            [
+              t('tenants.fields.gender'),
+              data.gender
+                ? ((
+                    {
+                      male: t('tenants.genders.male'),
+                      female: t('tenants.genders.female'),
+                      other: t('tenants.genders.other'),
+                    } as Record<string, string>
+                  )[data.gender] ?? String(data.gender))
+                : null,
+            ],
             [t('tenants.fields.idIssuedAt'), data.idIssuedAt ? formatDate(data.idIssuedAt) : null],
             [t('tenants.fields.hometown'), data.hometown],
             [t('tenants.fields.permanentAddress'), data.permanentAddress],

@@ -9,7 +9,7 @@ export interface ContentEntryAttributes {
   seoTitle: string;
   seoDescription: string;
   body: import('@p4/shared').ContentBlock[];
-  coverFileId: string | null;
+  thumbnailFileId: string | null;
   authorId: string;
   taxonomyIds: string[];
   status: import('@p4/shared').ContentStatus;
@@ -33,7 +33,7 @@ export class ContentEntryModel
   declare seoTitle: string;
   declare seoDescription: string;
   declare body: import('@p4/shared').ContentBlock[];
-  declare coverFileId: string | null;
+  declare thumbnailFileId: string | null;
   declare authorId: string;
   declare taxonomyIds: string[];
   declare status: import('@p4/shared').ContentStatus;
@@ -56,7 +56,7 @@ export function initContentEntryModel(sequelize: Sequelize) {
       seoTitle: { type: DataTypes.STRING, allowNull: false },
       seoDescription: { type: DataTypes.STRING, allowNull: false },
       body: { type: DataTypes.JSONB, allowNull: false },
-      coverFileId: { type: DataTypes.UUID, allowNull: true },
+      thumbnailFileId: { type: DataTypes.UUID, allowNull: true },
       authorId: { type: DataTypes.UUID, allowNull: false },
       taxonomyIds: { type: DataTypes.ARRAY(DataTypes.UUID), allowNull: false },
       status: { type: DataTypes.STRING, allowNull: false },

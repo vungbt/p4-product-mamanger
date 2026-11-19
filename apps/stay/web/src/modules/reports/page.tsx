@@ -23,11 +23,13 @@ import { latestSearchParams } from '@/libraries/search-params';
 import { displayPeriod } from '@/modules/invoices/invoice-ui';
 import { ExportDialog } from './export-dialog';
 
-const PeriodChart = lazy(() => import('../overview/period-chart'));
+const PeriodChart = lazy(() => import('@/modules/overview/period-chart'));
 
 export default function ReportsPage() {
   const { building, buildingId } = useActiveBuilding();
+
   const [params, setParams] = useSearchParams();
+
   const [exportOpen, setExportOpen] = useState(false);
 
   const now = todayIsoDate().slice(0, 7);
@@ -255,6 +257,7 @@ function Rooms({ buildingId, year }: { buildingId: string; year: number }) {
 
   if (query.isPending) return <LoadingRows />;
   if (query.isError) return <LoadError error={query.error} onRetry={() => void query.refetch()} />;
+
   return <RoomsContent data={query.data} />;
 }
 
@@ -310,6 +313,7 @@ function Utilities({ range }: { range: { buildingId: string; from: string; to: s
 
   if (query.isPending) return <LoadingRows />;
   if (query.isError) return <LoadError error={query.error} onRetry={() => void query.refetch()} />;
+
   return <UtilitiesContent data={query.data} />;
 }
 

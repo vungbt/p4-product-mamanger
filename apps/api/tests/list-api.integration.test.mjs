@@ -75,7 +75,7 @@ describe('list API integration against the existing local database (read-only re
       assert.deepEqual(Object.keys(category).sort(), ['description', 'id', 'name', 'slug']);
     }
     const detail = await get(`/products/${product.id}`);
-    assert.equal(typeof detail.data.imageUrl, 'string');
+    assert.equal(typeof detail.data.thumbnailUrl, 'string');
     assert.ok(Array.isArray(detail.data.images));
     assert.equal(typeof detail.data.createdAt, 'string');
     assert.equal(typeof detail.data.slug, 'string');
@@ -83,7 +83,7 @@ describe('list API integration against the existing local database (read-only re
     assert.equal(Object.hasOwn(detail.data, '_previousDataValues'), false);
     const dashboard = await get('/dashboard/stats');
     assert.equal(typeof dashboard.data.totalRevenue, 'number');
-    assert.ok(dashboard.data.lowStockProducts.every((row) => typeof row.imageUrl === 'string'));
+    assert.ok(dashboard.data.lowStockProducts.every((row) => typeof row.thumbnailUrl === 'string'));
   });
 
   test('products: search-only, literal wildcards and ranges match database counts', async () => {

@@ -109,7 +109,7 @@ describe('cart/quote/order/payment on local API', { skip: !base }, () => {
       provider: 'system',
       url: 'https://example.invalid/test.png',
     });
-    await db.ProductModel.update({ imageId: file.id }, { where: { id: product.id } });
+    await db.ProductModel.update({ thumbnailId: file.id }, { where: { id: product.id } });
     const draft = await call('GET', `/admin/products/${product.id}`, undefined, admin);
     await call(
       'PATCH',
@@ -283,6 +283,19 @@ describe('cart/quote/order/payment on local API', { skip: !base }, () => {
     ]);
     assert.equal(results[0].id, results[1].id);
     await call('POST', '/orders', { quoteId: priced.id }, customer, 409, key + '-different');
+    await call(
+      'PATCH',
+      `/products/${product.id}`,
+      {
+        variants: { update: [{ id: variant.id, size: 'CHANGED' }] },
+      },
+      admin,
+      409,
+    );
+    const sold = (
+      await call('GET', `/admin/products/${product.id}/variants`, undefined, admin)
+    ).find((row) => row.id === variant.id);
+    assert.equal(sold.size, variant.size);
     const stale = await quote();
     const current = await call('GET', `/admin/products/${product.id}/variants`, undefined, admin);
     const row = current.find((v) => v.id === variant.id);

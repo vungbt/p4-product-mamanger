@@ -4,12 +4,13 @@ import { getErrorMessage } from '@stay/sdk/shared';
 import { INBOX_KINDS, INBOX_STATUSES, type InboxItem } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { PAGE_SIZE_OPTIONS, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
 import { ListTable } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
+import { useTableParams } from '@/libraries/table-params';
 import { RequestDetailDialog } from './request-detail';
 import { RequestList } from './request-list';
 import {
@@ -91,7 +92,7 @@ export default function RequestsPage() {
           },
           { replace: true },
         ),
-      300,
+      SEARCH_DEBOUNCE_MS,
     );
 
     return () => clearTimeout(timer);

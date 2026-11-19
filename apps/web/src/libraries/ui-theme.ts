@@ -1,5 +1,6 @@
 import { defineTheme } from '@itclabs/react-ui';
 import {
+  ArrowLeftIcon,
   ArrowRightIcon,
   BellIcon,
   BriefcaseIcon,
@@ -8,6 +9,7 @@ import {
   CloseIcon,
   DeleteIcon,
   EditIcon,
+  EyeOffIcon,
   GridIcon,
   HomeIcon,
   KeyIcon,
@@ -18,7 +20,10 @@ import {
   PlusIcon,
   ReceiptSearchIcon,
   RefreshIcon,
+  RotateLeftIcon,
+  SaveIcon,
   SearchIcon,
+  SendIcon,
   SettingsIcon,
   ShieldCheckIcon,
   StoreIcon,
@@ -26,7 +31,8 @@ import {
   ViewIcon,
 } from '@itclabs/react-ui/icons/outline';
 
-// Register only the glyphs P4 uses, keeping the full catalog out of the bundle.
+// Any catalog icon name works without registration (kit 0.25+). These preload the icons
+// on first paint (shell, menus, table actions) so they do not flash in as lazy chunks.
 export const uiTheme = defineTheme({
   icons: {
     overrides: {
@@ -54,6 +60,11 @@ export const uiTheme = defineTheme({
       view: ViewIcon,
       refresh: RefreshIcon,
       plus: PlusIcon,
+      arrowLeft: ArrowLeftIcon,
+      eyeOff: EyeOffIcon,
+      save: SaveIcon,
+      send: SendIcon,
+      rotateLeft: RotateLeftIcon,
     },
   },
 });

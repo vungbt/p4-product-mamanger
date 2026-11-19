@@ -18,9 +18,9 @@ export const validateCreateProduct = (req: Request, res: Response, next: NextFun
     rules: {
       name: 'required|string',
       price: 'required|integer|min:0|max:2147483647',
-      stock: 'required|integer|min:0',
+      stock: 'integer|min:0',
       description: 'string',
-      imageStorageId: 'string',
+      thumbnailStorageId: 'string',
       categoryId: uuidQueryRule,
       sizeGuideId: uuidQueryRule,
       slug: 'string|max:160',
@@ -41,7 +41,7 @@ export const validateUpdateProduct = (req: Request, res: Response, next: NextFun
       price: 'integer|min:0|max:2147483647',
       stock: 'integer|min:0',
       description: 'string',
-      imageStorageId: 'string',
+      thumbnailStorageId: 'string',
       categoryId: uuidQueryRule,
       sizeGuideId: uuidQueryRule,
       slug: 'string|max:160',
@@ -57,7 +57,7 @@ export const validateUpdateProduct = (req: Request, res: Response, next: NextFun
 
 export const validateAddImage = validate({
   rules: {
-    imageStorageId: 'required|string',
+    storageId: 'required|string',
     sortOrder: 'integer|min:0',
   },
 });

@@ -4,6 +4,7 @@ import { canAccess } from '@p4/ability/shared';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { ROUTES } from '@/constants/constants';
+import { useAdminMenuLabels } from '@/libraries/admin-menu-labels';
 import BrandLogo from '@/libraries/brand-logo';
 import RouteConfigs from '@/routing/config.route';
 import { getPortalMenuRoutes, type IRoute } from '@/routing/route.types';
@@ -18,7 +19,8 @@ export type AdminPageLink = {
 
 /** Admin menu entries the current user can open, in sidebar order. */
 export function useAdminMenu(): SidebarEntry[] {
-  const { t } = useTranslation();
+  const routeLabels = useAdminMenuLabels();
+
   const ability = useAbility();
 
   const toItems = (routes: IRoute[]): SidebarEntry[] =>
@@ -31,7 +33,7 @@ export function useAdminMenu(): SidebarEntry[] {
       .map<SidebarEntry>((route) => {
         const base = {
           id: route.name,
-          label: t(`menu.${route.name}`, { defaultValue: route.label ?? route.name }),
+          label: routeLabels[route.name] ?? route.label ?? route.name,
           icon: route.iconName,
           exact: route.exact,
         };
@@ -69,6 +71,7 @@ export function toPageLinks(entries: readonly SidebarEntry[], section?: string):
 /** Sidebar configuration for the admin DashboardShell: brand, page search (mod+k) and menu. */
 export function useAdminSidebar(menu: SidebarEntry[], onSearch: () => void): SidebarProps {
   const { t } = useTranslation();
+
   const { pathname } = useLocation();
 
   return {

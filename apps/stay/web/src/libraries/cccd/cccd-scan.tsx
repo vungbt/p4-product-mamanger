@@ -42,11 +42,17 @@ export function CccdScanButton({
   disabled?: boolean;
 }) {
   const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
+
   const [status, setStatus] = useState<Status>({ kind: 'starting' });
+
   const [cameraOn, setCameraOn] = useState(false);
+
   const videoRef = useRef<HTMLVideoElement>(null);
+
   const onScannedRef = useRef(onScanned);
+
   const fileId = useId();
 
   onScannedRef.current = onScanned;
@@ -63,6 +69,7 @@ export function CccdScanButton({
     onScannedRef.current(result.data);
     return true;
   };
+
   const acceptRef = useRef(accept);
 
   acceptRef.current = accept;
@@ -116,6 +123,7 @@ export function CccdScanButton({
       }
 
       const canvas = document.createElement('canvas');
+
       const tick = async () => {
         if (cancelled) return;
         const ready =
@@ -191,7 +199,15 @@ export function CccdScanButton({
             {status.kind === 'error' || status.kind === 'warning' ? (
               <Alert tone={status.kind === 'error' ? 'danger' : 'warning'}>{status.message}</Alert>
             ) : (
-              <p className="text-ui-sm text-muted">{t(`tenants.scan.${status.kind}`)}</p>
+              <p className="text-ui-sm text-muted">
+                {
+                  {
+                    starting: t('tenants.scan.starting'),
+                    scanning: t('tenants.scan.scanning'),
+                    reading: t('tenants.scan.reading'),
+                  }[status.kind]
+                }
+              </p>
             )}
           </div>
           <div className="grid gap-1.5">

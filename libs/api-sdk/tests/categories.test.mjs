@@ -5,6 +5,8 @@ import {
   categoryKeys,
   categoryMutationOptions,
   categoryQueryOptions,
+  getCategoriesIdQueryOptions,
+  getCategoriesQueryOptions,
 } from '../dist/react/index.js';
 import { ApiSdkError, createApiSdk, getFieldError } from '../dist/shared/index.js';
 
@@ -46,20 +48,25 @@ test('category mutations invalidate all category lists/details but preserve unre
   try {
     const listKey = categoryKeys.list({ q: 'shirt' });
     const detailKey = categoryKeys.detail(category.id);
-    const orderKey = ['orders'];
+    const orderKey = ['api', 'get_api_orders'];
+    const generatedKeys = [
+      getCategoriesQueryOptions(sdk).queryKey,
+      getCategoriesIdQueryOptions(sdk, { params: { path: { id: category.id } } }).queryKey,
+    ];
     const mutations = categoryMutationOptions(sdk, client);
     for (const [options, variables, method] of [
       [mutations.create(), { name: 'Clothing', slug: 'clothing' }, 'POST'],
       [mutations.update(), { id: category.id, body: { name: 'New', slug: 'new' } }, 'PUT'],
       [mutations.remove(), category.id, 'DELETE'],
     ]) {
-      for (const key of [listKey, detailKey, orderKey])
+      for (const key of [listKey, detailKey, orderKey, ...generatedKeys])
         client.setQueryData(key, { data: category });
       await new MutationObserver(client, options).mutate(variables);
       assert.equal(requests.at(-1).method, method);
       assert.equal(client.getQueryState(listKey).isInvalidated, true);
       assert.equal(client.getQueryState(detailKey).isInvalidated, true);
       assert.equal(client.getQueryState(orderKey).isInvalidated, false);
+      for (const key of generatedKeys) assert.equal(client.getQueryState(key).isInvalidated, true);
     }
   } finally {
     client.clear();

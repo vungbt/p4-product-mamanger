@@ -16,8 +16,8 @@ import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useCanAccess, useCanOn } from '@/libraries/ability';
+import { RoomPaymentDialog } from '@/modules/payments/payment-dialog';
 import { ROUTES, roomEditPath } from '@/routing/route-configs';
-import { RoomPaymentDialog } from '../payments/payment-dialog';
 import { MaintenanceDialog } from './components/maintenance-dialog';
 import { RoomStatusBadge } from './room-status';
 import { useRoomBuilding } from './use-room-building';
@@ -67,23 +67,35 @@ function Empty({ children }: { children: ReactNode }) {
 /** O-08 Chi tiết phòng. Contract, occupants and invoices fill in with ST-10/ST-14. */
 export default function RoomDetailPage() {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
+
   const { id = '' } = useParams();
+
   const query = useRoom(id);
+
   const archive = useArchiveRoom();
+
   const canManage = useCanAccess('manage', 'Room');
+
   const canSettle = useCanAccess('settle', 'Contract');
+
   const { formatCurrency, formatDate, formatNumber } = useFormatters();
+
   const [maintenanceOpen, setMaintenanceOpen] = useState(false);
+
   const [archiveOpen, setArchiveOpen] = useState(false);
+
   const [collectOpen, setCollectOpen] = useState(false);
 
   const room = query.data;
+
   const canPay = useCanOn('create', 'Payment', { buildingId: room?.buildingId });
 
   useRoomBuilding(room?.buildingId);
 
   const money = (value: number) => formatCurrency(value, 'VND');
+
   const date = (value: string | null) => (value ? formatDate(value, 'dd/MM/yyyy') : '—');
 
   const confirmArchive = async () => {
@@ -306,7 +318,14 @@ export default function RoomDetailPage() {
             {room.meters.map((meter) => (
               <li key={meter.id} className="grid gap-1" data-testid={`meter-${meter.kind}`}>
                 <span className="font-medium text-ink">
-                  {t(`rooms.meters.${meter.kind}`)}
+                  {(
+                    {
+                      electricity: t('rooms.meters.electricity'),
+                      water: t('rooms.meters.water'),
+                      initialOnly: t('rooms.meters.initialOnly'),
+                      latest: t('rooms.meters.latest'),
+                    } as Record<string, string>
+                  )[meter.kind] ?? String(meter.kind)}
                   {meter.serial ? (
                     <span className="font-normal text-muted"> · {meter.serial}</span>
                   ) : null}

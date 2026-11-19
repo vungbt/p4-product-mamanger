@@ -16,12 +16,13 @@ import type { RoomStatus } from '@stay/shared';
 import { type ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { ROOM_MAP_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useCanAccess, useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
 import { ScreenHeader } from '@/libraries/screen-header';
+import { RoomPaymentDialog } from '@/modules/payments/payment-dialog';
 import { ROUTES } from '@/routing/route-configs';
-import { RoomPaymentDialog } from '../payments/payment-dialog';
 import { MaintenanceDialog } from './components/maintenance-dialog';
 import { RoomTile } from './components/room-tile';
 import {
@@ -30,9 +31,7 @@ import {
   type Room,
   RoomStatusLegend,
 } from './room-status';
-import { ROOM_MAP_PAGE_SIZE, useRoomFilters } from './use-room-filters';
-
-const SEARCH_DEBOUNCE_MS = 300;
+import { useRoomFilters } from './use-room-filters';
 
 /** Rooms of the page grouped by floor, floors ascending (the API sorts by floor, then code). */
 function groupByFloor(rooms: readonly Room[]) {
@@ -62,13 +61,21 @@ function MapSkeleton() {
 /** O-07 Sơ đồ phòng: the active building's rooms by floor, with status colours and filters. */
 export default function RoomMapPage() {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
+
   const { building, buildingId } = useActiveBuilding();
+
   const { filters, setFilters, clearFilters } = useRoomFilters();
+
   const canManage = useCanAccess('manage', 'Room');
+
   const [search, setSearch] = useState(filters.q);
+
   const [maintenanceRoom, setMaintenanceRoom] = useState<Room | null>(null);
+
   const [collectRoom, setCollectRoom] = useState<Room | null>(null);
+
   const canPay = useCanOn('create', 'Payment', { buildingId: buildingId ?? undefined });
 
   const query: RoomListQuery = {
@@ -78,7 +85,9 @@ export default function RoomMapPage() {
     ...(filters.status ? { status: filters.status } : {}),
     ...(filters.floor !== null ? { floor: filters.floor } : {}),
   };
+
   const rooms = useRooms(buildingId ?? '', query);
+
   const summary = useRoomSummary(buildingId ?? '');
 
   // Keep the box in step with the URL (back/forward, "clear filters").
@@ -110,7 +119,15 @@ export default function RoomMapPage() {
 
   const statusOptions = ROOM_STATUSES_IN_ORDER.map((status) => ({
     value: status,
-    label: t(`rooms.status.${status}`),
+    label:
+      (
+        {
+          vacant: t('rooms.status.vacant'),
+          reserved: t('rooms.status.reserved'),
+          occupied: t('rooms.status.occupied'),
+          maintenance: t('rooms.status.maintenance'),
+        } as Record<string, string>
+      )[status] ?? String(status),
   }));
   const floorOptions = floors.map((floor) => ({
     value: String(floor),
@@ -248,7 +265,16 @@ export default function RoomMapPage() {
                   aria-hidden
                   className={cn('size-2 rounded-full', ROOM_STATUS_STYLES[status].accent)}
                 />
-                <span className="text-ink">{t(`rooms.status.${status}`)}</span>
+                <span className="text-ink">
+                  {(
+                    {
+                      vacant: t('rooms.status.vacant'),
+                      reserved: t('rooms.status.reserved'),
+                      occupied: t('rooms.status.occupied'),
+                      maintenance: t('rooms.status.maintenance'),
+                    } as Record<string, string>
+                  )[status] ?? String(status)}
+                </span>
                 <span className="font-semibold text-ink">{counts[status]}</span>
               </button>
             ))}

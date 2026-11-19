@@ -1,9 +1,7 @@
 import type { DataTableState } from '@itclabs/react-ui';
 import { useSearchParams } from 'react-router-dom';
+import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from '@/constants/list';
 import { latestSearchParams } from './search-params';
-
-/** Page sizes offered by list tables (the API accepts up to 100). */
-export const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 
 export type SortOrder = 'asc' | 'desc';
 
@@ -28,7 +26,7 @@ function isPageSize(value: number): boolean {
 export function useTableParams<S extends string>({
   sortFields,
   defaultSort,
-  defaultPageSize = 20,
+  defaultPageSize = DEFAULT_PAGE_SIZE,
 }: Options<S>) {
   const [params, setParams] = useSearchParams();
 

@@ -178,8 +178,8 @@ ShipmentModel.belongsTo(OrderModel, { foreignKey: 'orderId', as: 'order' });
 UserModel.hasMany(RefreshTokenModel, { foreignKey: 'userId', as: 'refreshTokens' });
 RefreshTokenModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user' });
 
-ProductModel.belongsTo(FileModel, { foreignKey: 'imageId', as: 'image' });
-FileModel.hasMany(ProductModel, { foreignKey: 'imageId', as: 'products' });
+ProductModel.belongsTo(FileModel, { foreignKey: 'thumbnailId', as: 'thumbnail' });
+FileModel.hasMany(ProductModel, { foreignKey: 'thumbnailId', as: 'products' });
 
 UserModel.belongsTo(FileModel, { foreignKey: 'avatarId', as: 'avatar' });
 FileModel.hasMany(UserModel, { foreignKey: 'avatarId', as: 'avatarUsers' });

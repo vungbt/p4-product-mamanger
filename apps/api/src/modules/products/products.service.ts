@@ -30,18 +30,20 @@ import { assertVersion } from '@/shared/commerce/transitions.js';
 import type { ModelOrder } from '@/types/database.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { createDefaultVariant, normalizedSlug } from '../catalog/catalog.service.js';
+import { applyVariantChanges } from '../catalog/variant-changes.js';
 import { eligibleVariantSql } from '../discovery/discovery.service.js';
 
 type GalleryRow = ProductImageModel & { file?: FileModel | null };
+
 type ProductEager = ProductModel & {
-  image?: FileModel | null;
+  thumbnail?: FileModel | null;
   category?: CategoryModel | null;
   gallery?: GalleryRow[];
 };
 
-const imageInclude = {
+const thumbnailInclude = {
   model: FileModel,
-  as: 'image' as const,
+  as: 'thumbnail' as const,
   attributes: ['id', 'url', 'storageId', 'provider'],
 };
 
@@ -58,7 +60,7 @@ const galleryInclude = {
     {
       model: FileModel,
       as: 'file',
-      attributes: ['id', 'url'],
+      attributes: ['id', 'url', 'storageId'],
     },
   ],
 };
@@ -69,6 +71,7 @@ function toGalleryImage(row: GalleryRow): ProductImage {
   return {
     ...selectFields(row, galleryImageFields),
     url: row.file?.url ?? '',
+    storageId: row.file?.storageId ?? '',
   };
 }
 
@@ -86,7 +89,7 @@ const productFields = [
   'name',
   'price',
   'description',
-  'imageId',
+  'thumbnailId',
   'categoryId',
   'stock',
 ] satisfies (keyof Product)[];
@@ -100,7 +103,14 @@ export function productDto(row: ProductEager): Product {
     ...selectFields(row, productFields),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
-    imageUrl: row.image?.url ?? images[0]?.url ?? '',
+    thumbnailUrl: row.thumbnail?.url ?? images[0]?.url ?? '',
+    thumbnail: row.thumbnail
+      ? {
+          fileId: row.thumbnail.id,
+          url: row.thumbnail.url ?? '',
+          storageId: row.thumbnail.storageId,
+        }
+      : null,
     category: row.category
       ? selectFields(row.category, ['id', 'name', 'slug', 'description'])
       : null,
@@ -108,11 +118,11 @@ export function productDto(row: ProductEager): Product {
   };
 }
 
-export const productInclude = [imageInclude, categoryInclude, galleryInclude];
+export const productInclude = [thumbnailInclude, categoryInclude, galleryInclude];
 
-async function resolveImageId(imageStorageId?: string, fallback?: string | null) {
-  if (!imageStorageId?.trim()) return fallback ?? null;
-  const file = await createFromStorageId(imageStorageId);
+async function resolveUploadFileId(storageId?: string) {
+  if (!storageId?.trim()) return null;
+  const file = await createFromStorageId(storageId.trim());
   return file.id;
 }
 
@@ -158,7 +168,7 @@ export async function listProducts(query: AdminProductListQuery, admin = false) 
 
   const { rows, count } = await ProductModel.findAndCountAll({
     where: conditions.length ? { [Op.and]: conditions } : undefined,
-    include: [imageInclude, categoryInclude, { ...galleryInclude, separate: true }],
+    include: [thumbnailInclude, categoryInclude, { ...galleryInclude, separate: true }],
     distinct: true,
     order,
     limit: query.pageSize,
@@ -190,12 +200,11 @@ async function validateReferences(input: Partial<ProductInput>) {
 export async function createProduct(input: ProductInput, transaction?: Transaction) {
   await validateReferences(input);
   const images: string[] = [];
-  for (const storageId of [input.imageStorageId, ...(input.imageStorageIds ?? [])]) {
-    if (storageId) {
-      const id = await resolveImageId(storageId);
-      if (id && !images.includes(id)) images.push(id);
-    }
+  for (const storageId of input.imageStorageIds ?? []) {
+    const fileId = await resolveUploadFileId(storageId);
+    if (fileId && !images.includes(fileId)) images.push(fileId);
   }
+  const thumbnailId = await resolveUploadFileId(input.thumbnailStorageId ?? undefined);
   const id = randomUUID();
   const actorId = requestStore.getStore()?.user?.id ?? null;
   await inTransaction(transaction, async (transaction) => {
@@ -205,7 +214,7 @@ export async function createProduct(input: ProductInput, transaction?: Transacti
         name: input.name,
         price: input.price,
         description: input.description ?? '',
-        imageId: images[0] ?? null,
+        thumbnailId,
         categoryId: input.categoryId ?? null,
         stock: input.stock,
         slug: normalizedSlug(input.slug ?? `product-${id}`),
@@ -219,9 +228,13 @@ export async function createProduct(input: ProductInput, transaction?: Transacti
       },
       { transaction },
     );
-    for (const [sortOrder, fileId] of images.entries())
+    for (const [sortOrder, fileId] of images.filter((id) => id !== thumbnailId).entries())
       await ProductImageModel.create({ productId: id, fileId, sortOrder }, { transaction });
-    await createDefaultVariant(row, actorId, transaction);
+    if (input.variants?.create !== undefined) {
+      await applyVariantChanges(row, input.variants, actorId, transaction);
+    } else {
+      await createDefaultVariant(row, actorId, transaction);
+    }
     await recordAudit(
       { actorId, action: 'product.created', resourceType: 'product', resourceId: id },
       transaction,
@@ -240,11 +253,42 @@ export async function updateProduct(
     throw new InputValidError('input_valid_error', {
       stock: ['Use inventory receipts/adjustments.'],
     });
-  const imageId = body.imageStorageId ? await resolveImageId(body.imageStorageId) : undefined;
   await inTransaction(transaction, async (transaction) => {
     const row = await ProductModel.findByPk(id, { transaction, lock: transaction.LOCK.UPDATE });
     if (!row) throw new NotFound(errorKeys.productNotFound);
     if (body.expectedVersion !== undefined) assertVersion(row.version, body.expectedVersion);
+    // Snapshot attachments before moving files between thumbnail and gallery.
+    // Only files already attached to this product can bypass upload ownership checks.
+    const existingImages = (await ProductImageModel.findAll({
+      where: { productId: id },
+      include: [{ model: FileModel, as: 'file' }],
+      transaction,
+    })) as GalleryRow[];
+    const attached = new Map(
+      existingImages.flatMap((image) =>
+        image.file ? [[image.file.storageId, image.fileId] as const] : [],
+      ),
+    );
+    if (row.thumbnailId) {
+      const file = await FileModel.findByPk(row.thumbnailId, { transaction });
+      if (file) attached.set(file.storageId, file.id);
+    }
+
+    const resolveAttachment = async (storageId: string) =>
+      attached.get(storageId.trim()) ?? (await resolveUploadFileId(storageId));
+
+    const thumbnailId =
+      body.thumbnailStorageId === undefined
+        ? row.thumbnailId
+        : body.thumbnailStorageId === null
+          ? null
+          : await resolveAttachment(body.thumbnailStorageId);
+    const galleryFileIds: string[] = [];
+    for (const storageId of body.imageStorageIds ?? []) {
+      const fileId = await resolveAttachment(storageId);
+      if (!fileId) throw new NotFound(errorKeys.uploadFileRequired);
+      if (fileId !== thumbnailId && !galleryFileIds.includes(fileId)) galleryFileIds.push(fileId);
+    }
     const slug = body.slug ? normalizedSlug(body.slug) : row.slug;
     if (slug !== row.slug) {
       const historic = await ProductSlugRedirectModel.findByPk(slug, { transaction });
@@ -258,7 +302,7 @@ export async function updateProduct(
         transaction,
       });
     }
-    if (body.price !== undefined) {
+    if (body.price !== undefined && !body.variants) {
       const variants = await ProductVariantModel.findAll({ where: { productId: id }, transaction });
       if ((variants.length !== 1 || !variants[0]) && body.price !== row.price)
         throw new BaseError('update_variant_price', 409, 'update_variant_price');
@@ -273,7 +317,7 @@ export async function updateProduct(
         name: body.name ?? row.name,
         price: body.price ?? row.price,
         description: body.description ?? row.description,
-        imageId: imageId ?? row.imageId,
+        thumbnailId,
         categoryId: body.categoryId === undefined ? row.categoryId : body.categoryId,
         slug,
         brand: body.brand ?? row.brand,
@@ -286,12 +330,57 @@ export async function updateProduct(
       },
       { transaction },
     );
-    if (imageId)
-      await ProductImageModel.findOrCreate({
-        where: { productId: id, fileId: imageId },
-        defaults: { productId: id, fileId: imageId, sortOrder: 0 },
+    if (body.imageStorageIds !== undefined) {
+      await ProductImageModel.destroy({
+        where: {
+          productId: id,
+          ...(galleryFileIds.length ? { fileId: { [Op.notIn]: galleryFileIds } } : {}),
+        },
         transaction,
       });
+      for (const [sortOrder, fileId] of galleryFileIds.entries()) {
+        const [image, created] = await ProductImageModel.findOrCreate({
+          where: { productId: id, fileId } satisfies WhereOptions<ProductImageAttributes>,
+          defaults: { productId: id, fileId, sortOrder },
+          transaction,
+        });
+        if (!created) await image.update({ sortOrder }, { transaction });
+      }
+    } else if (body.thumbnailStorageId !== undefined && thumbnailId) {
+      // A newly selected thumbnail cannot remain duplicated in the gallery.
+      await ProductImageModel.destroy({
+        where: { productId: id, fileId: thumbnailId },
+        transaction,
+      });
+    }
+    // Detaching a product image also detaches it from all SKUs, atomically.
+    const retained = new Set([
+      ...(thumbnailId ? [thumbnailId] : []),
+      ...(body.imageStorageIds !== undefined
+        ? galleryFileIds
+        : existingImages.map((image) => image.fileId)),
+    ]);
+    const detached = new Set([...attached.values()].filter((fileId) => !retained.has(fileId)));
+    if (body.variants)
+      await applyVariantChanges(
+        row,
+        body.variants,
+        requestStore.getStore()?.user?.id ?? null,
+        transaction,
+        detached,
+      );
+    if (detached.size) {
+      const variants = await ProductVariantModel.findAll({
+        where: { productId: id },
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      for (const variant of variants) {
+        const imageIds = variant.imageIds.filter((fileId) => !detached.has(fileId));
+        if (imageIds.length !== variant.imageIds.length)
+          await variant.update({ imageIds, version: variant.version + 1 }, { transaction });
+      }
+    }
     await recordAudit(
       {
         actorId: requestStore.getStore()?.user?.id,
@@ -307,12 +396,12 @@ export async function updateProduct(
 
 export async function addProductImage(
   productId: string,
-  input: { imageStorageId: string; sortOrder?: number },
+  input: { storageId: string; sortOrder?: number },
 ) {
   return auditedTransaction(async () => {
     const product = await ProductModel.findByPk(productId);
     if (!product) throw new NotFound(errorKeys.productNotFound);
-    const fileId = await resolveImageId(input.imageStorageId);
+    const fileId = await resolveUploadFileId(input.storageId);
     if (!fileId) throw new NotFound(errorKeys.uploadFileRequired);
 
     const maxOrder = (await ProductImageModel.max('sortOrder', { where: { productId } })) ?? -1;
@@ -324,12 +413,8 @@ export async function addProductImage(
       sortOrder,
     });
 
-    if (!product.imageId) {
-      await product.update({ imageId: fileId });
-    }
-
     const full = (await ProductImageModel.findByPk(row.id, {
-      include: [{ model: FileModel, as: 'file', attributes: ['id', 'url'] }],
+      include: [{ model: FileModel, as: 'file', attributes: ['id', 'url', 'storageId'] }],
     })) as GalleryRow;
     return toGalleryImage(full);
   });
@@ -340,15 +425,7 @@ export async function removeProductImage(productId: string, imageRowId: string) 
     const row = await ProductImageModel.findOne({ where: { id: imageRowId, productId } });
     if (!row) throw new NotFound(errorKeys.notFound);
     const fileId = row.fileId;
-    const product = await ProductModel.findByPk(productId);
     await row.destroy();
-    if (product?.imageId === fileId) {
-      const next = await ProductImageModel.findOne({
-        where: { productId },
-        order: [['sortOrder', 'ASC']] satisfies ModelOrder<ProductImageAttributes>,
-      });
-      await product.update({ imageId: next?.fileId ?? null });
-    }
     await deleteFileIfUnreferenced(fileId);
     return { ok: true as const };
   });

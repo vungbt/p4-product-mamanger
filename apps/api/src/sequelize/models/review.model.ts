@@ -9,7 +9,7 @@ export interface ReviewAttributes {
   orderItemId: string | null;
   moderationStatus: 'pending' | 'published' | 'hidden';
   verifiedPurchase: boolean;
-  mediaIds: string[];
+  imageIds: string[];
   reply: string | null;
   moderationReason: string | null;
   version: number;
@@ -22,7 +22,7 @@ export type ReviewCreation = Optional<
   | 'orderItemId'
   | 'moderationStatus'
   | 'verifiedPurchase'
-  | 'mediaIds'
+  | 'imageIds'
   | 'reply'
   | 'moderationReason'
   | 'version'
@@ -44,7 +44,7 @@ export class ReviewModel
   declare orderItemId: string | null;
   declare moderationStatus: 'pending' | 'published' | 'hidden';
   declare verifiedPurchase: boolean;
-  declare mediaIds: string[];
+  declare imageIds: string[];
   declare reply: string | null;
   declare moderationReason: string | null;
   declare version: number;
@@ -58,7 +58,7 @@ export function initReviewModel(sequelize: Sequelize) {
       orderItemId: { type: DataTypes.UUID, allowNull: true },
       moderationStatus: { type: DataTypes.STRING, allowNull: false, defaultValue: 'pending' },
       verifiedPurchase: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-      mediaIds: { type: DataTypes.ARRAY(DataTypes.UUID), allowNull: false, defaultValue: [] },
+      imageIds: { type: DataTypes.ARRAY(DataTypes.UUID), allowNull: false, defaultValue: [] },
       reply: { type: DataTypes.TEXT, allowNull: true },
       moderationReason: { type: DataTypes.TEXT, allowNull: true },
       version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },

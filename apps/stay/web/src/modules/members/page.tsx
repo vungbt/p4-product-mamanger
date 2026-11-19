@@ -14,11 +14,12 @@ import { getErrorMessage } from '@stay/sdk/shared';
 import { MANAGER_PERMISSION_LABELS, type StayMember } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { PAGE_SIZE_OPTIONS, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { FilterBar } from '@/libraries/filter-bar';
 import { ListTable } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
+import { useTableParams } from '@/libraries/table-params';
 import { MemberDialog } from './member-form';
 
 const SORT_FIELDS = ['email', 'displayName'] as const;
@@ -126,7 +127,7 @@ export default function MembersPage() {
         },
         { replace: true },
       );
-    }, 300);
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
   }, [searchText, q, setParams]);

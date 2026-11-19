@@ -3,6 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import openapiTS, { astToString } from 'openapi-typescript';
 import ts from 'typescript';
+import { addCodeSpacing } from './code-spacing.mjs';
 
 const target = new URL('../src/shared/generated.ts', import.meta.url);
 const source = new URL('../../../apps/api/openapi.yaml', import.meta.url);
@@ -23,7 +24,7 @@ const formatted = spawnSync(
   { input: unformatted, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 },
 );
 if (formatted.status !== 0) throw new Error('Cannot format the generated SDK contract.');
-const generated = formatted.stdout;
+const generated = addCodeSpacing(formatted.stdout);
 if (process.argv.includes('--check')) {
   const existing = await readFile(target, 'utf8');
   if (existing !== generated)

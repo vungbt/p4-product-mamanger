@@ -25,8 +25,11 @@ const PeriodChart = lazy(() => import('./period-chart'));
  */
 export default function OverviewPage() {
   const { t } = useTranslation();
+
   const { user } = useAuth();
+
   const { building, buildingId } = useActiveBuilding();
+
   const [params, setParams] = useSearchParams();
 
   const raw = params.get('period');
@@ -65,7 +68,17 @@ export default function OverviewPage() {
         description={
           <span className="block truncate" data-testid="signed-in-user">
             {building ? `${building.name} · ` : ''}
-            {t('overview.signedInAs', { email: user.email, role: t(`roles.${user.role}`) })}
+            {t('overview.signedInAs', {
+              email: user.email,
+              role:
+                (
+                  {
+                    owner: t('roles.owner'),
+                    manager: t('roles.manager'),
+                    tenant: t('roles.tenant'),
+                  } as Record<string, string>
+                )[user.role] ?? String(user.role),
+            })}
           </span>
         }
         action={

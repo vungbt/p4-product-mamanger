@@ -28,6 +28,7 @@ import {
 import type { StayContract } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import * as v from 'valibot';
+import { OPTIONS_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { todayIsoDate } from '@/libraries/format';
 import {
   apiFormErrors,
@@ -79,14 +80,22 @@ export function ContractChangeDialog({
 }) {
   const change = useChangeContract();
   const detail = useContract(contract.id);
+
   const [roomSearch, setRoomSearch] = useState('');
+
   const [tenantSearch, setTenantSearch] = useState('');
-  const rooms = useRooms(contract.buildingId, { pageSize: 100, q: roomSearch || undefined });
+
+  const rooms = useRooms(contract.buildingId, {
+    pageSize: OPTIONS_PAGE_SIZE,
+    q: roomSearch || undefined,
+  });
+
   const tenants = useTenants({
     buildingId: contract.buildingId,
-    pageSize: 100,
+    pageSize: OPTIONS_PAGE_SIZE,
     q: tenantSearch || undefined,
   });
+
   const services = useServices();
   const [error, setError] = useState<string | null>(null);
   const [confirmClose, setConfirmClose] = useState(false);
@@ -233,6 +242,7 @@ export function ContractChangeDialog({
             <FormField name="tenantId" label="Người thuê có sẵn">
               <Select
                 searchMode="server"
+                searchDebounceMs={SEARCH_DEBOUNCE_MS}
                 onSearchChange={setTenantSearch}
                 options={(tenants.data?.data ?? []).map((t) => ({
                   value: t.id,
@@ -306,6 +316,7 @@ export function ContractChangeDialog({
             <FormField name="roomId" label="Phòng mới" required>
               <Select
                 searchMode="server"
+                searchDebounceMs={SEARCH_DEBOUNCE_MS}
                 onSearchChange={setRoomSearch}
                 options={(rooms.data?.data ?? [])
                   .filter((r) => r.id !== contract.roomId)

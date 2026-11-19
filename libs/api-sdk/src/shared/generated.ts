@@ -9280,7 +9280,34 @@ export interface paths {
     delete: operations['delete_api_products_id'];
     options?: never;
     head?: never;
-    patch?: never;
+    /**
+     * Cập nhật sản phẩm
+     * @description **Quyền:** `write:Catalog`.
+     *
+     *     ### Platform và SDK
+     *     Nhóm sử dụng: **Admin**. Đây là nhãn tài liệu; quyền và owner vẫn do API kiểm tra.
+     *
+     *     | Export | Tên |
+     *     | --- | --- |
+     *     | Hook | `usePatchProductsId` |
+     *     | Helper | `patchProductsId` |
+     *     | Input | `PatchProductsIdInput` |
+     *     | Options | `patchProductsIdMutationOptions` |
+     *
+     *     Hooks import từ `@p4/api-sdk/react`; helper/input từ `@p4/api-sdk/shared`. Hooks không tự gate permission; dùng capabilities và `enabled` khi cần.
+     *
+     *     ```tsx
+     *     import { usePatchProductsId } from '@p4/api-sdk/react';
+     *     import type { PatchProductsIdInput } from '@p4/api-sdk/shared';
+     *
+     *     export function useExample(input: PatchProductsIdInput) {
+     *       const mutation = usePatchProductsId();
+     *       const submit = () => mutation.mutateAsync(input);
+     *       return { ...mutation, submit };
+     *     }
+     *     ```
+     */
+    patch: operations['patch_api_products_id'];
     trace?: never;
   };
   '/api/products/{id}/images': {
@@ -11646,7 +11673,9 @@ export interface paths {
     trace?: never;
   };
 }
+
 export type webhooks = Record<string, never>;
+
 export interface components {
   schemas: {
     AbilityRule: {
@@ -11806,13 +11835,13 @@ export interface components {
       available: number;
       color: string;
       id: string;
-      imageUrl: string;
       productId: string | null;
       productName: string;
       productSlug: string | null;
       quantity: number;
       size: string;
       sku: string;
+      thumbnailUrl: string;
       unitPrice: number;
       variantId: string;
       warnings: components['schemas']['CartWarning'][];
@@ -11894,7 +11923,6 @@ export interface components {
         };
     ContentEntry: {
       body: components['schemas']['ContentBlock'][];
-      coverFileId: string | null;
       excerpt: string;
       id: string;
       kind: components['schemas']['ContentKind'];
@@ -11905,6 +11933,7 @@ export interface components {
       slug: string;
       status: components['schemas']['ContentStatus'];
       taxonomyIds: string[];
+      thumbnailFileId: string | null;
       title: string;
       version: number;
     };
@@ -12009,6 +12038,11 @@ export interface components {
       color: string;
       id: string;
       imageIds: string[];
+      images?: {
+        fileId: string;
+        storageId: string;
+        url: string;
+      }[];
       isDefault: boolean;
       onHand: number;
       price: number;
@@ -12053,11 +12087,11 @@ export interface components {
         }
       | {
           href: string;
-          imageFileId: string;
           /** @enum {string} */
           kind: 'banner';
           /** @enum {string} */
           placement: 'home' | 'shop';
+          thumbnailFileId: string;
           title: string;
         }
       | {
@@ -12133,7 +12167,6 @@ export interface components {
       discountAmount?: number;
       fulfilledQuantity?: number;
       id?: string;
-      imageUrl?: string;
       lineTotal?: number;
       productId: string;
       productName: string;
@@ -12141,6 +12174,7 @@ export interface components {
       returnedQuantity?: number;
       size?: string;
       sku?: string;
+      thumbnailUrl?: string;
       unitPrice: number;
       variantId?: string | null;
     };
@@ -12201,9 +12235,7 @@ export interface components {
       createdAt: string;
       description: string;
       id: string;
-      imageId?: string | null;
       images?: components['schemas']['ProductImage'][];
-      imageUrl: string;
       material: string;
       name: string;
       price: number;
@@ -12213,6 +12245,13 @@ export interface components {
       slug: string;
       status: components['schemas']['ProductPublicationStatus'];
       stock: number;
+      thumbnail: {
+        fileId: string;
+        storageId: string;
+        url: string;
+      } | null;
+      thumbnailId?: string | null;
+      thumbnailUrl: string;
       updatedAt: string;
       version: number;
     };
@@ -12220,6 +12259,7 @@ export interface components {
       fileId: string;
       id: string;
       sortOrder: number;
+      storageId: string;
       url: string;
     };
     /** @enum {string} */
@@ -12230,6 +12270,11 @@ export interface components {
       color: string;
       id: string;
       imageIds: string[];
+      images?: {
+        fileId: string;
+        storageId: string;
+        url: string;
+      }[];
       isDefault: boolean;
       price: number;
       productId: string;
@@ -12238,6 +12283,24 @@ export interface components {
       /** @enum {string} */
       status: 'active' | 'inactive';
       version: number;
+    };
+    ProductVariantChanges: {
+      create?: components['schemas']['VariantInput'][];
+      delete?: string[];
+      update?: {
+        barcode?: string | null;
+        color?: string;
+        expectedVersion?: number;
+        id: string;
+        imageIds?: string[];
+        imageStorageIds?: string[];
+        isDefault?: boolean;
+        price?: number;
+        size?: string;
+        sku?: string;
+        /** @enum {string} */
+        status?: 'active' | 'inactive';
+      }[];
     };
     Promotion: {
       categoryIds: string[];
@@ -12258,13 +12321,13 @@ export interface components {
       categoryId: string | null;
       color: string;
       discountAmount: number;
-      imageUrl: string;
       lineTotal: number;
       productId: string;
       productName: string;
       quantity: number;
       size: string;
       sku: string;
+      thumbnailUrl: string;
       unitPrice: number;
       variantId: string;
     };
@@ -12335,7 +12398,7 @@ export interface components {
       comment: string;
       createdAt: string;
       id: string;
-      mediaIds?: string[];
+      imageIds?: string[];
       /** @enum {string} */
       moderationStatus?: 'hidden' | 'pending' | 'published';
       productId: string;
@@ -12431,8 +12494,8 @@ export interface components {
       newPassword: string;
     };
     UpdateProfileInput: {
+      avatarStorageId?: string;
       displayName?: string;
-      imageStorageId?: string;
       phone?: string | null;
     };
     UploadTicket: {
@@ -12471,6 +12534,19 @@ export interface components {
         | null;
       timezone?: string;
       version?: number;
+    };
+    VariantInput: {
+      barcode?: string | null;
+      color: string;
+      imageIds?: string[];
+      imageStorageIds?: string[];
+      isDefault?: boolean;
+      price: number;
+      size: string;
+      sku: string;
+      /** @enum {string} */
+      status?: 'active' | 'inactive';
+      stock?: number;
     };
   };
   responses: {
@@ -12534,7 +12610,9 @@ export interface components {
   headers: never;
   pathItems: never;
 }
+
 export type $defs = Record<string, never>;
+
 export interface operations {
   get_api_addresses: {
     parameters: {
@@ -12853,10 +12931,10 @@ export interface operations {
         'application/json': {
           active: boolean;
           href: string;
-          imageFileId: string;
           key: string;
           /** @enum {string} */
           placement: 'home' | 'shop';
+          thumbnailFileId: string;
           title: string;
         };
       };
@@ -12925,10 +13003,10 @@ export interface operations {
           active: boolean;
           expectedVersion: number;
           href: string;
-          imageFileId: string;
           key: string;
           /** @enum {string} */
           placement: 'home' | 'shop';
+          thumbnailFileId: string;
           title: string;
         };
       };
@@ -14159,12 +14237,12 @@ export interface operations {
       content: {
         'application/json': {
           body: components['schemas']['ContentBlock'][];
-          coverFileId?: string;
           excerpt?: string;
           seoDescription?: string;
           seoTitle?: string;
           slug: string;
           taxonomyIds?: string[];
+          thumbnailFileId?: string;
           title: string;
         };
       };
@@ -14231,13 +14309,13 @@ export interface operations {
       content: {
         'application/json': {
           body: components['schemas']['ContentBlock'][];
-          coverFileId?: string;
           excerpt?: string;
           expectedVersion: number;
           seoDescription?: string;
           seoTitle?: string;
           slug: string;
           taxonomyIds?: string[];
+          thumbnailFileId?: string;
           title: string;
         };
       };
@@ -14699,12 +14777,12 @@ export interface operations {
       content: {
         'application/json': {
           body: components['schemas']['ContentBlock'][];
-          coverFileId?: string;
           excerpt?: string;
           seoDescription?: string;
           seoTitle?: string;
           slug: string;
           taxonomyIds?: string[];
+          thumbnailFileId?: string;
           title: string;
         };
       };
@@ -14771,13 +14849,13 @@ export interface operations {
       content: {
         'application/json': {
           body: components['schemas']['ContentBlock'][];
-          coverFileId?: string;
           excerpt?: string;
           expectedVersion: number;
           seoDescription?: string;
           seoTitle?: string;
           slug: string;
           taxonomyIds?: string[];
+          thumbnailFileId?: string;
           title: string;
         };
       };
@@ -20697,41 +20775,40 @@ export interface operations {
               | {
                   href?: null;
                   id: string;
-                  imageUrl?: null;
                   items?: null;
                   placement?: null;
                   products: components['schemas']['Product'][];
                   sections?: null;
                   slug: string;
+                  thumbnailUrl?: null;
                   title: string;
                 }
               | {
                   href: string;
                   id: string;
-                  imageUrl: string;
                   items?: null;
                   /** @enum {string} */
                   placement: 'home' | 'shop';
                   products?: null;
                   sections?: null;
                   slug?: null;
+                  thumbnailUrl: string;
                   title: string;
                 }
               | {
                   href?: null;
                   id?: null;
-                  imageUrl?: null;
                   items: components['schemas']['NavigationItem'][];
                   placement: string;
                   products?: null;
                   sections?: null;
                   slug?: null;
+                  thumbnailUrl?: null;
                   title?: null;
                 }
               | {
                   href?: null;
                   id?: null;
-                  imageUrl?: null;
                   items?: null;
                   placement?: null;
                   products?: null;
@@ -20742,6 +20819,7 @@ export interface operations {
                     type: 'banner' | 'collection';
                   }[];
                   slug?: null;
+                  thumbnailUrl?: null;
                   title?: null;
                 }
             )[];
@@ -20776,41 +20854,40 @@ export interface operations {
               | {
                   href?: null;
                   id: string;
-                  imageUrl?: null;
                   items?: null;
                   placement?: null;
                   products: components['schemas']['Product'][];
                   sections?: null;
                   slug: string;
+                  thumbnailUrl?: null;
                   title: string;
                 }
               | {
                   href: string;
                   id: string;
-                  imageUrl: string;
                   items?: null;
                   /** @enum {string} */
                   placement: 'home' | 'shop';
                   products?: null;
                   sections?: null;
                   slug?: null;
+                  thumbnailUrl: string;
                   title: string;
                 }
               | {
                   href?: null;
                   id?: null;
-                  imageUrl?: null;
                   items: components['schemas']['NavigationItem'][];
                   placement: string;
                   products?: null;
                   sections?: null;
                   slug?: null;
+                  thumbnailUrl?: null;
                   title?: null;
                 }
               | {
                   href?: null;
                   id?: null;
-                  imageUrl?: null;
                   items?: null;
                   placement?: null;
                   products?: null;
@@ -20821,6 +20898,7 @@ export interface operations {
                     type: 'banner' | 'collection';
                   }[];
                   slug?: null;
+                  thumbnailUrl?: null;
                   title?: null;
                 };
             message?: string;
@@ -21924,9 +22002,9 @@ export interface operations {
     requestBody: {
       content: {
         'application/json': {
+          avatarStorageId?: string;
           displayName?: string;
           expectedVersion: number;
-          imageStorageId?: string;
           phone?: string;
         };
       };
@@ -22213,7 +22291,7 @@ export interface operations {
       content: {
         'application/json': {
           comment: string;
-          mediaIds?: string[];
+          imageIds?: string[];
           rating: number;
         };
       };
@@ -22907,21 +22985,21 @@ export interface operations {
           'application/json': {
             data: {
               body: components['schemas']['ContentBlock'][];
-              coverFileId: string | null;
-              coverUrl: string;
               excerpt: string;
               id: string;
-              kind: components['schemas']['ContentKind'];
-              media: {
+              images: {
                 id: string;
                 url: string;
               }[];
+              kind: components['schemas']['ContentKind'];
               publishedAt: string;
               redirect: string | null;
               seoDescription: string;
               seoTitle: string;
               slug: string;
               taxonomyIds: string[];
+              thumbnailFileId: string | null;
+              thumbnailUrl: string;
               title: string;
               version: number;
             };
@@ -23027,20 +23105,20 @@ export interface operations {
           'application/json': {
             data: {
               body: components['schemas']['ContentBlock'][];
-              coverFileId: string | null;
-              coverUrl: string;
               excerpt: string;
               id: string;
-              kind: components['schemas']['ContentKind'];
-              media: {
+              images: {
                 id: string;
                 url: string;
               }[];
+              kind: components['schemas']['ContentKind'];
               publishedAt: string;
               seoDescription: string;
               seoTitle: string;
               slug: string;
               taxonomyIds: string[];
+              thumbnailFileId: string | null;
+              thumbnailUrl: string;
               title: string;
               version: number;
             }[];
@@ -23148,20 +23226,20 @@ export interface operations {
           'application/json': {
             data: {
               body: components['schemas']['ContentBlock'][];
-              coverFileId: string | null;
-              coverUrl: string;
               excerpt: string;
               id: string;
-              kind: components['schemas']['ContentKind'];
-              media: {
+              images: {
                 id: string;
                 url: string;
               }[];
+              kind: components['schemas']['ContentKind'];
               publishedAt: string;
               seoDescription: string;
               seoTitle: string;
               slug: string;
               taxonomyIds: string[];
+              thumbnailFileId: string | null;
+              thumbnailUrl: string;
               title: string;
               version: number;
             }[];
@@ -23194,21 +23272,21 @@ export interface operations {
           'application/json': {
             data: {
               body: components['schemas']['ContentBlock'][];
-              coverFileId: string | null;
-              coverUrl: string;
               excerpt: string;
               id: string;
-              kind: components['schemas']['ContentKind'];
-              media: {
+              images: {
                 id: string;
                 url: string;
               }[];
+              kind: components['schemas']['ContentKind'];
               publishedAt: string;
               redirect: string | null;
               seoDescription: string;
               seoTitle: string;
               slug: string;
               taxonomyIds: string[];
+              thumbnailFileId: string | null;
+              thumbnailUrl: string;
               title: string;
               version: number;
             };
@@ -23617,7 +23695,6 @@ export interface operations {
           categoryId?: string;
           description?: string;
           expectedVersion?: number;
-          imageStorageId?: string;
           imageStorageIds?: string[];
           material?: string;
           name: string;
@@ -23626,7 +23703,42 @@ export interface operations {
           seoTitle?: string;
           sizeGuideId?: string;
           slug?: string;
-          stock: number;
+          stock?: number;
+          thumbnailStorageId?: string;
+          /** @description Atomic SKU diff. Delete deactivates (history and inventory retained). Stock is create-only. Sold identity and reservation rules apply. Exactly one active default is ensured. */
+          variants?: {
+            create?: {
+              barcode?: string | null;
+              color: string;
+              imageIds?: string[];
+              /** @description Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached product images return 422 at the variant row path. */
+              imageStorageIds?: string[];
+              isDefault?: boolean;
+              price: number;
+              size: string;
+              sku: string;
+              /** @enum {string} */
+              status?: 'active' | 'inactive';
+              stock?: number;
+            }[];
+            delete?: string[];
+            update?: {
+              barcode?: string | null;
+              color?: string;
+              expectedVersion?: number;
+              /** Format: uuid */
+              id: string;
+              imageIds?: string[];
+              /** @description Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached product images return 422 at the variant row path. */
+              imageStorageIds?: string[];
+              isDefault?: boolean;
+              price?: number;
+              size?: string;
+              sku?: string;
+              /** @enum {string} */
+              status?: 'active' | 'inactive';
+            }[];
+          };
         };
       };
     };
@@ -23647,6 +23759,7 @@ export interface operations {
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       409: components['responses']['Conflict'];
+      422: components['responses']['ValidationError'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -23694,7 +23807,7 @@ export interface operations {
           categoryId?: string;
           description?: string;
           expectedVersion?: number;
-          imageStorageId?: string;
+          /** @description Complete ordered gallery excluding the thumbnail. Omission preserves it; an empty list detaches all images. Existing product files need no upload ticket; new files require an owned completed product upload. */
           imageStorageIds?: string[];
           material?: string;
           name?: string;
@@ -23704,6 +23817,42 @@ export interface operations {
           sizeGuideId?: string;
           slug?: string;
           stock?: number;
+          /** @description Owned product upload or storage ID already attached to this product. Null clears the thumbnail; omission preserves it. The thumbnail is excluded from the gallery. */
+          thumbnailStorageId?: string | null;
+          /** @description Atomic SKU diff. Delete deactivates (history and inventory retained). Stock is create-only. Sold identity and reservation rules apply. Exactly one active default is ensured. */
+          variants?: {
+            create?: {
+              barcode?: string | null;
+              color: string;
+              imageIds?: string[];
+              /** @description Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached product images return 422 at the variant row path. */
+              imageStorageIds?: string[];
+              isDefault?: boolean;
+              price: number;
+              size: string;
+              sku: string;
+              /** @enum {string} */
+              status?: 'active' | 'inactive';
+              stock?: number;
+            }[];
+            delete?: string[];
+            update?: {
+              barcode?: string | null;
+              color?: string;
+              expectedVersion?: number;
+              /** Format: uuid */
+              id: string;
+              imageIds?: string[];
+              /** @description Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached product images return 422 at the variant row path. */
+              imageStorageIds?: string[];
+              isDefault?: boolean;
+              price?: number;
+              size?: string;
+              sku?: string;
+              /** @enum {string} */
+              status?: 'active' | 'inactive';
+            }[];
+          };
         };
       };
     };
@@ -23725,6 +23874,7 @@ export interface operations {
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];
       409: components['responses']['Conflict'];
+      422: components['responses']['ValidationError'];
       429: components['responses']['RateLimited'];
     };
   };
@@ -23758,6 +23908,94 @@ export interface operations {
       429: components['responses']['RateLimited'];
     };
   };
+  patch_api_products_id: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: {
+      content: {
+        'application/json': {
+          brand?: string;
+          careInstructions?: string;
+          categoryId?: string;
+          description?: string;
+          expectedVersion?: number;
+          /** @description Complete ordered gallery excluding the thumbnail. Omission preserves it; an empty list detaches all images. Existing product files need no upload ticket; new files require an owned completed product upload. */
+          imageStorageIds?: string[];
+          material?: string;
+          name?: string;
+          price?: number;
+          seoDescription?: string;
+          seoTitle?: string;
+          sizeGuideId?: string;
+          slug?: string;
+          stock?: number;
+          /** @description Owned product upload or storage ID already attached to this product. Null clears the thumbnail; omission preserves it. The thumbnail is excluded from the gallery. */
+          thumbnailStorageId?: string | null;
+          /** @description Atomic SKU diff. Delete deactivates (history and inventory retained). Stock is create-only. Sold identity and reservation rules apply. Exactly one active default is ensured. */
+          variants?: {
+            create?: {
+              barcode?: string | null;
+              color: string;
+              imageIds?: string[];
+              /** @description Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached product images return 422 at the variant row path. */
+              imageStorageIds?: string[];
+              isDefault?: boolean;
+              price: number;
+              size: string;
+              sku: string;
+              /** @enum {string} */
+              status?: 'active' | 'inactive';
+              stock?: number;
+            }[];
+            delete?: string[];
+            update?: {
+              barcode?: string | null;
+              color?: string;
+              expectedVersion?: number;
+              /** Format: uuid */
+              id: string;
+              imageIds?: string[];
+              /** @description Ordered storage IDs from product attachments, existing images of this SKU, or completed product uploads owned by the actor. New uploads attach only to the SKU. Unknown, foreign, or detached product images return 422 at the variant row path. */
+              imageStorageIds?: string[];
+              isDefault?: boolean;
+              price?: number;
+              size?: string;
+              sku?: string;
+              /** @enum {string} */
+              status?: 'active' | 'inactive';
+            }[];
+          };
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: components['schemas']['Product'];
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      422: components['responses']['ValidationError'];
+      429: components['responses']['RateLimited'];
+    };
+  };
   post_api_products_id_images: {
     parameters: {
       query?: never;
@@ -23770,11 +24008,11 @@ export interface operations {
     requestBody: {
       content: {
         'application/json': {
-          imageStorageId: string;
           sortOrder?: number;
+          storageId: string;
         } & {
-          imageStorageId: string;
           sortOrder?: number;
+          storageId: string;
         };
       };
     };
@@ -23954,7 +24192,7 @@ export interface operations {
       content: {
         'application/json': {
           comment: string;
-          mediaIds?: string[];
+          imageIds?: string[];
           orderItemId?: string;
           rating: number;
         };
@@ -25437,41 +25675,40 @@ export interface operations {
                   | {
                       href?: null;
                       id: string;
-                      imageUrl?: null;
                       items?: null;
                       placement?: null;
                       products: components['schemas']['Product'][];
                       sections?: null;
                       slug: string;
+                      thumbnailUrl?: null;
                       title: string;
                     }
                   | {
                       href: string;
                       id: string;
-                      imageUrl: string;
                       items?: null;
                       /** @enum {string} */
                       placement: 'home' | 'shop';
                       products?: null;
                       sections?: null;
                       slug?: null;
+                      thumbnailUrl: string;
                       title: string;
                     }
                   | {
                       href?: null;
                       id?: null;
-                      imageUrl?: null;
                       items: components['schemas']['NavigationItem'][];
                       placement: string;
                       products?: null;
                       sections?: null;
                       slug?: null;
+                      thumbnailUrl?: null;
                       title?: null;
                     }
                   | {
                       href?: null;
                       id?: null;
-                      imageUrl?: null;
                       items?: null;
                       placement?: null;
                       products?: null;
@@ -25482,6 +25719,7 @@ export interface operations {
                         type: 'banner' | 'collection';
                       }[];
                       slug?: null;
+                      thumbnailUrl?: null;
                       title?: null;
                     };
                 id: string;

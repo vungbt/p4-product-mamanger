@@ -2,7 +2,7 @@ import { buildVietQrPayload, toTransferText } from '@stay/shared';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
 import { formatVnd } from '@/libraries/format';
-import { findBank } from '../banks';
+import { findBank } from '@/modules/buildings/banks';
 
 /** Amount of the test transfer encoded in the preview QR (screens.md O-05). */
 export const TEST_AMOUNT = 10_000;

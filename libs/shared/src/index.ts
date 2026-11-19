@@ -20,7 +20,7 @@ export interface User {
 export interface UpdateProfileInput {
   displayName?: string;
   phone?: string | null;
-  imageStorageId?: string;
+  avatarStorageId?: string;
 }
 
 export interface Category {
@@ -51,6 +51,7 @@ export interface CategoryInput {
 }
 
 export interface ProductImage {
+  storageId: string;
   id: string;
   fileId: string;
   url: string;
@@ -73,15 +74,37 @@ export interface Product {
   name: string;
   price: number;
   description: string;
-  imageUrl: string;
-  imageId?: string | null;
+  /** Display URL: thumbnail, then first gallery image, or empty when neither exists. */
+  thumbnailUrl: string;
+  thumbnailId?: string | null;
+  thumbnail: { fileId: string; url: string; storageId: string } | null;
   categoryId?: string | null;
   category?: Category | null;
   images?: ProductImage[];
   stock: number;
 }
 
+export interface VariantInput {
+  sku: string;
+  barcode?: string | null;
+  size: string;
+  color: string;
+  price: number;
+  status?: 'active' | 'inactive';
+  isDefault?: boolean;
+  imageIds?: string[];
+  imageStorageIds?: string[];
+  stock?: number;
+}
+
+export interface ProductVariantChanges {
+  create?: VariantInput[];
+  update?: (Partial<Omit<VariantInput, 'stock'>> & { id: string; expectedVersion?: number })[];
+  delete?: string[];
+}
+
 export interface ProductInput {
+  variants?: ProductVariantChanges;
   slug?: string;
   brand?: string;
   material?: string;
@@ -94,7 +117,7 @@ export interface ProductInput {
   price: number;
   description: string;
   stock: number;
-  imageStorageId?: string;
+  thumbnailStorageId?: string | null;
   categoryId?: string | null;
   imageStorageIds?: string[];
 }
@@ -104,7 +127,7 @@ export interface OrderItem {
   sku?: string;
   size?: string;
   color?: string;
-  imageUrl?: string;
+  thumbnailUrl?: string;
   discountAmount?: number;
   lineTotal?: number;
   cancelledQuantity?: number;
@@ -118,10 +141,15 @@ export interface OrderItem {
 }
 
 export type OrderStatus = 'pending' | 'paid' | 'shipping' | 'completed' | 'cancelled';
+
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
+
 export type PaymentProvider = 'mock' | 'stripe' | 'cod';
+
 export type ShipmentStatus = 'pending' | 'shipped' | 'delivered' | 'cancelled';
+
 export type CouponType = 'percent' | 'fixed';
+
 export type RefundStatus = 'pending' | 'completed' | 'failed';
 
 export interface ShippingAddressInput {
@@ -220,7 +248,7 @@ export interface Refund {
 export interface Review {
   moderationStatus?: 'pending' | 'published' | 'hidden';
   verifiedPurchase?: boolean;
-  mediaIds?: string[];
+  imageIds?: string[];
   reply?: string | null;
   version?: number;
   id: string;
@@ -234,7 +262,7 @@ export interface Review {
 
 export interface ReviewInput {
   orderItemId?: string;
-  mediaIds?: string[];
+  imageIds?: string[];
   rating: number;
   comment?: string;
 }
@@ -396,13 +424,16 @@ export type StaffRole =
   | 'content'
   | 'support'
   | 'fulfillment';
+
 export type AccountStatus = 'active' | 'blocked' | 'closed';
+
 export type OrderLifecycleStatus =
   | 'pending_confirmation'
   | 'confirmed'
   | 'processing'
   | 'completed'
   | 'cancelled';
+
 export type PaymentAttemptStatus =
   | 'pending'
   | 'processing'
@@ -410,6 +441,7 @@ export type PaymentAttemptStatus =
   | 'failed'
   | 'expired'
   | 'cancelled';
+
 export type FulfillmentStatus =
   | 'pending_pack'
   | 'packed'
@@ -421,6 +453,7 @@ export type FulfillmentStatus =
   | 'returned'
   | 'lost'
   | 'cancelled';
+
 export type ReturnStatus =
   | 'requested'
   | 'approved'
@@ -430,7 +463,9 @@ export type ReturnStatus =
   | 'completed'
   | 'rejected'
   | 'cancelled';
+
 export type RefundAttemptStatus = 'requested' | 'processing' | 'succeeded' | 'failed' | 'cancelled';
+
 export type ExchangeStatus =
   | 'requested'
   | 'approved'
@@ -440,9 +475,13 @@ export type ExchangeStatus =
   | 'completed'
   | 'rejected'
   | 'cancelled';
+
 export type ProductPublicationStatus = 'draft' | 'active' | 'inactive' | 'archived';
+
 export type ContentStatus = 'draft' | 'scheduled' | 'published' | 'archived';
+
 export type JobStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'dead_letter' | 'cancelled';
+
 export type JsonValue =
   | string
   | number
@@ -451,6 +490,7 @@ export type JsonValue =
   | JsonValue[]
   | { [key: string]: JsonValue };
 /** Actions checked by CASL. `manage` is an ordinary action here; `*` matches every action. */
+
 export type AbilityAction =
   | 'read'
   | 'write'
@@ -495,16 +535,19 @@ export interface ProfilePreferences {
   locale: 'vi' | 'en';
   timezone: string;
 }
+
 export interface RegisterInput {
   email: string;
   password: string;
   displayName: string;
 }
+
 export type AccountTokenPurpose =
   | 'verify_email'
   | 'password_reset'
   | 'email_change'
   | 'staff_invitation';
+
 export interface SessionSummary {
   id: string;
   createdAt: string;
@@ -541,6 +584,7 @@ export type InventoryMovementKind =
   | 'release'
   | 'commit'
   | 'return';
+
 export interface ProductVariant {
   id: string;
   productId: string;
@@ -551,14 +595,17 @@ export interface ProductVariant {
   price: number;
   status: 'active' | 'inactive';
   isDefault: boolean;
+  images?: { fileId: string; url: string; storageId: string }[];
   imageIds: string[];
   available: number;
   version: number;
 }
+
 export interface InventoryBalance extends ProductVariant {
   onHand: number;
   reserved: number;
 }
+
 export interface SizeGuide {
   id: string;
   name: string;
@@ -571,6 +618,7 @@ export interface InventoryListQuery
   productId?: string;
   status?: 'active' | 'inactive';
 }
+
 export type CatalogProduct = Product;
 
 export interface ShopSettings {
@@ -584,12 +632,14 @@ export interface ShopSettings {
   timezone: string;
   version: number;
 }
+
 export interface CommerceSettings {
   quoteTtlSeconds: number;
   reservationTtlSeconds: number;
   returnWindowDays: number;
   version: number;
 }
+
 export interface ShippingMethod {
   id: string;
   name: string;
@@ -601,6 +651,7 @@ export interface ShippingMethod {
   estimatedDays: number;
   version: number;
 }
+
 export interface ShippingQuote {
   methodId: string;
   methodName: string;
@@ -615,10 +666,12 @@ export interface CartLineInput {
   variantId: string;
   quantity: number;
 }
+
 export type CartWarning = 'unavailable' | 'insufficient_stock' | 'price_changed';
+
 export interface CartItem {
   productSlug: string | null;
-  imageUrl: string;
+  thumbnailUrl: string;
   id: string;
   variantId: string;
   productId: string | null;
@@ -631,6 +684,7 @@ export interface CartItem {
   available: number;
   warnings: CartWarning[];
 }
+
 export interface Cart {
   id: string;
   version: number;
@@ -654,12 +708,14 @@ export interface Promotion {
   endsAt: string | null;
   version: number;
 }
+
 export interface DiscountLine {
   variantId: string;
   categoryId: string | null;
   quantity: number;
   unitPrice: number;
 }
+
 export interface DiscountResult {
   amount: number;
   allocations: number[];
@@ -668,6 +724,7 @@ export interface DiscountResult {
   code: string | null;
   ruleVersion: number | null;
 }
+
 export interface PromotionListQuery extends ListQuery<'name' | 'priority' | 'createdAt'> {
   isActive?: boolean;
 }
@@ -678,10 +735,11 @@ export interface QuoteItemSnapshot extends DiscountLine {
   sku: string;
   size: string;
   color: string;
-  imageUrl: string;
+  thumbnailUrl: string;
   discountAmount: number;
   lineTotal: number;
 }
+
 export interface CheckoutQuoteInput {
   items: CartLineInput[];
   addressId?: string;
@@ -689,6 +747,7 @@ export interface CheckoutQuoteInput {
   shippingMethodId?: string;
   couponCode?: string;
 }
+
 export interface CheckoutQuoteSnapshot {
   items: QuoteItemSnapshot[];
   addressId: string | null;
@@ -704,6 +763,7 @@ export interface CheckoutQuoteSnapshot {
   reservationTtlSeconds: number;
   returnWindowDays: number;
 }
+
 export interface CheckoutQuote extends CheckoutQuoteSnapshot {
   id: string;
   status: 'active' | 'consumed' | 'expired';
@@ -714,6 +774,7 @@ export interface OrderQuantityInput {
   orderItemId: string;
   quantity: number;
 }
+
 export interface CancellationRequest {
   userId: string;
   id: string;
@@ -757,6 +818,7 @@ export interface ReturnInspection {
   saleableQuantity: number;
   damagedQuantity: number;
 }
+
 export interface ReturnRequest {
   userId: string;
   id: string;
@@ -772,26 +834,30 @@ export interface ReturnRequest {
 }
 
 export type ContentKind = 'post' | 'page';
+
 export type ContentBlock =
   | { type: 'paragraph' | 'heading'; text: string }
   | { type: 'image'; fileId: string; alt: string }
   | { type: 'link'; label: string; href: string };
+
 export interface ContentDraftInput {
   slug: string;
   title: string;
   excerpt: string;
   body: ContentBlock[];
-  coverFileId: string | null;
+  thumbnailFileId: string | null;
   taxonomyIds: string[];
   seoTitle: string;
   seoDescription: string;
 }
+
 export interface PublishedContent extends ContentDraftInput {
   id: string;
   kind: ContentKind;
   version: number;
   publishedAt: string;
 }
+
 export interface ContentEntry extends ContentDraftInput {
   id: string;
   kind: ContentKind;
@@ -807,6 +873,7 @@ export interface NotificationPreferences {
   stockEmail: boolean;
   version: number;
 }
+
 export interface Notification {
   id: string;
   type: string;
@@ -818,6 +885,7 @@ export interface Notification {
 }
 
 export type SupportTicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+
 export interface SupportTicket {
   userId: string;
   id: string;
@@ -829,6 +897,7 @@ export interface SupportTicket {
   version: number;
   createdAt: string;
 }
+
 export interface SupportMessage {
   ticketId: string;
   authorId: string;
@@ -845,14 +914,22 @@ export interface NavigationItem {
   href: string;
   children: NavigationItem[];
 }
+
 export type MerchandisingPayload =
   | { kind: 'collection'; title: string; productIds: string[] }
-  | { kind: 'banner'; title: string; imageFileId: string; href: string; placement: 'home' | 'shop' }
+  | {
+      kind: 'banner';
+      title: string;
+      thumbnailFileId: string;
+      href: string;
+      placement: 'home' | 'shop';
+    }
   | { kind: 'navigation'; items: NavigationItem[] }
   | {
       kind: 'home';
       sections: Array<{ id: string; type: 'collection' | 'banner'; entryId: string }>;
     };
+
 export interface MerchandisingEntry {
   id: string;
   key: string;
@@ -864,11 +941,13 @@ export interface MerchandisingEntry {
 }
 
 export type ReportKind = 'sales' | 'orders' | 'inventory' | 'products';
+
 export interface ReportQuery {
   from: string;
   to: string;
   timezone: string;
 }
+
 export interface ReportExport {
   id: string;
   report: ReportKind;
@@ -882,6 +961,7 @@ export interface ExchangeLine {
   variantId: string;
   quantity: number;
 }
+
 export interface ExchangeRequest {
   userId: string;
   id: string;
@@ -901,6 +981,7 @@ export interface ExchangeRequest {
 
 /** Query filters shared by API validation and SDK consumers. */
 export type NotificationReadStatus = 'all' | 'read' | 'unread';
+
 export const NOTIFICATION_READ_STATUS_VALUES: readonly NotificationReadStatus[] = [
   'all',
   'read',
@@ -912,12 +993,14 @@ export interface NotificationListQuery extends ListQuery<'createdAt' | 'title' |
   createdFrom?: string;
   createdTo?: string;
 }
+
 export interface InventoryMovementListQuery extends ListQuery<'createdAt' | 'quantity'> {
   variantId?: string;
   kind?: InventoryMovementKind;
   createdFrom?: string;
   createdTo?: string;
 }
+
 export const RETURN_STATUS_VALUES: readonly ReturnStatus[] = [
   'requested',
   'approved',
@@ -942,10 +1025,12 @@ export interface ReturnListQuery extends ListQuery<'createdAt' | 'status'> {
   status?: ReturnStatus;
   orderId?: string;
 }
+
 export interface ExchangeListQuery extends ListQuery<'createdAt' | 'status'> {
   status?: ExchangeStatus;
   orderId?: string;
 }
+
 export const SUPPORT_TICKET_STATUS_VALUES: readonly SupportTicketStatus[] = [
   'open',
   'in_progress',
@@ -953,6 +1038,7 @@ export const SUPPORT_TICKET_STATUS_VALUES: readonly SupportTicketStatus[] = [
   'closed',
 ];
 export type SupportTicketCategory = 'order' | 'return' | 'payment' | 'product' | 'other';
+
 export const SUPPORT_TICKET_CATEGORY_VALUES: readonly SupportTicketCategory[] = [
   'order',
   'return',
@@ -978,10 +1064,12 @@ export const INVENTORY_MOVEMENT_KIND_VALUES: readonly InventoryMovementKind[] = 
 ];
 
 export interface TaxonomyListQuery extends ListQuery<'name' | 'slug' | 'createdAt'> {}
+
 export interface NotificationTemplateListQuery extends ListQuery<'type' | 'locale' | 'updatedAt'> {
   type?: string;
   locale?: 'vi' | 'en';
 }
+
 export const CONTENT_STATUS_VALUES: readonly ContentStatus[] = [
   'draft',
   'scheduled',

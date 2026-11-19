@@ -3,13 +3,14 @@ import { useDeposits } from '@stay/sdk/react';
 import { type components, getErrorMessage } from '@stay/sdk/shared';
 import { CONTRACT_STATUSES } from '@stay/shared';
 import { Link, useSearchParams } from 'react-router-dom';
+import { PAGE_SIZE_OPTIONS } from '@/constants/list';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FilterBar } from '@/libraries/filter-bar';
 import { formatVnd } from '@/libraries/format';
 import { Refreshing } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
+import { useTableParams } from '@/libraries/table-params';
 import { CONTRACT_LABELS } from '@/modules/contracts/contract-ui';
 import { DepositActions } from './actions';
 

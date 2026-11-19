@@ -18,6 +18,7 @@ import type { AuditListQuery } from '@stay/sdk/shared';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
+import { AUDIT_SAMPLE_SIZE, DEFAULT_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar } from '@/libraries/filter-bar';
 import { LoadingRows } from '@/libraries/forms/page-states';
@@ -40,9 +41,6 @@ import {
   verbMeta,
 } from './audit-format';
 
-const PAGE_SIZE = 20;
-/** Recent entries the summary cards are computed from (the API's largest page). */
-const SAMPLE_SIZE = 100;
 const filterFields = ['actorId', 'action', 'resourceType', 'resourceId', 'from', 'to'] as const;
 
 function SearchField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
@@ -55,7 +53,7 @@ function SearchField({ value, onChange }: { value: string; onChange: (value: str
 
   useEffect(() => {
     if (draft === value) return;
-    const timer = setTimeout(() => onChange(draft), 300);
+    const timer = setTimeout(() => onChange(draft), SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
   }, [draft, value, onChange]);
@@ -215,7 +213,7 @@ export default function AuditPage() {
   const query: AuditListQuery = {
     ...filters,
     page,
-    pageSize: PAGE_SIZE,
+    pageSize: DEFAULT_PAGE_SIZE,
     sortBy: 'createdAt',
     sortOrder,
   };
@@ -223,7 +221,7 @@ export default function AuditPage() {
   const sample = useAuditLogs({
     ...filters,
     page: 1,
-    pageSize: SAMPLE_SIZE,
+    pageSize: AUDIT_SAMPLE_SIZE,
     sortBy: 'createdAt',
     sortOrder: 'desc',
   });

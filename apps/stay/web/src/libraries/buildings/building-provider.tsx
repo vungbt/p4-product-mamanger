@@ -8,11 +8,12 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { OPTIONS_PAGE_SIZE } from '@/constants/list';
 
 const STORAGE_KEY = 'stay_building_id';
 
 /** The header selector reads up to this many buildings (owners rarely have more). */
-const BUILDING_QUERY = { pageSize: 100 };
+const BUILDING_QUERY = { pageSize: OPTIONS_PAGE_SIZE };
 
 export type BuildingOption = {
   id: string;

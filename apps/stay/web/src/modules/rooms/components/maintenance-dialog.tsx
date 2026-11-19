@@ -15,8 +15,8 @@ import { isoDateInTimeZone } from '@stay/shared';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
-import { serverErrors } from '../form-errors';
-import type { Room } from '../room-status';
+import { serverErrors } from '@/modules/rooms/form-errors';
+import type { Room } from '@/modules/rooms/room-status';
 
 type MaintenanceValues = { reason: string; until: string | null };
 
@@ -36,8 +36,11 @@ type MaintenanceDialogProps = {
  */
 export function MaintenanceDialog({ room, onClose, onReload }: MaintenanceDialogProps) {
   const { t } = useTranslation();
+
   const mutation = useSetRoomMaintenance();
+
   const [error, setError] = useState<string | null>(null);
+
   const [stale, setStale] = useState(false);
 
   const turningOn = room ? !room.maintenance : false;

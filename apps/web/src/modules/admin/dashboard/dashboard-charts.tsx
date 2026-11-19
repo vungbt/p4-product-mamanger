@@ -14,6 +14,7 @@ const STATUS_COLORS: Record<string, string> = {
 /** Loaded on demand: the chart library is the heaviest part of the admin dashboard. */
 export function RevenueChart({ summary }: { summary: DashboardSummary }) {
   const { t } = useTranslation();
+
   const { formatCurrency, formatDate, formatNumber } = useFormatters();
 
   return (
@@ -45,7 +46,21 @@ export function OrderStatusChart({ summary }: { summary: DashboardSummary }) {
       label={t('adminDashboard.orderStatus')}
       data={summary.statuses.map(({ status, count }) => ({
         id: status,
-        label: t(`adminDashboard.status.${status}`, { defaultValue: status }),
+        label:
+          (
+            {
+              pending_confirmation: t('adminDashboard.status.pending_confirmation', {
+                defaultValue: status,
+              }),
+              confirmed: t('adminDashboard.status.confirmed', { defaultValue: status }),
+              processing: t('adminDashboard.status.processing', { defaultValue: status }),
+              completed: t('adminDashboard.status.completed', { defaultValue: status }),
+              cancelled: t('adminDashboard.status.cancelled', { defaultValue: status }),
+              paid: t('adminDashboard.status.paid', { defaultValue: status }),
+              pending: t('adminDashboard.status.pending', { defaultValue: status }),
+              shipping: t('adminDashboard.status.shipping', { defaultValue: status }),
+            } as Record<string, string>
+          )[status] ?? String(status),
         value: count,
         color: STATUS_COLORS[status] ?? 'var(--color-muted)',
       }))}

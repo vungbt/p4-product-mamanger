@@ -67,10 +67,10 @@ export function contentInput(req: Request): ContentDraftInput {
     title: body.text('title', 200),
     excerpt: body.optionalText('excerpt', 2000) ?? '',
     body: blocks,
-    coverFileId:
-      body.data.coverFileId === null || body.data.coverFileId === undefined
+    thumbnailFileId:
+      body.data.thumbnailFileId === null || body.data.thumbnailFileId === undefined
         ? null
-        : body.text('coverFileId', 36),
+        : body.text('thumbnailFileId', 36),
     taxonomyIds: body.data.taxonomyIds === undefined ? [] : body.strings('taxonomyIds', 30, 36),
     seoTitle: body.optionalText('seoTitle') ?? '',
     seoDescription: body.optionalText('seoDescription') ?? '',

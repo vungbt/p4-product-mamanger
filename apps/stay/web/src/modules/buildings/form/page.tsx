@@ -47,6 +47,7 @@ import { ConflictAlert, FormError, LoadError, LoadingRows } from '@/libraries/fo
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty, useFormValue } from '@/libraries/forms/use-form-value';
 import { ScreenHeader } from '@/libraries/screen-header';
+import { BANK_OPTIONS } from '@/modules/buildings/banks';
 import NotFoundPage from '@/modules/errors/not-found-page';
 import {
   billingDayLabel,
@@ -56,7 +57,6 @@ import {
   readingDayMonthOptions,
 } from '@/modules/settings/billing/options';
 import { buildingPricesPath, ROUTES } from '@/routing/route-configs';
-import { BANK_OPTIONS } from '../banks';
 import { AutomationSettings } from './automation-settings';
 import { VietQrPreview } from './vietqr-preview';
 
@@ -165,7 +165,9 @@ const codeText = (value: unknown) =>
     .slice(0, 6);
 
 const daysOrSystem = (value: string) => (value === SYSTEM ? null : Number(value));
+
 const monthOrSystem = (value: string) => (isReadingDayMonth(value) ? value : null);
+
 const compact = (value: string) => value.replace(/[\s.-]/g, '');
 
 function buildingSchema(t: TFunction<'buildings'>) {
@@ -239,26 +241,36 @@ function BuildingForm({
   onReload: () => void;
 }) {
   const { t } = useTranslation('buildings');
+
   const { t: ts } = useTranslation('settings');
+
   const navigate = useNavigate();
+
   const create = useCreateBuilding();
+
   const update = useUpdateBuilding();
+
   const [formError, setFormError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
   // Last code filled from the name; a different code means the user typed their own.
+
   const suggestedCode = useRef('');
 
   const archived = Boolean(building?.archivedAt);
+
   const schema = useMemo(() => buildingSchema(t), [t]);
 
   const systemOption = (label: string | null): SelectOption => ({
     value: SYSTEM,
     label: label ? t('form.systemValue', { value: label }) : t('form.system'),
   });
+
   const dayOptions = (day: number | undefined) => [
     systemOption(day === undefined ? null : billingDayLabel(ts, day)),
     ...billingDayOptions(ts),
   ];
+
   const monthOptions = [
     systemOption(settings ? ts(`billing.readingDayMonths.${settings.readingDayMonth}`) : null),
     ...readingDayMonthOptions(ts),
@@ -383,7 +395,9 @@ function BuildingForm({
   });
 
   const dirty = useFormDirty(form);
+
   const values = useFormValue(form, (state) => state.values);
+
   const { prompt, allowNavigation } = useUnsavedChanges(dirty);
 
   const effective = settings
@@ -563,11 +577,17 @@ function BuildingForm({
 /** O-05 Form toà: `/buildings/new` and `/buildings/:id/edit`. */
 export default function BuildingFormPage() {
   const { t } = useTranslation('buildings');
+
   const navigate = useNavigate();
+
   const { id = '' } = useParams();
+
   const { reportMissingBuilding } = useActiveBuilding();
+
   const settings = useStaySettings();
+
   const query = useBuilding(id);
+
   const [reloads, setReloads] = useState(0);
 
   const missing = Boolean(id) && isNotFound(query.error);

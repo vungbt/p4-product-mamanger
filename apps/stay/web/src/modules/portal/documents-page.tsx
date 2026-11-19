@@ -11,10 +11,13 @@ import { PortalQuery } from './portal-ui';
 /** T-13 `/p/documents`: documents of the contract, the ones waiting for my signature first. */
 export default function PortalDocumentsPage() {
   const { t } = useTranslation('portalDocuments');
+
   const documents = usePortalDocuments();
+
   const [filter, setFilter] = useState('all');
 
   const rows = (documents.data ?? []).filter((row) => filter !== 'awaiting' || row.awaitingMe);
+
   const table = useDataTable({
     caption: t('list.title'),
     rows,
@@ -31,7 +34,19 @@ export default function PortalDocumentsPage() {
           </Link>
         ),
       },
-      { id: 'kind', header: t('verify.kind'), cell: ({ row }) => t(`kind.${row.original.kind}`) },
+      {
+        id: 'kind',
+        header: t('verify.kind'),
+        cell: ({ row }) =>
+          (
+            ({
+              contract: t('kind.contract'),
+              addendum: t('kind.addendum'),
+              handover: t('kind.handover'),
+              settlement: t('kind.settlement'),
+            }) as Record<string, string>
+          )[row.original.kind] ?? String(row.original.kind),
+      },
       {
         id: 'status',
         header: t('verify.status'),
@@ -91,7 +106,15 @@ export default function PortalDocumentsPage() {
                           )}
                         </div>
                         <span className="text-ui-sm text-muted">
-                          {t(`kind.${document.kind}`)} · {document.code}
+                          {(
+                            {
+                              contract: t('kind.contract'),
+                              addendum: t('kind.addendum'),
+                              handover: t('kind.handover'),
+                              settlement: t('kind.settlement'),
+                            } as Record<string, string>
+                          )[document.kind] ?? String(document.kind)}{' '}
+                          · {document.code}
                         </span>
                         <span className="text-ui-sm text-muted">
                           {document.completedAt

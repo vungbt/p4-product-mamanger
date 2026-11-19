@@ -26,6 +26,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import * as v from 'valibot';
+import { OPTIONS_PAGE_SIZE } from '@/constants/list';
 import { DocumentBody } from '@/libraries/document-body';
 import { FormActions, FormGrid, FormLayout, FormSection } from '@/libraries/forms/layout';
 import { FormError, LoadError } from '@/libraries/forms/page-states';
@@ -38,7 +39,10 @@ import { DocumentEditor } from './editor';
 function TemplateForm({ template }: { template: ContractTemplateDetail }) {
   const { t } = useTranslation('documents');
   const variables = useTemplateVariables();
-  const contracts = useContracts({ buildingId: template.buildingId ?? undefined, pageSize: 100 });
+  const contracts = useContracts({
+    buildingId: template.buildingId ?? undefined,
+    pageSize: OPTIONS_PAGE_SIZE,
+  });
   const save = useSaveContractTemplateVersion();
   const rename = useUpdateContractTemplate();
   const preview = usePreviewContractTemplate();

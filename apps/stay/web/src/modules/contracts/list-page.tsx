@@ -12,6 +12,7 @@ import { getErrorMessage } from '@stay/sdk/shared';
 import { CONTRACT_STATUSES, type StayContract } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { OPTIONS_PAGE_SIZE, PAGE_SIZE_OPTIONS, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar, FilterCheckbox } from '@/libraries/filter-bar';
@@ -19,7 +20,7 @@ import { displayDate, formatVnd } from '@/libraries/format';
 import { Refreshing } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
+import { useTableParams } from '@/libraries/table-params';
 import { CONTRACT_LABELS } from './contract-ui';
 
 const SORT_FIELDS = ['code', 'startDate', 'endDate', 'createdAt'] as const;
@@ -36,7 +37,7 @@ export default function ContractListPage() {
   });
   const q = params.get('q') ?? '';
   const status = CONTRACT_STATUSES.find((s) => s === params.get('status'));
-  const rooms = useRooms(buildingId ?? '', { pageSize: 100 });
+  const rooms = useRooms(buildingId ?? '', { pageSize: OPTIONS_PAGE_SIZE });
   const query = useContracts({
     buildingId: buildingId ?? undefined,
     page: table.page,
@@ -76,7 +77,7 @@ export default function ContractListPage() {
           },
           { replace: true },
         );
-    }, 300);
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
   }, [search, q, setParams]);

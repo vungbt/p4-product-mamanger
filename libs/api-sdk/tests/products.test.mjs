@@ -3,6 +3,8 @@ import { test } from 'node:test';
 import { MutationObserver, QueryClient } from '@tanstack/react-query';
 import {
   getAdminProductsQueryOptions,
+  getAdminSizeGuidesQueryOptions,
+  getCategoriesQueryOptions,
   getProductsQueryOptions,
   productKeys,
   productMutationOptions,
@@ -59,12 +61,23 @@ test('product commands preserve storage IDs, partial updates, versions, SKU/imag
     name: 'Shirt',
     price: 100,
     stock: 0,
-    imageStorageId: 'verified-cover',
+    thumbnailStorageId: 'verified-cover',
     imageStorageIds: ['verified-gallery'],
   });
-  assert.equal((await requests.at(-1).json()).imageStorageId, 'verified-cover');
+  assert.equal((await requests.at(-1).json()).thumbnailStorageId, 'verified-cover');
   await api.update({ id: 'p', body: { name: 'New', expectedVersion: 3 } });
   assert.deepEqual(await requests.at(-1).json(), { name: 'New', expectedVersion: 3 });
+  await api.update({ id: 'p', body: { thumbnailStorageId: null, expectedVersion: 4 } });
+  assert.equal(requests.at(-1).method, 'PATCH');
+  assert.deepEqual(await requests.at(-1).json(), { thumbnailStorageId: null, expectedVersion: 4 });
+  await api.update({
+    id: 'p',
+    body: { thumbnailStorageId: 'existing-gallery', imageStorageIds: ['old-cover', 'new-upload'] },
+  });
+  assert.deepEqual(await requests.at(-1).json(), {
+    thumbnailStorageId: 'existing-gallery',
+    imageStorageIds: ['old-cover', 'new-upload'],
+  });
   await api.updatePublication({ id: 'p', body: { status: 'archived', expectedVersion: 4 } });
   assert.equal(requests.at(-1).method, 'PATCH');
   assert.equal(new URL(requests.at(-1).url).pathname, '/api/products/p/publication');
@@ -77,9 +90,9 @@ test('product commands preserve storage IDs, partial updates, versions, SKU/imag
     body: { imageIds: ['file'], expectedVersion: 3 },
   });
   assert.equal(new URL(requests.at(-1).url).pathname, '/api/products/p/variants/sku/images');
-  await api.addImage({ id: 'p', body: { imageStorageId: 'verified-image', sortOrder: 1 } });
+  await api.addImage({ id: 'p', body: { storageId: 'verified-image', sortOrder: 1 } });
   assert.deepEqual(await requests.at(-1).json(), {
-    imageStorageId: 'verified-image',
+    storageId: 'verified-image',
     sortOrder: 1,
   });
   await api.removeImage({ id: 'p', imageId: 'image' });
@@ -109,15 +122,106 @@ test('product mutations refresh generated and resource product lists/details/var
       productKeys.storefrontDetail('p'),
     ];
     for (const key of keys) client.setQueryData(key, { data: [] });
-    client.setQueryData(['unrelated'], 1);
+    const unrelated = [
+      ['unrelated'],
+      ['categories', 'list'],
+      getCategoriesQueryOptions(sdk).queryKey,
+      getAdminSizeGuidesQueryOptions(sdk).queryKey,
+    ];
+    for (const key of unrelated) client.setQueryData(key, 1);
     const observer = new MutationObserver(
       client,
       productMutationOptions(sdk, client).updateVariant(),
     );
     await observer.mutate({ id: 'p', variantId: 'sku', body: { price: 200, expectedVersion: 2 } });
     for (const key of keys) assert.equal(client.getQueryState(key).isInvalidated, true);
-    assert.equal(client.getQueryState(['unrelated']).isInvalidated, false);
+    for (const key of unrelated) assert.equal(client.getQueryState(key).isInvalidated, false);
   } finally {
     client.clear();
   }
+});
+
+test('product commands send the complete variant diff in one request and preserve row errors', async () => {
+  const requests = [];
+  const sdk = createApiSdk({
+    baseUrl: 'https://example.invalid',
+    fetch: async (request) => {
+      requests.push(request);
+      return Response.json(
+        { code: 'duplicate_sku', extensions: { 'variants.create.1.sku': ['Already used.'] } },
+        { status: 409 },
+      );
+    },
+  });
+  const body = {
+    expectedVersion: 7,
+    variants: {
+      create: [{ sku: 'SHIRT-S-RED', size: 'S', color: 'red', price: 100, stock: 5 }],
+      update: [{ id: 'existing', expectedVersion: 2, price: 120 }],
+      delete: ['removed'],
+    },
+  };
+  await assert.rejects(createProductApi(sdk).update({ id: 'p', body }), (error) => {
+    assert.equal(error.fieldErrors['variants.create.1.sku'][0], 'Already used.');
+    return true;
+  });
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].method, 'PATCH');
+  assert.equal(new URL(requests[0].url).pathname, '/api/products/p');
+  assert.deepEqual(await requests[0].json(), body);
+});
+
+test('product request carries ordered SKU storage IDs alongside new uploads and preserves image row errors', async () => {
+  const requests = [];
+  let fail = false;
+  const sdk = createApiSdk({
+    baseUrl: 'https://example.invalid',
+    fetch: async (request) => {
+      requests.push(request);
+      return fail
+        ? Response.json(
+            {
+              code: 'invalid_product_image',
+              extensions: { 'variants.update.0.imageStorageIds': ['invalid_product_image'] },
+            },
+            { status: 422 },
+          )
+        : Response.json({ data: { id: 'product' } });
+    },
+  });
+  const api = createProductApi(sdk);
+  const body = {
+    thumbnailStorageId: 'new-cover',
+    imageStorageIds: ['new-gallery'],
+    variants: {
+      create: [
+        {
+          sku: 'NEW-M-RED',
+          size: 'M',
+          color: 'red',
+          price: 100,
+          imageStorageIds: ['new-gallery', 'new-cover'],
+        },
+      ],
+    },
+  };
+  await api.create({ name: 'New', price: 100, stock: 0, ...body });
+  assert.deepEqual((await requests.at(-1).json()).variants, body.variants);
+  await api.update({
+    id: 'product',
+    body: { variants: { update: [{ id: 'variant', expectedVersion: 2, imageStorageIds: [] }] } },
+  });
+  assert.deepEqual(await requests.at(-1).json(), {
+    variants: { update: [{ id: 'variant', expectedVersion: 2, imageStorageIds: [] }] },
+  });
+  fail = true;
+  await assert.rejects(
+    api.update({
+      id: 'product',
+      body: { variants: { update: [{ id: 'variant', imageStorageIds: ['foreign'] }] } },
+    }),
+    (error) =>
+      error.status === 422 &&
+      error.fieldErrors['variants.update.0.imageStorageIds'][0] === 'invalid_product_image',
+  );
 });

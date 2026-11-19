@@ -16,6 +16,7 @@ import { getErrorMessage } from '@stay/sdk/shared';
 import { isIsoDate, PAYMENT_METHODS, type PaymentMethod, type StayPayment } from '@stay/shared';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { PAGE_SIZE_OPTIONS, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_WIDE, FilterBar, FilterCheckbox } from '@/libraries/filter-bar';
@@ -23,8 +24,8 @@ import { displayDate, formatVnd } from '@/libraries/format';
 import { ListTable, rowTestId } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
-import { invoicePath } from '../invoices/invoice-ui';
+import { useTableParams } from '@/libraries/table-params';
+import { invoicePath } from '@/modules/invoices/invoice-ui';
 import { PAYMENT_METHOD_LABELS, PAYMENT_METHOD_OPTIONS, PaymentStatusTag } from './payment-ui';
 import { ReversePaymentDialog } from './reverse-dialog';
 
@@ -41,10 +42,15 @@ const SORT_FIELDS = ['paidOn', 'amount', 'createdAt'] as const;
 /** O-23 Sổ thu: payments by date with totals per method, to reconcile with bank statements. */
 export default function PaymentsPage() {
   const { buildingId } = useActiveBuilding();
+
   const [params, setParams] = useSearchParams();
+
   const [search, setSearch] = useState(params.get('q') ?? '');
+
   const [reversing, setReversing] = useState<StayPayment | null>(null);
+
   const canReverse = useCanOn('void', 'Payment', { buildingId: buildingId ?? undefined });
+
   const table = useTableParams({
     sortFields: SORT_FIELDS,
     defaultSort: { sortBy: 'paidOn', sortOrder: 'desc' },
@@ -98,7 +104,7 @@ export default function PaymentsPage() {
           },
           { replace: true },
         ),
-      300,
+      SEARCH_DEBOUNCE_MS,
     );
 
     return () => clearTimeout(timer);
@@ -244,6 +250,7 @@ function ReverseButton({
 }: { payment: StayPayment } & Pick<RowsProps, 'onReverse'>) {
   // Deposit offsets belong to a settlement (ST-17) and are final.
   if (!onReverse || payment.status === 'reversed' || payment.method === 'deposit') return null;
+
   return (
     <IconButton
       icon="rotateLeft"

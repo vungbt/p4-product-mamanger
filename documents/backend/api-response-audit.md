@@ -16,7 +16,7 @@ identity and concurrency fields must not be replaced by client defaults.
 | --- | --- |
 | Products/catalog | Unified list, detail, create/update and dashboard projection: slug, status, version, brand, material, care instructions, SEO, size guide reference, category, cover, ordered gallery, created/updated dates. `CatalogProduct` aliases the same contract. |
 | Product variants/inventory | SKU, barcode, product reference, attributes, price, image references, publication/default state, available quantity and version retained. Inventory adds onHand/reserved; storefront excludes inactive variants. Stock writes remain inventory commands. |
-| Cart | Added productSlug and imageUrl; prefers public SKU image, falls back to public cover. Variant/product/media reads are batched. Availability, price warnings, totals and version remain server calculated. |
+| Cart | Added productSlug and thumbnailUrl; prefers public SKU image, falls back to public cover. Variant/product/media reads are batched. Availability, price warnings, totals and version remain server calculated. |
 | Wishlist/collections | Product expansion reuses the complete product DTO, with existing active/public filters. |
 | Search/facets | Intentional compact suggestions and aggregate projections retained, not expanded into complete product objects. |
 | Categories/addresses | Existing DTOs already retain their editable fields and identity; address endpoints remain owner scoped. |
@@ -25,7 +25,7 @@ identity and concurrency fields must not be replaced by client defaults.
 | Cancellation/returns/exchanges | Added userId to identify the requesting account; existing order/return references, lines, reason, state and version retained. |
 | Refunds | Unified list/detail/command response to include paymentId, attemptId, returnId, provider/manual references, processingStatus, attemptNumber and version. |
 | Payments | Existing attempts retain order, amount, currency, state, reconciliation, checkout URL, expiry/paid dates and version. Provider secrets/webhook signatures are not response fields. |
-| Content/taxonomies | Existing slug/body/SEO/taxonomy/publication snapshots retained. Published post/page/policy responses now resolve coverUrl and a compact media id/url list in a batch. Private file URLs and metadata are excluded; draft content does not enter published responses. |
+| Content/taxonomies | Existing slug/body/SEO/taxonomy/publication snapshots retained. Published post/page/policy responses now resolve thumbnailUrl and a compact media id/url list in a batch. Private file URLs and metadata are excluded; draft content does not enter published responses. |
 | Support | Tickets now include userId; messages include ticketId and authorId. Internal-message filtering remains enforced by the service. |
 | Settings/shipping | Existing business configuration, shipping rules and version retained; shop response now includes public logoUrl alongside logoFileId. |
 | Merchandising | Existing collection expansion, banner URL, navigation children and schedule rules retained. Raw configuration and resolved public views remain separate operations. |

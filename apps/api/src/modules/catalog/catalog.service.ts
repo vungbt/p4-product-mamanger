@@ -23,6 +23,7 @@ import { htmlText } from '@/utils/html-text.js';
 import { selectFields } from '@/utils/select-fields.js';
 import { syncProductBalance, variantDto } from '../inventory/inventory.service.js';
 import { getProductById } from '../products/products.service.js';
+import { ensureDefaultVariant } from './variant-changes.js';
 
 export function normalizedSlug(value: string) {
   const result = value.trim().toLowerCase();
@@ -66,11 +67,11 @@ export async function publishProduct(
         !row.name.trim() ||
         !row.slug ||
         !htmlText(row.description) ||
-        !row.imageId ||
+        !row.thumbnailId ||
         variants < 1
       )
         throw new BaseError('product_incomplete', 409, 'product_incomplete', {
-          publication: ['Name, slug, description, cover and an active SKU are required.'],
+          publication: ['Name, slug, description, thumbnail and an active SKU are required.'],
         });
     }
     await row.update({ status, version: row.version + 1 }, { transaction });
@@ -126,6 +127,7 @@ export async function createVariant(
         id: randomUUID(),
         productId,
         ...input,
+        isDefault: input.status === 'active' && input.isDefault,
         sku: input.sku.toUpperCase(),
         barcode: input.barcode || null,
         size: input.size.toUpperCase(),
@@ -137,6 +139,7 @@ export async function createVariant(
       },
       { transaction },
     );
+    await ensureDefaultVariant(productId, transaction);
     await syncProductBalance(productId, transaction);
     await product.update({ version: product.version + 1 }, { transaction });
     await recordAudit(
@@ -149,7 +152,8 @@ export async function createVariant(
       },
       transaction,
     );
-    return variantDto(row);
+    await row.reload({ transaction });
+    return variantWithImages(row, transaction);
   });
 }
 
@@ -190,6 +194,7 @@ export async function updateVariant(
     await row.update(
       {
         ...input,
+        isDefault: (input.status ?? row.status) === 'active' && (input.isDefault ?? row.isDefault),
         sku: input.sku?.toUpperCase() ?? row.sku,
         size: input.size?.toUpperCase() ?? row.size,
         color: input.color?.toLowerCase() ?? row.color,
@@ -197,6 +202,7 @@ export async function updateVariant(
       },
       { transaction },
     );
+    await ensureDefaultVariant(productId, transaction);
     await syncProductBalance(productId, transaction);
     await product.update({ version: product.version + 1 }, { transaction });
     await recordAudit(
@@ -209,7 +215,8 @@ export async function updateVariant(
       },
       transaction,
     );
-    return variantDto(row);
+    await row.reload({ transaction });
+    return variantWithImages(row, transaction);
   });
 }
 
@@ -250,8 +257,21 @@ export async function setVariantImages(
       },
       transaction,
     );
-    return variantDto(row);
+    return variantWithImages(row, transaction);
   });
+}
+
+export async function variantWithImages(
+  row: ProductVariantModel,
+  transaction?: Transaction,
+): Promise<ProductVariant> {
+  const images = [];
+  for (const fileId of row.imageIds) {
+    const file = await FileModel.findByPk(fileId, { transaction });
+    if (file && !file.metadata?.private)
+      images.push({ fileId, url: file.url ?? '', storageId: file.storageId });
+  }
+  return { ...variantDto(row), images };
 }
 
 export async function listVariants(productId: string, admin = false): Promise<ProductVariant[]> {
@@ -263,7 +283,7 @@ export async function listVariants(productId: string, admin = false): Promise<Pr
       ['id', 'ASC'],
     ],
   });
-  return rows.map(variantDto);
+  return Promise.all(rows.map((row) => variantWithImages(row)));
 }
 
 export async function createDefaultVariant(

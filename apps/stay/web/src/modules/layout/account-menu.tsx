@@ -8,7 +8,9 @@ import { ROUTES } from '@/routing/route-configs';
 /** Header account menu: notification settings, change password (placeholder) and sign out. */
 export default function AccountMenu() {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
+
   const { user, signOut } = useAuth();
 
   if (!user) return null;
@@ -45,7 +47,15 @@ export default function AccountMenu() {
   return (
     <UserMenu
       name={name}
-      description={t(`roles.${user.role}`)}
+      description={
+        (
+          {
+            owner: t('roles.owner'),
+            manager: t('roles.manager'),
+            tenant: t('roles.tenant'),
+          } as Record<string, string>
+        )[user.role] ?? String(user.role)
+      }
       avatar={{ src: user.avatarUrl ?? undefined }}
       label={t('account.menu')}
       collapseOnMobile

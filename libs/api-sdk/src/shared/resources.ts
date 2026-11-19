@@ -9,6 +9,7 @@ export type AuthGetAccountInfoInput = Omit<
   FetchOptions<paths['/api/auth/account-info']['get']>,
   'parseAs'
 >;
+
 export async function authGetAccountInfo(sdk: ApiSdk, input: AuthGetAccountInfoInput = {}) {
   const result = await sdk.GET('/api/auth/account-info', { ...input });
   return unwrap(result);
@@ -19,6 +20,7 @@ export type AuthGetCallbackIdInput = Omit<
   FetchOptions<paths['/api/auth/callback/{id}']['get']>,
   'parseAs'
 >;
+
 export async function authGetCallbackId(sdk: ApiSdk, input: AuthGetCallbackIdInput) {
   const result = await sdk.GET('/api/auth/callback/{id}', { ...input });
   if (!result.response.ok) throw new ApiSdkError(result.response.status, result.error);
@@ -30,6 +32,7 @@ export type AuthGetDeleteUserCallbackInput = Omit<
   FetchOptions<paths['/api/auth/delete-user/callback']['get']>,
   'parseAs'
 >;
+
 export async function authGetDeleteUserCallback(
   sdk: ApiSdk,
   input: AuthGetDeleteUserCallbackInput = {},
@@ -40,6 +43,7 @@ export async function authGetDeleteUserCallback(
 
 /** GET /api/auth/error (auth_get__error). */
 export type AuthGetErrorInput = Omit<FetchOptions<paths['/api/auth/error']['get']>, 'parseAs'>;
+
 export async function authGetError(sdk: ApiSdk, input: AuthGetErrorInput = {}) {
   const result = await sdk.GET('/api/auth/error', { ...input, parseAs: 'text' });
   return unwrap(result);
@@ -50,6 +54,7 @@ export type AuthGetGetSessionInput = Omit<
   FetchOptions<paths['/api/auth/get-session']['get']>,
   'parseAs'
 >;
+
 export async function authGetGetSession(sdk: ApiSdk, input: AuthGetGetSessionInput = {}) {
   const result = await sdk.GET('/api/auth/get-session', { ...input });
   return unwrap(result);
@@ -60,6 +65,7 @@ export type AuthGetListAccountsInput = Omit<
   FetchOptions<paths['/api/auth/list-accounts']['get']>,
   'parseAs'
 >;
+
 export async function authGetListAccounts(sdk: ApiSdk, input: AuthGetListAccountsInput = {}) {
   const result = await sdk.GET('/api/auth/list-accounts', { ...input });
   return unwrap(result);
@@ -70,6 +76,7 @@ export type AuthGetListSessionsInput = Omit<
   FetchOptions<paths['/api/auth/list-sessions']['get']>,
   'parseAs'
 >;
+
 export async function authGetListSessions(sdk: ApiSdk, input: AuthGetListSessionsInput = {}) {
   const result = await sdk.GET('/api/auth/list-sessions', { ...input });
   return unwrap(result);
@@ -77,6 +84,7 @@ export async function authGetListSessions(sdk: ApiSdk, input: AuthGetListSession
 
 /** GET /api/auth/ok (auth_get__ok). */
 export type AuthGetOkInput = Omit<FetchOptions<paths['/api/auth/ok']['get']>, 'parseAs'>;
+
 export async function authGetOk(sdk: ApiSdk, input: AuthGetOkInput = {}) {
   const result = await sdk.GET('/api/auth/ok', { ...input });
   return unwrap(result);
@@ -87,6 +95,7 @@ export type AuthGetResetPasswordTokenInput = Omit<
   FetchOptions<paths['/api/auth/reset-password/{token}']['get']>,
   'parseAs'
 >;
+
 export async function authGetResetPasswordToken(
   sdk: ApiSdk,
   input: AuthGetResetPasswordTokenInput,
@@ -100,6 +109,7 @@ export type AuthGetVerifyEmailInput = Omit<
   FetchOptions<paths['/api/auth/verify-email']['get']>,
   'parseAs'
 >;
+
 export async function authGetVerifyEmail(sdk: ApiSdk, input: AuthGetVerifyEmailInput) {
   const result = await sdk.GET('/api/auth/verify-email', { ...input });
   return unwrap(result);
@@ -110,6 +120,7 @@ export type AuthPostCallbackIdInput = Omit<
   FetchOptions<paths['/api/auth/callback/{id}']['post']>,
   'parseAs'
 >;
+
 export async function authPostCallbackId(sdk: ApiSdk, input: AuthPostCallbackIdInput) {
   const result = await sdk.POST('/api/auth/callback/{id}', { ...input });
   if (!result.response.ok) throw new ApiSdkError(result.response.status, result.error);
@@ -121,6 +132,7 @@ export type AuthPostChangeEmailInput = Omit<
   FetchOptions<paths['/api/auth/change-email']['post']>,
   'parseAs'
 >;
+
 export async function authPostChangeEmail(sdk: ApiSdk, input: AuthPostChangeEmailInput) {
   const result = await sdk.POST('/api/auth/change-email', { ...input });
   return unwrap(result);
@@ -131,6 +143,7 @@ export type AuthPostChangePasswordInput = Omit<
   FetchOptions<paths['/api/auth/change-password']['post']>,
   'parseAs'
 >;
+
 export async function authPostChangePassword(sdk: ApiSdk, input: AuthPostChangePasswordInput) {
   const result = await sdk.POST('/api/auth/change-password', { ...input });
   return unwrap(result);
@@ -141,6 +154,7 @@ export type AuthPostDeleteUserInput = Omit<
   FetchOptions<paths['/api/auth/delete-user']['post']>,
   'parseAs'
 >;
+
 export async function authPostDeleteUser(sdk: ApiSdk, input: AuthPostDeleteUserInput = {}) {
   const result = await sdk.POST('/api/auth/delete-user', { ...input });
   return unwrap(result);
@@ -151,6 +165,7 @@ export type AuthPostGetAccessTokenInput = Omit<
   FetchOptions<paths['/api/auth/get-access-token']['post']>,
   'parseAs'
 >;
+
 export async function authPostGetAccessToken(sdk: ApiSdk, input: AuthPostGetAccessTokenInput) {
   const result = await sdk.POST('/api/auth/get-access-token', { ...input });
   return unwrap(result);
@@ -161,6 +176,7 @@ export type AuthPostGetSessionInput = Omit<
   FetchOptions<paths['/api/auth/get-session']['post']>,
   'parseAs'
 >;
+
 export async function authPostGetSession(sdk: ApiSdk, input: AuthPostGetSessionInput = {}) {
   const result = await sdk.POST('/api/auth/get-session', { ...input });
   return unwrap(result);
@@ -171,6 +187,7 @@ export type AuthPostLinkSocialInput = Omit<
   FetchOptions<paths['/api/auth/link-social']['post']>,
   'parseAs'
 >;
+
 export async function authPostLinkSocial(sdk: ApiSdk, input: AuthPostLinkSocialInput) {
   const result = await sdk.POST('/api/auth/link-social', { ...input });
   return unwrap(result);
@@ -181,6 +198,7 @@ export type AuthPostRefreshTokenInput = Omit<
   FetchOptions<paths['/api/auth/refresh-token']['post']>,
   'parseAs'
 >;
+
 export async function authPostRefreshToken(sdk: ApiSdk, input: AuthPostRefreshTokenInput) {
   const result = await sdk.POST('/api/auth/refresh-token', { ...input });
   return unwrap(result);
@@ -191,6 +209,7 @@ export type AuthPostRequestPasswordResetInput = Omit<
   FetchOptions<paths['/api/auth/request-password-reset']['post']>,
   'parseAs'
 >;
+
 export async function authPostRequestPasswordReset(
   sdk: ApiSdk,
   input: AuthPostRequestPasswordResetInput,
@@ -204,6 +223,7 @@ export type AuthPostResetPasswordInput = Omit<
   FetchOptions<paths['/api/auth/reset-password']['post']>,
   'parseAs'
 >;
+
 export async function authPostResetPassword(sdk: ApiSdk, input: AuthPostResetPasswordInput) {
   const result = await sdk.POST('/api/auth/reset-password', { ...input });
   return unwrap(result);
@@ -214,6 +234,7 @@ export type AuthPostRevokeOtherSessionsInput = Omit<
   FetchOptions<paths['/api/auth/revoke-other-sessions']['post']>,
   'parseAs'
 >;
+
 export async function authPostRevokeOtherSessions(
   sdk: ApiSdk,
   input: AuthPostRevokeOtherSessionsInput = {},
@@ -227,6 +248,7 @@ export type AuthPostRevokeSessionInput = Omit<
   FetchOptions<paths['/api/auth/revoke-session']['post']>,
   'parseAs'
 >;
+
 export async function authPostRevokeSession(sdk: ApiSdk, input: AuthPostRevokeSessionInput = {}) {
   const result = await sdk.POST('/api/auth/revoke-session', { ...input });
   return unwrap(result);
@@ -237,6 +259,7 @@ export type AuthPostRevokeSessionsInput = Omit<
   FetchOptions<paths['/api/auth/revoke-sessions']['post']>,
   'parseAs'
 >;
+
 export async function authPostRevokeSessions(sdk: ApiSdk, input: AuthPostRevokeSessionsInput = {}) {
   const result = await sdk.POST('/api/auth/revoke-sessions', { ...input });
   return unwrap(result);
@@ -247,6 +270,7 @@ export type AuthPostSendVerificationEmailInput = Omit<
   FetchOptions<paths['/api/auth/send-verification-email']['post']>,
   'parseAs'
 >;
+
 export async function authPostSendVerificationEmail(
   sdk: ApiSdk,
   input: AuthPostSendVerificationEmailInput = {},
@@ -260,6 +284,7 @@ export type AuthPostSignInEmailInput = Omit<
   FetchOptions<paths['/api/auth/sign-in/email']['post']>,
   'parseAs'
 >;
+
 export async function authPostSignInEmail(sdk: ApiSdk, input: AuthPostSignInEmailInput) {
   const result = await sdk.POST('/api/auth/sign-in/email', { ...input });
   return unwrap(result);
@@ -270,6 +295,7 @@ export type AuthPostSignInSocialInput = Omit<
   FetchOptions<paths['/api/auth/sign-in/social']['post']>,
   'parseAs'
 >;
+
 export async function authPostSignInSocial(sdk: ApiSdk, input: AuthPostSignInSocialInput) {
   const result = await sdk.POST('/api/auth/sign-in/social', { ...input });
   return unwrap(result);
@@ -280,6 +306,7 @@ export type AuthPostSignOutInput = Omit<
   FetchOptions<paths['/api/auth/sign-out']['post']>,
   'parseAs'
 >;
+
 export async function authPostSignOut(sdk: ApiSdk, input: AuthPostSignOutInput = {}) {
   const result = await sdk.POST('/api/auth/sign-out', { ...input });
   return unwrap(result);
@@ -290,6 +317,7 @@ export type AuthPostSignUpEmailInput = Omit<
   FetchOptions<paths['/api/auth/sign-up/email']['post']>,
   'parseAs'
 >;
+
 export async function authPostSignUpEmail(sdk: ApiSdk, input: AuthPostSignUpEmailInput = {}) {
   const result = await sdk.POST('/api/auth/sign-up/email', { ...input });
   return unwrap(result);
@@ -300,6 +328,7 @@ export type AuthPostUnlinkAccountInput = Omit<
   FetchOptions<paths['/api/auth/unlink-account']['post']>,
   'parseAs'
 >;
+
 export async function authPostUnlinkAccount(sdk: ApiSdk, input: AuthPostUnlinkAccountInput) {
   const result = await sdk.POST('/api/auth/unlink-account', { ...input });
   return unwrap(result);
@@ -310,6 +339,7 @@ export type AuthPostUpdateSessionInput = Omit<
   FetchOptions<paths['/api/auth/update-session']['post']>,
   'parseAs'
 >;
+
 export async function authPostUpdateSession(sdk: ApiSdk, input: AuthPostUpdateSessionInput) {
   const result = await sdk.POST('/api/auth/update-session', { ...input });
   return unwrap(result);
@@ -320,6 +350,7 @@ export type AuthPostUpdateUserInput = Omit<
   FetchOptions<paths['/api/auth/update-user']['post']>,
   'parseAs'
 >;
+
 export async function authPostUpdateUser(sdk: ApiSdk, input: AuthPostUpdateUserInput = {}) {
   const result = await sdk.POST('/api/auth/update-user', { ...input });
   return unwrap(result);
@@ -330,6 +361,7 @@ export type AuthPostVerifyPasswordInput = Omit<
   FetchOptions<paths['/api/auth/verify-password']['post']>,
   'parseAs'
 >;
+
 export async function authPostVerifyPassword(sdk: ApiSdk, input: AuthPostVerifyPasswordInput) {
   const result = await sdk.POST('/api/auth/verify-password', { ...input });
   return unwrap(result);
@@ -340,6 +372,7 @@ export type DeleteAddressesIdInput = Omit<
   FetchOptions<paths['/api/addresses/{id}']['delete']>,
   'parseAs'
 >;
+
 export async function deleteAddressesId(sdk: ApiSdk, input: DeleteAddressesIdInput) {
   const result = await sdk.DELETE('/api/addresses/{id}', { ...input });
   return unwrap(result);
@@ -350,6 +383,7 @@ export type DeleteCartItemsInput = Omit<
   FetchOptions<paths['/api/cart/items']['delete']>,
   'parseAs'
 >;
+
 export async function deleteCartItems(sdk: ApiSdk, input: DeleteCartItemsInput) {
   const result = await sdk.DELETE('/api/cart/items', { ...input });
   return unwrap(result);
@@ -360,6 +394,7 @@ export type DeleteCartItemsIdInput = Omit<
   FetchOptions<paths['/api/cart/items/{id}']['delete']>,
   'parseAs'
 >;
+
 export async function deleteCartItemsId(sdk: ApiSdk, input: DeleteCartItemsIdInput) {
   const result = await sdk.DELETE('/api/cart/items/{id}', { ...input });
   return unwrap(result);
@@ -370,6 +405,7 @@ export type DeleteCategoriesIdInput = Omit<
   FetchOptions<paths['/api/categories/{id}']['delete']>,
   'parseAs'
 >;
+
 export async function deleteCategoriesId(sdk: ApiSdk, input: DeleteCategoriesIdInput) {
   const result = await sdk.DELETE('/api/categories/{id}', { ...input });
   return unwrap(result);
@@ -380,6 +416,7 @@ export type DeleteCouponsIdInput = Omit<
   FetchOptions<paths['/api/coupons/{id}']['delete']>,
   'parseAs'
 >;
+
 export async function deleteCouponsId(sdk: ApiSdk, input: DeleteCouponsIdInput) {
   const result = await sdk.DELETE('/api/coupons/{id}', { ...input });
   return unwrap(result);
@@ -387,6 +424,7 @@ export async function deleteCouponsId(sdk: ApiSdk, input: DeleteCouponsIdInput) 
 
 /** DELETE /api/files/{id} (delete_api_files_id). */
 export type DeleteFilesIdInput = Omit<FetchOptions<paths['/api/files/{id}']['delete']>, 'parseAs'>;
+
 export async function deleteFilesId(sdk: ApiSdk, input: DeleteFilesIdInput) {
   const result = await sdk.DELETE('/api/files/{id}', { ...input });
   return unwrap(result);
@@ -397,6 +435,7 @@ export type DeleteMeSessionsIdInput = Omit<
   FetchOptions<paths['/api/me/sessions/{id}']['delete']>,
   'parseAs'
 >;
+
 export async function deleteMeSessionsId(sdk: ApiSdk, input: DeleteMeSessionsIdInput) {
   const result = await sdk.DELETE('/api/me/sessions/{id}', { ...input });
   return unwrap(result);
@@ -407,6 +446,7 @@ export type DeleteProductsIdInput = Omit<
   FetchOptions<paths['/api/products/{id}']['delete']>,
   'parseAs'
 >;
+
 export async function deleteProductsId(sdk: ApiSdk, input: DeleteProductsIdInput) {
   const result = await sdk.DELETE('/api/products/{id}', { ...input });
   return unwrap(result);
@@ -417,6 +457,7 @@ export type DeleteProductsIdImagesImageIdInput = Omit<
   FetchOptions<paths['/api/products/{id}/images/{imageId}']['delete']>,
   'parseAs'
 >;
+
 export async function deleteProductsIdImagesImageId(
   sdk: ApiSdk,
   input: DeleteProductsIdImagesImageIdInput,
@@ -430,6 +471,7 @@ export type DeleteProductsIdReviewsReviewIdInput = Omit<
   FetchOptions<paths['/api/products/{id}/reviews/{reviewId}']['delete']>,
   'parseAs'
 >;
+
 export async function deleteProductsIdReviewsReviewId(
   sdk: ApiSdk,
   input: DeleteProductsIdReviewsReviewIdInput,
@@ -443,6 +485,7 @@ export type DeleteStockAlertSubscriptionsIdInput = Omit<
   FetchOptions<paths['/api/stock-alert-subscriptions/{id}']['delete']>,
   'parseAs'
 >;
+
 export async function deleteStockAlertSubscriptionsId(
   sdk: ApiSdk,
   input: DeleteStockAlertSubscriptionsIdInput,
@@ -456,6 +499,7 @@ export type DeleteWishlistItemsProductIdInput = Omit<
   FetchOptions<paths['/api/wishlist/items/{productId}']['delete']>,
   'parseAs'
 >;
+
 export async function deleteWishlistItemsProductId(
   sdk: ApiSdk,
   input: DeleteWishlistItemsProductIdInput,
@@ -466,6 +510,7 @@ export async function deleteWishlistItemsProductId(
 
 /** GET /api/addresses (get_api_addresses). */
 export type GetAddressesInput = Omit<FetchOptions<paths['/api/addresses']['get']>, 'parseAs'>;
+
 export async function getAddresses(sdk: ApiSdk, input: GetAddressesInput = {}) {
   const result = await sdk.GET('/api/addresses', { ...input });
   return unwrap(result);
@@ -476,6 +521,7 @@ export type GetAdminAuditLogsInput = Omit<
   FetchOptions<paths['/api/admin/audit-logs']['get']>,
   'parseAs'
 >;
+
 export async function getAdminAuditLogs(sdk: ApiSdk, input: GetAdminAuditLogsInput = {}) {
   const result = await sdk.GET('/api/admin/audit-logs', { ...input });
   return unwrap(result);
@@ -486,6 +532,7 @@ export type GetAdminAuditLogsIdInput = Omit<
   FetchOptions<paths['/api/admin/audit-logs/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminAuditLogsId(sdk: ApiSdk, input: GetAdminAuditLogsIdInput) {
   const result = await sdk.GET('/api/admin/audit-logs/{id}', { ...input });
   return unwrap(result);
@@ -496,6 +543,7 @@ export type GetAdminBannersInput = Omit<
   FetchOptions<paths['/api/admin/banners']['get']>,
   'parseAs'
 >;
+
 export async function getAdminBanners(sdk: ApiSdk, input: GetAdminBannersInput = {}) {
   const result = await sdk.GET('/api/admin/banners', { ...input });
   return unwrap(result);
@@ -506,6 +554,7 @@ export type GetAdminBannersIdInput = Omit<
   FetchOptions<paths['/api/admin/banners/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminBannersId(sdk: ApiSdk, input: GetAdminBannersIdInput) {
   const result = await sdk.GET('/api/admin/banners/{id}', { ...input });
   return unwrap(result);
@@ -516,6 +565,7 @@ export type GetAdminCollectionsInput = Omit<
   FetchOptions<paths['/api/admin/collections']['get']>,
   'parseAs'
 >;
+
 export async function getAdminCollections(sdk: ApiSdk, input: GetAdminCollectionsInput = {}) {
   const result = await sdk.GET('/api/admin/collections', { ...input });
   return unwrap(result);
@@ -526,6 +576,7 @@ export type GetAdminCollectionsIdInput = Omit<
   FetchOptions<paths['/api/admin/collections/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminCollectionsId(sdk: ApiSdk, input: GetAdminCollectionsIdInput) {
   const result = await sdk.GET('/api/admin/collections/{id}', { ...input });
   return unwrap(result);
@@ -536,6 +587,7 @@ export type GetAdminCouponsIdInput = Omit<
   FetchOptions<paths['/api/admin/coupons/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminCouponsId(sdk: ApiSdk, input: GetAdminCouponsIdInput) {
   const result = await sdk.GET('/api/admin/coupons/{id}', { ...input });
   return unwrap(result);
@@ -546,6 +598,7 @@ export type GetAdminCouponsIdRedemptionsInput = Omit<
   FetchOptions<paths['/api/admin/coupons/{id}/redemptions']['get']>,
   'parseAs'
 >;
+
 export async function getAdminCouponsIdRedemptions(
   sdk: ApiSdk,
   input: GetAdminCouponsIdRedemptionsInput,
@@ -559,6 +612,7 @@ export type GetAdminCustomersInput = Omit<
   FetchOptions<paths['/api/admin/customers']['get']>,
   'parseAs'
 >;
+
 export async function getAdminCustomers(sdk: ApiSdk, input: GetAdminCustomersInput = {}) {
   const result = await sdk.GET('/api/admin/customers', { ...input });
   return unwrap(result);
@@ -569,6 +623,7 @@ export type GetAdminExchangesInput = Omit<
   FetchOptions<paths['/api/admin/exchanges']['get']>,
   'parseAs'
 >;
+
 export async function getAdminExchanges(sdk: ApiSdk, input: GetAdminExchangesInput = {}) {
   const result = await sdk.GET('/api/admin/exchanges', { ...input });
   return unwrap(result);
@@ -579,6 +634,7 @@ export type GetAdminHomeLayoutInput = Omit<
   FetchOptions<paths['/api/admin/home-layout']['get']>,
   'parseAs'
 >;
+
 export async function getAdminHomeLayout(sdk: ApiSdk, input: GetAdminHomeLayoutInput = {}) {
   const result = await sdk.GET('/api/admin/home-layout', { ...input });
   return unwrap(result);
@@ -589,6 +645,7 @@ export type GetAdminImportTemplatesResourceInput = Omit<
   FetchOptions<paths['/api/admin/import-templates/{resource}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminImportTemplatesResource(
   sdk: ApiSdk,
   input: GetAdminImportTemplatesResourceInput,
@@ -602,6 +659,7 @@ export type GetAdminInventoryInput = Omit<
   FetchOptions<paths['/api/admin/inventory']['get']>,
   'parseAs'
 >;
+
 export async function getAdminInventory(sdk: ApiSdk, input: GetAdminInventoryInput = {}) {
   const result = await sdk.GET('/api/admin/inventory', { ...input });
   return unwrap(result);
@@ -612,6 +670,7 @@ export type GetAdminInventoryMovementsInput = Omit<
   FetchOptions<paths['/api/admin/inventory/movements']['get']>,
   'parseAs'
 >;
+
 export async function getAdminInventoryMovements(
   sdk: ApiSdk,
   input: GetAdminInventoryMovementsInput = {},
@@ -625,6 +684,7 @@ export type GetAdminInventoryReconciliationInput = Omit<
   FetchOptions<paths['/api/admin/inventory/reconciliation']['get']>,
   'parseAs'
 >;
+
 export async function getAdminInventoryReconciliation(
   sdk: ApiSdk,
   input: GetAdminInventoryReconciliationInput = {},
@@ -635,6 +695,7 @@ export async function getAdminInventoryReconciliation(
 
 /** GET /api/admin/jobs (get_api_admin_jobs). */
 export type GetAdminJobsInput = Omit<FetchOptions<paths['/api/admin/jobs']['get']>, 'parseAs'>;
+
 export async function getAdminJobs(sdk: ApiSdk, input: GetAdminJobsInput = {}) {
   const result = await sdk.GET('/api/admin/jobs', { ...input });
   return unwrap(result);
@@ -645,6 +706,7 @@ export type GetAdminJobsIdInput = Omit<
   FetchOptions<paths['/api/admin/jobs/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminJobsId(sdk: ApiSdk, input: GetAdminJobsIdInput) {
   const result = await sdk.GET('/api/admin/jobs/{id}', { ...input });
   return unwrap(result);
@@ -655,6 +717,7 @@ export type GetAdminNavigationPlacementInput = Omit<
   FetchOptions<paths['/api/admin/navigation/{placement}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminNavigationPlacement(
   sdk: ApiSdk,
   input: GetAdminNavigationPlacementInput,
@@ -668,6 +731,7 @@ export type GetAdminNotificationTemplatesInput = Omit<
   FetchOptions<paths['/api/admin/notification-templates']['get']>,
   'parseAs'
 >;
+
 export async function getAdminNotificationTemplates(
   sdk: ApiSdk,
   input: GetAdminNotificationTemplatesInput = {},
@@ -678,6 +742,7 @@ export async function getAdminNotificationTemplates(
 
 /** GET /api/admin/pages (get_api_admin_pages). */
 export type GetAdminPagesInput = Omit<FetchOptions<paths['/api/admin/pages']['get']>, 'parseAs'>;
+
 export async function getAdminPages(sdk: ApiSdk, input: GetAdminPagesInput = {}) {
   const result = await sdk.GET('/api/admin/pages', { ...input });
   return unwrap(result);
@@ -688,6 +753,7 @@ export type GetAdminPagesIdInput = Omit<
   FetchOptions<paths['/api/admin/pages/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminPagesId(sdk: ApiSdk, input: GetAdminPagesIdInput) {
   const result = await sdk.GET('/api/admin/pages/{id}', { ...input });
   return unwrap(result);
@@ -698,6 +764,7 @@ export type GetAdminPagesIdRevisionsInput = Omit<
   FetchOptions<paths['/api/admin/pages/{id}/revisions']['get']>,
   'parseAs'
 >;
+
 export async function getAdminPagesIdRevisions(sdk: ApiSdk, input: GetAdminPagesIdRevisionsInput) {
   const result = await sdk.GET('/api/admin/pages/{id}/revisions', { ...input });
   return unwrap(result);
@@ -705,6 +772,7 @@ export async function getAdminPagesIdRevisions(sdk: ApiSdk, input: GetAdminPages
 
 /** GET /api/admin/posts (get_api_admin_posts). */
 export type GetAdminPostsInput = Omit<FetchOptions<paths['/api/admin/posts']['get']>, 'parseAs'>;
+
 export async function getAdminPosts(sdk: ApiSdk, input: GetAdminPostsInput = {}) {
   const result = await sdk.GET('/api/admin/posts', { ...input });
   return unwrap(result);
@@ -715,6 +783,7 @@ export type GetAdminPostsIdInput = Omit<
   FetchOptions<paths['/api/admin/posts/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminPostsId(sdk: ApiSdk, input: GetAdminPostsIdInput) {
   const result = await sdk.GET('/api/admin/posts/{id}', { ...input });
   return unwrap(result);
@@ -725,6 +794,7 @@ export type GetAdminPostsIdRevisionsInput = Omit<
   FetchOptions<paths['/api/admin/posts/{id}/revisions']['get']>,
   'parseAs'
 >;
+
 export async function getAdminPostsIdRevisions(sdk: ApiSdk, input: GetAdminPostsIdRevisionsInput) {
   const result = await sdk.GET('/api/admin/posts/{id}/revisions', { ...input });
   return unwrap(result);
@@ -735,6 +805,7 @@ export type GetAdminProductsInput = Omit<
   FetchOptions<paths['/api/admin/products']['get']>,
   'parseAs'
 >;
+
 export async function getAdminProducts(sdk: ApiSdk, input: GetAdminProductsInput = {}) {
   const result = await sdk.GET('/api/admin/products', { ...input });
   return unwrap(result);
@@ -745,6 +816,7 @@ export type GetAdminProductsIdInput = Omit<
   FetchOptions<paths['/api/admin/products/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminProductsId(sdk: ApiSdk, input: GetAdminProductsIdInput) {
   const result = await sdk.GET('/api/admin/products/{id}', { ...input });
   return unwrap(result);
@@ -755,6 +827,7 @@ export type GetAdminProductsIdVariantsInput = Omit<
   FetchOptions<paths['/api/admin/products/{id}/variants']['get']>,
   'parseAs'
 >;
+
 export async function getAdminProductsIdVariants(
   sdk: ApiSdk,
   input: GetAdminProductsIdVariantsInput,
@@ -768,6 +841,7 @@ export type GetAdminPromotionsInput = Omit<
   FetchOptions<paths['/api/admin/promotions']['get']>,
   'parseAs'
 >;
+
 export async function getAdminPromotions(sdk: ApiSdk, input: GetAdminPromotionsInput = {}) {
   const result = await sdk.GET('/api/admin/promotions', { ...input });
   return unwrap(result);
@@ -778,6 +852,7 @@ export type GetAdminPromotionsIdInput = Omit<
   FetchOptions<paths['/api/admin/promotions/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminPromotionsId(sdk: ApiSdk, input: GetAdminPromotionsIdInput) {
   const result = await sdk.GET('/api/admin/promotions/{id}', { ...input });
   return unwrap(result);
@@ -788,6 +863,7 @@ export type GetAdminReportExportsIdInput = Omit<
   FetchOptions<paths['/api/admin/report-exports/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminReportExportsId(sdk: ApiSdk, input: GetAdminReportExportsIdInput) {
   const result = await sdk.GET('/api/admin/report-exports/{id}', { ...input });
   return unwrap(result);
@@ -798,6 +874,7 @@ export type GetAdminReportExportsIdDownloadInput = Omit<
   FetchOptions<paths['/api/admin/report-exports/{id}/download']['get']>,
   'parseAs'
 >;
+
 export async function getAdminReportExportsIdDownload(
   sdk: ApiSdk,
   input: GetAdminReportExportsIdDownloadInput,
@@ -814,6 +891,7 @@ export type GetAdminReportsInventoryInput = Omit<
   FetchOptions<paths['/api/admin/reports/inventory']['get']>,
   'parseAs'
 >;
+
 export async function getAdminReportsInventory(sdk: ApiSdk, input: GetAdminReportsInventoryInput) {
   const result = await sdk.GET('/api/admin/reports/inventory', { ...input });
   return unwrap(result);
@@ -824,6 +902,7 @@ export type GetAdminReportsOrdersInput = Omit<
   FetchOptions<paths['/api/admin/reports/orders']['get']>,
   'parseAs'
 >;
+
 export async function getAdminReportsOrders(sdk: ApiSdk, input: GetAdminReportsOrdersInput) {
   const result = await sdk.GET('/api/admin/reports/orders', { ...input });
   return unwrap(result);
@@ -834,6 +913,7 @@ export type GetAdminReportsProductsInput = Omit<
   FetchOptions<paths['/api/admin/reports/products']['get']>,
   'parseAs'
 >;
+
 export async function getAdminReportsProducts(sdk: ApiSdk, input: GetAdminReportsProductsInput) {
   const result = await sdk.GET('/api/admin/reports/products', { ...input });
   return unwrap(result);
@@ -844,6 +924,7 @@ export type GetAdminReportsSalesInput = Omit<
   FetchOptions<paths['/api/admin/reports/sales']['get']>,
   'parseAs'
 >;
+
 export async function getAdminReportsSales(sdk: ApiSdk, input: GetAdminReportsSalesInput) {
   const result = await sdk.GET('/api/admin/reports/sales', { ...input });
   return unwrap(result);
@@ -854,6 +935,7 @@ export type GetAdminReturnsInput = Omit<
   FetchOptions<paths['/api/admin/returns']['get']>,
   'parseAs'
 >;
+
 export async function getAdminReturns(sdk: ApiSdk, input: GetAdminReturnsInput = {}) {
   const result = await sdk.GET('/api/admin/returns', { ...input });
   return unwrap(result);
@@ -864,6 +946,7 @@ export type GetAdminReviewsInput = Omit<
   FetchOptions<paths['/api/admin/reviews']['get']>,
   'parseAs'
 >;
+
 export async function getAdminReviews(sdk: ApiSdk, input: GetAdminReviewsInput = {}) {
   const result = await sdk.GET('/api/admin/reviews', { ...input });
   return unwrap(result);
@@ -871,6 +954,7 @@ export async function getAdminReviews(sdk: ApiSdk, input: GetAdminReviewsInput =
 
 /** GET /api/admin/roles (get_api_admin_roles). */
 export type GetAdminRolesInput = Omit<FetchOptions<paths['/api/admin/roles']['get']>, 'parseAs'>;
+
 export async function getAdminRoles(sdk: ApiSdk, input: GetAdminRolesInput = {}) {
   const result = await sdk.GET('/api/admin/roles', { ...input });
   return unwrap(result);
@@ -881,6 +965,7 @@ export type GetAdminSettingsCommerceInput = Omit<
   FetchOptions<paths['/api/admin/settings/commerce']['get']>,
   'parseAs'
 >;
+
 export async function getAdminSettingsCommerce(
   sdk: ApiSdk,
   input: GetAdminSettingsCommerceInput = {},
@@ -894,6 +979,7 @@ export type GetAdminSettingsShopInput = Omit<
   FetchOptions<paths['/api/admin/settings/shop']['get']>,
   'parseAs'
 >;
+
 export async function getAdminSettingsShop(sdk: ApiSdk, input: GetAdminSettingsShopInput = {}) {
   const result = await sdk.GET('/api/admin/settings/shop', { ...input });
   return unwrap(result);
@@ -904,6 +990,7 @@ export type GetAdminShippingMethodsInput = Omit<
   FetchOptions<paths['/api/admin/shipping-methods']['get']>,
   'parseAs'
 >;
+
 export async function getAdminShippingMethods(
   sdk: ApiSdk,
   input: GetAdminShippingMethodsInput = {},
@@ -917,6 +1004,7 @@ export type GetAdminShippingMethodsIdInput = Omit<
   FetchOptions<paths['/api/admin/shipping-methods/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminShippingMethodsId(
   sdk: ApiSdk,
   input: GetAdminShippingMethodsIdInput,
@@ -930,6 +1018,7 @@ export type GetAdminSizeGuidesInput = Omit<
   FetchOptions<paths['/api/admin/size-guides']['get']>,
   'parseAs'
 >;
+
 export async function getAdminSizeGuides(sdk: ApiSdk, input: GetAdminSizeGuidesInput = {}) {
   const result = await sdk.GET('/api/admin/size-guides', { ...input });
   return unwrap(result);
@@ -940,6 +1029,7 @@ export type GetAdminSizeGuidesIdInput = Omit<
   FetchOptions<paths['/api/admin/size-guides/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getAdminSizeGuidesId(sdk: ApiSdk, input: GetAdminSizeGuidesIdInput) {
   const result = await sdk.GET('/api/admin/size-guides/{id}', { ...input });
   return unwrap(result);
@@ -947,6 +1037,7 @@ export async function getAdminSizeGuidesId(sdk: ApiSdk, input: GetAdminSizeGuide
 
 /** GET /api/admin/staff (get_api_admin_staff). */
 export type GetAdminStaffInput = Omit<FetchOptions<paths['/api/admin/staff']['get']>, 'parseAs'>;
+
 export async function getAdminStaff(sdk: ApiSdk, input: GetAdminStaffInput = {}) {
   const result = await sdk.GET('/api/admin/staff', { ...input });
   return unwrap(result);
@@ -957,6 +1048,7 @@ export type GetAdminSupportTicketsInput = Omit<
   FetchOptions<paths['/api/admin/support/tickets']['get']>,
   'parseAs'
 >;
+
 export async function getAdminSupportTickets(sdk: ApiSdk, input: GetAdminSupportTicketsInput = {}) {
   const result = await sdk.GET('/api/admin/support/tickets', { ...input });
   return unwrap(result);
@@ -967,6 +1059,7 @@ export type GetAdminSystemContractsInput = Omit<
   FetchOptions<paths['/api/admin/system/contracts']['get']>,
   'parseAs'
 >;
+
 export async function getAdminSystemContracts(
   sdk: ApiSdk,
   input: GetAdminSystemContractsInput = {},
@@ -980,6 +1073,7 @@ export type GetAdminVariantsInput = Omit<
   FetchOptions<paths['/api/admin/variants']['get']>,
   'parseAs'
 >;
+
 export async function getAdminVariants(sdk: ApiSdk, input: GetAdminVariantsInput = {}) {
   const result = await sdk.GET('/api/admin/variants', { ...input });
   return unwrap(result);
@@ -987,6 +1081,7 @@ export async function getAdminVariants(sdk: ApiSdk, input: GetAdminVariantsInput
 
 /** GET /api/auth/me (get_api_auth_me). */
 export type GetAuthMeInput = Omit<FetchOptions<paths['/api/auth/me']['get']>, 'parseAs'>;
+
 export async function getAuthMe(sdk: ApiSdk, input: GetAuthMeInput = {}) {
   const result = await sdk.GET('/api/auth/me', { ...input });
   return unwrap(result);
@@ -997,6 +1092,7 @@ export type GetCancellationRequestsIdInput = Omit<
   FetchOptions<paths['/api/cancellation-requests/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getCancellationRequestsId(
   sdk: ApiSdk,
   input: GetCancellationRequestsIdInput,
@@ -1007,6 +1103,7 @@ export async function getCancellationRequestsId(
 
 /** GET /api/cart (get_api_cart). */
 export type GetCartInput = Omit<FetchOptions<paths['/api/cart']['get']>, 'parseAs'>;
+
 export async function getCart(sdk: ApiSdk, input: GetCartInput = {}) {
   const result = await sdk.GET('/api/cart', { ...input });
   return unwrap(result);
@@ -1014,6 +1111,7 @@ export async function getCart(sdk: ApiSdk, input: GetCartInput = {}) {
 
 /** GET /api/categories (get_api_categories). */
 export type GetCategoriesInput = Omit<FetchOptions<paths['/api/categories']['get']>, 'parseAs'>;
+
 export async function getCategories(sdk: ApiSdk, input: GetCategoriesInput = {}) {
   const result = await sdk.GET('/api/categories', { ...input });
   return unwrap(result);
@@ -1024,6 +1122,7 @@ export type GetCategoriesIdInput = Omit<
   FetchOptions<paths['/api/categories/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getCategoriesId(sdk: ApiSdk, input: GetCategoriesIdInput) {
   const result = await sdk.GET('/api/categories/{id}', { ...input });
   return unwrap(result);
@@ -1034,6 +1133,7 @@ export type GetCheckoutQuotesIdInput = Omit<
   FetchOptions<paths['/api/checkout/quotes/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getCheckoutQuotesId(sdk: ApiSdk, input: GetCheckoutQuotesIdInput) {
   const result = await sdk.GET('/api/checkout/quotes/{id}', { ...input });
   return unwrap(result);
@@ -1041,6 +1141,7 @@ export async function getCheckoutQuotesId(sdk: ApiSdk, input: GetCheckoutQuotesI
 
 /** GET /api/collections (get_api_collections). */
 export type GetCollectionsInput = Omit<FetchOptions<paths['/api/collections']['get']>, 'parseAs'>;
+
 export async function getCollections(sdk: ApiSdk, input: GetCollectionsInput = {}) {
   const result = await sdk.GET('/api/collections', { ...input });
   return unwrap(result);
@@ -1051,6 +1152,7 @@ export type GetCollectionsSlugInput = Omit<
   FetchOptions<paths['/api/collections/{slug}']['get']>,
   'parseAs'
 >;
+
 export async function getCollectionsSlug(sdk: ApiSdk, input: GetCollectionsSlugInput) {
   const result = await sdk.GET('/api/collections/{slug}', { ...input });
   return unwrap(result);
@@ -1058,6 +1160,7 @@ export async function getCollectionsSlug(sdk: ApiSdk, input: GetCollectionsSlugI
 
 /** GET /api/coupons (get_api_coupons). */
 export type GetCouponsInput = Omit<FetchOptions<paths['/api/coupons']['get']>, 'parseAs'>;
+
 export async function getCoupons(sdk: ApiSdk, input: GetCouponsInput = {}) {
   const result = await sdk.GET('/api/coupons', { ...input });
   return unwrap(result);
@@ -1068,6 +1171,7 @@ export type GetDashboardStatsInput = Omit<
   FetchOptions<paths['/api/dashboard/stats']['get']>,
   'parseAs'
 >;
+
 export async function getDashboardStats(sdk: ApiSdk, input: GetDashboardStatsInput = {}) {
   const result = await sdk.GET('/api/dashboard/stats', { ...input });
   return unwrap(result);
@@ -1078,6 +1182,7 @@ export type GetExchangesIdInput = Omit<
   FetchOptions<paths['/api/exchanges/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getExchangesId(sdk: ApiSdk, input: GetExchangesIdInput) {
   const result = await sdk.GET('/api/exchanges/{id}', { ...input });
   return unwrap(result);
@@ -1088,6 +1193,7 @@ export type GetExchangesMineInput = Omit<
   FetchOptions<paths['/api/exchanges/mine']['get']>,
   'parseAs'
 >;
+
 export async function getExchangesMine(sdk: ApiSdk, input: GetExchangesMineInput = {}) {
   const result = await sdk.GET('/api/exchanges/mine', { ...input });
   return unwrap(result);
@@ -1098,6 +1204,7 @@ export type GetFilesIdDownloadInput = Omit<
   FetchOptions<paths['/api/files/{id}/download']['get']>,
   'parseAs'
 >;
+
 export async function getFilesIdDownload(sdk: ApiSdk, input: GetFilesIdDownloadInput) {
   const result = await sdk.GET('/api/files/{id}/download', { ...input });
   return unwrap(result);
@@ -1108,6 +1215,7 @@ export type GetFilesSignUploadUrlInput = Omit<
   FetchOptions<paths['/api/files/sign-upload-url']['get']>,
   'parseAs'
 >;
+
 export async function getFilesSignUploadUrl(sdk: ApiSdk, input: GetFilesSignUploadUrlInput = {}) {
   const result = await sdk.GET('/api/files/sign-upload-url', { ...input });
   return unwrap(result);
@@ -1118,6 +1226,7 @@ export type GetFilesSignUploadUrlsInput = Omit<
   FetchOptions<paths['/api/files/sign-upload-urls']['get']>,
   'parseAs'
 >;
+
 export async function getFilesSignUploadUrls(sdk: ApiSdk, input: GetFilesSignUploadUrlsInput = {}) {
   const result = await sdk.GET('/api/files/sign-upload-urls', { ...input });
   return unwrap(result);
@@ -1128,6 +1237,7 @@ export type GetFilesUploadsIdInput = Omit<
   FetchOptions<paths['/api/files/uploads/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getFilesUploadsId(sdk: ApiSdk, input: GetFilesUploadsIdInput) {
   const result = await sdk.GET('/api/files/uploads/{id}', { ...input });
   return unwrap(result);
@@ -1135,6 +1245,7 @@ export async function getFilesUploadsId(sdk: ApiSdk, input: GetFilesUploadsIdInp
 
 /** GET /health (get_health). */
 export type GetHealthInput = Omit<FetchOptions<paths['/health']['get']>, 'parseAs'>;
+
 export async function getHealth(sdk: ApiSdk, input: GetHealthInput = {}) {
   const result = await sdk.GET('/health', { ...input });
   return unwrap(result);
@@ -1142,6 +1253,7 @@ export async function getHealth(sdk: ApiSdk, input: GetHealthInput = {}) {
 
 /** GET /health/live (get_health_live). */
 export type GetHealthLiveInput = Omit<FetchOptions<paths['/health/live']['get']>, 'parseAs'>;
+
 export async function getHealthLive(sdk: ApiSdk, input: GetHealthLiveInput = {}) {
   const result = await sdk.GET('/health/live', { ...input });
   return unwrap(result);
@@ -1149,6 +1261,7 @@ export async function getHealthLive(sdk: ApiSdk, input: GetHealthLiveInput = {})
 
 /** GET /health/ready (get_health_ready). */
 export type GetHealthReadyInput = Omit<FetchOptions<paths['/health/ready']['get']>, 'parseAs'>;
+
 export async function getHealthReady(sdk: ApiSdk, input: GetHealthReadyInput = {}) {
   const result = await sdk.GET('/health/ready', { ...input });
   return unwrap(result);
@@ -1159,6 +1272,7 @@ export type GetInternalMetricsInput = Omit<
   FetchOptions<paths['/api/internal/metrics']['get']>,
   'parseAs'
 >;
+
 export async function getInternalMetrics(sdk: ApiSdk, input: GetInternalMetricsInput = {}) {
   const result = await sdk.GET('/api/internal/metrics', { ...input });
   return unwrap(result);
@@ -1169,6 +1283,7 @@ export type GetMeCapabilitiesInput = Omit<
   FetchOptions<paths['/api/me/capabilities']['get']>,
   'parseAs'
 >;
+
 export async function getMeCapabilities(sdk: ApiSdk, input: GetMeCapabilitiesInput = {}) {
   const result = await sdk.GET('/api/me/capabilities', { ...input });
   return unwrap(result);
@@ -1179,6 +1294,7 @@ export type GetMeNotificationPreferencesInput = Omit<
   FetchOptions<paths['/api/me/notification-preferences']['get']>,
   'parseAs'
 >;
+
 export async function getMeNotificationPreferences(
   sdk: ApiSdk,
   input: GetMeNotificationPreferencesInput = {},
@@ -1192,6 +1308,7 @@ export type GetMePreferencesInput = Omit<
   FetchOptions<paths['/api/me/preferences']['get']>,
   'parseAs'
 >;
+
 export async function getMePreferences(sdk: ApiSdk, input: GetMePreferencesInput = {}) {
   const result = await sdk.GET('/api/me/preferences', { ...input });
   return unwrap(result);
@@ -1199,6 +1316,7 @@ export async function getMePreferences(sdk: ApiSdk, input: GetMePreferencesInput
 
 /** GET /api/me/profile (get_api_me_profile). */
 export type GetMeProfileInput = Omit<FetchOptions<paths['/api/me/profile']['get']>, 'parseAs'>;
+
 export async function getMeProfile(sdk: ApiSdk, input: GetMeProfileInput = {}) {
   const result = await sdk.GET('/api/me/profile', { ...input });
   return unwrap(result);
@@ -1206,6 +1324,7 @@ export async function getMeProfile(sdk: ApiSdk, input: GetMeProfileInput = {}) {
 
 /** GET /api/me/sessions (get_api_me_sessions). */
 export type GetMeSessionsInput = Omit<FetchOptions<paths['/api/me/sessions']['get']>, 'parseAs'>;
+
 export async function getMeSessions(sdk: ApiSdk, input: GetMeSessionsInput = {}) {
   const result = await sdk.GET('/api/me/sessions', { ...input });
   return unwrap(result);
@@ -1216,6 +1335,7 @@ export type GetNavigationPlacementInput = Omit<
   FetchOptions<paths['/api/navigation/{placement}']['get']>,
   'parseAs'
 >;
+
 export async function getNavigationPlacement(sdk: ApiSdk, input: GetNavigationPlacementInput) {
   const result = await sdk.GET('/api/navigation/{placement}', { ...input });
   return unwrap(result);
@@ -1226,6 +1346,7 @@ export type GetNotificationsInput = Omit<
   FetchOptions<paths['/api/notifications']['get']>,
   'parseAs'
 >;
+
 export async function getNotifications(sdk: ApiSdk, input: GetNotificationsInput = {}) {
   const result = await sdk.GET('/api/notifications', { ...input });
   return unwrap(result);
@@ -1236,6 +1357,7 @@ export type GetNotificationsUnreadCountInput = Omit<
   FetchOptions<paths['/api/notifications/unread-count']['get']>,
   'parseAs'
 >;
+
 export async function getNotificationsUnreadCount(
   sdk: ApiSdk,
   input: GetNotificationsUnreadCountInput = {},
@@ -1246,6 +1368,7 @@ export async function getNotificationsUnreadCount(
 
 /** GET /api/orders (get_api_orders). */
 export type GetOrdersInput = Omit<FetchOptions<paths['/api/orders']['get']>, 'parseAs'>;
+
 export async function getOrders(sdk: ApiSdk, input: GetOrdersInput = {}) {
   const result = await sdk.GET('/api/orders', { ...input });
   return unwrap(result);
@@ -1253,6 +1376,7 @@ export async function getOrders(sdk: ApiSdk, input: GetOrdersInput = {}) {
 
 /** GET /api/orders/{id} (get_api_orders_id). */
 export type GetOrdersIdInput = Omit<FetchOptions<paths['/api/orders/{id}']['get']>, 'parseAs'>;
+
 export async function getOrdersId(sdk: ApiSdk, input: GetOrdersIdInput) {
   const result = await sdk.GET('/api/orders/{id}', { ...input });
   return unwrap(result);
@@ -1263,6 +1387,7 @@ export type GetOrdersIdEventsInput = Omit<
   FetchOptions<paths['/api/orders/{id}/events']['get']>,
   'parseAs'
 >;
+
 export async function getOrdersIdEvents(sdk: ApiSdk, input: GetOrdersIdEventsInput) {
   const result = await sdk.GET('/api/orders/{id}/events', { ...input });
   return unwrap(result);
@@ -1273,6 +1398,7 @@ export type GetOrdersIdPaymentsInput = Omit<
   FetchOptions<paths['/api/orders/{id}/payments']['get']>,
   'parseAs'
 >;
+
 export async function getOrdersIdPayments(sdk: ApiSdk, input: GetOrdersIdPaymentsInput) {
   const result = await sdk.GET('/api/orders/{id}/payments', { ...input });
   return unwrap(result);
@@ -1283,6 +1409,7 @@ export type GetOrdersIdShipmentsInput = Omit<
   FetchOptions<paths['/api/orders/{id}/shipments']['get']>,
   'parseAs'
 >;
+
 export async function getOrdersIdShipments(sdk: ApiSdk, input: GetOrdersIdShipmentsInput) {
   const result = await sdk.GET('/api/orders/{id}/shipments', { ...input });
   return unwrap(result);
@@ -1290,6 +1417,7 @@ export async function getOrdersIdShipments(sdk: ApiSdk, input: GetOrdersIdShipme
 
 /** GET /api/orders/mine (get_api_orders_mine). */
 export type GetOrdersMineInput = Omit<FetchOptions<paths['/api/orders/mine']['get']>, 'parseAs'>;
+
 export async function getOrdersMine(sdk: ApiSdk, input: GetOrdersMineInput = {}) {
   const result = await sdk.GET('/api/orders/mine', { ...input });
   return unwrap(result);
@@ -1297,6 +1425,7 @@ export async function getOrdersMine(sdk: ApiSdk, input: GetOrdersMineInput = {})
 
 /** GET /api/pages/{slug} (get_api_pages_slug). */
 export type GetPagesSlugInput = Omit<FetchOptions<paths['/api/pages/{slug}']['get']>, 'parseAs'>;
+
 export async function getPagesSlug(sdk: ApiSdk, input: GetPagesSlugInput) {
   const result = await sdk.GET('/api/pages/{slug}', { ...input });
   return unwrap(result);
@@ -1307,6 +1436,7 @@ export type GetPoliciesCurrentInput = Omit<
   FetchOptions<paths['/api/policies/current']['get']>,
   'parseAs'
 >;
+
 export async function getPoliciesCurrent(sdk: ApiSdk, input: GetPoliciesCurrentInput = {}) {
   const result = await sdk.GET('/api/policies/current', { ...input });
   return unwrap(result);
@@ -1317,6 +1447,7 @@ export type GetPostCategoriesInput = Omit<
   FetchOptions<paths['/api/post-categories']['get']>,
   'parseAs'
 >;
+
 export async function getPostCategories(sdk: ApiSdk, input: GetPostCategoriesInput = {}) {
   const result = await sdk.GET('/api/post-categories', { ...input });
   return unwrap(result);
@@ -1324,6 +1455,7 @@ export async function getPostCategories(sdk: ApiSdk, input: GetPostCategoriesInp
 
 /** GET /api/posts (get_api_posts). */
 export type GetPostsInput = Omit<FetchOptions<paths['/api/posts']['get']>, 'parseAs'>;
+
 export async function getPosts(sdk: ApiSdk, input: GetPostsInput = {}) {
   const result = await sdk.GET('/api/posts', { ...input });
   return unwrap(result);
@@ -1331,6 +1463,7 @@ export async function getPosts(sdk: ApiSdk, input: GetPostsInput = {}) {
 
 /** GET /api/posts/{slug} (get_api_posts_slug). */
 export type GetPostsSlugInput = Omit<FetchOptions<paths['/api/posts/{slug}']['get']>, 'parseAs'>;
+
 export async function getPostsSlug(sdk: ApiSdk, input: GetPostsSlugInput) {
   const result = await sdk.GET('/api/posts/{slug}', { ...input });
   return unwrap(result);
@@ -1338,6 +1471,7 @@ export async function getPostsSlug(sdk: ApiSdk, input: GetPostsSlugInput) {
 
 /** GET /api/post-tags (get_api_post_tags). */
 export type GetPostTagsInput = Omit<FetchOptions<paths['/api/post-tags']['get']>, 'parseAs'>;
+
 export async function getPostTags(sdk: ApiSdk, input: GetPostTagsInput = {}) {
   const result = await sdk.GET('/api/post-tags', { ...input });
   return unwrap(result);
@@ -1345,6 +1479,7 @@ export async function getPostTags(sdk: ApiSdk, input: GetPostTagsInput = {}) {
 
 /** GET /api/processes (get_api_processes). */
 export type GetProcessesInput = Omit<FetchOptions<paths['/api/processes']['get']>, 'parseAs'>;
+
 export async function getProcesses(sdk: ApiSdk, input: GetProcessesInput = {}) {
   const result = await sdk.GET('/api/processes', { ...input });
   return unwrap(result);
@@ -1355,6 +1490,7 @@ export type GetProcessesIdInput = Omit<
   FetchOptions<paths['/api/processes/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getProcessesId(sdk: ApiSdk, input: GetProcessesIdInput) {
   const result = await sdk.GET('/api/processes/{id}', { ...input });
   return unwrap(result);
@@ -1365,6 +1501,7 @@ export type GetProcessesIdDownloadInput = Omit<
   FetchOptions<paths['/api/processes/{id}/download']['get']>,
   'parseAs'
 >;
+
 export async function getProcessesIdDownload(sdk: ApiSdk, input: GetProcessesIdDownloadInput) {
   const result = await sdk.GET('/api/processes/{id}/download', { ...input, parseAs: 'blob' });
   return unwrap(result);
@@ -1375,6 +1512,7 @@ export type GetProcessesIdItemsInput = Omit<
   FetchOptions<paths['/api/processes/{id}/items']['get']>,
   'parseAs'
 >;
+
 export async function getProcessesIdItems(sdk: ApiSdk, input: GetProcessesIdItemsInput) {
   const result = await sdk.GET('/api/processes/{id}/items', { ...input });
   return unwrap(result);
@@ -1382,6 +1520,7 @@ export async function getProcessesIdItems(sdk: ApiSdk, input: GetProcessesIdItem
 
 /** GET /api/products (get_api_products). */
 export type GetProductsInput = Omit<FetchOptions<paths['/api/products']['get']>, 'parseAs'>;
+
 export async function getProducts(sdk: ApiSdk, input: GetProductsInput = {}) {
   const result = await sdk.GET('/api/products', { ...input });
   return unwrap(result);
@@ -1392,6 +1531,7 @@ export type GetProductsBySlugSlugInput = Omit<
   FetchOptions<paths['/api/products/by-slug/{slug}']['get']>,
   'parseAs'
 >;
+
 export async function getProductsBySlugSlug(sdk: ApiSdk, input: GetProductsBySlugSlugInput) {
   const result = await sdk.GET('/api/products/by-slug/{slug}', { ...input });
   return unwrap(result);
@@ -1402,6 +1542,7 @@ export type GetProductsFacetsInput = Omit<
   FetchOptions<paths['/api/products/facets']['get']>,
   'parseAs'
 >;
+
 export async function getProductsFacets(sdk: ApiSdk, input: GetProductsFacetsInput = {}) {
   const result = await sdk.GET('/api/products/facets', { ...input });
   return unwrap(result);
@@ -1409,6 +1550,7 @@ export async function getProductsFacets(sdk: ApiSdk, input: GetProductsFacetsInp
 
 /** GET /api/products/{id} (get_api_products_id). */
 export type GetProductsIdInput = Omit<FetchOptions<paths['/api/products/{id}']['get']>, 'parseAs'>;
+
 export async function getProductsId(sdk: ApiSdk, input: GetProductsIdInput) {
   const result = await sdk.GET('/api/products/{id}', { ...input });
   return unwrap(result);
@@ -1419,6 +1561,7 @@ export type GetProductsIdReviewsInput = Omit<
   FetchOptions<paths['/api/products/{id}/reviews']['get']>,
   'parseAs'
 >;
+
 export async function getProductsIdReviews(sdk: ApiSdk, input: GetProductsIdReviewsInput) {
   const result = await sdk.GET('/api/products/{id}/reviews', { ...input });
   return unwrap(result);
@@ -1429,6 +1572,7 @@ export type GetProductsIdReviewSummaryInput = Omit<
   FetchOptions<paths['/api/products/{id}/review-summary']['get']>,
   'parseAs'
 >;
+
 export async function getProductsIdReviewSummary(
   sdk: ApiSdk,
   input: GetProductsIdReviewSummaryInput,
@@ -1442,6 +1586,7 @@ export type GetProductsIdVariantsInput = Omit<
   FetchOptions<paths['/api/products/{id}/variants']['get']>,
   'parseAs'
 >;
+
 export async function getProductsIdVariants(sdk: ApiSdk, input: GetProductsIdVariantsInput) {
   const result = await sdk.GET('/api/products/{id}/variants', { ...input });
   return unwrap(result);
@@ -1449,6 +1594,7 @@ export async function getProductsIdVariants(sdk: ApiSdk, input: GetProductsIdVar
 
 /** GET /api/refunds (get_api_refunds). */
 export type GetRefundsInput = Omit<FetchOptions<paths['/api/refunds']['get']>, 'parseAs'>;
+
 export async function getRefunds(sdk: ApiSdk, input: GetRefundsInput = {}) {
   const result = await sdk.GET('/api/refunds', { ...input });
   return unwrap(result);
@@ -1456,6 +1602,7 @@ export async function getRefunds(sdk: ApiSdk, input: GetRefundsInput = {}) {
 
 /** GET /api/refunds/{id} (get_api_refunds_id). */
 export type GetRefundsIdInput = Omit<FetchOptions<paths['/api/refunds/{id}']['get']>, 'parseAs'>;
+
 export async function getRefundsId(sdk: ApiSdk, input: GetRefundsIdInput) {
   const result = await sdk.GET('/api/refunds/{id}', { ...input });
   return unwrap(result);
@@ -1463,6 +1610,7 @@ export async function getRefundsId(sdk: ApiSdk, input: GetRefundsIdInput) {
 
 /** GET /api/returns/{id} (get_api_returns_id). */
 export type GetReturnsIdInput = Omit<FetchOptions<paths['/api/returns/{id}']['get']>, 'parseAs'>;
+
 export async function getReturnsId(sdk: ApiSdk, input: GetReturnsIdInput) {
   const result = await sdk.GET('/api/returns/{id}', { ...input });
   return unwrap(result);
@@ -1470,6 +1618,7 @@ export async function getReturnsId(sdk: ApiSdk, input: GetReturnsIdInput) {
 
 /** GET /api/returns/mine (get_api_returns_mine). */
 export type GetReturnsMineInput = Omit<FetchOptions<paths['/api/returns/mine']['get']>, 'parseAs'>;
+
 export async function getReturnsMine(sdk: ApiSdk, input: GetReturnsMineInput = {}) {
   const result = await sdk.GET('/api/returns/mine', { ...input });
   return unwrap(result);
@@ -1480,6 +1629,7 @@ export type GetSearchSuggestionsInput = Omit<
   FetchOptions<paths['/api/search/suggestions']['get']>,
   'parseAs'
 >;
+
 export async function getSearchSuggestions(sdk: ApiSdk, input: GetSearchSuggestionsInput) {
   const result = await sdk.GET('/api/search/suggestions', { ...input });
   return unwrap(result);
@@ -1490,6 +1640,7 @@ export type GetShipmentsIdEventsInput = Omit<
   FetchOptions<paths['/api/shipments/{id}/events']['get']>,
   'parseAs'
 >;
+
 export async function getShipmentsIdEvents(sdk: ApiSdk, input: GetShipmentsIdEventsInput) {
   const result = await sdk.GET('/api/shipments/{id}/events', { ...input });
   return unwrap(result);
@@ -1497,6 +1648,7 @@ export async function getShipmentsIdEvents(sdk: ApiSdk, input: GetShipmentsIdEve
 
 /** GET /api/shop/config (get_api_shop_config). */
 export type GetShopConfigInput = Omit<FetchOptions<paths['/api/shop/config']['get']>, 'parseAs'>;
+
 export async function getShopConfig(sdk: ApiSdk, input: GetShopConfigInput = {}) {
   const result = await sdk.GET('/api/shop/config', { ...input });
   return unwrap(result);
@@ -1507,6 +1659,7 @@ export type GetStockAlertSubscriptionsMineInput = Omit<
   FetchOptions<paths['/api/stock-alert-subscriptions/mine']['get']>,
   'parseAs'
 >;
+
 export async function getStockAlertSubscriptionsMine(
   sdk: ApiSdk,
   input: GetStockAlertSubscriptionsMineInput = {},
@@ -1520,6 +1673,7 @@ export type GetStorefrontHomeInput = Omit<
   FetchOptions<paths['/api/storefront/home']['get']>,
   'parseAs'
 >;
+
 export async function getStorefrontHome(sdk: ApiSdk, input: GetStorefrontHomeInput = {}) {
   const result = await sdk.GET('/api/storefront/home', { ...input });
   return unwrap(result);
@@ -1530,6 +1684,7 @@ export type GetSupportTicketsIdInput = Omit<
   FetchOptions<paths['/api/support/tickets/{id}']['get']>,
   'parseAs'
 >;
+
 export async function getSupportTicketsId(sdk: ApiSdk, input: GetSupportTicketsIdInput) {
   const result = await sdk.GET('/api/support/tickets/{id}', { ...input });
   return unwrap(result);
@@ -1540,6 +1695,7 @@ export type GetSupportTicketsIdMessagesInput = Omit<
   FetchOptions<paths['/api/support/tickets/{id}/messages']['get']>,
   'parseAs'
 >;
+
 export async function getSupportTicketsIdMessages(
   sdk: ApiSdk,
   input: GetSupportTicketsIdMessagesInput,
@@ -1553,6 +1709,7 @@ export type GetSupportTicketsMineInput = Omit<
   FetchOptions<paths['/api/support/tickets/mine']['get']>,
   'parseAs'
 >;
+
 export async function getSupportTicketsMine(sdk: ApiSdk, input: GetSupportTicketsMineInput = {}) {
   const result = await sdk.GET('/api/support/tickets/mine', { ...input });
   return unwrap(result);
@@ -1560,6 +1717,7 @@ export async function getSupportTicketsMine(sdk: ApiSdk, input: GetSupportTicket
 
 /** GET /api/wishlist (get_api_wishlist). */
 export type GetWishlistInput = Omit<FetchOptions<paths['/api/wishlist']['get']>, 'parseAs'>;
+
 export async function getWishlist(sdk: ApiSdk, input: GetWishlistInput = {}) {
   const result = await sdk.GET('/api/wishlist', { ...input });
   return unwrap(result);
@@ -1570,6 +1728,7 @@ export type PatchAddressesIdDefaultInput = Omit<
   FetchOptions<paths['/api/addresses/{id}/default']['patch']>,
   'parseAs'
 >;
+
 export async function patchAddressesIdDefault(sdk: ApiSdk, input: PatchAddressesIdDefaultInput) {
   const result = await sdk.PATCH('/api/addresses/{id}/default', { ...input });
   return unwrap(result);
@@ -1580,6 +1739,7 @@ export type PatchAdminBannersIdInput = Omit<
   FetchOptions<paths['/api/admin/banners/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminBannersId(sdk: ApiSdk, input: PatchAdminBannersIdInput) {
   const result = await sdk.PATCH('/api/admin/banners/{id}', { ...input });
   return unwrap(result);
@@ -1590,6 +1750,7 @@ export type PatchAdminCollectionsIdInput = Omit<
   FetchOptions<paths['/api/admin/collections/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminCollectionsId(sdk: ApiSdk, input: PatchAdminCollectionsIdInput) {
   const result = await sdk.PATCH('/api/admin/collections/{id}', { ...input });
   return unwrap(result);
@@ -1600,6 +1761,7 @@ export type PatchAdminCustomersIdStatusInput = Omit<
   FetchOptions<paths['/api/admin/customers/{id}/status']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminCustomersIdStatus(
   sdk: ApiSdk,
   input: PatchAdminCustomersIdStatusInput,
@@ -1613,6 +1775,7 @@ export type PatchAdminHomeLayoutInput = Omit<
   FetchOptions<paths['/api/admin/home-layout']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminHomeLayout(sdk: ApiSdk, input: PatchAdminHomeLayoutInput) {
   const result = await sdk.PATCH('/api/admin/home-layout', { ...input });
   return unwrap(result);
@@ -1623,6 +1786,7 @@ export type PatchAdminNavigationPlacementInput = Omit<
   FetchOptions<paths['/api/admin/navigation/{placement}']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminNavigationPlacement(
   sdk: ApiSdk,
   input: PatchAdminNavigationPlacementInput,
@@ -1636,6 +1800,7 @@ export type PatchAdminPagesIdInput = Omit<
   FetchOptions<paths['/api/admin/pages/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminPagesId(sdk: ApiSdk, input: PatchAdminPagesIdInput) {
   const result = await sdk.PATCH('/api/admin/pages/{id}', { ...input });
   return unwrap(result);
@@ -1646,6 +1811,7 @@ export type PatchAdminPostCategoriesIdInput = Omit<
   FetchOptions<paths['/api/admin/post-categories/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminPostCategoriesId(
   sdk: ApiSdk,
   input: PatchAdminPostCategoriesIdInput,
@@ -1659,6 +1825,7 @@ export type PatchAdminPostsIdInput = Omit<
   FetchOptions<paths['/api/admin/posts/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminPostsId(sdk: ApiSdk, input: PatchAdminPostsIdInput) {
   const result = await sdk.PATCH('/api/admin/posts/{id}', { ...input });
   return unwrap(result);
@@ -1669,6 +1836,7 @@ export type PatchAdminPostTagsIdInput = Omit<
   FetchOptions<paths['/api/admin/post-tags/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminPostTagsId(sdk: ApiSdk, input: PatchAdminPostTagsIdInput) {
   const result = await sdk.PATCH('/api/admin/post-tags/{id}', { ...input });
   return unwrap(result);
@@ -1679,6 +1847,7 @@ export type PatchAdminPromotionsIdInput = Omit<
   FetchOptions<paths['/api/admin/promotions/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminPromotionsId(sdk: ApiSdk, input: PatchAdminPromotionsIdInput) {
   const result = await sdk.PATCH('/api/admin/promotions/{id}', { ...input });
   return unwrap(result);
@@ -1689,6 +1858,7 @@ export type PatchAdminSettingsCommerceInput = Omit<
   FetchOptions<paths['/api/admin/settings/commerce']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminSettingsCommerce(
   sdk: ApiSdk,
   input: PatchAdminSettingsCommerceInput,
@@ -1702,6 +1872,7 @@ export type PatchAdminSettingsShopInput = Omit<
   FetchOptions<paths['/api/admin/settings/shop']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminSettingsShop(sdk: ApiSdk, input: PatchAdminSettingsShopInput) {
   const result = await sdk.PATCH('/api/admin/settings/shop', { ...input });
   return unwrap(result);
@@ -1712,6 +1883,7 @@ export type PatchAdminShippingMethodsIdInput = Omit<
   FetchOptions<paths['/api/admin/shipping-methods/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminShippingMethodsId(
   sdk: ApiSdk,
   input: PatchAdminShippingMethodsIdInput,
@@ -1725,6 +1897,7 @@ export type PatchAdminSizeGuidesIdInput = Omit<
   FetchOptions<paths['/api/admin/size-guides/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminSizeGuidesId(sdk: ApiSdk, input: PatchAdminSizeGuidesIdInput) {
   const result = await sdk.PATCH('/api/admin/size-guides/{id}', { ...input });
   return unwrap(result);
@@ -1735,6 +1908,7 @@ export type PatchAdminStaffIdRoleInput = Omit<
   FetchOptions<paths['/api/admin/staff/{id}/role']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminStaffIdRole(sdk: ApiSdk, input: PatchAdminStaffIdRoleInput) {
   const result = await sdk.PATCH('/api/admin/staff/{id}/role', { ...input });
   return unwrap(result);
@@ -1745,6 +1919,7 @@ export type PatchAdminStaffIdStatusInput = Omit<
   FetchOptions<paths['/api/admin/staff/{id}/status']['patch']>,
   'parseAs'
 >;
+
 export async function patchAdminStaffIdStatus(sdk: ApiSdk, input: PatchAdminStaffIdStatusInput) {
   const result = await sdk.PATCH('/api/admin/staff/{id}/status', { ...input });
   return unwrap(result);
@@ -1752,6 +1927,7 @@ export async function patchAdminStaffIdStatus(sdk: ApiSdk, input: PatchAdminStaf
 
 /** PATCH /api/auth/me (patch_api_auth_me). */
 export type PatchAuthMeInput = Omit<FetchOptions<paths['/api/auth/me']['patch']>, 'parseAs'>;
+
 export async function patchAuthMe(sdk: ApiSdk, input: PatchAuthMeInput) {
   const result = await sdk.PATCH('/api/auth/me', { ...input });
   return unwrap(result);
@@ -1762,6 +1938,7 @@ export type PatchAuthPasswordInput = Omit<
   FetchOptions<paths['/api/auth/password']['patch']>,
   'parseAs'
 >;
+
 export async function patchAuthPassword(sdk: ApiSdk, input: PatchAuthPasswordInput) {
   const result = await sdk.PATCH('/api/auth/password', { ...input });
   return unwrap(result);
@@ -1772,6 +1949,7 @@ export type PatchCartItemsIdInput = Omit<
   FetchOptions<paths['/api/cart/items/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchCartItemsId(sdk: ApiSdk, input: PatchCartItemsIdInput) {
   const result = await sdk.PATCH('/api/cart/items/{id}', { ...input });
   return unwrap(result);
@@ -1782,6 +1960,7 @@ export type PatchMeNotificationPreferencesInput = Omit<
   FetchOptions<paths['/api/me/notification-preferences']['patch']>,
   'parseAs'
 >;
+
 export async function patchMeNotificationPreferences(
   sdk: ApiSdk,
   input: PatchMeNotificationPreferencesInput,
@@ -1795,6 +1974,7 @@ export type PatchMePreferencesInput = Omit<
   FetchOptions<paths['/api/me/preferences']['patch']>,
   'parseAs'
 >;
+
 export async function patchMePreferences(sdk: ApiSdk, input: PatchMePreferencesInput) {
   const result = await sdk.PATCH('/api/me/preferences', { ...input });
   return unwrap(result);
@@ -1802,8 +1982,20 @@ export async function patchMePreferences(sdk: ApiSdk, input: PatchMePreferencesI
 
 /** PATCH /api/me/profile (patch_api_me_profile). */
 export type PatchMeProfileInput = Omit<FetchOptions<paths['/api/me/profile']['patch']>, 'parseAs'>;
+
 export async function patchMeProfile(sdk: ApiSdk, input: PatchMeProfileInput) {
   const result = await sdk.PATCH('/api/me/profile', { ...input });
+  return unwrap(result);
+}
+
+/** PATCH /api/products/{id} (patch_api_products_id). */
+export type PatchProductsIdInput = Omit<
+  FetchOptions<paths['/api/products/{id}']['patch']>,
+  'parseAs'
+>;
+
+export async function patchProductsId(sdk: ApiSdk, input: PatchProductsIdInput) {
+  const result = await sdk.PATCH('/api/products/{id}', { ...input });
   return unwrap(result);
 }
 
@@ -1812,6 +2004,7 @@ export type PatchProductsIdPublicationInput = Omit<
   FetchOptions<paths['/api/products/{id}/publication']['patch']>,
   'parseAs'
 >;
+
 export async function patchProductsIdPublication(
   sdk: ApiSdk,
   input: PatchProductsIdPublicationInput,
@@ -1825,6 +2018,7 @@ export type PatchProductsIdVariantsVariantIdInput = Omit<
   FetchOptions<paths['/api/products/{id}/variants/{variantId}']['patch']>,
   'parseAs'
 >;
+
 export async function patchProductsIdVariantsVariantId(
   sdk: ApiSdk,
   input: PatchProductsIdVariantsVariantIdInput,
@@ -1838,6 +2032,7 @@ export type PatchProductsIdVariantsVariantIdImagesInput = Omit<
   FetchOptions<paths['/api/products/{id}/variants/{variantId}/images']['patch']>,
   'parseAs'
 >;
+
 export async function patchProductsIdVariantsVariantIdImages(
   sdk: ApiSdk,
   input: PatchProductsIdVariantsVariantIdImagesInput,
@@ -1851,6 +2046,7 @@ export type PatchReviewsIdInput = Omit<
   FetchOptions<paths['/api/reviews/{id}']['patch']>,
   'parseAs'
 >;
+
 export async function patchReviewsId(sdk: ApiSdk, input: PatchReviewsIdInput) {
   const result = await sdk.PATCH('/api/reviews/{id}', { ...input });
   return unwrap(result);
@@ -1858,6 +2054,7 @@ export async function patchReviewsId(sdk: ApiSdk, input: PatchReviewsIdInput) {
 
 /** POST /api/addresses (post_api_addresses). */
 export type PostAddressesInput = Omit<FetchOptions<paths['/api/addresses']['post']>, 'parseAs'>;
+
 export async function postAddresses(sdk: ApiSdk, input: PostAddressesInput) {
   const result = await sdk.POST('/api/addresses', { ...input });
   return unwrap(result);
@@ -1868,6 +2065,7 @@ export type PostAdminBannersInput = Omit<
   FetchOptions<paths['/api/admin/banners']['post']>,
   'parseAs'
 >;
+
 export async function postAdminBanners(sdk: ApiSdk, input: PostAdminBannersInput) {
   const result = await sdk.POST('/api/admin/banners', { ...input });
   return unwrap(result);
@@ -1878,6 +2076,7 @@ export type PostAdminCollectionsInput = Omit<
   FetchOptions<paths['/api/admin/collections']['post']>,
   'parseAs'
 >;
+
 export async function postAdminCollections(sdk: ApiSdk, input: PostAdminCollectionsInput) {
   const result = await sdk.POST('/api/admin/collections', { ...input });
   return unwrap(result);
@@ -1888,6 +2087,7 @@ export type PostAdminExportsInput = Omit<
   FetchOptions<paths['/api/admin/exports']['post']>,
   'parseAs'
 >;
+
 export async function postAdminExports(sdk: ApiSdk, input: PostAdminExportsInput) {
   const result = await sdk.POST('/api/admin/exports', { ...input });
   return unwrap(result);
@@ -1898,6 +2098,7 @@ export type PostAdminImportsResourceInput = Omit<
   FetchOptions<paths['/api/admin/imports/{resource}']['post']>,
   'parseAs' | 'body' | 'bodySerializer'
 > & { body: FormData };
+
 export async function postAdminImportsResource(sdk: ApiSdk, input: PostAdminImportsResourceInput) {
   const result = await sdk.POST('/api/admin/imports/{resource}', {
     ...input,
@@ -1912,6 +2113,7 @@ export type PostAdminInventoryAdjustmentsInput = Omit<
   FetchOptions<paths['/api/admin/inventory/adjustments']['post']>,
   'parseAs'
 >;
+
 export async function postAdminInventoryAdjustments(
   sdk: ApiSdk,
   input: PostAdminInventoryAdjustmentsInput,
@@ -1925,6 +2127,7 @@ export type PostAdminInventoryReceiptsInput = Omit<
   FetchOptions<paths['/api/admin/inventory/receipts']['post']>,
   'parseAs'
 >;
+
 export async function postAdminInventoryReceipts(
   sdk: ApiSdk,
   input: PostAdminInventoryReceiptsInput,
@@ -1938,6 +2141,7 @@ export type PostAdminJobsIdRetryInput = Omit<
   FetchOptions<paths['/api/admin/jobs/{id}/retry']['post']>,
   'parseAs'
 >;
+
 export async function postAdminJobsIdRetry(sdk: ApiSdk, input: PostAdminJobsIdRetryInput) {
   const result = await sdk.POST('/api/admin/jobs/{id}/retry', { ...input });
   return unwrap(result);
@@ -1948,6 +2152,7 @@ export type PostAdminOperationsInventoryReconciliationInput = Omit<
   FetchOptions<paths['/api/admin/operations/inventory-reconciliation']['post']>,
   'parseAs'
 >;
+
 export async function postAdminOperationsInventoryReconciliation(
   sdk: ApiSdk,
   input: PostAdminOperationsInventoryReconciliationInput = {},
@@ -1958,6 +2163,7 @@ export async function postAdminOperationsInventoryReconciliation(
 
 /** POST /api/admin/pages (post_api_admin_pages). */
 export type PostAdminPagesInput = Omit<FetchOptions<paths['/api/admin/pages']['post']>, 'parseAs'>;
+
 export async function postAdminPages(sdk: ApiSdk, input: PostAdminPagesInput) {
   const result = await sdk.POST('/api/admin/pages', { ...input });
   return unwrap(result);
@@ -1968,6 +2174,7 @@ export type PostAdminPagesIdArchiveInput = Omit<
   FetchOptions<paths['/api/admin/pages/{id}/archive']['post']>,
   'parseAs'
 >;
+
 export async function postAdminPagesIdArchive(sdk: ApiSdk, input: PostAdminPagesIdArchiveInput) {
   const result = await sdk.POST('/api/admin/pages/{id}/archive', { ...input });
   return unwrap(result);
@@ -1978,6 +2185,7 @@ export type PostAdminPagesIdPublishInput = Omit<
   FetchOptions<paths['/api/admin/pages/{id}/publish']['post']>,
   'parseAs'
 >;
+
 export async function postAdminPagesIdPublish(sdk: ApiSdk, input: PostAdminPagesIdPublishInput) {
   const result = await sdk.POST('/api/admin/pages/{id}/publish', { ...input });
   return unwrap(result);
@@ -1988,6 +2196,7 @@ export type PostAdminPaymentsIdCodCollectionInput = Omit<
   FetchOptions<paths['/api/admin/payments/{id}/cod-collection']['post']>,
   'parseAs'
 >;
+
 export async function postAdminPaymentsIdCodCollection(
   sdk: ApiSdk,
   input: PostAdminPaymentsIdCodCollectionInput,
@@ -2001,6 +2210,7 @@ export type PostAdminPaymentsIdReconcileInput = Omit<
   FetchOptions<paths['/api/admin/payments/{id}/reconcile']['post']>,
   'parseAs'
 >;
+
 export async function postAdminPaymentsIdReconcile(
   sdk: ApiSdk,
   input: PostAdminPaymentsIdReconcileInput,
@@ -2014,6 +2224,7 @@ export type PostAdminPostCategoriesInput = Omit<
   FetchOptions<paths['/api/admin/post-categories']['post']>,
   'parseAs'
 >;
+
 export async function postAdminPostCategories(sdk: ApiSdk, input: PostAdminPostCategoriesInput) {
   const result = await sdk.POST('/api/admin/post-categories', { ...input });
   return unwrap(result);
@@ -2021,6 +2232,7 @@ export async function postAdminPostCategories(sdk: ApiSdk, input: PostAdminPostC
 
 /** POST /api/admin/posts (post_api_admin_posts). */
 export type PostAdminPostsInput = Omit<FetchOptions<paths['/api/admin/posts']['post']>, 'parseAs'>;
+
 export async function postAdminPosts(sdk: ApiSdk, input: PostAdminPostsInput) {
   const result = await sdk.POST('/api/admin/posts', { ...input });
   return unwrap(result);
@@ -2031,6 +2243,7 @@ export type PostAdminPostsIdArchiveInput = Omit<
   FetchOptions<paths['/api/admin/posts/{id}/archive']['post']>,
   'parseAs'
 >;
+
 export async function postAdminPostsIdArchive(sdk: ApiSdk, input: PostAdminPostsIdArchiveInput) {
   const result = await sdk.POST('/api/admin/posts/{id}/archive', { ...input });
   return unwrap(result);
@@ -2041,6 +2254,7 @@ export type PostAdminPostsIdPublishInput = Omit<
   FetchOptions<paths['/api/admin/posts/{id}/publish']['post']>,
   'parseAs'
 >;
+
 export async function postAdminPostsIdPublish(sdk: ApiSdk, input: PostAdminPostsIdPublishInput) {
   const result = await sdk.POST('/api/admin/posts/{id}/publish', { ...input });
   return unwrap(result);
@@ -2051,6 +2265,7 @@ export type PostAdminPostTagsInput = Omit<
   FetchOptions<paths['/api/admin/post-tags']['post']>,
   'parseAs'
 >;
+
 export async function postAdminPostTags(sdk: ApiSdk, input: PostAdminPostTagsInput) {
   const result = await sdk.POST('/api/admin/post-tags', { ...input });
   return unwrap(result);
@@ -2061,6 +2276,7 @@ export type PostAdminPromotionsInput = Omit<
   FetchOptions<paths['/api/admin/promotions']['post']>,
   'parseAs'
 >;
+
 export async function postAdminPromotions(sdk: ApiSdk, input: PostAdminPromotionsInput) {
   const result = await sdk.POST('/api/admin/promotions', { ...input });
   return unwrap(result);
@@ -2071,6 +2287,7 @@ export type PostAdminRefundsIdManualConfirmationInput = Omit<
   FetchOptions<paths['/api/admin/refunds/{id}/manual-confirmation']['post']>,
   'parseAs'
 >;
+
 export async function postAdminRefundsIdManualConfirmation(
   sdk: ApiSdk,
   input: PostAdminRefundsIdManualConfirmationInput,
@@ -2084,6 +2301,7 @@ export type PostAdminRefundsIdReconcileInput = Omit<
   FetchOptions<paths['/api/admin/refunds/{id}/reconcile']['post']>,
   'parseAs'
 >;
+
 export async function postAdminRefundsIdReconcile(
   sdk: ApiSdk,
   input: PostAdminRefundsIdReconcileInput,
@@ -2097,6 +2315,7 @@ export type PostAdminRefundsIdRetryInput = Omit<
   FetchOptions<paths['/api/admin/refunds/{id}/retry']['post']>,
   'parseAs'
 >;
+
 export async function postAdminRefundsIdRetry(sdk: ApiSdk, input: PostAdminRefundsIdRetryInput) {
   const result = await sdk.POST('/api/admin/refunds/{id}/retry', { ...input });
   return unwrap(result);
@@ -2107,6 +2326,7 @@ export type PostAdminReportExportsInput = Omit<
   FetchOptions<paths['/api/admin/report-exports']['post']>,
   'parseAs'
 >;
+
 export async function postAdminReportExports(sdk: ApiSdk, input: PostAdminReportExportsInput) {
   const result = await sdk.POST('/api/admin/report-exports', { ...input });
   return unwrap(result);
@@ -2117,6 +2337,7 @@ export type PostAdminShippingMethodsInput = Omit<
   FetchOptions<paths['/api/admin/shipping-methods']['post']>,
   'parseAs'
 >;
+
 export async function postAdminShippingMethods(sdk: ApiSdk, input: PostAdminShippingMethodsInput) {
   const result = await sdk.POST('/api/admin/shipping-methods', { ...input });
   return unwrap(result);
@@ -2127,6 +2348,7 @@ export type PostAdminSizeGuidesInput = Omit<
   FetchOptions<paths['/api/admin/size-guides']['post']>,
   'parseAs'
 >;
+
 export async function postAdminSizeGuides(sdk: ApiSdk, input: PostAdminSizeGuidesInput) {
   const result = await sdk.POST('/api/admin/size-guides', { ...input });
   return unwrap(result);
@@ -2137,6 +2359,7 @@ export type PostAdminStaffInvitationsInput = Omit<
   FetchOptions<paths['/api/admin/staff/invitations']['post']>,
   'parseAs'
 >;
+
 export async function postAdminStaffInvitations(
   sdk: ApiSdk,
   input: PostAdminStaffInvitationsInput,
@@ -2150,6 +2373,7 @@ export type PostAdminSupportTicketsIdAssignInput = Omit<
   FetchOptions<paths['/api/admin/support/tickets/{id}/assign']['post']>,
   'parseAs'
 >;
+
 export async function postAdminSupportTicketsIdAssign(
   sdk: ApiSdk,
   input: PostAdminSupportTicketsIdAssignInput,
@@ -2163,6 +2387,7 @@ export type PostAuthEmailVerificationRequestsInput = Omit<
   FetchOptions<paths['/api/auth/email-verification-requests']['post']>,
   'parseAs'
 >;
+
 export async function postAuthEmailVerificationRequests(
   sdk: ApiSdk,
   input: PostAuthEmailVerificationRequestsInput,
@@ -2176,6 +2401,7 @@ export type PostAuthEmailVerificationsInput = Omit<
   FetchOptions<paths['/api/auth/email-verifications']['post']>,
   'parseAs'
 >;
+
 export async function postAuthEmailVerifications(
   sdk: ApiSdk,
   input: PostAuthEmailVerificationsInput,
@@ -2186,6 +2412,7 @@ export async function postAuthEmailVerifications(
 
 /** POST /api/auth/google (post_api_auth_google). */
 export type PostAuthGoogleInput = Omit<FetchOptions<paths['/api/auth/google']['post']>, 'parseAs'>;
+
 export async function postAuthGoogle(sdk: ApiSdk, input: PostAuthGoogleInput) {
   const result = await sdk.POST('/api/auth/google', { ...input });
   return unwrap(result);
@@ -2193,6 +2420,7 @@ export async function postAuthGoogle(sdk: ApiSdk, input: PostAuthGoogleInput) {
 
 /** POST /api/auth/login (post_api_auth_login). */
 export type PostAuthLoginInput = Omit<FetchOptions<paths['/api/auth/login']['post']>, 'parseAs'>;
+
 export async function postAuthLogin(sdk: ApiSdk, input: PostAuthLoginInput) {
   const result = await sdk.POST('/api/auth/login', { ...input });
   return unwrap(result);
@@ -2200,6 +2428,7 @@ export async function postAuthLogin(sdk: ApiSdk, input: PostAuthLoginInput) {
 
 /** POST /api/auth/logout (post_api_auth_logout). */
 export type PostAuthLogoutInput = Omit<FetchOptions<paths['/api/auth/logout']['post']>, 'parseAs'>;
+
 export async function postAuthLogout(sdk: ApiSdk, input: PostAuthLogoutInput = {}) {
   const result = await sdk.POST('/api/auth/logout', { ...input });
   return unwrap(result);
@@ -2210,6 +2439,7 @@ export type PostAuthPasswordResetRequestsInput = Omit<
   FetchOptions<paths['/api/auth/password-reset-requests']['post']>,
   'parseAs'
 >;
+
 export async function postAuthPasswordResetRequests(
   sdk: ApiSdk,
   input: PostAuthPasswordResetRequestsInput,
@@ -2223,6 +2453,7 @@ export type PostAuthPasswordResetsInput = Omit<
   FetchOptions<paths['/api/auth/password-resets']['post']>,
   'parseAs'
 >;
+
 export async function postAuthPasswordResets(sdk: ApiSdk, input: PostAuthPasswordResetsInput) {
   const result = await sdk.POST('/api/auth/password-resets', { ...input });
   return unwrap(result);
@@ -2233,6 +2464,7 @@ export type PostAuthRefreshInput = Omit<
   FetchOptions<paths['/api/auth/refresh']['post']>,
   'parseAs'
 >;
+
 export async function postAuthRefresh(sdk: ApiSdk, input: PostAuthRefreshInput) {
   const result = await sdk.POST('/api/auth/refresh', { ...input });
   return unwrap(result);
@@ -2243,6 +2475,7 @@ export type PostAuthRegisterInput = Omit<
   FetchOptions<paths['/api/auth/register']['post']>,
   'parseAs'
 >;
+
 export async function postAuthRegister(sdk: ApiSdk, input: PostAuthRegisterInput) {
   const result = await sdk.POST('/api/auth/register', { ...input });
   return unwrap(result);
@@ -2253,6 +2486,7 @@ export type PostCancellationRequestsIdApproveInput = Omit<
   FetchOptions<paths['/api/cancellation-requests/{id}/approve']['post']>,
   'parseAs'
 >;
+
 export async function postCancellationRequestsIdApprove(
   sdk: ApiSdk,
   input: PostCancellationRequestsIdApproveInput,
@@ -2266,6 +2500,7 @@ export type PostCancellationRequestsIdRejectInput = Omit<
   FetchOptions<paths['/api/cancellation-requests/{id}/reject']['post']>,
   'parseAs'
 >;
+
 export async function postCancellationRequestsIdReject(
   sdk: ApiSdk,
   input: PostCancellationRequestsIdRejectInput,
@@ -2276,6 +2511,7 @@ export async function postCancellationRequestsIdReject(
 
 /** POST /api/cart/items (post_api_cart_items). */
 export type PostCartItemsInput = Omit<FetchOptions<paths['/api/cart/items']['post']>, 'parseAs'>;
+
 export async function postCartItems(sdk: ApiSdk, input: PostCartItemsInput) {
   const result = await sdk.POST('/api/cart/items', { ...input });
   return unwrap(result);
@@ -2283,6 +2519,7 @@ export async function postCartItems(sdk: ApiSdk, input: PostCartItemsInput) {
 
 /** POST /api/cart/merge (post_api_cart_merge). */
 export type PostCartMergeInput = Omit<FetchOptions<paths['/api/cart/merge']['post']>, 'parseAs'>;
+
 export async function postCartMerge(sdk: ApiSdk, input: PostCartMergeInput) {
   const result = await sdk.POST('/api/cart/merge', { ...input });
   return unwrap(result);
@@ -2290,6 +2527,7 @@ export async function postCartMerge(sdk: ApiSdk, input: PostCartMergeInput) {
 
 /** POST /api/categories (post_api_categories). */
 export type PostCategoriesInput = Omit<FetchOptions<paths['/api/categories']['post']>, 'parseAs'>;
+
 export async function postCategories(sdk: ApiSdk, input: PostCategoriesInput) {
   const result = await sdk.POST('/api/categories', { ...input });
   return unwrap(result);
@@ -2300,6 +2538,7 @@ export type PostCheckoutQuotesInput = Omit<
   FetchOptions<paths['/api/checkout/quotes']['post']>,
   'parseAs'
 >;
+
 export async function postCheckoutQuotes(sdk: ApiSdk, input: PostCheckoutQuotesInput = {}) {
   const result = await sdk.POST('/api/checkout/quotes', { ...input });
   return unwrap(result);
@@ -2307,6 +2546,7 @@ export async function postCheckoutQuotes(sdk: ApiSdk, input: PostCheckoutQuotesI
 
 /** POST /api/coupons (post_api_coupons). */
 export type PostCouponsInput = Omit<FetchOptions<paths['/api/coupons']['post']>, 'parseAs'>;
+
 export async function postCoupons(sdk: ApiSdk, input: PostCouponsInput) {
   const result = await sdk.POST('/api/coupons', { ...input });
   return unwrap(result);
@@ -2317,6 +2557,7 @@ export type PostCouponsPreviewInput = Omit<
   FetchOptions<paths['/api/coupons/preview']['post']>,
   'parseAs'
 >;
+
 export async function postCouponsPreview(sdk: ApiSdk, input: PostCouponsPreviewInput) {
   const result = await sdk.POST('/api/coupons/preview', { ...input });
   return unwrap(result);
@@ -2327,6 +2568,7 @@ export type PostExchangesIdApproveInput = Omit<
   FetchOptions<paths['/api/exchanges/{id}/approve']['post']>,
   'parseAs'
 >;
+
 export async function postExchangesIdApprove(sdk: ApiSdk, input: PostExchangesIdApproveInput) {
   const result = await sdk.POST('/api/exchanges/{id}/approve', { ...input });
   return unwrap(result);
@@ -2337,6 +2579,7 @@ export type PostExchangesIdCreateReplacementInput = Omit<
   FetchOptions<paths['/api/exchanges/{id}/create-replacement']['post']>,
   'parseAs'
 >;
+
 export async function postExchangesIdCreateReplacement(
   sdk: ApiSdk,
   input: PostExchangesIdCreateReplacementInput,
@@ -2350,6 +2593,7 @@ export type PostExchangesIdRejectInput = Omit<
   FetchOptions<paths['/api/exchanges/{id}/reject']['post']>,
   'parseAs'
 >;
+
 export async function postExchangesIdReject(sdk: ApiSdk, input: PostExchangesIdRejectInput) {
   const result = await sdk.POST('/api/exchanges/{id}/reject', { ...input });
   return unwrap(result);
@@ -2360,6 +2604,7 @@ export type PostFilesUploadsInput = Omit<
   FetchOptions<paths['/api/files/uploads']['post']>,
   'parseAs'
 >;
+
 export async function postFilesUploads(sdk: ApiSdk, input: PostFilesUploadsInput) {
   const result = await sdk.POST('/api/files/uploads', { ...input });
   return unwrap(result);
@@ -2370,6 +2615,7 @@ export type PostFilesUploadsBatchInput = Omit<
   FetchOptions<paths['/api/files/uploads/batch']['post']>,
   'parseAs'
 >;
+
 export async function postFilesUploadsBatch(sdk: ApiSdk, input: PostFilesUploadsBatchInput) {
   const result = await sdk.POST('/api/files/uploads/batch', { ...input });
   return unwrap(result);
@@ -2380,6 +2626,7 @@ export type PostFilesUploadsBatchCompleteInput = Omit<
   FetchOptions<paths['/api/files/uploads/batch/complete']['post']>,
   'parseAs'
 >;
+
 export async function postFilesUploadsBatchComplete(
   sdk: ApiSdk,
   input: PostFilesUploadsBatchCompleteInput,
@@ -2393,6 +2640,7 @@ export type PostFilesUploadsIdCompleteInput = Omit<
   FetchOptions<paths['/api/files/uploads/{id}/complete']['post']>,
   'parseAs'
 >;
+
 export async function postFilesUploadsIdComplete(
   sdk: ApiSdk,
   input: PostFilesUploadsIdCompleteInput,
@@ -2406,6 +2654,7 @@ export type PostMeEmailChangeRequestsInput = Omit<
   FetchOptions<paths['/api/me/email-change-requests']['post']>,
   'parseAs'
 >;
+
 export async function postMeEmailChangeRequests(
   sdk: ApiSdk,
   input: PostMeEmailChangeRequestsInput,
@@ -2419,6 +2668,7 @@ export type PostMeEmailChangesConfirmInput = Omit<
   FetchOptions<paths['/api/me/email-changes/confirm']['post']>,
   'parseAs'
 >;
+
 export async function postMeEmailChangesConfirm(
   sdk: ApiSdk,
   input: PostMeEmailChangesConfirmInput,
@@ -2432,6 +2682,7 @@ export type PostMeSessionsRevokeOthersInput = Omit<
   FetchOptions<paths['/api/me/sessions/revoke-others']['post']>,
   'parseAs'
 >;
+
 export async function postMeSessionsRevokeOthers(
   sdk: ApiSdk,
   input: PostMeSessionsRevokeOthersInput = {},
@@ -2445,6 +2696,7 @@ export type PostNotificationsIdReadInput = Omit<
   FetchOptions<paths['/api/notifications/{id}/read']['post']>,
   'parseAs'
 >;
+
 export async function postNotificationsIdRead(sdk: ApiSdk, input: PostNotificationsIdReadInput) {
   const result = await sdk.POST('/api/notifications/{id}/read', { ...input });
   return unwrap(result);
@@ -2455,6 +2707,7 @@ export type PostNotificationsReadAllInput = Omit<
   FetchOptions<paths['/api/notifications/read-all']['post']>,
   'parseAs'
 >;
+
 export async function postNotificationsReadAll(
   sdk: ApiSdk,
   input: PostNotificationsReadAllInput = {},
@@ -2468,6 +2721,7 @@ export type PostOrderItemsIdReviewsInput = Omit<
   FetchOptions<paths['/api/order-items/{id}/reviews']['post']>,
   'parseAs'
 >;
+
 export async function postOrderItemsIdReviews(sdk: ApiSdk, input: PostOrderItemsIdReviewsInput) {
   const result = await sdk.POST('/api/order-items/{id}/reviews', { ...input });
   return unwrap(result);
@@ -2475,6 +2729,7 @@ export async function postOrderItemsIdReviews(sdk: ApiSdk, input: PostOrderItems
 
 /** POST /api/orders (post_api_orders). */
 export type PostOrdersInput = Omit<FetchOptions<paths['/api/orders']['post']>, 'parseAs'>;
+
 export async function postOrders(sdk: ApiSdk, input: PostOrdersInput) {
   const result = await sdk.POST('/api/orders', { ...input });
   return unwrap(result);
@@ -2485,6 +2740,7 @@ export type PostOrdersIdCancelInput = Omit<
   FetchOptions<paths['/api/orders/{id}/cancel']['post']>,
   'parseAs'
 >;
+
 export async function postOrdersIdCancel(sdk: ApiSdk, input: PostOrdersIdCancelInput) {
   const result = await sdk.POST('/api/orders/{id}/cancel', { ...input });
   return unwrap(result);
@@ -2495,6 +2751,7 @@ export type PostOrdersIdCancellationRequestsInput = Omit<
   FetchOptions<paths['/api/orders/{id}/cancellation-requests']['post']>,
   'parseAs'
 >;
+
 export async function postOrdersIdCancellationRequests(
   sdk: ApiSdk,
   input: PostOrdersIdCancellationRequestsInput,
@@ -2508,6 +2765,7 @@ export type PostOrdersIdConfirmInput = Omit<
   FetchOptions<paths['/api/orders/{id}/confirm']['post']>,
   'parseAs'
 >;
+
 export async function postOrdersIdConfirm(sdk: ApiSdk, input: PostOrdersIdConfirmInput) {
   const result = await sdk.POST('/api/orders/{id}/confirm', { ...input });
   return unwrap(result);
@@ -2518,6 +2776,7 @@ export type PostOrdersIdExchangesInput = Omit<
   FetchOptions<paths['/api/orders/{id}/exchanges']['post']>,
   'parseAs'
 >;
+
 export async function postOrdersIdExchanges(sdk: ApiSdk, input: PostOrdersIdExchangesInput) {
   const result = await sdk.POST('/api/orders/{id}/exchanges', { ...input });
   return unwrap(result);
@@ -2528,6 +2787,7 @@ export type PostOrdersIdPaymentAttemptsInput = Omit<
   FetchOptions<paths['/api/orders/{id}/payment-attempts']['post']>,
   'parseAs'
 >;
+
 export async function postOrdersIdPaymentAttempts(
   sdk: ApiSdk,
   input: PostOrdersIdPaymentAttemptsInput,
@@ -2541,6 +2801,7 @@ export type PostOrdersIdRefundsInput = Omit<
   FetchOptions<paths['/api/orders/{id}/refunds']['post']>,
   'parseAs'
 >;
+
 export async function postOrdersIdRefunds(sdk: ApiSdk, input: PostOrdersIdRefundsInput) {
   const result = await sdk.POST('/api/orders/{id}/refunds', { ...input });
   return unwrap(result);
@@ -2551,6 +2812,7 @@ export type PostOrdersIdReturnsInput = Omit<
   FetchOptions<paths['/api/orders/{id}/returns']['post']>,
   'parseAs'
 >;
+
 export async function postOrdersIdReturns(sdk: ApiSdk, input: PostOrdersIdReturnsInput) {
   const result = await sdk.POST('/api/orders/{id}/returns', { ...input });
   return unwrap(result);
@@ -2561,6 +2823,7 @@ export type PostOrdersIdShipmentsInput = Omit<
   FetchOptions<paths['/api/orders/{id}/shipments']['post']>,
   'parseAs'
 >;
+
 export async function postOrdersIdShipments(sdk: ApiSdk, input: PostOrdersIdShipmentsInput) {
   const result = await sdk.POST('/api/orders/{id}/shipments', { ...input });
   return unwrap(result);
@@ -2571,6 +2834,7 @@ export type PostOrdersIdStartProcessingInput = Omit<
   FetchOptions<paths['/api/orders/{id}/start-processing']['post']>,
   'parseAs'
 >;
+
 export async function postOrdersIdStartProcessing(
   sdk: ApiSdk,
   input: PostOrdersIdStartProcessingInput,
@@ -2584,6 +2848,7 @@ export type PostPaymentsIdMockPayInput = Omit<
   FetchOptions<paths['/api/payments/{id}/mock-pay']['post']>,
   'parseAs'
 >;
+
 export async function postPaymentsIdMockPay(sdk: ApiSdk, input: PostPaymentsIdMockPayInput) {
   const result = await sdk.POST('/api/payments/{id}/mock-pay', { ...input });
   return unwrap(result);
@@ -2594,6 +2859,7 @@ export type PostPaymentsWebhookStripeInput = Omit<
   FetchOptions<paths['/api/payments/webhook/stripe']['post']>,
   'parseAs'
 >;
+
 export async function postPaymentsWebhookStripe(
   sdk: ApiSdk,
   input: PostPaymentsWebhookStripeInput,
@@ -2608,6 +2874,7 @@ export type PostProcessesIdCancelInput = Omit<
   FetchOptions<paths['/api/processes/{id}/cancel']['post']>,
   'parseAs'
 >;
+
 export async function postProcessesIdCancel(sdk: ApiSdk, input: PostProcessesIdCancelInput) {
   const result = await sdk.POST('/api/processes/{id}/cancel', { ...input });
   return unwrap(result);
@@ -2618,6 +2885,7 @@ export type PostProcessesIdConfirmInput = Omit<
   FetchOptions<paths['/api/processes/{id}/confirm']['post']>,
   'parseAs'
 >;
+
 export async function postProcessesIdConfirm(sdk: ApiSdk, input: PostProcessesIdConfirmInput) {
   const result = await sdk.POST('/api/processes/{id}/confirm', { ...input });
   return unwrap(result);
@@ -2625,6 +2893,7 @@ export async function postProcessesIdConfirm(sdk: ApiSdk, input: PostProcessesId
 
 /** POST /api/products (post_api_products). */
 export type PostProductsInput = Omit<FetchOptions<paths['/api/products']['post']>, 'parseAs'>;
+
 export async function postProducts(sdk: ApiSdk, input: PostProductsInput) {
   const result = await sdk.POST('/api/products', { ...input });
   return unwrap(result);
@@ -2635,6 +2904,7 @@ export type PostProductsIdImagesInput = Omit<
   FetchOptions<paths['/api/products/{id}/images']['post']>,
   'parseAs'
 >;
+
 export async function postProductsIdImages(sdk: ApiSdk, input: PostProductsIdImagesInput) {
   const result = await sdk.POST('/api/products/{id}/images', { ...input });
   return unwrap(result);
@@ -2645,6 +2915,7 @@ export type PostProductsIdReviewsInput = Omit<
   FetchOptions<paths['/api/products/{id}/reviews']['post']>,
   'parseAs'
 >;
+
 export async function postProductsIdReviews(sdk: ApiSdk, input: PostProductsIdReviewsInput) {
   const result = await sdk.POST('/api/products/{id}/reviews', { ...input });
   return unwrap(result);
@@ -2655,6 +2926,7 @@ export type PostProductsIdVariantsInput = Omit<
   FetchOptions<paths['/api/products/{id}/variants']['post']>,
   'parseAs'
 >;
+
 export async function postProductsIdVariants(sdk: ApiSdk, input: PostProductsIdVariantsInput) {
   const result = await sdk.POST('/api/products/{id}/variants', { ...input });
   return unwrap(result);
@@ -2665,6 +2937,7 @@ export type PostReturnsIdApproveInput = Omit<
   FetchOptions<paths['/api/returns/{id}/approve']['post']>,
   'parseAs'
 >;
+
 export async function postReturnsIdApprove(sdk: ApiSdk, input: PostReturnsIdApproveInput) {
   const result = await sdk.POST('/api/returns/{id}/approve', { ...input });
   return unwrap(result);
@@ -2675,6 +2948,7 @@ export type PostReturnsIdCompleteInput = Omit<
   FetchOptions<paths['/api/returns/{id}/complete']['post']>,
   'parseAs'
 >;
+
 export async function postReturnsIdComplete(sdk: ApiSdk, input: PostReturnsIdCompleteInput) {
   const result = await sdk.POST('/api/returns/{id}/complete', { ...input });
   return unwrap(result);
@@ -2685,6 +2959,7 @@ export type PostReturnsIdInspectInput = Omit<
   FetchOptions<paths['/api/returns/{id}/inspect']['post']>,
   'parseAs'
 >;
+
 export async function postReturnsIdInspect(sdk: ApiSdk, input: PostReturnsIdInspectInput) {
   const result = await sdk.POST('/api/returns/{id}/inspect', { ...input });
   return unwrap(result);
@@ -2695,6 +2970,7 @@ export type PostReturnsIdInTransitInput = Omit<
   FetchOptions<paths['/api/returns/{id}/in-transit']['post']>,
   'parseAs'
 >;
+
 export async function postReturnsIdInTransit(sdk: ApiSdk, input: PostReturnsIdInTransitInput) {
   const result = await sdk.POST('/api/returns/{id}/in-transit', { ...input });
   return unwrap(result);
@@ -2705,6 +2981,7 @@ export type PostReturnsIdReceiveInput = Omit<
   FetchOptions<paths['/api/returns/{id}/receive']['post']>,
   'parseAs'
 >;
+
 export async function postReturnsIdReceive(sdk: ApiSdk, input: PostReturnsIdReceiveInput) {
   const result = await sdk.POST('/api/returns/{id}/receive', { ...input });
   return unwrap(result);
@@ -2715,6 +2992,7 @@ export type PostReturnsIdRejectInput = Omit<
   FetchOptions<paths['/api/returns/{id}/reject']['post']>,
   'parseAs'
 >;
+
 export async function postReturnsIdReject(sdk: ApiSdk, input: PostReturnsIdRejectInput) {
   const result = await sdk.POST('/api/returns/{id}/reject', { ...input });
   return unwrap(result);
@@ -2725,6 +3003,7 @@ export type PostReviewsIdModerationInput = Omit<
   FetchOptions<paths['/api/reviews/{id}/moderation']['post']>,
   'parseAs'
 >;
+
 export async function postReviewsIdModeration(sdk: ApiSdk, input: PostReviewsIdModerationInput) {
   const result = await sdk.POST('/api/reviews/{id}/moderation', { ...input });
   return unwrap(result);
@@ -2735,6 +3014,7 @@ export type PostReviewsIdReportsInput = Omit<
   FetchOptions<paths['/api/reviews/{id}/reports']['post']>,
   'parseAs'
 >;
+
 export async function postReviewsIdReports(sdk: ApiSdk, input: PostReviewsIdReportsInput) {
   const result = await sdk.POST('/api/reviews/{id}/reports', { ...input });
   return unwrap(result);
@@ -2745,6 +3025,7 @@ export type PostShipmentsIdCancelInput = Omit<
   FetchOptions<paths['/api/shipments/{id}/cancel']['post']>,
   'parseAs'
 >;
+
 export async function postShipmentsIdCancel(sdk: ApiSdk, input: PostShipmentsIdCancelInput) {
   const result = await sdk.POST('/api/shipments/{id}/cancel', { ...input });
   return unwrap(result);
@@ -2755,6 +3036,7 @@ export type PostShipmentsIdDeliverInput = Omit<
   FetchOptions<paths['/api/shipments/{id}/deliver']['post']>,
   'parseAs'
 >;
+
 export async function postShipmentsIdDeliver(sdk: ApiSdk, input: PostShipmentsIdDeliverInput) {
   const result = await sdk.POST('/api/shipments/{id}/deliver', { ...input });
   return unwrap(result);
@@ -2765,6 +3047,7 @@ export type PostShipmentsIdFailInput = Omit<
   FetchOptions<paths['/api/shipments/{id}/fail']['post']>,
   'parseAs'
 >;
+
 export async function postShipmentsIdFail(sdk: ApiSdk, input: PostShipmentsIdFailInput) {
   const result = await sdk.POST('/api/shipments/{id}/fail', { ...input });
   return unwrap(result);
@@ -2775,6 +3058,7 @@ export type PostShipmentsIdHandoverInput = Omit<
   FetchOptions<paths['/api/shipments/{id}/handover']['post']>,
   'parseAs'
 >;
+
 export async function postShipmentsIdHandover(sdk: ApiSdk, input: PostShipmentsIdHandoverInput) {
   const result = await sdk.POST('/api/shipments/{id}/handover', { ...input });
   return unwrap(result);
@@ -2785,6 +3069,7 @@ export type PostShipmentsIdLoseInput = Omit<
   FetchOptions<paths['/api/shipments/{id}/lose']['post']>,
   'parseAs'
 >;
+
 export async function postShipmentsIdLose(sdk: ApiSdk, input: PostShipmentsIdLoseInput) {
   const result = await sdk.POST('/api/shipments/{id}/lose', { ...input });
   return unwrap(result);
@@ -2795,6 +3080,7 @@ export type PostShipmentsIdOutForDeliveryInput = Omit<
   FetchOptions<paths['/api/shipments/{id}/out-for-delivery']['post']>,
   'parseAs'
 >;
+
 export async function postShipmentsIdOutForDelivery(
   sdk: ApiSdk,
   input: PostShipmentsIdOutForDeliveryInput,
@@ -2808,6 +3094,7 @@ export type PostShipmentsIdPackInput = Omit<
   FetchOptions<paths['/api/shipments/{id}/pack']['post']>,
   'parseAs'
 >;
+
 export async function postShipmentsIdPack(sdk: ApiSdk, input: PostShipmentsIdPackInput) {
   const result = await sdk.POST('/api/shipments/{id}/pack', { ...input });
   return unwrap(result);
@@ -2818,6 +3105,7 @@ export type PostShipmentsIdReadyInput = Omit<
   FetchOptions<paths['/api/shipments/{id}/ready']['post']>,
   'parseAs'
 >;
+
 export async function postShipmentsIdReady(sdk: ApiSdk, input: PostShipmentsIdReadyInput) {
   const result = await sdk.POST('/api/shipments/{id}/ready', { ...input });
   return unwrap(result);
@@ -2828,6 +3116,7 @@ export type PostShipmentsIdReturnInput = Omit<
   FetchOptions<paths['/api/shipments/{id}/return']['post']>,
   'parseAs'
 >;
+
 export async function postShipmentsIdReturn(sdk: ApiSdk, input: PostShipmentsIdReturnInput) {
   const result = await sdk.POST('/api/shipments/{id}/return', { ...input });
   return unwrap(result);
@@ -2838,6 +3127,7 @@ export type PostShippingQuotesInput = Omit<
   FetchOptions<paths['/api/shipping/quotes']['post']>,
   'parseAs'
 >;
+
 export async function postShippingQuotes(sdk: ApiSdk, input: PostShippingQuotesInput) {
   const result = await sdk.POST('/api/shipping/quotes', { ...input });
   return unwrap(result);
@@ -2848,6 +3138,7 @@ export type PostStaffInvitationsAcceptInput = Omit<
   FetchOptions<paths['/api/staff/invitations/accept']['post']>,
   'parseAs'
 >;
+
 export async function postStaffInvitationsAccept(
   sdk: ApiSdk,
   input: PostStaffInvitationsAcceptInput,
@@ -2861,6 +3152,7 @@ export type PostStockAlertSubscriptionsInput = Omit<
   FetchOptions<paths['/api/stock-alert-subscriptions']['post']>,
   'parseAs'
 >;
+
 export async function postStockAlertSubscriptions(
   sdk: ApiSdk,
   input: PostStockAlertSubscriptionsInput,
@@ -2874,6 +3166,7 @@ export type PostSupportTicketsInput = Omit<
   FetchOptions<paths['/api/support/tickets']['post']>,
   'parseAs'
 >;
+
 export async function postSupportTickets(sdk: ApiSdk, input: PostSupportTicketsInput) {
   const result = await sdk.POST('/api/support/tickets', { ...input });
   return unwrap(result);
@@ -2884,6 +3177,7 @@ export type PostSupportTicketsIdCloseInput = Omit<
   FetchOptions<paths['/api/support/tickets/{id}/close']['post']>,
   'parseAs'
 >;
+
 export async function postSupportTicketsIdClose(
   sdk: ApiSdk,
   input: PostSupportTicketsIdCloseInput,
@@ -2897,6 +3191,7 @@ export type PostSupportTicketsIdMessagesInput = Omit<
   FetchOptions<paths['/api/support/tickets/{id}/messages']['post']>,
   'parseAs'
 >;
+
 export async function postSupportTicketsIdMessages(
   sdk: ApiSdk,
   input: PostSupportTicketsIdMessagesInput,
@@ -2910,6 +3205,7 @@ export type PutAddressesIdInput = Omit<
   FetchOptions<paths['/api/addresses/{id}']['put']>,
   'parseAs'
 >;
+
 export async function putAddressesId(sdk: ApiSdk, input: PutAddressesIdInput) {
   const result = await sdk.PUT('/api/addresses/{id}', { ...input });
   return unwrap(result);
@@ -2920,6 +3216,7 @@ export type PutAdminNotificationTemplatesInput = Omit<
   FetchOptions<paths['/api/admin/notification-templates']['put']>,
   'parseAs'
 >;
+
 export async function putAdminNotificationTemplates(
   sdk: ApiSdk,
   input: PutAdminNotificationTemplatesInput,
@@ -2933,6 +3230,7 @@ export type PutCategoriesIdInput = Omit<
   FetchOptions<paths['/api/categories/{id}']['put']>,
   'parseAs'
 >;
+
 export async function putCategoriesId(sdk: ApiSdk, input: PutCategoriesIdInput) {
   const result = await sdk.PUT('/api/categories/{id}', { ...input });
   return unwrap(result);
@@ -2940,6 +3238,7 @@ export async function putCategoriesId(sdk: ApiSdk, input: PutCategoriesIdInput) 
 
 /** PUT /api/coupons/{id} (put_api_coupons_id). */
 export type PutCouponsIdInput = Omit<FetchOptions<paths['/api/coupons/{id}']['put']>, 'parseAs'>;
+
 export async function putCouponsId(sdk: ApiSdk, input: PutCouponsIdInput) {
   const result = await sdk.PUT('/api/coupons/{id}', { ...input });
   return unwrap(result);
@@ -2947,6 +3246,7 @@ export async function putCouponsId(sdk: ApiSdk, input: PutCouponsIdInput) {
 
 /** PUT /api/products/{id} (put_api_products_id). */
 export type PutProductsIdInput = Omit<FetchOptions<paths['/api/products/{id}']['put']>, 'parseAs'>;
+
 export async function putProductsId(sdk: ApiSdk, input: PutProductsIdInput) {
   const result = await sdk.PUT('/api/products/{id}', { ...input });
   return unwrap(result);
@@ -2957,6 +3257,7 @@ export type PutReviewsIdReplyInput = Omit<
   FetchOptions<paths['/api/reviews/{id}/reply']['put']>,
   'parseAs'
 >;
+
 export async function putReviewsIdReply(sdk: ApiSdk, input: PutReviewsIdReplyInput) {
   const result = await sdk.PUT('/api/reviews/{id}/reply', { ...input });
   return unwrap(result);
@@ -2967,6 +3268,7 @@ export type PutWishlistItemsProductIdInput = Omit<
   FetchOptions<paths['/api/wishlist/items/{productId}']['put']>,
   'parseAs'
 >;
+
 export async function putWishlistItemsProductId(
   sdk: ApiSdk,
   input: PutWishlistItemsProductIdInput,
@@ -3157,6 +3459,7 @@ export const apiOperations = {
   patchMeNotificationPreferences,
   patchMePreferences,
   patchMeProfile,
+  patchProductsId,
   patchProductsIdPublication,
   patchProductsIdVariantsVariantId,
   patchProductsIdVariantsVariantIdImages,

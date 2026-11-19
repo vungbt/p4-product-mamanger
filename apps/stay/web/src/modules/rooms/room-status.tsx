@@ -4,6 +4,7 @@ import { ROOM_STATUS_FILTERS, type RoomStatus } from '@stay/shared';
 import { useTranslation } from 'react-i18next';
 
 export type Room = components['schemas']['StayRoom'];
+
 export type RoomDetail = components['schemas']['StayRoomDetail'];
 
 /** Fixed status colours of screens.md O-07: vacant grey, reserved yellow, occupied green, maintenance orange. */
@@ -39,7 +40,14 @@ export function RoomStatusBadge({ status, className }: { status: RoomStatus; cla
       data-status={status}
     >
       <span aria-hidden className={cn('size-2 shrink-0 rounded-full', style.accent)} />
-      {t(`rooms.status.${status}`)}
+      {(
+        {
+          vacant: t('rooms.status.vacant'),
+          reserved: t('rooms.status.reserved'),
+          occupied: t('rooms.status.occupied'),
+          maintenance: t('rooms.status.maintenance'),
+        } as Record<string, string>
+      )[status] ?? String(status)}
     </span>
   );
 }
@@ -67,7 +75,14 @@ export function RoomStatusLegend() {
                 className={cn('block h-full w-1 rounded-l', ROOM_STATUS_STYLES[status].accent)}
               />
             </span>
-            {t(`rooms.status.${status}`)}
+            {(
+              {
+                vacant: t('rooms.status.vacant'),
+                reserved: t('rooms.status.reserved'),
+                occupied: t('rooms.status.occupied'),
+                maintenance: t('rooms.status.maintenance'),
+              } as Record<string, string>
+            )[status] ?? String(status)}
           </li>
         ))}
       </ul>

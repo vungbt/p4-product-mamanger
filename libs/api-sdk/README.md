@@ -137,11 +137,13 @@ Không đặt token trong query key. Khi response phụ thuộc tenant/locale qu
 caller cần truyền `queryKey` có scope tương ứng. QueryClient phải được clear khi
 đổi phiên/tài khoản, như các resource hook hiện có.
 
-Mutation thành công mặc định invalidate toàn bộ namespace `['api']` để cập nhật
-các dữ liệu liên quan giữa resource. Có thể giới hạn qua `{ invalidate: [key] }`,
-hoặc `{ invalidate: [] }` khi tự đồng bộ cache. Hooks categories/capabilities cũ
-có namespace riêng: khi trộn hai loại hook, truyền thêm `categoryKeys.all` hoặc
-`['capabilities']` vào danh sách invalidate khi cần. Mutation lỗi giữ cache cũ.
+Mutation thành công mặc định invalidate các GET key thuộc resource đó (xem
+`resourceInvalidationKeys`): products gồm list/detail/variants admin và storefront;
+categories gồm cả generated keys và `categoryKeys.all`; size-guides có nhóm riêng.
+Các resource khác dùng `x-resource`/tag OpenAPI. Có thể thay thế qua
+`{ invalidate: [key] }`, hoặc `{ invalidate: [] }` khi tự đồng bộ cache. Caller cần
+thêm key cho dữ liệu phụ thuộc resource khác hoặc `queryKey` tùy chỉnh, kể cả
+`['capabilities']` khi thay đổi quyền. Mutation lỗi giữ cache cũ.
 
 GET download trả `Blob`, response HTML trả `string`, operation không có body
 trả `undefined`; các response JSON giữ nguyên envelope của API. Multipart import
@@ -176,7 +178,71 @@ nhận `expectedVersion` từ snapshot, không mặc định thành 1.
 List và detail product cùng trả đầy đủ metadata catalog: slug, status, version,
 thương hiệu, chất liệu, SEO, category, ảnh đại diện và gallery. Hook không tự điền
 draft hoặc ép kiểu che field thiếu.
-`productKeys.all` là namespace chung `['api']` để mutation cập nhật cả các resource
-liên quan; `lists()`/`details()` cho phép invalidate riêng danh sách/chi tiết admin.
+`productKeys.all` là namespace chung `['api']` cho thao tác cache thủ công; mutation
+mặc định chỉ invalidate `resourceInvalidationKeys.products`. `lists()`/`details()`
+cho phép invalidate riêng danh sách/chi tiết admin. PATCH nhận `imageStorageIds`
+để thay toàn bộ gallery theo thứ tự trong cùng transaction cập nhật; bỏ qua trường để giữ nguyên.
 
 Tra [API/hook theo platform](../../documents/backend/api-sdk-reference.md) và [workflow upload đơn/batch](../../documents/backend/uploads.md). Scalar `/api/docs` hiển thị cùng tên export và ví dụ theo từng operation.
+
+### Ticket uploads
+
+`createUploadApi(sdk, { baseUrl, xhr? })` from `@p4/api-sdk/shared` uploads files
+without React. `baseUrl` resolves relative signed provider URLs; `sdk.baseUrl`
+contains the origin configured on the client. API calls use the SDK's authenticated
+fetch. File transfers use XHR with `withCredentials: false`, multipart field `file`,
+a 120-second timeout, and optional `onProgress(percent)` / `signal`.
+
+```ts
+import { createUploadApi, type UploadSession } from '@p4/api-sdk/shared';
+
+const uploads = createUploadApi(sdk, { baseUrl: sdk.baseUrl });
+const session: UploadSession = {
+  sent: false, attempted: false, controller: new AbortController(),
+};
+const result = await uploads.uploadFile({
+  file, purpose: 'product', resourceId: productId, session,
+  onProgress: (percent) => console.log(percent),
+});
+// result: { storageId, fileId, ticketId }; returned only after server verification.
+```
+
+Retain the same session when retrying the same file. It reuses the ticket, skips
+successful transfers, and verifies ambiguous provider responses before resending.
+API failures retain `ApiSdkError`; validation and provider failures are Errors.
+
+`uploads.uploadFiles(files, { purpose, resourceId?, signal?, onProgress?,
+idempotencyKey? })` uses the batch ticket and batch completion endpoints for 1–20
+files. Progress receives `(index, percent)`. It returns `{ files, process }`, with
+per-file settled transfer outcomes and the asynchronous verification process (or
+`null` when no transfers succeeded). Track that process before attaching files;
+a successful provider transfer alone does not imply verification. The optional
+idempotency key is forwarded to batch completion. `uploads.verifyBatch(batch, { signal? })`
+waits for a terminal process and returns settled verified outcomes in input order.
+
+`useTicketUpload({ purpose, resourceId?, mode?: 'single' | 'batch', failureMessage })` from
+`@p4/api-sdk/react` uses the existing `ApiSdkProvider`. It exposes `items`, `add`,
+`remove`, `retry(item)`, `clear`, `busy`, and verified `results`. Each item retains
+its retry session; removing/clearing items or unmounting aborts work and revokes
+preview object URLs.
+
+Upload mode defaults to `single`: one ticket and completion per file. In `batch`
+mode each nonempty `add(files)` uses one batch ticket and completion (1–20 files),
+even for one file; provider POSTs run in parallel with per-file progress. Results
+become attachable only after process verification. Retries always use the single
+flow with the retained ticket. The product form explicitly selects `batch`.
+
+The admin form edits one ordered image list: its first entry becomes
+`thumbnailStorageId`, and the rest become `imageStorageIds`. Uploads start on pick;
+remove/reorder changes remain local until Save sends one PATCH.
+On update, `imageStorageIds` replaces the complete ordered gallery; omission
+preserves it and `[]` detaches every gallery image. `thumbnailStorageId: null`
+clears the thumbnail; omission preserves it. Either field can reuse storage IDs
+already attached to this product without upload tickets. New files require a
+completed actor-owned product upload. The thumbnail is excluded from the gallery.
+List/detail `thumbnailUrl` falls back to the first gallery image (or an empty
+string); `thumbnail` is `{ fileId, url, storageId } | null`, and gallery entries
+include `storageId`. The legacy `addImage({ storageId })` and `removeImage`
+commands remain available for individual gallery operations.
+Avatar updates take `avatarStorageId`. Cart, quote, order and banner DTOs use
+`thumbnailUrl`; content uses `thumbnailFileId` and `images`, review images use `imageIds`.

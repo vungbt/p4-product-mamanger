@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
+import { useAdminMenuLabels } from '@/libraries/admin-menu-labels';
 import RouteConfigs from '@/routing/config.route';
 import { getPortalMenuRoutes } from '@/routing/route.types';
 
@@ -15,6 +16,9 @@ export type AdminBreadcrumb = { key: string; label: string };
  */
 export default function useAdminBreadcrumbs(): AdminBreadcrumb[] {
   const { t } = useTranslation();
+
+  const routeLabels = useAdminMenuLabels();
+
   const location = useLocation();
 
   return useMemo(() => {
@@ -52,19 +56,17 @@ export default function useAdminBreadcrumbs(): AdminBreadcrumb[] {
     if (match?.parentName) {
       crumbs.push({
         key: match.parentName,
-        label: t(`menu.${match.parentName}`, {
-          defaultValue: match.parentLabel ?? match.parentName,
-        }),
+        label: routeLabels[match.parentName] ?? match.parentLabel ?? match.parentName,
       });
     }
 
     crumbs.push({
       key: match?.name ?? 'admin-dashboard',
       label: match
-        ? t(`menu.${match.name}`, { defaultValue: match.label ?? match.name })
+        ? (routeLabels[match.name] ?? match.label ?? match.name)
         : t('menu.admin-dashboard'),
     });
 
     return crumbs;
-  }, [location.pathname, t]);
+  }, [location.pathname, routeLabels, t]);
 }

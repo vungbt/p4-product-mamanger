@@ -39,6 +39,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as v from 'valibot';
+import { OPTIONS_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { CccdScanButton } from '@/libraries/cccd/cccd-scan';
 import { displayDate, formatVnd, todayIsoDate } from '@/libraries/format';
@@ -302,13 +303,21 @@ function Wizard({
     },
   });
   const value = useFormValue(form, (s) => s.values);
+
   const rooms = useRooms(buildingId, {
     status: 'vacant',
-    pageSize: 100,
+    pageSize: OPTIONS_PAGE_SIZE,
     q: roomSearch || undefined,
   });
+
   const room = useRoom(value.roomId);
-  const tenants = useTenants({ buildingId, pageSize: 100, q: tenantSearch || undefined });
+
+  const tenants = useTenants({
+    buildingId,
+    pageSize: OPTIONS_PAGE_SIZE,
+    q: tenantSearch || undefined,
+  });
+
   const prices = useBuildingPrices(
     buildingId,
     isIsoDate(value.startDate) ? value.startDate : undefined,
@@ -439,6 +448,7 @@ function Wizard({
                     room.data ? [{ value: room.data.id, label: room.data.code }] : []
                   }
                   searchMode="server"
+                  searchDebounceMs={SEARCH_DEBOUNCE_MS}
                   onSearchChange={setRoomSearch}
                   loading={rooms.isPending}
                   optionsError={rooms.isError ? 'Không thể tải phòng' : undefined}
@@ -500,6 +510,7 @@ function Wizard({
                     label: o.fullName,
                   }))}
                   searchMode="server"
+                  searchDebounceMs={SEARCH_DEBOUNCE_MS}
                   onSearchChange={setTenantSearch}
                   loading={tenants.isPending}
                   onValueChange={(ids) => {

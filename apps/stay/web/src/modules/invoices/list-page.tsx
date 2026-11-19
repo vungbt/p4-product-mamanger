@@ -18,6 +18,7 @@ import { INVOICE_KINDS, INVOICE_STATUSES, isPeriod, type StayInvoiceSummary } fr
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { OPTIONS_PAGE_SIZE, PAGE_SIZE_OPTIONS, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import { useCanOn } from '@/libraries/ability';
 import { useActiveBuilding } from '@/libraries/buildings/building-provider';
 import { FILTER_ROW_FIELD, FILTER_ROW_GROW, FilterBar } from '@/libraries/filter-bar';
@@ -26,9 +27,9 @@ import { PeriodPicker } from '@/libraries/forms/period-picker';
 import { ListTable, rowTestId } from '@/libraries/list-table';
 import { ScreenHeader } from '@/libraries/screen-header';
 import { latestSearchParams } from '@/libraries/search-params';
-import { PAGE_SIZE_OPTIONS, useTableParams } from '@/libraries/table-params';
-import { PaymentDialog } from '../payments/payment-dialog';
-import { isCollectable } from '../payments/payment-ui';
+import { useTableParams } from '@/libraries/table-params';
+import { PaymentDialog } from '@/modules/payments/payment-dialog';
+import { isCollectable } from '@/modules/payments/payment-ui';
 import { useCurrentBillingPeriod } from './current-period';
 import {
   billingRunPath,
@@ -61,14 +62,23 @@ const ALL_PERIODS = 'all';
 /** O-21 Danh sách hoá đơn: filters, paging and sort on the URL; cards on phones. */
 export default function InvoiceListPage() {
   const { buildingId } = useActiveBuilding();
+
   const [params, setParams] = useSearchParams();
+
   const [search, setSearch] = useState(params.get('q') ?? '');
+
   const [roomSearch, setRoomSearch] = useState('');
+
   const navigate = useNavigate();
+
   const canCreate = useCanOn('create', 'Invoice', { buildingId: buildingId ?? undefined });
+
   const canPay = useCanOn('create', 'Payment', { buildingId: buildingId ?? undefined });
+
   const canShare = useCanOn('update', 'Invoice', { buildingId: buildingId ?? undefined });
+
   const [collecting, setCollecting] = useState<StayInvoiceSummary | null>(null);
+
   const table = useTableParams({
     sortFields: SORT_FIELDS,
     defaultSort: { sortBy: 'createdAt', sortOrder: 'desc' },
@@ -76,8 +86,10 @@ export default function InvoiceListPage() {
 
   const q = params.get('q') ?? '';
   const periodParam = params.get('period');
+
   const currentPeriod = useCurrentBillingPeriod(buildingId);
   // No `period` on the URL: the current billing period (as the overview); `all`: every period.
+
   const period = isPeriod(periodParam)
     ? periodParam
     : periodParam === ALL_PERIODS
@@ -88,7 +100,12 @@ export default function InvoiceListPage() {
   const kind = INVOICE_KINDS.find((value) => value === params.get('kind'));
   const overdue = params.get('overdue') === 'true';
   const roomId = params.get('roomId') ?? '';
-  const rooms = useRooms(buildingId ?? '', { pageSize: 100, q: roomSearch || undefined });
+
+  const rooms = useRooms(buildingId ?? '', {
+    pageSize: OPTIONS_PAGE_SIZE,
+    q: roomSearch || undefined,
+  });
+
   const query = useQuery({
     ...invoiceQueryOptions(useStaySdk()).list({
       buildingId: buildingId ?? undefined,
@@ -121,6 +138,7 @@ export default function InvoiceListPage() {
 
   // Status tabs: one of the statuses, or "Quá hạn" (`overdue=true`); "Tất cả" clears both.
   const statusTab = overdue ? 'overdue' : (status ?? 'all');
+
   const selectStatusTab = (value: string) =>
     setParams(
       () => {
@@ -152,7 +170,7 @@ export default function InvoiceListPage() {
           },
           { replace: true },
         ),
-      300,
+      SEARCH_DEBOUNCE_MS,
     );
 
     return () => clearTimeout(timer);
@@ -267,6 +285,7 @@ export default function InvoiceListPage() {
               placeholder="Tất cả phòng"
               clearable
               searchMode="server"
+              searchDebounceMs={SEARCH_DEBOUNCE_MS}
               onSearchChange={setRoomSearch}
               rootClassName={FILTER_ROW_FIELD}
               value={roomId || null}
@@ -323,6 +342,7 @@ function CollectButton({
   onCollect: RowsProps['onCollect'];
 }) {
   if (!onCollect || !isCollectable(invoice)) return null;
+
   return (
     <IconButton
       icon="moneyReceive"
