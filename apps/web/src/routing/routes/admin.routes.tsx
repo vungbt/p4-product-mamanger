@@ -5,6 +5,8 @@ import type { IRoute } from '@/routing/route.types';
 const AdminLoginScreen = lazy(() => import('@/modules/admin/login/page'));
 const AdminDashboardScreen = lazy(() => import('@/modules/admin/dashboard/page'));
 const AdminProductsScreen = lazy(() => import('@/modules/admin/products/page'));
+const AdminProductDetailScreen = lazy(() => import('@/modules/admin/products/detail/page'));
+const AdminVariantsScreen = lazy(() => import('@/modules/admin/products/variants/page'));
 const AdminCategoriesScreen = lazy(() => import('@/modules/admin/categories/page'));
 const AdminOrdersScreen = lazy(() => import('@/modules/admin/orders/page'));
 const AdminLayout = lazy(() => import('@/modules/admin/layout/layout'));
@@ -54,6 +56,14 @@ export const adminPortalRoutes: IRoute[] = [
             exact: true,
           },
           {
+            path: ROUTES.admin['product-variants'],
+            name: 'product-variants',
+            ability: { action: 'read', subject: 'Catalog' },
+            label: 'SKUs',
+            component: AdminVariantsScreen,
+            exact: true,
+          },
+          {
             path: ROUTES.admin['product-categories'],
             name: 'product-categories',
             ability: { action: 'read', subject: 'Catalog' },
@@ -75,6 +85,14 @@ export const adminPortalRoutes: IRoute[] = [
             ability: { action: 'write', subject: 'Catalog' },
             label: 'Edit product',
             component: AdminProductsScreen,
+            hideInMenu: true,
+          },
+          {
+            path: '/admin/products/:id',
+            name: 'product-detail',
+            ability: { action: 'read', subject: 'Catalog' },
+            label: 'Product details',
+            component: AdminProductDetailScreen,
             hideInMenu: true,
           },
         ],
