@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Compressed dump of the Stay database; keeps KEEP_DAYS (7) days in BACKUP_DIR (backups/daily).
 # Installed by scripts/deploy.stay.sh, which also runs it into backups/predeploy before each API deploy.
 # Restore: gunzip -c FILE | docker compose -p stay exec -T postgres psql -U "$USER" -d "$DB"
-set -eu
+set -euo pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKUP_DIR="${BACKUP_DIR:-$DIR/backups/daily}"

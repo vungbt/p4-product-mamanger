@@ -26074,7 +26074,9 @@ export interface operations {
         };
         content: {
           'application/json': {
+            service?: string;
             status?: string;
+            version?: string;
           };
         };
       };

@@ -66,7 +66,9 @@ export function createApp() {
   });
 
   app.get('/health', (_req, res) => {
-    res.status(StatusCodes.OK).json({ status: 'ok', service: '@p4/api' });
+    res
+      .status(StatusCodes.OK)
+      .json({ status: 'ok', service: '@p4/api', version: process.env.APP_VERSION ?? 'dev' });
   });
 
   app.use('/api', baseMiddleware, apiRouter);

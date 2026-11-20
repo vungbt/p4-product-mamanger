@@ -37,7 +37,12 @@ describe('Stay API: health, Better Auth, me and capabilities', { skip: !base }, 
 
     assert.equal(live.status, 200);
     assert.equal(health.status, 200);
-    assert.deepEqual(await health.json(), { status: 'ok', service: '@stay/api', database: 'up' });
+    assert.deepEqual(await health.json(), {
+      status: 'ok',
+      service: '@stay/api',
+      database: 'up',
+      version: process.env.APP_VERSION ?? 'dev',
+    });
   });
 
   test('unauthenticated requests are rejected', async () => {
