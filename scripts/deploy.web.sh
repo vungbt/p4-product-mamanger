@@ -19,4 +19,6 @@ chmod -R a+rX "$root/releases/$release"
 ln -s "$root/releases/$release" "$root/current.next"
 mv -Tf "$root/current.next" "$root/current"
 echo "Published web release: $release"
+# Keep the three newest releases (the live one is always among them).
+ls -1dt "$root"/releases/* | tail -n +4 | xargs -r rm -rf
 REMOTE

@@ -141,6 +141,11 @@ if $DO_API; then
     set -e
     cd $REMOTE_DIR
     chmod 600 .env.stay.prod
+    chmod 700 stay-db-backup.sh
+    if $COMPOSE ps --status running postgres 2>/dev/null | grep -q postgres; then
+      echo "  Pre-deploy database backup (kept 30 days)..."
+      BACKUP_DIR=$REMOTE_DIR/backups/predeploy KEEP_DAYS=30 ./stay-db-backup.sh
+    fi
     if docker image inspect stay-api:latest >/dev/null 2>&1; then
       docker tag stay-api:latest stay-api:previous
     fi
@@ -161,7 +166,6 @@ if $DO_API; then
     docker image prune -f >/dev/null
     docker builder prune -f >/dev/null 2>&1 || true
 
-    chmod 700 stay-db-backup.sh
     echo "15 3 * * * root $REMOTE_DIR/stay-db-backup.sh >> /var/log/stay-db-backup.log 2>&1" > /etc/cron.d/stay-db-backup
     $COMPOSE ps
     echo "  Memory:"; docker stats --no-stream --format '  {{.Name}} {{.MemUsage}}' | grep stay- || true
