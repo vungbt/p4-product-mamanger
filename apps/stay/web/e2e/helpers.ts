@@ -42,38 +42,52 @@ export async function pickDate(
     typeof label === 'string' ? { name: label, exact: true } : { name: label },
   );
 
-  await trigger.click();
-
-  // The open calendar renders in a portal; only one is open at a time.
+  // A closing popover can still have visible days during its exit animation.
+  // Retry the whole interaction and only accept the value shown by the field.
   const shownDay = page.locator('td[data-day]:not([data-outside])').first();
   const target = page.locator(`td[data-day="${isoDate}"]:not([data-outside]) button`);
   const month = isoDate.slice(0, 7);
+  const expected = displayIsoDate(isoDate);
 
-  await expect(shownDay).toBeVisible();
-  if ((await shownDay.getAttribute('data-day'))?.slice(0, 4) !== isoDate.slice(0, 4)) {
-    await page.getByRole('combobox', { name: 'Năm', exact: true }).focus();
-    await page.keyboard.type(isoDate.slice(0, 4));
-    await page.keyboard.press('Enter');
-    await expect(shownDay).toHaveAttribute('data-day', new RegExp(`^${isoDate.slice(0, 4)}-`));
-  }
-  for (let step = 0; step < 24 && !(await target.count()); step += 1) {
-    const shown = (await shownDay.getAttribute('data-day')) ?? isoDate;
-
-    await page
-      .getByRole('button', {
-        name: shown.slice(0, 7) < month ? 'Tháng sau' : 'Tháng trước',
-        exact: true,
-      })
-      .click();
-    await expect(shownDay).not.toHaveAttribute('data-day', shown);
-  }
-  await expect(shownDay).toHaveAttribute('data-day', new RegExp(`^${month}-`));
-  // Opening/repositioning the calendar can replace a day during the click. Re-query
-  // on a bounded retry; once selection closes the calendar, do not click again.
   await expect(async () => {
-    if (await shownDay.isVisible()) await target.click({ timeout: 1000 });
+    if ((await trigger.textContent({ timeout: 1000 })) !== expected) {
+      if ((await trigger.getAttribute('aria-expanded', { timeout: 1000 })) !== 'true') {
+        await expect(shownDay).toBeHidden({ timeout: 1000 });
+        await trigger.click({ timeout: 1000 });
+      }
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true', { timeout: 1000 });
+      await expect(shownDay).toBeVisible({ timeout: 1000 });
+      // Reopening starts from the current value/today, so navigate again on every retry.
+      if (
+        (await shownDay.getAttribute('data-day', { timeout: 1000 }))?.slice(0, 4) !==
+        isoDate.slice(0, 4)
+      ) {
+        await page.getByRole('combobox', { name: 'Năm', exact: true }).focus({ timeout: 1000 });
+        await page.keyboard.type(isoDate.slice(0, 4));
+        await page.keyboard.press('Enter');
+        await expect(shownDay).toHaveAttribute('data-day', new RegExp(`^${isoDate.slice(0, 4)}-`), {
+          timeout: 1000,
+        });
+      }
+      for (let step = 0; step < 24 && !(await target.count()); step += 1) {
+        const shown = (await shownDay.getAttribute('data-day', { timeout: 1000 })) ?? isoDate;
+
+        await page
+          .getByRole('button', {
+            name: shown.slice(0, 7) < month ? 'Tháng sau' : 'Tháng trước',
+            exact: true,
+          })
+          .click({ timeout: 1000 });
+        await expect(shownDay).not.toHaveAttribute('data-day', shown, { timeout: 1000 });
+      }
+      await expect(shownDay).toHaveAttribute('data-day', new RegExp(`^${month}-`), {
+        timeout: 1000,
+      });
+      await target.click({ timeout: 1000 });
+    }
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false', { timeout: 1000 });
     await expect(shownDay).toBeHidden({ timeout: 1000 });
-    await expect(trigger).toHaveText(displayIsoDate(isoDate), { timeout: 1000 });
+    await expect(trigger).toHaveText(expected, { timeout: 1000 });
   }).toPass({ timeout: 5000 });
   await expect(target).toBeHidden();
 }
