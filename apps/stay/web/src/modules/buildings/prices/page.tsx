@@ -1,4 +1,4 @@
-import { Alert, cn, IconButton, Tag } from '@itclabs/react-ui';
+import { Alert, cn, EmptyState, IconButton, Tag, Timeline } from '@itclabs/react-ui';
 import { useBuilding, useBuildingPrices } from '@stay/sdk/react';
 import type { BuildingServicePrice } from '@stay/shared';
 import { useEffect, useState } from 'react';
@@ -24,35 +24,39 @@ function PriceHistory({ item }: { item: BuildingServicePrice }) {
 
   const today = todayIsoDate();
 
-  if (item.history.length === 0)
-    return <p className="text-ui-sm text-muted">{t('prices.noHistory')}</p>;
+  if (item.history.length === 0) return <EmptyState size="compact" title={t('prices.noHistory')} />;
 
   return (
-    <ol className="grid gap-2" aria-label={t('prices.historyOf', { name: item.name })}>
-      {item.history.map((entry) => (
-        <li
-          key={entry.id}
-          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-ui-sm"
-          data-testid="price-history-entry"
-        >
-          <span className="w-28 font-medium text-ink">
-            {t('prices.from', { date: displayDate(entry.effectiveFrom) })}
-          </span>
-          <span className="tabular-nums text-ink">
-            {entry.price === null ? t('prices.backToDefault') : formatVnd(entry.price)}
-          </span>
-          {entry.effectiveFrom === item.effectiveFrom ? (
-            <Tag size="sm" tone="success">
-              {t('prices.current')}
-            </Tag>
-          ) : entry.effectiveFrom > today ? (
-            <Tag size="sm" tone="info">
-              {t('prices.upcoming')}
-            </Tag>
-          ) : null}
-        </li>
-      ))}
-    </ol>
+    <Timeline
+      aria-label={t('prices.historyOf', { name: item.name })}
+      showStatus={false}
+      items={item.history.map((entry) => ({
+        id: entry.id,
+        state: entry.effectiveFrom > today ? 'upcoming' : 'completed',
+        title: (
+          <div
+            className="flex flex-wrap items-center gap-x-3 gap-y-1 text-ui-sm"
+            data-testid="price-history-entry"
+          >
+            <span className="w-28 font-medium text-ink">
+              {t('prices.from', { date: displayDate(entry.effectiveFrom) })}
+            </span>
+            <span className="tabular-nums text-ink">
+              {entry.price === null ? t('prices.backToDefault') : formatVnd(entry.price)}
+            </span>
+            {entry.effectiveFrom === item.effectiveFrom ? (
+              <Tag size="sm" tone="success">
+                {t('prices.current')}
+              </Tag>
+            ) : entry.effectiveFrom > today ? (
+              <Tag size="sm" tone="info">
+                {t('prices.upcoming')}
+              </Tag>
+            ) : null}
+          </div>
+        ),
+      }))}
+    />
   );
 }
 

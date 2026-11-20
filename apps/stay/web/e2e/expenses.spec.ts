@@ -25,6 +25,7 @@ for (const width of [1280, 375]) {
     await form.getByRole('textbox', { name: 'Ghi chú', exact: true }).fill(note);
     await form
       .getByLabel('Ảnh hoá đơn', { exact: true })
+      .and(page.locator('input[type="file"]'))
       .setInputFiles({ name: 'receipt.png', mimeType: 'image/png', buffer: PNG });
     await form.getByRole('button', { name: 'Lưu chi phí' }).click();
 

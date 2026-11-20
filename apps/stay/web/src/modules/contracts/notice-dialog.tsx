@@ -2,7 +2,11 @@ import {
   Button,
   DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Textarea,
   useAppForm,
@@ -111,38 +115,44 @@ export function NoticeDialog({
         className="grid min-w-0 gap-4"
         aria-label="Báo trả phòng"
       >
-        <FormError message={error} />
-        {conflict ? (
-          <ConflictAlert
-            onReload={() => {
-              setConflict(false);
-              onReload();
-            }}
-          />
-        ) : null}
-        <FormField
-          name="expectedMoveOutDate"
-          label="Ngày dự kiến trả phòng"
-          required
-          {...DATE_FIELD}
-        >
-          <DatePicker minDate={min} maxDate={max} clearable={false} />
-        </FormField>
-        <FormField name="note" label="Ghi chú">
-          <Textarea maxLength={2000} />
-        </FormField>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="secondary" disabled={notice.isPending} onClick={close}>
-            Huỷ
-          </Button>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button type="submit" loading={submitting}>
-                Báo trả phòng
-              </Button>
-            )}
-          </FormSubmit>
-        </div>
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              <FormError message={error} />
+              {conflict ? (
+                <ConflictAlert
+                  onReload={() => {
+                    setConflict(false);
+                    onReload();
+                  }}
+                />
+              ) : null}
+              <FormField
+                name="expectedMoveOutDate"
+                label="Ngày dự kiến trả phòng"
+                required
+                {...DATE_FIELD}
+              >
+                <DatePicker minDate={min} maxDate={max} clearable={false} />
+              </FormField>
+              <FormField name="note" label="Ghi chú">
+                <Textarea maxLength={2000} />
+              </FormField>
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <Button variant="secondary" disabled={notice.isPending} onClick={close}>
+              Huỷ
+            </Button>
+            <FormSubmit form={form}>
+              {(submitting) => (
+                <Button type="submit" loading={submitting}>
+                  Báo trả phòng
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </Overlay>
   );

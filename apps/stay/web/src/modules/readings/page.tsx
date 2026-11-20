@@ -1,4 +1,4 @@
-import { Button, Icon, Progress, Select } from '@itclabs/react-ui';
+import { Button, EmptyState, Icon, Progress, Select } from '@itclabs/react-ui';
 import { useBuilding, useReadings } from '@stay/sdk/react';
 import {
   defaultReadingPeriod,
@@ -179,7 +179,11 @@ function BuildingReadings({
           ) : query.isError ? (
             <LoadError error={query.error} onRetry={() => void query.refetch()} />
           ) : !rooms.length ? (
-            <p>Chưa có phòng có hợp đồng hiệu lực trong kỳ này.</p>
+            <EmptyState
+              size="compact"
+              appearance="plain"
+              title={<>Chưa có phòng có hợp đồng hiệu lực trong kỳ này.</>}
+            />
           ) : (
             <div className="grid min-w-0 gap-4 lg:grid-cols-2">
               {rooms.map((room) => (

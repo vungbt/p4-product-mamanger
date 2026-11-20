@@ -1,4 +1,4 @@
-import { Icon, type IconName } from '@itclabs/react-ui';
+import { EmptyState, Icon, type IconName, Tag } from '@itclabs/react-ui';
 import type { OverviewLink, OverviewTodo, OverviewTodoKind } from '@stay/shared';
 import { Link } from 'react-router-dom';
 import { displayDate, formatVnd } from '@/libraries/format';
@@ -71,12 +71,12 @@ export function TodoList({ todos }: { todos: OverviewTodo[] }) {
         Việc cần làm
       </h2>
       {open.length === 0 ? (
-        <p
-          className="rounded-panel border border-line bg-surface p-4 text-muted"
+        <EmptyState
+          size="compact"
+          appearance="plain"
+          title={<>Không có việc cần làm.</>}
           data-testid="overview-todo-empty"
-        >
-          Không có việc cần làm.
-        </p>
+        />
       ) : (
         <ol className="grid min-w-0 gap-2" data-testid="overview-todos">
           {open.map((todo) => {
@@ -100,12 +100,9 @@ export function TodoList({ todos }: { todos: OverviewTodo[] }) {
                     <span className="font-semibold text-ink">{title}</span>
                     <span className="text-ui-sm text-muted">{detail}</span>
                   </span>
-                  <span
-                    className="shrink-0 rounded-control bg-brand-50 px-2 py-0.5 font-semibold text-accent"
-                    aria-hidden
-                  >
+                  <Tag tone="brand" aria-hidden>
                     {todo.count}
-                  </span>
+                  </Tag>
                 </Link>
               </li>
             );

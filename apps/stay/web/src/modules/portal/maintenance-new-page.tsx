@@ -1,7 +1,11 @@
 import {
   Button,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   Select,
@@ -52,6 +56,7 @@ export default function PortalMaintenanceNewPage() {
 
   const form = useAppForm({
     defaultValues: {
+      uploadFiles: [] as File[],
       category: 'other' as MaintenanceCategory,
       severity: 'normal' as MaintenanceSeverity,
       title: '',
@@ -108,58 +113,73 @@ export default function PortalMaintenanceNewPage() {
         className="grid min-w-0 gap-4 rounded-panel border border-line bg-surface p-4"
         aria-label="Báo hỏng mới"
       >
-        {prompt}
-        <FormError message={error} />
-        <FormField name="category" label="Hạng mục" required>
-          <Select
-            options={MAINTENANCE_CATEGORIES.map((category) => ({
-              value: category,
-              label: MAINTENANCE_CATEGORY_LABELS[category],
-            }))}
-          />
-        </FormField>
-        <FormField name="severity" label="Mức độ" required>
-          <Select
-            options={MAINTENANCE_SEVERITIES.map((severity) => ({
-              value: severity,
-              label: MAINTENANCE_SEVERITY_LABELS[severity],
-            }))}
-          />
-        </FormField>
-        <FormField name="title" label="Tiêu đề" required>
-          <Input maxLength={200} placeholder="Ví dụ: Vòi nước nhà tắm bị rò" />
-        </FormField>
-        <FormField name="description" label="Mô tả">
-          <Textarea maxLength={2000} rows={4} />
-        </FormField>
-        <div className="grid gap-1">
-          <label htmlFor="portal-maintenance-photos" className="font-medium">
-            Ảnh (tối đa {MAINTENANCE_MAX_PHOTOS})
-          </label>
-          <Input
-            id="portal-maintenance-photos"
-            type="file"
-            multiple
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(event) => setFiles([...(event.target.files ?? [])])}
-          />
-          {files.length > 0 ? (
-            <p className="text-ui-sm text-muted">Đã chọn {files.length} ảnh.</p>
-          ) : null}
-        </div>
-        <p className="text-ui-sm text-muted">Mỗi phòng gửi tối đa 10 báo hỏng mỗi ngày.</p>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="secondary" onClick={() => navigate(portalPaths.maintenance)}>
-            Huỷ
-          </Button>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button type="submit" loading={submitting}>
-                Gửi báo hỏng
-              </Button>
-            )}
-          </FormSubmit>
-        </div>
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              {prompt}
+              <FormError message={error} />
+              <FormField name="category" label="Hạng mục" required>
+                <Select
+                  options={MAINTENANCE_CATEGORIES.map((category) => ({
+                    value: category,
+                    label: MAINTENANCE_CATEGORY_LABELS[category],
+                  }))}
+                />
+              </FormField>
+              <FormField name="severity" label="Mức độ" required>
+                <Select
+                  options={MAINTENANCE_SEVERITIES.map((severity) => ({
+                    value: severity,
+                    label: MAINTENANCE_SEVERITY_LABELS[severity],
+                  }))}
+                />
+              </FormField>
+              <FormField name="title" label="Tiêu đề" required>
+                <Input maxLength={200} placeholder="Ví dụ: Vòi nước nhà tắm bị rò" />
+              </FormField>
+              <FormField name="description" label="Mô tả">
+                <Textarea maxLength={2000} rows={4} />
+              </FormField>
+              <div className="grid gap-1">
+                <form.AppField
+                  name="uploadFiles"
+                  listeners={{
+                    onChange: ({ value: files }) => {
+                      setFiles(files);
+                    },
+                  }}
+                >
+                  {(field) => (
+                    <field.UploadField
+                      id="portal-maintenance-photos"
+                      multiple
+                      accept="image/jpeg,image/png,image/webp"
+                      label={`Ảnh (tối đa ${MAINTENANCE_MAX_PHOTOS})`}
+                      maxBytes={10485760}
+                      maxFiles={MAINTENANCE_MAX_PHOTOS}
+                    />
+                  )}
+                </form.AppField>
+                {files.length > 0 ? (
+                  <p className="text-ui-sm text-muted">Đã chọn {files.length} ảnh.</p>
+                ) : null}
+              </div>
+              <p className="text-ui-sm text-muted">Mỗi phòng gửi tối đa 10 báo hỏng mỗi ngày.</p>
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <Button variant="secondary" onClick={() => navigate(portalPaths.maintenance)}>
+              Huỷ
+            </Button>
+            <FormSubmit form={form}>
+              {(submitting) => (
+                <Button type="submit" loading={submitting}>
+                  Gửi báo hỏng
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </>
   );

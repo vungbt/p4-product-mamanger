@@ -4,7 +4,12 @@ import {
   type ColumnDef,
   DataTable,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormGridItem,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   NumberInput,
@@ -281,80 +286,105 @@ export default function RoomBulkPage() {
       </header>
 
       <Form form={form} schema={schema} className="grid gap-5" noValidate data-testid="bulk-form">
-        {formError ? (
-          <Alert tone="danger" role="alert">
-            {formError}
-          </Alert>
-        ) : null}
+        <FormLayout size="full">
+          <FormGrid columns={1}>
+            {formError ? (
+              <Alert tone="danger" role="alert">
+                {formError}
+              </Alert>
+            ) : null}
 
-        <section className="grid gap-4 rounded-panel border border-line bg-surface p-4 shadow-panel sm:grid-cols-3 sm:p-5">
-          <FormField name="floorFrom" label={t('rooms.bulk.floorFrom')} required className="mb-0">
-            <NumberInput min={ROOM_FLOOR_MIN} max={ROOM_FLOOR_MAX} step={1} />
-          </FormField>
-          <FormField name="floorTo" label={t('rooms.bulk.floorTo')} required className="mb-0">
-            <NumberInput min={ROOM_FLOOR_MIN} max={ROOM_FLOOR_MAX} step={1} />
-          </FormField>
-          <FormField
-            name="roomsPerFloor"
-            label={t('rooms.bulk.roomsPerFloor')}
-            required
-            className="mb-0"
-          >
-            <NumberInput min={1} max={ROOM_BULK_PER_FLOOR_MAX} step={1} />
-          </FormField>
-          <FormField
-            name="template"
-            label={t('rooms.bulk.template')}
-            required
-            className="mb-0 sm:col-span-3"
-          >
-            <Input hint={t('rooms.bulk.templateHint')} maxLength={40} />
-          </FormField>
-          <FormField name="listPrice" label={t('rooms.bulk.listPrice')} required className="mb-0">
-            <NumberInput
-              min={0}
-              max={ROOM_PRICE_MAX}
-              step={100_000}
-              endAddon="₫"
-              controls={false}
-            />
-          </FormField>
-          <FormField
-            name="maxOccupants"
-            label={t('rooms.fields.maxOccupants')}
-            required
-            className="mb-0"
-          >
-            <NumberInput min={1} max={ROOM_MAX_OCCUPANTS_LIMIT} step={1} />
-          </FormField>
-          <FormField name="areaM2" label={t('rooms.fields.areaM2')} className="mb-0">
-            <NumberInput min={0} max={ROOM_AREA_MAX} step="any" endAddon="m²" controls={false} />
-          </FormField>
-        </section>
+            <FormSection variant="card">
+              <FormGrid columns={3}>
+                <FormField
+                  name="floorFrom"
+                  label={t('rooms.bulk.floorFrom')}
+                  required
+                  className="mb-0"
+                >
+                  <NumberInput min={ROOM_FLOOR_MIN} max={ROOM_FLOOR_MAX} step={1} />
+                </FormField>
+                <FormField name="floorTo" label={t('rooms.bulk.floorTo')} required className="mb-0">
+                  <NumberInput min={ROOM_FLOOR_MIN} max={ROOM_FLOOR_MAX} step={1} />
+                </FormField>
+                <FormField
+                  name="roomsPerFloor"
+                  label={t('rooms.bulk.roomsPerFloor')}
+                  required
+                  className="mb-0"
+                >
+                  <NumberInput min={1} max={ROOM_BULK_PER_FLOOR_MAX} step={1} />
+                </FormField>
+                <FormGridItem span="full">
+                  <FormField
+                    name="template"
+                    label={t('rooms.bulk.template')}
+                    required
+                    className="mb-0"
+                  >
+                    <Input hint={t('rooms.bulk.templateHint')} maxLength={40} />
+                  </FormField>
+                </FormGridItem>
+                <FormField
+                  name="listPrice"
+                  label={t('rooms.bulk.listPrice')}
+                  required
+                  className="mb-0"
+                >
+                  <NumberInput
+                    min={0}
+                    max={ROOM_PRICE_MAX}
+                    step={100_000}
+                    endAddon="₫"
+                    controls={false}
+                  />
+                </FormField>
+                <FormField
+                  name="maxOccupants"
+                  label={t('rooms.fields.maxOccupants')}
+                  required
+                  className="mb-0"
+                >
+                  <NumberInput min={1} max={ROOM_MAX_OCCUPANTS_LIMIT} step={1} />
+                </FormField>
+                <FormField name="areaM2" label={t('rooms.fields.areaM2')} className="mb-0">
+                  <NumberInput
+                    min={0}
+                    max={ROOM_AREA_MAX}
+                    step="any"
+                    endAddon="m²"
+                    controls={false}
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-        <section className="rounded-panel border border-line bg-surface p-4 shadow-panel sm:p-5">
-          <FormField name="serviceIds" className="mb-0">
-            {(field) => (
-              <ServiceChecklist
-                value={Array.isArray(field.state.value) ? field.state.value : []}
-                onChange={(ids) => field.handleChange(ids)}
-              />
-            )}
-          </FormField>
-        </section>
-
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="secondary" onClick={() => navigate(ROUTES.rooms)}>
-            {t('rooms.form.cancel')}
-          </Button>
-          <FormSubmit form={form}>
-            {(isSubmitting) => (
-              <Button type="submit" variant="secondary" loading={isSubmitting}>
-                {t('rooms.bulk.preview')}
-              </Button>
-            )}
-          </FormSubmit>
-        </div>
+            <FormSection variant="card">
+              <FormGrid columns={1}>
+                <FormField name="serviceIds" className="mb-0">
+                  {(field) => (
+                    <ServiceChecklist
+                      value={Array.isArray(field.state.value) ? field.state.value : []}
+                      onChange={(ids) => field.handleChange(ids)}
+                    />
+                  )}
+                </FormField>
+              </FormGrid>
+            </FormSection>
+          </FormGrid>
+          <FormActions>
+            <Button variant="secondary" onClick={() => navigate(ROUTES.rooms)}>
+              {t('rooms.form.cancel')}
+            </Button>
+            <FormSubmit form={form}>
+              {(isSubmitting) => (
+                <Button type="submit" variant="secondary" loading={isSubmitting}>
+                  {t('rooms.bulk.preview')}
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
 
       {current ? (

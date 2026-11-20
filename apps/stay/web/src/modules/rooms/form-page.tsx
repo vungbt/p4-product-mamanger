@@ -3,7 +3,12 @@ import {
   Button,
   EmptyState,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormGridItem,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   NumberInput,
@@ -225,125 +230,168 @@ function RoomForm({ room, buildingId, onReload }: RoomFormProps) {
       noValidate
       data-testid="room-form"
     >
-      {formError ? (
-        <Alert
-          tone="danger"
-          role="alert"
-          data-testid="room-form-error"
-          action={
-            stale && onReload ? (
-              <Button variant="secondary" size="sm" onClick={onReload}>
-                {t('rooms.form.reload')}
-              </Button>
-            ) : undefined
-          }
-        >
-          {formError}
-        </Alert>
-      ) : null}
-
-      <section className="grid gap-4 rounded-panel border border-line bg-surface p-4 shadow-panel sm:grid-cols-2 sm:p-5">
-        <FormField name="code" label={t('rooms.fields.code')} required className="mb-0">
-          <Input
-            maxLength={ROOM_CODE_MAX_LENGTH}
-            autoCapitalize="characters"
-            placeholder="101"
-            hint={t('rooms.form.codeHint')}
-          />
-        </FormField>
-        <FormField name="floor" label={t('rooms.fields.floor')} required className="mb-0">
-          <NumberInput min={ROOM_FLOOR_MIN} max={ROOM_FLOOR_MAX} step={1} />
-        </FormField>
-        <FormField name="listPrice" label={t('rooms.fields.listPrice')} required className="mb-0">
-          <NumberInput min={0} max={ROOM_PRICE_MAX} step={100_000} endAddon="₫" controls={false} />
-        </FormField>
-        <FormField
-          name="maxOccupants"
-          label={t('rooms.fields.maxOccupants')}
-          required
-          className="mb-0"
-        >
-          <NumberInput min={1} max={ROOM_MAX_OCCUPANTS_LIMIT} step={1} />
-        </FormField>
-        <FormField name="areaM2" label={t('rooms.fields.areaM2')} className="mb-0">
-          <NumberInput min={0} max={ROOM_AREA_MAX} step="any" endAddon="m²" controls={false} />
-        </FormField>
-      </section>
-
-      <section className="rounded-panel border border-line bg-surface p-4 shadow-panel sm:p-5">
-        <FormField name="serviceIds" className="mb-0">
-          {(field) => (
-            <ServiceChecklist
-              value={Array.isArray(field.state.value) ? field.state.value : []}
-              onChange={(ids) => field.handleChange(ids)}
-              error={
-                typeof field.state.meta.errorMap.onServer === 'string'
-                  ? field.state.meta.errorMap.onServer
-                  : undefined
+      <FormLayout size="full">
+        <FormGrid columns={1}>
+          {formError ? (
+            <Alert
+              tone="danger"
+              role="alert"
+              data-testid="room-form-error"
+              action={
+                stale && onReload ? (
+                  <Button variant="secondary" size="sm" onClick={onReload}>
+                    {t('rooms.form.reload')}
+                  </Button>
+                ) : undefined
               }
-            />
-          )}
-        </FormField>
-      </section>
+            >
+              {formError}
+            </Alert>
+          ) : null}
 
-      {isNew ? (
-        <section
-          aria-labelledby="room-meters-title"
-          className="grid gap-4 rounded-panel border border-line bg-surface p-4 shadow-panel sm:grid-cols-2 sm:p-5"
-        >
-          <div className="sm:col-span-2">
-            <h2 id="room-meters-title" className="text-section font-semibold text-ink">
-              {t('rooms.detail.meters')}
-            </h2>
-            <p className="text-ui-sm text-muted">{t('rooms.form.metersHint')}</p>
-          </div>
-          <FormField
-            name="initialElectric"
-            label={t('rooms.fields.initialElectric')}
-            required
-            className="mb-0"
-          >
-            <NumberInput min={0} max={METER_READING_MAX} step={1} endAddon="kWh" controls={false} />
-          </FormField>
-          <FormField
-            name="electricSerial"
-            label={t('rooms.fields.electricSerial')}
-            className="mb-0"
-          >
-            <Input maxLength={40} />
-          </FormField>
-          <FormField
-            name="initialWater"
-            label={t('rooms.fields.initialWater')}
-            required
-            className="mb-0"
-          >
-            <NumberInput min={0} max={METER_READING_MAX} step={1} endAddon="m³" controls={false} />
-          </FormField>
-          <FormField name="waterSerial" label={t('rooms.fields.waterSerial')} className="mb-0">
-            <Input maxLength={40} />
-          </FormField>
-        </section>
-      ) : null}
+          <FormSection variant="card">
+            <FormGrid columns={2}>
+              <FormField name="code" label={t('rooms.fields.code')} required className="mb-0">
+                <Input
+                  maxLength={ROOM_CODE_MAX_LENGTH}
+                  autoCapitalize="characters"
+                  placeholder="101"
+                  hint={t('rooms.form.codeHint')}
+                />
+              </FormField>
+              <FormField name="floor" label={t('rooms.fields.floor')} required className="mb-0">
+                <NumberInput min={ROOM_FLOOR_MIN} max={ROOM_FLOOR_MAX} step={1} />
+              </FormField>
+              <FormField
+                name="listPrice"
+                label={t('rooms.fields.listPrice')}
+                required
+                className="mb-0"
+              >
+                <NumberInput
+                  min={0}
+                  max={ROOM_PRICE_MAX}
+                  step={100_000}
+                  endAddon="₫"
+                  controls={false}
+                />
+              </FormField>
+              <FormField
+                name="maxOccupants"
+                label={t('rooms.fields.maxOccupants')}
+                required
+                className="mb-0"
+              >
+                <NumberInput min={1} max={ROOM_MAX_OCCUPANTS_LIMIT} step={1} />
+              </FormField>
+              <FormField name="areaM2" label={t('rooms.fields.areaM2')} className="mb-0">
+                <NumberInput
+                  min={0}
+                  max={ROOM_AREA_MAX}
+                  step="any"
+                  endAddon="m²"
+                  controls={false}
+                />
+              </FormField>
+            </FormGrid>
+          </FormSection>
 
-      <section className="rounded-panel border border-line bg-surface p-4 shadow-panel sm:p-5">
-        <FormField name="note" label={t('rooms.fields.note')} className="mb-0">
-          <Textarea rows={3} maxLength={1000} />
-        </FormField>
-      </section>
+          <FormSection variant="card">
+            <FormGrid columns={1}>
+              <FormField name="serviceIds" className="mb-0">
+                {(field) => (
+                  <ServiceChecklist
+                    value={Array.isArray(field.state.value) ? field.state.value : []}
+                    onChange={(ids) => field.handleChange(ids)}
+                    error={
+                      typeof field.state.meta.errorMap.onServer === 'string'
+                        ? field.state.meta.errorMap.onServer
+                        : undefined
+                    }
+                  />
+                )}
+              </FormField>
+            </FormGrid>
+          </FormSection>
 
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button variant="secondary" onClick={cancel}>
-          {t('rooms.form.cancel')}
-        </Button>
-        <FormSubmit form={form}>
-          {(isSubmitting) => (
-            <Button type="submit" loading={isSubmitting}>
-              {isSubmitting ? t('rooms.form.saving') : t('rooms.form.save')}
-            </Button>
-          )}
-        </FormSubmit>
-      </div>
+          {isNew ? (
+            <FormSection variant="card" aria-labelledby="room-meters-title">
+              <FormGrid columns={2}>
+                <FormGridItem span="full">
+                  <div>
+                    <h2 id="room-meters-title" className="text-section font-semibold text-ink">
+                      {t('rooms.detail.meters')}
+                    </h2>
+                    <p className="text-ui-sm text-muted">{t('rooms.form.metersHint')}</p>
+                  </div>
+                </FormGridItem>
+                <FormField
+                  name="initialElectric"
+                  label={t('rooms.fields.initialElectric')}
+                  required
+                  className="mb-0"
+                >
+                  <NumberInput
+                    min={0}
+                    max={METER_READING_MAX}
+                    step={1}
+                    endAddon="kWh"
+                    controls={false}
+                  />
+                </FormField>
+                <FormField
+                  name="electricSerial"
+                  label={t('rooms.fields.electricSerial')}
+                  className="mb-0"
+                >
+                  <Input maxLength={40} />
+                </FormField>
+                <FormField
+                  name="initialWater"
+                  label={t('rooms.fields.initialWater')}
+                  required
+                  className="mb-0"
+                >
+                  <NumberInput
+                    min={0}
+                    max={METER_READING_MAX}
+                    step={1}
+                    endAddon="m³"
+                    controls={false}
+                  />
+                </FormField>
+                <FormField
+                  name="waterSerial"
+                  label={t('rooms.fields.waterSerial')}
+                  className="mb-0"
+                >
+                  <Input maxLength={40} />
+                </FormField>
+              </FormGrid>
+            </FormSection>
+          ) : null}
+
+          <FormSection variant="card">
+            <FormGrid columns={1}>
+              <FormField name="note" label={t('rooms.fields.note')} className="mb-0">
+                <Textarea rows={3} maxLength={1000} />
+              </FormField>
+            </FormGrid>
+          </FormSection>
+        </FormGrid>
+        <FormActions>
+          <Button variant="secondary" onClick={cancel}>
+            {t('rooms.form.cancel')}
+          </Button>
+          <FormSubmit form={form}>
+            {(isSubmitting) => (
+              <Button type="submit" loading={isSubmitting}>
+                {isSubmitting ? t('rooms.form.saving') : t('rooms.form.save')}
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }

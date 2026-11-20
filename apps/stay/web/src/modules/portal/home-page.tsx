@@ -1,4 +1,4 @@
-import { Button } from '@itclabs/react-ui';
+import { Button, EmptyState } from '@itclabs/react-ui';
 import { usePortalDocuments, usePortalInvoice, usePortalMe } from '@stay/sdk/react';
 import type { PortalInvoiceSummary, PortalOpenRequests } from '@stay/shared';
 import { useState } from 'react';
@@ -85,7 +85,11 @@ function OpenRequests({ open }: { open: PortalOpenRequests }) {
   return (
     <PortalSection title="Báo hỏng và yêu cầu" testId="portal-open-requests">
       {rows.length === 0 ? (
-        <p className="text-ui-sm text-muted">Không có báo hỏng hay yêu cầu nào đang chờ.</p>
+        <EmptyState
+          size="compact"
+          appearance="plain"
+          title={<>Không có báo hỏng hay yêu cầu nào đang chờ.</>}
+        />
       ) : (
         <ul className="grid gap-1">
           {rows.map((row) => (
@@ -128,7 +132,11 @@ export default function PortalHomePage() {
             {data.currentInvoice ? (
               <CurrentInvoice invoice={data.currentInvoice} />
             ) : (
-              <p className="text-muted">Chưa có hoá đơn nào được phát hành.</p>
+              <EmptyState
+                size="compact"
+                appearance="plain"
+                title={<>Chưa có hoá đơn nào được phát hành.</>}
+              />
             )}
           </PortalSection>
 

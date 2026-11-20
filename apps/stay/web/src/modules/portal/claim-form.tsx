@@ -2,7 +2,11 @@ import {
   Button,
   DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   NumberInput,
@@ -73,6 +77,7 @@ export function ClaimForm({
 
   const form = useAppForm({
     defaultValues: {
+      uploadFiles: [] as File[],
       amount: remaining as number | null,
       paidOn: todayIsoDate(),
       reference: '',
@@ -141,54 +146,66 @@ export function ClaimForm({
       aria-label="Tôi đã chuyển khoản"
       data-testid="portal-claim-form"
     >
-      {prompt}
-      <FormError message={error} />
-      <FormField name="amount" label="Số tiền đã chuyển" required>
-        <NumberInput min={1} max={remaining} step={1} inputMode="numeric" endAddon="₫" />
-      </FormField>
-      <FormField name="paidOn" label="Ngày chuyển" required {...DATE_FIELD}>
-        <DatePicker maxDate={todayIsoDate()} clearable={false} />
-      </FormField>
-      <div className="grid gap-1">
-        <label htmlFor="portal-claim-receipt" className="font-medium">
-          Ảnh biên lai
-        </label>
-        <Input
-          id="portal-claim-receipt"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(event) => {
-            setFile(event.target.files?.[0] ?? null);
-            setReceiptFileId(null);
-          }}
-        />
-        <p className="text-ui-sm text-muted">Tuỳ chọn: ảnh chụp màn hình giao dịch.</p>
-      </div>
-      <FormField name="reference" label="Mã giao dịch">
-        <Input maxLength={120} autoComplete="off" />
-      </FormField>
-      <FormField name="note" label="Ghi chú">
-        <Textarea maxLength={500} rows={2} />
-      </FormField>
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button
-          variant="secondary"
-          onClick={() => {
-            form.reset();
-            setFile(null);
-            onDone();
-          }}
-        >
-          Huỷ
-        </Button>
-        <FormSubmit form={form}>
-          {(submitting) => (
-            <Button type="submit" loading={submitting}>
-              Gửi xác nhận
-            </Button>
-          )}
-        </FormSubmit>
-      </div>
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            {prompt}
+            <FormError message={error} />
+            <FormField name="amount" label="Số tiền đã chuyển" required>
+              <NumberInput min={1} max={remaining} step={1} inputMode="numeric" endAddon="₫" />
+            </FormField>
+            <FormField name="paidOn" label="Ngày chuyển" required {...DATE_FIELD}>
+              <DatePicker maxDate={todayIsoDate()} clearable={false} />
+            </FormField>
+            <div className="grid gap-1">
+              <form.AppField
+                name="uploadFiles"
+                listeners={{
+                  onChange: ({ value: files }) => {
+                    setFile(files[0] ?? null);
+                    setReceiptFileId(null);
+                  },
+                }}
+              >
+                {(field) => (
+                  <field.UploadField
+                    id="portal-claim-receipt"
+                    accept="image/jpeg,image/png,image/webp"
+                    label="Ảnh biên lai"
+                    maxBytes={10485760}
+                  />
+                )}
+              </form.AppField>
+              <p className="text-ui-sm text-muted">Tuỳ chọn: ảnh chụp màn hình giao dịch.</p>
+            </div>
+            <FormField name="reference" label="Mã giao dịch">
+              <Input maxLength={120} autoComplete="off" />
+            </FormField>
+            <FormField name="note" label="Ghi chú">
+              <Textarea maxLength={500} rows={2} />
+            </FormField>
+          </FormGrid>
+        </FormSection>
+        <FormActions>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              form.reset();
+              setFile(null);
+              onDone();
+            }}
+          >
+            Huỷ
+          </Button>
+          <FormSubmit form={form}>
+            {(submitting) => (
+              <Button type="submit" loading={submitting}>
+                Gửi xác nhận
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }

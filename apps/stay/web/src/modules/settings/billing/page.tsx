@@ -2,7 +2,12 @@ import {
   Alert,
   Button,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormGridItem,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   NumberInput,
@@ -180,92 +185,89 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
 
   return (
     <Form form={form} schema={schema} className="grid max-w-4xl gap-5" data-testid="billing-form">
-      {prompt}
-      {conflict ? <ConflictAlert onReload={onReload} /> : null}
-      <FormError message={formError} />
+      <FormLayout size="full">
+        {prompt}
+        {conflict ? <ConflictAlert onReload={onReload} /> : null}
+        <FormError message={formError} />
 
-      <section className="grid gap-4 rounded-panel border border-line bg-surface p-4 shadow-panel sm:p-6">
-        <h2 className="text-section font-semibold text-ink">{t('billing.cycleTitle')}</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          <FormField
-            name="readingDayMonth"
-            label={t('billing.readingDayMonth')}
-            required
-            className="mb-0"
-          >
-            <Select options={monthOptions} hint={t('billing.readingDayMonthHint')} />
-          </FormField>
-          <FormField name="readingDay" label={t('billing.readingDay')} required className="mb-0">
-            <Select options={dayOptions} />
-          </FormField>
-          <FormField name="issueDay" label={t('billing.issueDay')} required className="mb-0">
-            <Select options={dayOptions} />
-          </FormField>
-          <FormField name="dueDay" label={t('billing.dueDay')} required className="mb-0">
-            <Select options={dayOptions} />
-          </FormField>
-          <FormField
-            name="graceDays"
-            label={t('billing.graceDays')}
-            required
-            className="mb-0 md:col-span-2"
-          >
-            <Select options={graceOptions} hint={t('billing.graceDaysHint')} />
-          </FormField>
-        </div>
+        <FormSection title={t('billing.cycleTitle')} variant="card">
+          <FormGrid columns={3}>
+            <FormField
+              name="readingDayMonth"
+              label={t('billing.readingDayMonth')}
+              required
+              className="mb-0"
+            >
+              <Select options={monthOptions} hint={t('billing.readingDayMonthHint')} />
+            </FormField>
+            <FormField name="readingDay" label={t('billing.readingDay')} required className="mb-0">
+              <Select options={dayOptions} />
+            </FormField>
+            <FormField name="issueDay" label={t('billing.issueDay')} required className="mb-0">
+              <Select options={dayOptions} />
+            </FormField>
+            <FormField name="dueDay" label={t('billing.dueDay')} required className="mb-0">
+              <Select options={dayOptions} />
+            </FormField>
+            <FormGridItem span="full">
+              <FormField name="graceDays" label={t('billing.graceDays')} required className="mb-0">
+                <Select options={graceOptions} hint={t('billing.graceDaysHint')} />
+              </FormField>
+            </FormGridItem>
+          </FormGrid>
 
-        <Alert tone="info" data-testid="billing-preview">
-          {t('billing.preview', preview)}
-        </Alert>
-      </section>
+          <Alert tone="info" data-testid="billing-preview">
+            {t('billing.preview', preview)}
+          </Alert>
+        </FormSection>
 
-      <section className="grid gap-4 rounded-panel border border-line bg-surface p-4 shadow-panel sm:p-6">
-        <h2 className="text-section font-semibold text-ink">{t('billing.moneyTitle')}</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <FormField
-            name="roundingUnit"
-            label={t('billing.roundingUnit')}
-            required
-            className="mb-0"
-          >
-            <Select options={roundingOptions} hint={t('billing.roundingHint')} />
+        <FormSection title={t('billing.moneyTitle')} variant="card">
+          <FormGrid columns={2}>
+            <FormField
+              name="roundingUnit"
+              label={t('billing.roundingUnit')}
+              required
+              className="mb-0"
+            >
+              <Select options={roundingOptions} hint={t('billing.roundingHint')} />
+            </FormField>
+            <FormField
+              name="transferContentTemplate"
+              label={t('billing.transferTemplate')}
+              required
+              className="mb-0"
+            >
+              <Input maxLength={50} hint={t('billing.transferTemplateHint')} />
+            </FormField>
+          </FormGrid>
+          <FormField name="refundUnusedRent" className="mb-0">
+            <Switch label={t('billing.refundUnusedRent')} />
           </FormField>
-          <FormField
-            name="transferContentTemplate"
-            label={t('billing.transferTemplate')}
-            required
-            className="mb-0"
-          >
-            <Input maxLength={50} hint={t('billing.transferTemplateHint')} />
+          <p className="-mt-2 text-ui-sm text-muted">{t('billing.refundHint')}</p>
+          <FormField name="moveOutFee" label={t('billing.moveOutFee')} required className="mb-0">
+            <NumberInput
+              min={0}
+              max={MOVE_OUT_FEE_MAX}
+              step={1000}
+              endAddon="₫"
+              hint={t('billing.moveOutFeeHint')}
+            />
           </FormField>
-        </div>
-        <FormField name="refundUnusedRent" className="mb-0">
-          <Switch label={t('billing.refundUnusedRent')} />
-        </FormField>
-        <p className="-mt-2 text-ui-sm text-muted">{t('billing.refundHint')}</p>
-        <FormField name="moveOutFee" label={t('billing.moveOutFee')} required className="mb-0">
-          <NumberInput
-            min={0}
-            max={MOVE_OUT_FEE_MAX}
-            step={1000}
-            endAddon="₫"
-            hint={t('billing.moveOutFeeHint')}
-          />
-        </FormField>
-      </section>
+        </FormSection>
 
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button variant="secondary" disabled={!dirty} onClick={() => form.reset()}>
-          {t('discard')}
-        </Button>
-        <FormSubmit form={form}>
-          {(isSubmitting) => (
-            <Button type="submit" loading={isSubmitting}>
-              {isSubmitting ? t('saving') : t('save')}
-            </Button>
-          )}
-        </FormSubmit>
-      </div>
+        <FormActions>
+          <Button variant="secondary" disabled={!dirty} onClick={() => form.reset()}>
+            {t('discard')}
+          </Button>
+          <FormSubmit form={form}>
+            {(isSubmitting) => (
+              <Button type="submit" loading={isSubmitting}>
+                {isSubmitting ? t('saving') : t('save')}
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }

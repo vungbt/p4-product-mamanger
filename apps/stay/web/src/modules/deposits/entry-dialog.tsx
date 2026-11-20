@@ -3,7 +3,11 @@ import {
   DatePicker,
   Dialog,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   NumberInput,
   Select,
@@ -116,47 +120,53 @@ export function DepositEntryDialog({
       contentProps={{ onInteractOutside: (event) => event.preventDefault() }}
     >
       <Form noValidate form={form} schema={schema} className="grid gap-4" aria-label="Bút toán cọc">
-        {prompt}
-        <FormError message={error} />
-        <FormField name="type" label="Loại" required>
-          <Select options={[...DEPOSIT_ACTIONS]} />
-        </FormField>
-        <FormField name="amount" label="Số tiền" required>
-          <NumberInput
-            min={1}
-            max={Number.MAX_SAFE_INTEGER}
-            step={1}
-            inputMode="numeric"
-            endAddon="₫"
-          />
-        </FormField>
-        <FormField name="occurredOn" label="Ngày" required {...DATE_FIELD}>
-          <DatePicker clearable={false} />
-        </FormField>
-        <FormField name="method" label="Phương thức" required>
-          <Select
-            options={[
-              { value: 'cash', label: 'Tiền mặt' },
-              { value: 'bank_transfer', label: 'Chuyển khoản' },
-              { value: 'other', label: 'Khác' },
-            ]}
-          />
-        </FormField>
-        <FormField name="reason" label="Lý do" required={selectedType === 'forfeited'}>
-          <Textarea maxLength={2000} />
-        </FormField>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="secondary" disabled={create.isPending} onClick={close}>
-            Huỷ
-          </Button>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button type="submit" loading={submitting}>
-                Ghi bút toán
-              </Button>
-            )}
-          </FormSubmit>
-        </div>
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              {prompt}
+              <FormError message={error} />
+              <FormField name="type" label="Loại" required>
+                <Select options={[...DEPOSIT_ACTIONS]} />
+              </FormField>
+              <FormField name="amount" label="Số tiền" required>
+                <NumberInput
+                  min={1}
+                  max={Number.MAX_SAFE_INTEGER}
+                  step={1}
+                  inputMode="numeric"
+                  endAddon="₫"
+                />
+              </FormField>
+              <FormField name="occurredOn" label="Ngày" required {...DATE_FIELD}>
+                <DatePicker clearable={false} />
+              </FormField>
+              <FormField name="method" label="Phương thức" required>
+                <Select
+                  options={[
+                    { value: 'cash', label: 'Tiền mặt' },
+                    { value: 'bank_transfer', label: 'Chuyển khoản' },
+                    { value: 'other', label: 'Khác' },
+                  ]}
+                />
+              </FormField>
+              <FormField name="reason" label="Lý do" required={selectedType === 'forfeited'}>
+                <Textarea maxLength={2000} />
+              </FormField>
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <Button variant="secondary" disabled={create.isPending} onClick={close}>
+              Huỷ
+            </Button>
+            <FormSubmit form={form}>
+              {(submitting) => (
+                <Button type="submit" loading={submitting}>
+                  Ghi bút toán
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </Dialog>
   );
