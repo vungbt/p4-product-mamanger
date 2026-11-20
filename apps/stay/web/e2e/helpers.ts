@@ -11,7 +11,11 @@ export async function chooseOption(
   label: string | RegExp,
   option: string | RegExp,
 ) {
-  await scope.getByRole('combobox', { name: label }).focus();
+  const combobox = scope.getByRole('combobox', { name: label });
+
+  // focus() alone can leave a fixed portal menu below the mobile viewport.
+  await combobox.scrollIntoViewIfNeeded();
+  await combobox.focus();
   await page.keyboard.press('ArrowDown');
   await page
     .getByRole(
@@ -33,9 +37,12 @@ export async function pickDate(
   label: string | RegExp,
   isoDate: string,
 ) {
-  await scope
-    .getByRole('button', typeof label === 'string' ? { name: label, exact: true } : { name: label })
-    .click();
+  const trigger = scope.getByRole(
+    'button',
+    typeof label === 'string' ? { name: label, exact: true } : { name: label },
+  );
+
+  await trigger.click();
 
   // The open calendar renders in a portal; only one is open at a time.
   const shownDay = page.locator('td[data-day]:not([data-outside])').first();
@@ -60,7 +67,14 @@ export async function pickDate(
       .click();
     await expect(shownDay).not.toHaveAttribute('data-day', shown);
   }
-  await target.click();
+  await expect(shownDay).toHaveAttribute('data-day', new RegExp(`^${month}-`));
+  // Opening/repositioning the calendar can replace a day during the click. Re-query
+  // on a bounded retry; once selection closes the calendar, do not click again.
+  await expect(async () => {
+    if (await shownDay.isVisible()) await target.click({ timeout: 1000 });
+    await expect(shownDay).toBeHidden({ timeout: 1000 });
+    await expect(trigger).toHaveText(displayIsoDate(isoDate), { timeout: 1000 });
+  }).toPass({ timeout: 5000 });
   await expect(target).toBeHidden();
 }
 
