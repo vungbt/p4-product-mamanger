@@ -144,7 +144,8 @@ if $DO_API; then
     chmod 700 stay-db-backup.sh
     if $COMPOSE ps --status running postgres 2>/dev/null | grep -q postgres; then
       echo "  Pre-deploy database backup (kept 30 days)..."
-      BACKUP_DIR=$REMOTE_DIR/backups/predeploy KEEP_DAYS=30 ./stay-db-backup.sh
+      # stdin is this heredoc: keep `docker compose exec` from swallowing the rest of it.
+      BACKUP_DIR=$REMOTE_DIR/backups/predeploy KEEP_DAYS=30 ./stay-db-backup.sh </dev/null
     fi
     if docker image inspect stay-api:latest >/dev/null 2>&1; then
       docker tag stay-api:latest stay-api:previous

@@ -62,7 +62,7 @@ ssh "$SERVER" bash -s <<EOF
   chmod 700 p4-db-backup.sh
   if docker ps --format '{{.Names}}' | grep -qx p4-prod-postgres-1; then
     echo "  Pre-deploy database backup (kept 30 days)..."
-    BACKUP_DIR=$REMOTE_DIR/backups/predeploy KEEP_DAYS=30 ./p4-db-backup.sh
+    BACKUP_DIR=$REMOTE_DIR/backups/predeploy KEEP_DAYS=30 ./p4-db-backup.sh </dev/null
   fi
   if docker image inspect p4-api:latest >/dev/null 2>&1; then
     echo "  Keeping the running image as p4-api:previous for rollback..."
