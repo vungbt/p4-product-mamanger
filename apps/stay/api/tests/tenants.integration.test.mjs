@@ -360,7 +360,7 @@ describe('Stay API: tenants, documents, vehicles and import', { skip: !base }, (
 
   test('list: search by name, phone and the last 4 CCCD digits; status filters', async () => {
     const idNumber = uniqueIdNumber();
-    const phone = uniquePhone();
+    const phone = `0884${String(randomInt(0, 1_000_000)).padStart(6, '0')}`;
     const name = `Tìm Kiếm ${suffix}`;
     const freshBuilding = await call(cookie, 'POST', '/api/buildings', {
       code: `S${suffix.toUpperCase()}`,
@@ -379,6 +379,9 @@ describe('Stay API: tenants, documents, vehicles and import', { skip: !base }, (
 
     assert.deepEqual(await ids(`q=${encodeURIComponent(name)}`), [created.body.data.id]);
     assert.deepEqual(await ids(`q=${phone.slice(2, 8)}`), [created.body.data.id]);
+    for (const query of [phone, `84${phone.slice(1)}`, `+84${phone.slice(1)}`]) {
+      assert.deepEqual(await ids(`q=${encodeURIComponent(query)}`), [created.body.data.id]);
+    }
     assert.deepEqual(await ids(`q=${idNumber.slice(-4)}`), [created.body.data.id]);
     const byName = `q=${encodeURIComponent(name)}`;
 

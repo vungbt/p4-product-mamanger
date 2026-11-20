@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+# SSH command arguments intentionally expand locally before transmission.
+# shellcheck disable=SC2029
+set -euo pipefail
 
 # ===========================================
 # Deploy P4 Product Manager API — PRODUCTION
@@ -10,8 +12,11 @@ set -e
 SERVER="${SERVER:-couponlinkh}"
 REMOTE_DIR="${REMOTE_DIR:-/root/apps/p4-product-manager}"
 ENV_FILE=".env.prod"
-PROJECT_NAME="p4-prod"
-COMPOSE_FILES="-f docker-compose.yml"
+cd "$(dirname "$0")/.."
+# shellcheck source=scripts/lib/deploy.sh
+source scripts/lib/deploy.sh
+GIT_SHA="$(git rev-parse HEAD)"
+trap 'rm -f p4-api.tar.gz' EXIT
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -38,64 +43,32 @@ echo ""
 UPLOAD_FILES=(p4-api.tar.gz docker-compose.yml deploy/backup/p4-db-backup.sh)
 if [[ -f "$ENV_FILE" ]]; then
   UPLOAD_FILES+=("$ENV_FILE")
-elif ssh "$SERVER" "test -f $REMOTE_DIR/$ENV_FILE"; then
+elif ssh "$SERVER" "test -f '$REMOTE_DIR/$ENV_FILE'"; then
   echo "==> No local $ENV_FILE — reusing the server copy."
 else
   echo "Missing $ENV_FILE locally and on $SERVER — copy from .env.prod.example and fill production values."
   exit 1
 fi
 
-ssh "$SERVER" "mkdir -p $REMOTE_DIR"
+ssh "$SERVER" "mkdir -p '$REMOTE_DIR'"
 
 echo "==> Building API image (linux/amd64)..."
-docker build --platform linux/amd64 -f apps/api/Dockerfile -t p4-api:latest .
+docker build --build-arg GIT_SHA="$GIT_SHA" --platform linux/amd64 -f apps/api/Dockerfile -t p4-api:latest .
 docker save p4-api:latest | gzip > p4-api.tar.gz
 
 echo "==> Uploading to $SERVER..."
 scp "${UPLOAD_FILES[@]}" "$SERVER:$REMOTE_DIR/"
 
 echo "==> Loading image and restarting..."
-ssh "$SERVER" bash -s <<EOF
-  set -e
-  cd $REMOTE_DIR
-  chmod 600 $ENV_FILE
-  chmod 700 p4-db-backup.sh
-  if docker ps --format '{{.Names}}' | grep -qx p4-prod-postgres-1; then
-    echo "  Pre-deploy database backup (kept 30 days)..."
-    BACKUP_DIR=$REMOTE_DIR/backups/predeploy KEEP_DAYS=30 ./p4-db-backup.sh </dev/null
-  fi
-  if docker image inspect p4-api:latest >/dev/null 2>&1; then
-    echo "  Keeping the running image as p4-api:previous for rollback..."
-    docker tag p4-api:latest p4-api:previous
-  fi
-  echo "  Loading p4-api.tar.gz..."
-  docker load < p4-api.tar.gz
-  rm -f p4-api.tar.gz
-  docker compose $COMPOSE_FILES --env-file $ENV_FILE -p $PROJECT_NAME up -d postgres api worker
-  echo "  Waiting for the API..."
-  for i in \$(seq 1 45); do
-    if curl -fsS http://127.0.0.1:3001/health >/dev/null 2>&1; then echo "  API healthy"; break; fi
-    if [ "\$i" = 45 ]; then echo "  API did not become healthy:"; docker compose -p $PROJECT_NAME logs --tail 60 api; exit 1; fi
-    sleep 2
-  done
-  echo "  Removing p4-api tags other than latest and previous..."
-  docker images p4-api --format '{{.Repository}}:{{.Tag}}' \
-    | grep -vxE 'p4-api:(latest|previous)' \
-    | xargs -r docker rmi || true
-  docker image prune -f
-  docker builder prune -f >/dev/null 2>&1 || true
-  echo "30 3 * * * root $REMOTE_DIR/p4-db-backup.sh >> /var/log/p4-db-backup.log 2>&1" > /etc/cron.d/p4-db-backup
-  echo "  Daily database backup: 03:30 UTC → $REMOTE_DIR/backups/daily (7 days)"
-  echo ""
-  docker compose -p $PROJECT_NAME ps
-EOF
+run_remote_script api.sh p4-api "$REMOTE_DIR" "$GIT_SHA"
+verify_public_api p4-api "$REMOTE_DIR" "${P4_API_URL:-https://p4-api.itclabs.site}/health" "$GIT_SHA"
 
 rm -f p4-api.tar.gz
 
 echo "==> Cleaning local p4-api images (keeping p4-api:latest)..."
 docker images p4-api --format '{{.Repository}}:{{.Tag}}' \
   | grep -vx 'p4-api:latest' \
-  | while read -r image; do docker rmi "$image" || true; done
+  | while read -r image; do docker rmi "$image" || true; done || true
 docker image prune -f
 
 echo ""

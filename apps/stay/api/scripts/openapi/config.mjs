@@ -1559,6 +1559,7 @@ export default {
           200: healthResponse({
             status: { type: 'string' },
             service: { type: 'string' },
+            version: { type: 'string' },
             database: { type: 'string', enum: ['up', 'down'] },
           }),
           503: { description: 'Database không sẵn sàng' },

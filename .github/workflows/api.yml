@@ -21,6 +21,7 @@ jobs:
       - run: pnpm --filter @stay/shared test
       - run: pnpm --filter @stay/billing test
       - run: pnpm --filter @p4/api test:lists
+      - run: node --test scripts/tests/deploy-hardening.test.mjs
   api-integration:
     runs-on: ubuntu-latest
     services:
