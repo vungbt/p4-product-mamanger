@@ -11,65 +11,93 @@ const mock = `#!/usr/bin/env node
 const fs = require('node:fs');
 const path = require('node:path');
 const file = process.env.DEPLOY_TEST_STATE;
-const state = JSON.parse(fs.readFileSync(file));
 const name = path.basename(process.argv[1]);
 const args = process.argv.slice(2);
-state.calls.push([name, ...args]);
-const save = () => fs.writeFileSync(file, JSON.stringify(state));
-const output = value => { console.log(value); save(); };
-if (name === 'sleep') { save(); process.exit(0); }
-if (name === 'ssh') {
-  save();
-  if (args[1].startsWith('mktemp')) console.log(process.env.DEPLOY_TEST_ROOT);
-  else if (args[1].startsWith('bash ')) {
-    process.exit(require('node:child_process').spawnSync('bash', ['-c', args[1]], {stdio: 'inherit'}).status);
+// Never hold the state lock while waiting for a pipeline producer.
+if (name === 'docker' && args[0] === 'load') fs.readFileSync(0);
+const result = {};
+function handle(state) {
+  state.calls.push([name, ...args]);
+  const output = value => { result.output = value; };
+  if (name === 'sleep') { return 0; }
+  if (name === 'ssh') {
+    if (args[1].startsWith('mktemp')) output(process.env.DEPLOY_TEST_ROOT);
+  } else if (name === 'scp') { /* Only record the call. */ }
+  else if (name === 'curl') {
+    output(JSON.stringify({status: 'ok', version: args.includes('https://example.test/health') ? state.publicHealth || 'stale-public' : state.running === 'old' ? state.oldHealth || 'old-sha' : state.health}));
+  } else if (name === 'gunzip') {
+    if (state.loadFailure) { return 1; }
+    output('image archive');
+  } else if (name === 'docker') {
+    if (args[0] === 'compose') {
+      const command = args.slice(7);
+      if (command[0] === 'ps') output(command.includes('postgres') ? 'db' : state.running ? 'api' : '');
+      else if (command[0] === 'up') {
+        if (!state.rollbackFailure || state.latest === 'new') state.running = state.latest;
+        if (state.restartFailure && state.running === 'new') return 1;
+      } else if (command[0] === 'logs') output('last API logs');
+      else throw Error('Unhandled compose: ' + args.join(' '));
+    } else if (args[0] === 'inspect') output(state.running);
+    else if (args[0] === 'image' && args[1] === 'inspect') {
+      const tag = args.at(-1);
+      const id = tag.endsWith(':latest') ? state.latest : tag.endsWith(':previous') ? state.previous : tag.endsWith(':rollback-previous') ? state.pin : tag;
+      if (!id || (id === 'older' && state.prunedOlder)) { return 1; }
+      if (args[3]?.includes('RepoTags')) output(state.otherProjectTag && id === 'new' ? 'other-api:release' : '');
+      else output(args[3]?.includes('Config.Env') ? state.legacy && id === 'old' ? '' : 'APP_VERSION=' + (id === 'old' ? 'old-sha' : 'new-sha') : id);
+    } else if (args[0] === 'tag') {
+      state[args[2].endsWith(':previous') ? 'previous' : args[2].endsWith(':rollback-previous') ? 'pin' : 'latest'] = args[1];
+    } else if (args[0] === 'load') {
+      state.latest = state.incoming;
+    } else if (args[0] === 'ps') output(state.running === args.at(-1).replace('ancestor=', '') ? 'api' : '');
+    else if (args[0] === 'image' && args[1] === 'rm') {
+      const image = args[2];
+      if (image.endsWith(':rollback-previous') && state.finalizeFailure) { return 1; }
+      if (image.endsWith(':previous')) state.previous = null;
+      else if (image.endsWith(':rollback-previous')) state.pin = null;
+      else {
+        if ([state.latest, state.previous, state.pin, state.running].includes(image)) throw Error('Removing protected image');
+        state.removed = [...(state.removed || []), image];
+      }
+    } else if (args[0] === 'image' && args[1] === 'prune') {
+      // Model dangling-image pruning so public rollback cannot rely on a deleted P.
+      state.prunedOlder = ![state.latest, state.previous, state.pin, state.running].includes('older');
+    } else if (args[0] === 'images') output('');
+    else if (args[0] === 'image' || args[0] === 'builder') { /* Only record the call. */ }
+    else throw Error('Unhandled docker: ' + args.join(' '));
+  } else throw Error('Unhandled command: ' + name);
+}
+
+// Serialize read-modify-write, including the call log, across mock processes.
+// Atomic replacement also keeps readers from ever observing partial JSON.
+const lock = file + '.lock';
+const temporary = file + '.' + process.pid + '.tmp';
+const deadline = Date.now() + 5000;
+while (true) {
+  try {
+    fs.mkdirSync(lock);
+    break;
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+    if (Date.now() >= deadline) throw Error('Timed out acquiring mock state lock');
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5);
   }
-} else if (name === 'scp') { save(); }
-else if (name === 'curl') {
-  output(JSON.stringify({status: 'ok', version: args.includes('https://example.test/health') ? state.publicHealth || 'stale-public' : state.running === 'old' ? state.oldHealth || 'old-sha' : state.health}));
-} else if (name === 'gunzip') {
-  if (state.loadFailure) { save(); process.exit(1); }
-  output('image archive');
-} else if (name === 'docker') {
-  if (args[0] === 'compose') {
-    const command = args.slice(7);
-    if (command[0] === 'ps') output(command.includes('postgres') ? 'db' : state.running ? 'api' : '');
-    else if (command[0] === 'up') {
-      if (!state.rollbackFailure || state.latest === 'new') state.running = state.latest;
-      save();
-      if (state.restartFailure && state.running === 'new') process.exit(1);
-    } else if (command[0] === 'logs') output('last API logs');
-    else throw Error('Unhandled compose: ' + args.join(' '));
-  } else if (args[0] === 'inspect') output(state.running);
-  else if (args[0] === 'image' && args[1] === 'inspect') {
-    const tag = args.at(-1);
-    const id = tag.endsWith(':latest') ? state.latest : tag.endsWith(':previous') ? state.previous : tag.endsWith(':rollback-previous') ? state.pin : tag;
-    if (!id || (id === 'older' && state.prunedOlder)) { save(); process.exit(1); }
-    if (args[3]?.includes('RepoTags')) output(state.otherProjectTag && id === 'new' ? 'other-api:release' : '');
-    else output(args[3]?.includes('Config.Env') ? state.legacy && id === 'old' ? '' : 'APP_VERSION=' + (id === 'old' ? 'old-sha' : 'new-sha') : id);
-  } else if (args[0] === 'tag') {
-    state[args[2].endsWith(':previous') ? 'previous' : args[2].endsWith(':rollback-previous') ? 'pin' : 'latest'] = args[1]; save();
-  } else if (args[0] === 'load') {
-    fs.readFileSync(0); state.latest = state.incoming; save();
-  } else if (args[0] === 'ps') output(state.running === args.at(-1).replace('ancestor=', '') ? 'api' : '');
-  else if (args[0] === 'image' && args[1] === 'rm') {
-    const image = args[2];
-    if (image.endsWith(':rollback-previous') && state.finalizeFailure) { save(); process.exit(1); }
-    if (image.endsWith(':previous')) state.previous = null;
-    else if (image.endsWith(':rollback-previous')) state.pin = null;
-    else {
-      if ([state.latest, state.previous, state.pin, state.running].includes(image)) throw Error('Removing protected image');
-      state.removed = [...(state.removed || []), image];
-    }
-    save();
-  } else if (args[0] === 'image' && args[1] === 'prune') {
-    // Model dangling-image pruning so public rollback cannot rely on a deleted P.
-    state.prunedOlder = ![state.latest, state.previous, state.pin, state.running].includes('older');
-    save();
-  } else if (args[0] === 'images') output('');
-  else if (args[0] === 'image' || args[0] === 'builder') save();
-  else throw Error('Unhandled docker: ' + args.join(' '));
-} else throw Error('Unhandled command: ' + name);
+}
+let status;
+try {
+  const state = JSON.parse(fs.readFileSync(file));
+  status = handle(state);
+  fs.writeFileSync(temporary, JSON.stringify(state));
+  fs.renameSync(temporary, file);
+} finally {
+  fs.rmSync(temporary, {force: true});
+  fs.rmdirSync(lock);
+}
+// Output can block on a pipe, and SSH launches more mocks: both must run unlocked.
+if ('output' in result) console.log(result.output);
+if (name === 'ssh' && args[1].startsWith('bash ')) {
+  process.exit(require('node:child_process').spawnSync('bash', ['-c', args[1]], {stdio: 'inherit'}).status);
+}
+process.exit(status || 0);
 `;
 
 function deploy(target, overrides = {}, followUp = false) {
