@@ -21,16 +21,15 @@ import GoogleLoginButton from '@/libraries/google-login-button';
 import LanguageSwitcher from '@/libraries/language-switcher';
 
 const HERO_SLIDES = [
-  { src: '/showcase/store-hero-v2.jpg', alt: 'Không gian trưng bày của P4 Store' },
-  { src: '/showcase/sneakers-hero-v2.jpg', alt: 'Giày mới tại P4 Store' },
-  { src: '/showcase/bag-hero-v2.jpg', alt: 'Túi thời trang tại P4 Store' },
+  { src: '/showcase/store-hero-v2.webp', alt: 'Không gian trưng bày của P4 Store' },
+  { src: '/showcase/sneakers-hero-v2.webp', alt: 'Giày mới tại P4 Store' },
+  { src: '/showcase/bag-hero-v2.webp', alt: 'Túi thời trang tại P4 Store' },
 ] as const;
 
 export default function StorefrontLoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
-  const year = new Date().getFullYear();
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
@@ -69,6 +68,8 @@ export default function StorefrontLoginPage() {
     },
   });
 
+  const year = new Date().getFullYear();
+
   return (
     <main className="flex min-h-screen bg-surface" data-portal="storefront">
       <aside className="relative hidden min-h-screen w-[44%] overflow-hidden lg:block">
@@ -77,6 +78,9 @@ export default function StorefrontLoginPage() {
             key={slide.src}
             src={slide.src}
             alt={slide.alt}
+            width={1120}
+            height={1400}
+            loading={index === 0 ? 'eager' : 'lazy'}
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-out ${
               activeSlide === index ? 'opacity-100' : 'opacity-0'
             }`}
@@ -132,7 +136,14 @@ export default function StorefrontLoginPage() {
                     : 'border-white/40 opacity-70 hover:opacity-100'
                 }`}
               >
-                <img src={slide.src} alt="" className="h-full w-full object-cover" />
+                <img
+                  src={slide.src}
+                  alt=""
+                  width={1120}
+                  height={1400}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
               </button>
             ))}
           </div>
