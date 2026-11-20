@@ -11,7 +11,7 @@ Scalar chia theo Storefront/Admin/Shared/Integration/Operations. Mỗi operation
 Tra [API/hook theo platform](../../documents/backend/api-sdk-reference.md) và [upload một/nhiều ảnh](../../documents/backend/uploads.md).
 
 - Spec: [`openapi.yaml`](./openapi.yaml) · raw: `GET /api/openapi.yaml`
-- UI (Scalar): [http://localhost:3001/api/docs](http://localhost:3001/api/docs) · prod: https://p4-api.couponlinkh.com/api/docs
+- UI (Scalar): [http://localhost:3001/api/docs](http://localhost:3001/api/docs) · prod: https://p4-api.itclabs.site/api/docs
 - Server trong docs theo origin đang chạy, hoặc `PUBLIC_API_URL` nếu có cấu hình. Code sample mặc định là Node.js Axios.
 - `openapi.yaml` được **sinh tự động, không sửa tay**. Sau khi thêm hoặc đổi API, chạy:
 
@@ -505,13 +505,13 @@ pnpm deploy:prod                 # Build + scp + remote up (SSH couponlinkh)
 # hoặc: ./scripts/deploy.prod.sh
 ```
 
-Smoke: `curl https://p4-api.couponlinkh.com/health` (nginx TLS → `127.0.0.1:3001`)
+Smoke: `curl https://p4-api.itclabs.site/health` (nginx TLS → `127.0.0.1:3001`)
 
 Env: [.env.example](../../.env.example) · production template: [.env.prod.example](../../.env.prod.example). File `.env.prod` không commit.
 
 Entrypoint container: migrate → (optional `RUN_SEED=true`) → `node dist/index.js`.
 
-FE Vercel: `VITE_API_URL=https://p4-api.couponlinkh.com`
+FE Vercel: `VITE_API_URL=https://p4-api.itclabs.site`
 
 
 ### Categories: server list parameters

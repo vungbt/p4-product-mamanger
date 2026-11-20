@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Nginx serves /var/www/p4/current; provision deploy/nginx/p4.conf and TLS first.
+# Nginx serves /var/www/p4/current; provision deploy/nginx/p4.conf, p4-api.conf and TLS first.
 SERVER="${SERVER:-couponlinkh}"
 REMOTE_ROOT="${REMOTE_ROOT:-/var/www/p4}"
 RELEASE="$(git rev-parse --short HEAD)-$(date -u +%Y%m%d%H%M%S)"
@@ -19,4 +19,6 @@ chmod -R a+rX "$root/releases/$release"
 ln -s "$root/releases/$release" "$root/current.next"
 mv -Tf "$root/current.next" "$root/current"
 echo "Published web release: $release"
+# Keep the three newest releases (the live one is always among them).
+ls -1dt "$root"/releases/* | tail -n +4 | xargs -r rm -rf
 REMOTE

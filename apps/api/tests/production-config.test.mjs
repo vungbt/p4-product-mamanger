@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 process.env.NODE_ENV = 'production';
-process.env.CORS_ORIGIN = 'https://p4.couponlinkh.com';
-process.env.BETTER_AUTH_URL = 'https://p4-api.couponlinkh.com';
+process.env.CORS_ORIGIN = 'https://p4.itclabs.site';
+process.env.BETTER_AUTH_URL = 'https://p4-api.itclabs.site';
 
 const { assertProductionConfig, isBlockedPassword } = await import('../dist/configs/production.js');
 const strong = 'k'.repeat(48);

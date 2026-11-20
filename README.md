@@ -72,14 +72,22 @@ pnpm docker:build    # image p4-api
 pnpm docker:up       # postgres + api
 ```
 
-**Deploy production** — cùng VPS coupon-linkh (SSH `couponlinkh`), stack riêng `p4-prod` (Postgres host bind `127.0.0.1:5433`):
+**Auto deploy** — push vào `main`, sau khi workflow `API` / `Frontend` pass,
+[.github/workflows/deploy.yml](.github/workflows/deploy.yml) deploy P4 API, P4 web,
+Stay API, Stay web — chỉ target có file đổi so với tag `deployed/<target>`. Chạy tay
+(Actions → Deploy → Run workflow) để ép deploy một target. Cần secret `DEPLOY_SSH_KEY`,
+`DEPLOY_KNOWN_HOSTS` và variable `P4_VITE_GOOGLE_CLIENT_ID`. Mỗi lần deploy API đều backup
+DB vào `backups/predeploy` (30 ngày), chờ `/health`, chỉ giữ image `latest` + `previous`
+và prune build cache; web giữ 3 release mới nhất.
+
+**Deploy production thủ công** — cùng VPS coupon-linkh (SSH `couponlinkh`), stack riêng `p4-prod` (Postgres host bind `127.0.0.1:5433`):
 
 ```bash
 cp .env.prod.example .env.prod   # điền Better Auth secret, DB, CORS, Cloudinary…
 ./scripts/deploy.prod.sh         # hoặc: pnpm deploy:prod
 ```
 
-Smoke: `curl https://p4-api.couponlinkh.com/health` (nginx → `:3001`)
+Smoke: `curl https://p4-api.itclabs.site/health` (nginx → `:3001`)
 
 **Soi DB prod từ máy local** (Postgres chỉ bind `127.0.0.1` trên VPS):
 
@@ -87,10 +95,10 @@ Smoke: `curl https://p4-api.couponlinkh.com/health` (nginx → `:3001`)
 pnpm db:tunnel   # giữ terminal mở → IDE: 127.0.0.1:5433 + creds .env.prod
 ```
 
-FE production: **https://p4.couponlinkh.com** — Nginx phục vụ static release và proxy
+FE production: **https://p4.itclabs.site** — Nginx phục vụ static release và proxy
 `/api` + `/socket.io` vào API hiện có. Build với `VITE_API_URL=''` để dùng cookie
 cùng origin. Chạy `pnpm deploy:web` sau khi provision TLS và cấu hình
-[deploy/nginx/p4.conf](deploy/nginx/p4.conf). Script giữ các release trước trong
+[deploy/nginx/p4.conf](deploy/nginx/p4.conf). Script giữ 3 release mới nhất trong
 `/var/www/p4/releases`; đổi symlink `current` để rollback web.
 
 ### Lint, format & commit

@@ -59,6 +59,11 @@ ssh "$SERVER" bash -s <<EOF
   set -e
   cd $REMOTE_DIR
   chmod 600 $ENV_FILE
+  chmod 700 p4-db-backup.sh
+  if docker ps --format '{{.Names}}' | grep -qx p4-prod-postgres-1; then
+    echo "  Pre-deploy database backup (kept 30 days)..."
+    BACKUP_DIR=$REMOTE_DIR/backups/predeploy KEEP_DAYS=30 ./p4-db-backup.sh
+  fi
   if docker image inspect p4-api:latest >/dev/null 2>&1; then
     echo "  Keeping the running image as p4-api:previous for rollback..."
     docker tag p4-api:latest p4-api:previous
@@ -67,12 +72,18 @@ ssh "$SERVER" bash -s <<EOF
   docker load < p4-api.tar.gz
   rm -f p4-api.tar.gz
   docker compose $COMPOSE_FILES --env-file $ENV_FILE -p $PROJECT_NAME up -d postgres api worker
+  echo "  Waiting for the API..."
+  for i in \$(seq 1 45); do
+    if curl -fsS http://127.0.0.1:3001/health >/dev/null 2>&1; then echo "  API healthy"; break; fi
+    if [ "\$i" = 45 ]; then echo "  API did not become healthy:"; docker compose -p $PROJECT_NAME logs --tail 60 api; exit 1; fi
+    sleep 2
+  done
   echo "  Removing p4-api tags other than latest and previous..."
   docker images p4-api --format '{{.Repository}}:{{.Tag}}' \
     | grep -vxE 'p4-api:(latest|previous)' \
     | xargs -r docker rmi || true
   docker image prune -f
-  chmod 700 p4-db-backup.sh
+  docker builder prune -f >/dev/null 2>&1 || true
   echo "30 3 * * * root $REMOTE_DIR/p4-db-backup.sh >> /var/log/p4-db-backup.log 2>&1" > /etc/cron.d/p4-db-backup
   echo "  Daily database backup: 03:30 UTC → $REMOTE_DIR/backups/daily (7 days)"
   echo ""
@@ -89,7 +100,7 @@ docker image prune -f
 
 echo ""
 echo "==> PRODUCTION deploy complete!"
-echo "    API: https://p4-api.couponlinkh.com  (health: /health)"
+echo "    API: https://p4-api.itclabs.site  (health: /health)"
 echo "    API :3001 and Postgres :5433 listen on the server loopback only."
 echo "    Rollback: docker tag p4-api:previous p4-api:latest, then compose up -d api worker on $SERVER."
-echo "    Web: https://p4.couponlinkh.com (pnpm deploy:web)"
+echo "    Web: https://p4.itclabs.site (pnpm deploy:web)"
