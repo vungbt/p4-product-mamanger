@@ -182,7 +182,9 @@ export default function StorefrontRegisterPage() {
         <aside className="relative hidden min-h-[620px] lg:block">
           <div className="absolute left-0 top-4 w-[72%] overflow-hidden rounded-[2rem] border-4 border-surface shadow-2xl transition-transform duration-500 hover:-translate-y-2">
             <img
-              src="/showcase/register-flatlay-v1.jpg"
+              src="/showcase/register-flatlay-v1.webp"
+              width={800}
+              height={1000}
               alt="Bộ sưu tập thời trang thành viên P4 Store"
               className="h-[500px] w-full object-cover"
             />
@@ -190,7 +192,9 @@ export default function StorefrontRegisterPage() {
 
           <div className="absolute right-0 top-24 w-[48%] rotate-3 overflow-hidden rounded-3xl border-4 border-surface shadow-2xl transition-transform duration-500 hover:rotate-0 hover:scale-105">
             <img
-              src="/showcase/register-sneaker-v1.jpg"
+              src="/showcase/register-sneaker-v1.webp"
+              width={512}
+              height={640}
               alt="Giày thành viên P4 Store"
               className="h-72 w-full object-cover"
             />
@@ -198,7 +202,9 @@ export default function StorefrontRegisterPage() {
 
           <div className="absolute bottom-6 right-10 w-[45%] -rotate-3 overflow-hidden rounded-3xl border-4 border-surface shadow-2xl transition-transform duration-500 hover:rotate-0 hover:scale-105">
             <img
-              src="/showcase/register-package-v1.jpg"
+              src="/showcase/register-package-v1.webp"
+              width={480}
+              height={600}
               alt="Hộp quà thành viên P4 Store"
               className="h-64 w-full object-cover"
             />

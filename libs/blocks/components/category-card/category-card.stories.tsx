@@ -34,7 +34,7 @@ export const Default: Story = {
 export const WithImage: Story = {
   args: {
     image: {
-      url: 'https://demoda.vn/wp-content/uploads/2022/11/hinh-anh-zoro.jpg',
+      url: new URL('../../assets/story-keyboard.webp', import.meta.url).href,
       alt: 'Phụ kiện',
     },
     name: 'Phụ kiện',

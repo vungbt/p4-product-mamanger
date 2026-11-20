@@ -7,10 +7,10 @@ type BrandLogoProps = {
 };
 
 const SRC: Record<BrandLogoVariant, string> = {
-  header: '/brand/logo-header-compact.png',
-  'header-white': '/brand/logo-header-compact-white.png',
-  mark: '/brand/logo-mark.png',
-  'mark-white': '/brand/logo-mark-white.png',
+  header: '/brand/logo-header-compact.webp',
+  'header-white': '/brand/logo-header-compact-white.webp',
+  mark: '/brand/logo-mark.webp',
+  'mark-white': '/brand/logo-mark-white.webp',
 };
 
 export default function BrandLogo({ variant = 'header', className, height = 36 }: BrandLogoProps) {
