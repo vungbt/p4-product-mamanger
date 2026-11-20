@@ -42,8 +42,8 @@ async function openSeededProfile(page: Page) {
 async function previewImport(page: Page, path: string) {
   await page.goto('/tenants/import');
   await page
-    .getByLabel(/File CSV hoặc XLSX/)
-    .and(page.locator('input[type="file"]'))
+    .locator('input[type="file"]')
+    .and(page.getByLabel(/File CSV hoặc XLSX/))
     .setInputFiles(path);
   await page.getByRole('button', { name: 'Kiểm tra file' }).click();
   await expect(page.getByTestId('import-summary')).toHaveText('6 dòng: 4 hợp lệ, 2 lỗi, 0 trùng.');
@@ -105,8 +105,8 @@ test.describe('O-11..O-14 tenants (desktop)', () => {
     );
     // A synthetic card QR (fixtures/cccd-qr.png) read from a picked photo, in the browser only.
     await dialog
-      .getByLabel('Chọn ảnh thẻ')
-      .and(page.locator('input[type="file"]'))
+      .locator('input[type="file"]')
+      .and(dialog.getByLabel('Chọn ảnh thẻ', { exact: true }))
       .setInputFiles(path.resolve(import.meta.dirname, 'fixtures/cccd-qr.png'));
     await expect(dialog).toBeHidden();
     await expect(page.getByTestId('cccd-scan-filled')).toContainText('Đã điền từ CCCD');
