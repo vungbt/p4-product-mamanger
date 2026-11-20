@@ -1,7 +1,12 @@
 import {
   Button,
+  DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   Skeleton,
@@ -14,7 +19,7 @@ import type { LandlordProfile } from '@stay/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
-import { FormActions, FormGrid, FormLayout, FormSection } from '@/libraries/forms/layout';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError, LoadError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
@@ -41,6 +46,8 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
   const [signature, setSignature] = useState(profile.signatureImage);
   const [savedSignature, setSavedSignature] = useState(profile.signatureImage);
   const [version, setVersion] = useState(profile.version);
+
+  const signatureForm = useAppForm({ defaultValues: { uploadFiles: [] as File[] } });
 
   const form = useAppForm({
     defaultValues: {
@@ -84,7 +91,7 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
       <FormLayout>
         {prompt}
         <FormError message={error} />
-        <FormSection title={t('landlord')}>
+        <FormSection variant="card" title={t('landlord')}>
           <FormGrid>
             {(
               [
@@ -97,41 +104,55 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
                 'phone',
               ] as const
             ).map((field) => (
-              <FormField key={field} name={field} label={t(field)} required={field === 'fullName'}>
-                <Input
-                  type={
-                    field === 'birthDate' || field === 'idIssuedAt'
-                      ? 'date'
-                      : field === 'phone'
-                        ? 'tel'
-                        : 'text'
-                  }
-                />
+              <FormField
+                key={field}
+                name={field}
+                label={t(field)}
+                required={field === 'fullName'}
+                {...(field === 'birthDate' || field === 'idIssuedAt' ? DATE_FIELD : {})}
+              >
+                {field === 'birthDate' || field === 'idIssuedAt' ? (
+                  <DatePicker />
+                ) : (
+                  <Input type={field === 'phone' ? 'tel' : 'text'} />
+                )}
               </FormField>
             ))}
           </FormGrid>
         </FormSection>
-        <FormSection title={t('signature')}>
-          <SignaturePad label={t('signature')} value={signature} onChange={setSignature} />
-          <Input
-            type="file"
-            label={t('signatureUpload')}
-            accept="image/png,image/jpeg"
-            onChange={async (event) => {
-              const file = event.target.files?.[0];
+        <FormSection variant="card" title={t('signature')}>
+          <FormGrid columns={1}>
+            <SignaturePad label={t('signature')} value={signature} onChange={setSignature} />
+            <signatureForm.AppField
+              name="uploadFiles"
+              listeners={{
+                onChange: ({ value: files }) => {
+                  void (async (files) => {
+                    const file = files[0];
 
-              if (!file) return;
-              if (file.size > 200_000) {
-                setError(t('fileTooLarge'));
-                return;
-              }
-              try {
-                setSignature(await readDataUrl(file));
-              } catch (cause) {
-                setError(getErrorMessage(cause, t('failed')));
-              }
-            }}
-          />
+                    if (!file) return;
+                    if (file.size > 200_000) {
+                      setError(t('fileTooLarge'));
+                      return;
+                    }
+                    try {
+                      setSignature(await readDataUrl(file));
+                    } catch (cause) {
+                      setError(getErrorMessage(cause, t('failed')));
+                    }
+                  })(files);
+                },
+              }}
+            >
+              {(field) => (
+                <field.UploadField
+                  label={t('signatureUpload')}
+                  accept="image/png,image/jpeg"
+                  maxBytes={200000}
+                />
+              )}
+            </signatureForm.AppField>
+          </FormGrid>
         </FormSection>
         <FormActions>
           <FormSubmit form={form}>

@@ -1,4 +1,4 @@
-import { Card, cn, KpiGrid, Skeleton } from '@itclabs/react-ui';
+import { Card, cn, EmptyState, KpiGrid, Skeleton } from '@itclabs/react-ui';
 import { useBuildingOverview } from '@stay/sdk/react';
 import { isPeriod, type StayOverview } from '@stay/shared';
 import { lazy, Suspense } from 'react';
@@ -212,9 +212,12 @@ function OverviewContent({
         >
           {!loading && !hasSeries ? (
             // A full-height empty chart is mostly blank space; a one-line state says the same.
-            <p data-testid="overview-chart" className="py-6 text-center text-muted">
-              Chưa có hoá đơn phát hành trong 6 kỳ này.
-            </p>
+            <EmptyState
+              size="compact"
+              appearance="plain"
+              title={<>Chưa có hoá đơn phát hành trong 6 kỳ này.</>}
+              data-testid="overview-chart"
+            />
           ) : (
             <Suspense fallback={<Skeleton className="h-64" />}>
               <PeriodChart

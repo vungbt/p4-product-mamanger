@@ -3,7 +3,11 @@ import {
   Checkbox,
   Dialog,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   useAppForm,
 } from '@itclabs/react-ui';
@@ -54,41 +58,49 @@ export function ExportDialog({ range, onClose }: { range: ReportRange; onClose: 
       description={`Từ ${range.from} đến ${range.to}. Công nợ là số còn nợ hiện tại của các hoá đơn trong kỳ.`}
     >
       <Form form={form} className="grid gap-4">
-        <FormField name="sheets" validators={{ onChange: schema }}>
-          {(field) => (
-            <fieldset className="grid gap-3">
-              <legend className="mb-3 font-semibold">Chọn sổ cần xuất</legend>
-              {choices.map((choice) => (
-                <Checkbox
-                  key={choice.value}
-                  label={choice.label}
-                  checked={field.state.value.includes(choice.value)}
-                  onCheckedChange={(checked) =>
-                    field.handleChange(
-                      checked === true
-                        ? [...field.state.value, choice.value]
-                        : field.state.value.filter(
-                            (s: ReportExport['sheets'][number]) => s !== choice.value,
-                          ),
-                    )
-                  }
-                />
-              ))}
-            </fieldset>
-          )}
-        </FormField>
-        {error ? (
-          <p role="alert" className="text-danger">
-            {error}
-          </p>
-        ) : null}
-        <FormSubmit form={form}>
-          {(submitting) => (
-            <Button type="submit" loading={submitting}>
-              Tải Excel
-            </Button>
-          )}
-        </FormSubmit>
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              <FormField name="sheets" validators={{ onChange: schema }}>
+                {(field) => (
+                  <fieldset className="grid gap-3">
+                    <legend className="mb-3 font-semibold">Chọn sổ cần xuất</legend>
+                    {choices.map((choice) => (
+                      <Checkbox
+                        key={choice.value}
+                        label={choice.label}
+                        checked={field.state.value.includes(choice.value)}
+                        onCheckedChange={(checked) =>
+                          field.handleChange(
+                            checked === true
+                              ? [...field.state.value, choice.value]
+                              : field.state.value.filter(
+                                  (s: ReportExport['sheets'][number]) => s !== choice.value,
+                                ),
+                          )
+                        }
+                      />
+                    ))}
+                  </fieldset>
+                )}
+              </FormField>
+              {error ? (
+                <p role="alert" className="text-danger">
+                  {error}
+                </p>
+              ) : null}
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <FormSubmit form={form}>
+              {(submitting) => (
+                <Button type="submit" loading={submitting}>
+                  Tải Excel
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </Dialog>
   );

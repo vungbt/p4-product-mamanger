@@ -2,12 +2,19 @@ import {
   Alert,
   Button,
   Checkbox,
+  DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Icon,
   Input,
+  InputPassword,
   Skeleton,
+  Timeline,
   useAppForm,
 } from '@itclabs/react-ui';
 import {
@@ -30,7 +37,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { useCanOn } from '@/libraries/ability';
 import { DocumentBody } from '@/libraries/document-body';
-import { FormActions, FormGrid, FormLayout, FormSection } from '@/libraries/forms/layout';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError, LoadError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { PortalLinksPanel } from '@/modules/contracts/portal-links';
@@ -123,29 +130,37 @@ function ActionForm({
       schema={field ? { value: v.pipe(v.string(), v.trim(), v.minLength(1, t('required'))) } : {}}
     >
       <FormLayout>
-        <FormSection title={title}>
+        <FormSection variant="card" title={title}>
           <FormError message={error} />
           {field && (
             <FormGrid>
-              <FormField name="value" label={field} required>
-                <Input
-                  type={type ?? 'text'}
-                  autoComplete={type === 'password' ? 'current-password' : undefined}
-                />
+              <FormField
+                name="value"
+                label={field}
+                required
+                {...(type === 'date' ? DATE_FIELD : {})}
+              >
+                {type === 'password' ? (
+                  <InputPassword autoComplete="current-password" />
+                ) : type === 'date' ? (
+                  <DatePicker clearable={false} />
+                ) : (
+                  <Input type={type ?? 'text'} />
+                )}
               </FormField>
             </FormGrid>
           )}
           {children}
-          <FormActions>
-            <FormSubmit form={form}>
-              {(loading) => (
-                <Button type="submit" loading={loading} variant={variant}>
-                  {title}
-                </Button>
-              )}
-            </FormSubmit>
-          </FormActions>
         </FormSection>
+        <FormActions>
+          <FormSubmit form={form}>
+            {(loading) => (
+              <Button type="submit" loading={loading} variant={variant}>
+                {title}
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
       </FormLayout>
     </Form>
   );
@@ -179,6 +194,7 @@ function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
   const [linksOpen, setLinksOpen] = useState(false);
 
   const [coSigners, setCoSigners] = useState<string[]>([]);
+  const paperForm = useAppForm({ defaultValues: { uploadFiles: [] as File[] } });
 
   const [paperFile, setPaperFile] = useState<File | null>(null);
 
@@ -425,12 +441,22 @@ function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
             setAction(null);
           }}
         >
-          <Input
-            label={t('paperFile')}
-            type="file"
-            accept="application/pdf,image/png,image/jpeg"
-            onChange={(event) => setPaperFile(event.target.files?.[0] ?? null)}
-          />
+          <paperForm.AppField
+            name="uploadFiles"
+            listeners={{
+              onChange: ({ value: files }) => {
+                setPaperFile(files[0] ?? null);
+              },
+            }}
+          >
+            {(field) => (
+              <field.UploadField
+                label={t('paperFile')}
+                accept="application/pdf,image/png,image/jpeg"
+                maxBytes={10485760}
+              />
+            )}
+          </paperForm.AppField>
         </ActionForm>
       )}
       {action && (
@@ -440,7 +466,7 @@ function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
           </Button>
         </FormActions>
       )}
-      <FormSection title={t('signers')}>
+      <FormSection variant="card" title={t('signers')}>
         {canUpdate && (
           <>
             <FormActions>
@@ -481,32 +507,37 @@ function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
           ))}
         </ul>
       </FormSection>
-      <FormSection title={t('timeline')}>
-        <ol className="grid gap-3">
-          {data.events.map((event) => (
-            <li key={event.id}>
-              {(
-                {
-                  created: t('events.created'),
-                  edited: t('events.edited'),
-                  sent: t('events.sent'),
-                  viewed: t('events.viewed'),
-                  signed: t('events.signed'),
-                  rejected: t('events.rejected'),
-                  owner_signed: t('events.owner_signed'),
-                  completed: t('events.completed'),
-                  cancelled: t('events.cancelled'),
-                  paper: t('events.paper'),
-                  superseded: t('events.superseded'),
-                  downloaded: t('events.downloaded'),
-                  verification_failed: t('events.verification_failed'),
-                } as Record<string, string>
-              )[event.type] ?? String(event.type)}{' '}
-              · {event.actorName} · {documentDateTime(event.createdAt, i18n.language)}
-              <p className="break-words text-ui-sm text-muted">{event.userAgent}</p>
-            </li>
-          ))}
-        </ol>
+      <FormSection variant="card" title={t('timeline')}>
+        <Timeline
+          showStatus={false}
+          items={data.events.map((event) => ({
+            id: event.id,
+            state: 'completed',
+            title: (
+              <>
+                {(
+                  {
+                    created: t('events.created'),
+                    edited: t('events.edited'),
+                    sent: t('events.sent'),
+                    viewed: t('events.viewed'),
+                    signed: t('events.signed'),
+                    rejected: t('events.rejected'),
+                    owner_signed: t('events.owner_signed'),
+                    completed: t('events.completed'),
+                    cancelled: t('events.cancelled'),
+                    paper: t('events.paper'),
+                    superseded: t('events.superseded'),
+                    downloaded: t('events.downloaded'),
+                    verification_failed: t('events.verification_failed'),
+                  } as Record<string, string>
+                )[event.type] ?? String(event.type)}{' '}
+                · {event.actorName} · {documentDateTime(event.createdAt, i18n.language)}
+                <p className="break-words text-ui-sm text-muted">{event.userAgent}</p>
+              </>
+            ),
+          }))}
+        />
         {data.pdfSha256 && <p className="break-all text-ui-sm">SHA-256: {data.pdfSha256}</p>}
       </FormSection>
       <Link
