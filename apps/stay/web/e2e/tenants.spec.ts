@@ -23,7 +23,7 @@ function uniquePhone() {
 async function writeImportFile(path: string) {
   const rows = [
     `Lê Thị E2E Một,${uniquePhone()},,,,,Nữ,,,Sinh viên,`,
-    `Trần Văn E2E Hai,${uniquePhone()},e2e-hai@example.com,,,15/03/1999,Nam,,,,`,
+    `Trần Văn E2E Hai,${uniquePhone()},e2e-hai-${randomDigits(12)}@example.com,,,15/03/1999,Nam,,,,`,
     `Phạm E2E Ba,12345,,,,,,,,,SĐT sai`,
     `Hoàng E2E Bốn,${uniquePhone()},,,,,,,,,`,
     `Vũ E2E Năm,${uniquePhone()},,123,,,,,,,CCCD sai`,

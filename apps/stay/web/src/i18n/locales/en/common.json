@@ -88,6 +88,7 @@
   "auth": {
     "title": "Sign in",
     "subtitle": "Sign in to manage your boarding house",
+    "identifier": "Email or phone number",
     "email": "Email",
     "emailPlaceholder": "you@example.com",
     "emailInvalid": "Enter a valid email",

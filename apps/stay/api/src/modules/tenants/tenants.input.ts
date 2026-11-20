@@ -16,7 +16,7 @@ import {
 } from '@stay/shared';
 import { Op, type Transaction } from 'sequelize';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
-import { TenantModel } from '@/sequelize/models/index.js';
+import { sequelize, TenantModel, UserModel } from '@/sequelize/models/index.js';
 import type { FormBody } from '@/shared/input.js';
 
 /** Editable profile fields of a tenant (form and import). */
@@ -165,7 +165,7 @@ export async function idNumberOwner(
 export async function readTenantInput(
   body: FormBody,
   user: StayUser,
-  existing?: { id: string; idNumber: string | null },
+  existing?: { id: string; idNumber: string | null; userId?: string | null },
 ): Promise<TenantFields> {
   const keepIdNumber = existing !== undefined && body.data.idNumber === undefined;
   const fields = normalizeTenantFields(
@@ -186,6 +186,18 @@ export async function readTenantInput(
       : null;
 
   if (duplicate) body.invalid('idNumber', 'id_number_taken');
+  if (fields.email && !body.errors.email) {
+    const taken = await UserModel.findOne({
+      where: {
+        [Op.and]: [
+          sequelize.where(sequelize.fn('lower', sequelize.col('email')), fields.email),
+          ...(existing?.userId ? [{ id: { [Op.ne]: existing.userId } }] : []),
+        ],
+      },
+    });
+
+    if (taken) body.invalid('email', 'unique_value', { attribute: 'Email' });
+  }
   if (Object.keys(body.errors).length)
     throw new InputValidError('input_valid_error', {
       ...body.errors,

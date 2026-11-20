@@ -147,6 +147,7 @@ export interface TenantContractRef {
 
 /** `GET /api/tenants/:id`. */
 export interface StayTenantDetail extends StayTenant {
+  accountIssued: boolean;
   email: string | null;
   /** `YYYY-MM-DD`. */
   idIssuedAt: string | null;

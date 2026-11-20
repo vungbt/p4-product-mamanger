@@ -1,10 +1,15 @@
 import { matchPath, useLocation } from 'react-router-dom';
 import { canOpen, useAbility } from '@/libraries/ability';
-import { appRoutes, type StayRoute } from './route-configs';
+import { useAuth } from '@/libraries/session/auth-provider';
+import { appRoutes, type StayRoute, tenantRoutes } from './route-configs';
 
 /** Menu routes the user may open (same `canOpen` check as the page guard). */
 export function useMenuRoutes(): StayRoute[] {
   const ability = useAbility();
+
+  const { user } = useAuth();
+
+  if (user?.role === 'tenant') return tenantRoutes.filter((route) => !route.hideInMenu);
 
   return appRoutes.filter((route) => !route.hideInMenu && canOpen(ability, route.ability));
 }
@@ -13,17 +18,20 @@ export function useMenuRoutes(): StayRoute[] {
 export function useCurrentRoute(): StayRoute | undefined {
   const { pathname } = useLocation();
 
-  return appRoutes.find(({ path }) => matchPath({ path, end: true }, pathname));
+  return [...tenantRoutes, ...appRoutes].find(({ path }) =>
+    matchPath({ path, end: true }, pathname),
+  );
 }
 
 /** `route` preceded by its `parent` chain (breadcrumb order, the route itself last). */
 export function routeTrail(route: StayRoute): StayRoute[] {
+  const routes = route.tenantOnly ? tenantRoutes : appRoutes;
   const trail = [route];
-  let parent = appRoutes.find(({ name }) => name === route.parent);
+  let parent = routes.find(({ name }) => name === route.parent);
 
   while (parent && !trail.includes(parent)) {
     trail.unshift(parent);
-    parent = appRoutes.find(({ name }) => name === parent?.parent);
+    parent = routes.find(({ name }) => name === parent?.parent);
   }
   return trail;
 }

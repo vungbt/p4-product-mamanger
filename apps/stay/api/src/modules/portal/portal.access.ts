@@ -46,11 +46,14 @@ function endedOn(contract: ContractModel): string {
  * today.
  */
 export function portalReferenceDate(contract: ContractModel, today = todayVn()): string {
-  if (contract.status === 'ended') return endedOn(contract);
-  return today < contract.startDate ? contract.startDate : today;
+  const on = contract.status === 'ended' ? endedOn(contract) : today;
+
+  // Legacy/imported contracts can end before their recorded start. Keep the snapshot
+  // inside the contract while expiry still uses the actual end date.
+  return on < contract.startDate ? contract.startDate : on;
 }
 
-type OccupantRow = Pick<ContractOccupantModel, 'tenantId' | 'toDate'>;
+type OccupantRow = Pick<ContractOccupantModel, 'tenantId' | 'fromDate' | 'toDate'>;
 
 /**
  * Whether an occupant's portal may be used (st-25.md): active/ending contracts while the person
@@ -68,7 +71,9 @@ export function portalOpen(
     return false;
   const on = portalReferenceDate(contract, today);
 
-  return occupants.some((row) => row.tenantId === tenantId && (!row.toDate || row.toDate > on));
+  return occupants.some(
+    (row) => row.tenantId === tenantId && row.fromDate <= on && (!row.toDate || row.toDate > on),
+  );
 }
 
 export interface LinkContext {

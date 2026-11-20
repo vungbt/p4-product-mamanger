@@ -32,7 +32,7 @@ export function useCanOpen(check: AbilityCheck): boolean {
 /** Feeds the signed-in user's rules from `GET /api/me/capabilities` (refreshed by the SDK). */
 export function CapabilityAbilityProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const capabilities = useCapabilities(user?.id);
+  const capabilities = useCapabilities(user?.mustChangePassword ? undefined : user?.id);
 
   // A failed background refetch keeps the last rules; signing out drops them.
   const rules = user ? capabilities.data?.rules : undefined;

@@ -6,7 +6,9 @@ import { useCanAccessSome } from '@/libraries/ability';
 import { BuildingSelector } from '@/libraries/buildings/building-selector';
 import { useNavigationLabels } from '@/libraries/navigation-labels';
 import { usePageDescription } from '@/libraries/page-meta';
-import { appRoutes, ROUTES } from '@/routing/route-configs';
+import { useAuth } from '@/libraries/session/auth-provider';
+import { TenantContractSelector } from '@/modules/portal/account-contract-selector';
+import { ROUTES } from '@/routing/route-configs';
 import { routeTrail, useCurrentRoute } from '@/routing/use-routes';
 import AccountMenu from './account-menu';
 import NotificationsBell from './notifications-bell';
@@ -21,6 +23,8 @@ function hasHistory() {
 export function AppTopbar() {
   const { t } = useTranslation();
 
+  const { user } = useAuth();
+
   const routeLabels = useNavigationLabels();
 
   const navigate = useNavigate();
@@ -30,22 +34,20 @@ export function AppTopbar() {
 
   const route = useCurrentRoute();
 
-  const parent = route?.parent ? appRoutes.find(({ name }) => name === route.parent) : undefined;
+  const home = user?.role === 'tenant' ? '/my' : ROUTES.overview;
+  const parent = route ? routeTrail(route).at(-2) : undefined;
 
-  const title = route ? (routeLabels[route.name] ?? route.name) : '';
-  const isHome = route?.path === ROUTES.overview;
+  const title = route ? (route.label ?? routeLabels[route.name] ?? route.name) : '';
+  const isHome = route?.path === home;
 
   const goBack = () => {
     if (hasHistory()) navigate(-1);
-    else navigate(parent?.path ?? ROUTES.overview);
+    else navigate(parent?.path ?? home);
   };
 
   return (
     <>
-      <Link
-        to={ROUTES.overview}
-        className="hidden shrink-0 items-center gap-2 font-semibold text-ink lg:flex"
-      >
+      <Link to={home} className="hidden shrink-0 items-center gap-2 font-semibold text-ink lg:flex">
         <BrandMark className="size-8" />
         {BRAND.name}
       </Link>
@@ -60,7 +62,7 @@ export function AppTopbar() {
         </span>
       </div>
       <div className="ms-auto flex shrink-0 items-center gap-1">
-        <BuildingSelector />
+        {user?.role === 'tenant' ? <TenantContractSelector /> : <BuildingSelector />}
         {canReadNotifications ? <NotificationsBell /> : null}
         <AccountMenu />
       </div>
@@ -72,14 +74,18 @@ export function AppTopbar() {
 export function AppBreadcrumb() {
   const { t } = useTranslation();
 
+  const { user } = useAuth();
+
   const routeLabels = useNavigationLabels();
 
   const route = useCurrentRoute();
 
   const description = usePageDescription();
 
-  const title = route ? (routeLabels[route.name] ?? route.name) : '';
-  const isHome = route?.path === ROUTES.overview;
+  const home = user?.role === 'tenant' ? '/my' : ROUTES.overview;
+
+  const title = route ? (route.label ?? routeLabels[route.name] ?? route.name) : '';
+  const isHome = route?.path === home;
 
   return (
     <div className="grid min-w-0 gap-0.5">
@@ -88,13 +94,13 @@ export function AppBreadcrumb() {
         items={
           route && !isHome
             ? [
-                { key: 'overview', title: t('nav.overview'), href: ROUTES.overview },
+                { key: 'overview', title: t('nav.overview'), href: home },
                 ...routeTrail(route).map((item) =>
                   item === route
                     ? { key: item.name, title }
                     : {
                         key: item.name,
-                        title: routeLabels[item.name] ?? item.name,
+                        title: item.label ?? routeLabels[item.name] ?? item.name,
                         href: item.path,
                       },
                 ),

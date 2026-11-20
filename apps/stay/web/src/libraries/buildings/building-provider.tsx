@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import { OPTIONS_PAGE_SIZE } from '@/constants/list';
+import { useAuth } from '@/libraries/session/auth-provider';
 
 const STORAGE_KEY = 'stay_building_id';
 
@@ -59,7 +60,10 @@ function remember(id: string | null) {
  * one, remembered on this device. Mount inside the signed-in area only.
  */
 export function BuildingProvider({ children }: { children: ReactNode }) {
-  const query = useBuildings(BUILDING_QUERY);
+  const { user } = useAuth();
+
+  const query = useBuildings(BUILDING_QUERY, { enabled: user?.role !== 'tenant' });
+
   const [selectedId, setSelectedId] = useState(readRemembered);
 
   const buildings = useMemo(
