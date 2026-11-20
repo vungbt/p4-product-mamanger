@@ -6393,6 +6393,7 @@ export interface components {
       permissionGroups?: ('billing' | 'operations' | 'payments' | 'readings')[];
       /** @enum {string} */
       role: 'manager' | 'owner' | 'tenant';
+      tenantId?: string;
     };
     TemplatePreview: {
       html: string;

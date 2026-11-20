@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { randomInt, randomUUID } from 'node:crypto';
+import { createHash, randomInt, randomUUID } from 'node:crypto';
 import { after, describe, test } from 'node:test';
 import { compare, hash } from 'bcryptjs';
 import {
@@ -206,6 +206,7 @@ describe('tenant accounts and shared dashboard', { skip: !base }, () => {
     assert.equal(ok(await call(emailSession, 'GET', '/me')).user.email, realEmail);
 
     // Strict account privacy also covers legal originals, not just the contract DTO.
+    const bodyHtml = `<p>Other occupant phone ${b.phone}</p>`;
     const document = await ContractDocumentModel.create({
       buildingId: building.id,
       contractId: a.contract.id,
@@ -214,7 +215,8 @@ describe('tenant accounts and shared dashboard', { skip: !base }, () => {
       code: `AC-${suffix}`,
       title: 'Private legal original',
       status: 'sent',
-      bodyHtml: `<p>Other occupant phone ${b.phone}</p>`,
+      bodyHtml,
+      dataSha256: createHash('sha256').update(bodyHtml).digest('hex'),
       dataSnapshot: { 'ben_thue.ho_ten': b.tenant.fullName, 'ben_thue.sdt': b.phone },
     });
     await DocumentSignerModel.create({

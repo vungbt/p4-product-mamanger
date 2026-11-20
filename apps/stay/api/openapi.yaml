@@ -21669,6 +21669,8 @@ components:
     StayUser:
       type: object
       properties:
+        tenantId:
+          type: string
         mustChangePassword:
           type: boolean
         occupiedContracts:
