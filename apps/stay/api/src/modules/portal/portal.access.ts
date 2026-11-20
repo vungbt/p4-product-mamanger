@@ -46,8 +46,11 @@ function endedOn(contract: ContractModel): string {
  * today.
  */
 export function portalReferenceDate(contract: ContractModel, today = todayVn()): string {
-  if (contract.status === 'ended') return endedOn(contract);
-  return today < contract.startDate ? contract.startDate : today;
+  const on = contract.status === 'ended' ? endedOn(contract) : today;
+
+  // Legacy/imported contracts can end before their recorded start. Keep the snapshot
+  // inside the contract while expiry still uses the actual end date.
+  return on < contract.startDate ? contract.startDate : on;
 }
 
 type OccupantRow = Pick<ContractOccupantModel, 'tenantId' | 'fromDate' | 'toDate'>;

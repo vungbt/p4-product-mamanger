@@ -45,6 +45,7 @@ export async function loadActiveUser(id: string): Promise<StayUser | undefined> 
   }
 
   return {
+    ...(tenant ? { tenantId: tenant.id } : {}),
     mustChangePassword: row.mustChangePassword,
     ...selectFields(row, ['id', 'email', 'displayName', 'avatarUrl', 'emailVerified', 'role']),
     permissionGroups: row.permissionGroups,

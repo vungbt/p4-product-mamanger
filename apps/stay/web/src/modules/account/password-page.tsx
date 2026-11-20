@@ -41,10 +41,10 @@ export default function PasswordPage() {
       <Form form={form} schema={schema} className="grid gap-4">
         <FormError message={error} />
         <FormField name="currentPassword" label="Mật khẩu hiện tại" required>
-          <InputPassword autoComplete="current-password" />
+          <InputPassword aria-label="Mật khẩu hiện tại" autoComplete="current-password" />
         </FormField>
         <FormField name="newPassword" label="Mật khẩu mới" required>
-          <InputPassword autoComplete="new-password" />
+          <InputPassword aria-label="Mật khẩu mới" autoComplete="new-password" />
         </FormField>
         <FormSubmit form={form}>
           {(submitting) => (

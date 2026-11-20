@@ -17,6 +17,9 @@ import {
 
 const router = Router();
 
+// Authorize the settings namespace, including obsolete/deep links such as /settings/billing.
+router.use('/settings', authRequired, requireAbility('read', 'Settings'));
+
 router.get(
   '/settings',
   authRequired,

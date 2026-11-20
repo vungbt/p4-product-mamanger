@@ -16,7 +16,9 @@ export const authRequired = createAuthRequired({
 
     if (user?.mustChangePassword && req.path !== '/me')
       throw new BaseError('must_change_password', 403, 'must_change_password');
-    if (user?.role === 'tenant' && !['/me', '/me/capabilities'].includes(req.path))
+    // Profile-linked accounts use the portal DTOs. Legacy tenant users still go through
+    // route abilities and record scoping (empty lists / hidden records included).
+    if (user?.tenantId && !['/me', '/me/capabilities'].includes(req.path))
       throw new BaseError('forbidden', 403, 'forbidden');
     return user;
   },

@@ -2,6 +2,8 @@ import type { StayAbilityUser, StayRole, StayRule } from './ability.js';
 
 /** The signed-in user as the API returns it (`GET /api/me`) and stores on the request. */
 export interface StayUser extends StayAbilityUser {
+  /** Linked tenant profile; absent on legacy users that retain the scoped staff API. */
+  tenantId?: string;
   mustChangePassword?: boolean;
   occupiedContracts?: { id: string; code: string }[];
   id: string;

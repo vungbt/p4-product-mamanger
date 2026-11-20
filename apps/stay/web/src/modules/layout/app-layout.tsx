@@ -29,7 +29,10 @@ function AppShell() {
       header={<AppBreadcrumb />}
     >
       <div id={MAIN_ID} tabIndex={-1} className="pb-bottom-nav outline-none lg:pb-0">
-        {user?.role === 'tenant' && user.contractIds.length === 0 && pathname !== '/my/account' ? (
+        {user?.role === 'tenant' &&
+        user.contractIds.length === 0 &&
+        pathname.startsWith('/my') &&
+        pathname !== '/my/account' ? (
           <EmptyState
             title="Chưa có hợp đồng"
             description="Liên hệ chủ trọ để được thêm vào hợp đồng."

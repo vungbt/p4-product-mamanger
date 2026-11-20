@@ -38,6 +38,14 @@ curl -i -c /tmp/stay.jar -H 'content-type: application/json' -H 'origin: http://
 curl -b /tmp/stay.jar http://127.0.0.1:3011/api/me/capabilities
 ```
 
+## Tenant accounts
+
+Tenant accounts provision a user for each new profile, including CSV/XLSX imports. A profile's
+email becomes its account login and must be unique across users; import previews report an
+already reserved email as a row error. Imported fixtures must use a fresh email per profile.
+Profile-linked tenant accounts use `/api/portal/*` with `X-Stay-Contract`; legacy tenant users
+without a linked profile retain the existing CASL-scoped API (empty lists and hidden records).
+
 ## Cấu hình và toà nhà (ST-06, ST-07)
 
 | Method | Path | Quyền | Ghi chú |
