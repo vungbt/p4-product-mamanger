@@ -38,6 +38,9 @@ JS
 verify_public_api() {
   local target="$1" root="$2" url="$3" expected="$4"
   if verify_release api "$url" "$expected"; then
+    if ! run_remote_script api.sh "$target" "$root" "$expected" finalize; then
+      echo 'Warning: API deploy finalization failed; rollback pin and state cleanup may be incomplete.' >&2
+    fi
     return 0
   fi
   echo 'Public API verification failed; rolling back. Migrations are not reverted.' >&2
