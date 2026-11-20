@@ -79,7 +79,7 @@ cp .env.prod.example .env.prod   # điền Better Auth secret, DB, CORS, Cloudin
 ./scripts/deploy.prod.sh         # hoặc: pnpm deploy:prod
 ```
 
-Smoke: `curl https://p4-api.couponlinkh.com/health` (nginx → `:3001`)
+Smoke: `curl https://p4-api.itclabs.site/health` (nginx → `:3001`)
 
 **Soi DB prod từ máy local** (Postgres chỉ bind `127.0.0.1` trên VPS):
 
@@ -87,7 +87,7 @@ Smoke: `curl https://p4-api.couponlinkh.com/health` (nginx → `:3001`)
 pnpm db:tunnel   # giữ terminal mở → IDE: 127.0.0.1:5433 + creds .env.prod
 ```
 
-FE production: **https://p4.couponlinkh.com** — Nginx phục vụ static release và proxy
+FE production: **https://p4.itclabs.site** — Nginx phục vụ static release và proxy
 `/api` + `/socket.io` vào API hiện có. Build với `VITE_API_URL=''` để dùng cookie
 cùng origin. Chạy `pnpm deploy:web` sau khi provision TLS và cấu hình
 [deploy/nginx/p4.conf](deploy/nginx/p4.conf). Script giữ các release trước trong

@@ -64,14 +64,14 @@ Login gọi API thật qua Better Auth: session nằm trong cookie HttpOnly và 
 
 ## 5. API docs
 
-- OpenAPI UI (Scalar): http://localhost:3001/api/docs · prod https://p4-api.couponlinkh.com/api/docs
+- OpenAPI UI (Scalar): http://localhost:3001/api/docs · prod https://p4-api.itclabs.site/api/docs
 - Spec: [apps/api/openapi.yaml](./apps/api/openapi.yaml)
 - Chi tiết envelope/paging: [apps/api/README.md](./apps/api/README.md)
 
 ## 6. Gọi API từ web
 
 - Local: `API_BASE_URL = '/api'` (Vite proxy)
-- Prod Vercel: set `VITE_API_URL=https://p4-api.couponlinkh.com` (không trailing slash, **không** thêm `/api`)
+- Prod Vercel: set `VITE_API_URL=https://p4-api.itclabs.site` (không trailing slash, **không** thêm `/api`)
 
 ```typescript
 const res = await fetch(`${API_BASE_URL}/products?page=1&pageSize=10`);
@@ -94,7 +94,7 @@ Hook chỉ dùng trong feature đặt cạnh `page.tsx`; chỉ hook dùng chung 
 | Layer | Cách |
 |-------|------|
 | **Postgres + API** | Cùng VPS coupon-linkh — `cp .env.prod.example .env.prod` rồi `./scripts/deploy.prod.sh` (SSH `couponlinkh`, API `:3001`, PG host `:5433`) |
-| **FE** | Vercel — Root `apps/web`, Build `pnpm --filter @p4/web build`, Output `dist`, env `VITE_API_URL=https://p4-api.couponlinkh.com` |
+| **FE** | Vercel — Root `apps/web`, Build `pnpm --filter @p4/web build`, Output `dist`, env `VITE_API_URL=https://p4-api.itclabs.site` |
 
 SPA rewrite: [apps/web/vercel.json](./apps/web/vercel.json)
 

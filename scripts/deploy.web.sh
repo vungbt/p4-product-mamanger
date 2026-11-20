@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Nginx serves /var/www/p4/current; provision deploy/nginx/p4.conf and TLS first.
+# Nginx serves /var/www/p4/current; provision deploy/nginx/p4.conf, p4-api.conf and TLS first.
 SERVER="${SERVER:-couponlinkh}"
 REMOTE_ROOT="${REMOTE_ROOT:-/var/www/p4}"
 RELEASE="$(git rev-parse --short HEAD)-$(date -u +%Y%m%d%H%M%S)"

@@ -89,7 +89,7 @@ docker image prune -f
 
 echo ""
 echo "==> PRODUCTION deploy complete!"
-echo "    API: https://p4-api.couponlinkh.com  (health: /health)"
+echo "    API: https://p4-api.itclabs.site  (health: /health)"
 echo "    API :3001 and Postgres :5433 listen on the server loopback only."
 echo "    Rollback: docker tag p4-api:previous p4-api:latest, then compose up -d api worker on $SERVER."
-echo "    Web: https://p4.couponlinkh.com (pnpm deploy:web)"
+echo "    Web: https://p4.itclabs.site (pnpm deploy:web)"
