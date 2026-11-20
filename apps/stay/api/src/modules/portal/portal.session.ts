@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { BaseError, NotFound, Unauthorized } from '@p4/server-core';
+import { BaseError, NotFound, queryText, Unauthorized } from '@p4/server-core';
 import {
   PORTAL_LOCK_MINUTES,
   PORTAL_MAX_FAILED_ATTEMPTS,
@@ -9,9 +9,12 @@ import {
   type PortalSessionResult,
   type PortalSignOutResult,
 } from '@stay/shared';
+import { fromNodeHeaders } from 'better-auth/node';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { Op, QueryTypes } from 'sequelize';
+import { auth } from '@/configs/better-auth.js';
 import { env } from '@/configs/env.js';
+import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import { assertCookieOrigin } from '@/middlewares/cookie-origin.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import {
@@ -22,10 +25,11 @@ import {
   TenantPortalLinkModel,
   TenantPortalSessionModel,
 } from '@/sequelize/models/index.js';
-import { auditedTransaction, recordAudit } from '@/shared/audit.js';
+import { auditedCommand, auditedTransaction, recordAudit } from '@/shared/audit.js';
 import { formBody } from '@/shared/input.js';
 import type { PortalPrincipal } from '@/types/express.js';
 import { contractFactsAt } from '../contracts/contracts.resolvers.js';
+import { loadActiveUser } from '../me/me.service.js';
 import {
   contractContext,
   type LinkContext,
@@ -131,17 +135,94 @@ async function resolvePortal(req: Request): Promise<PortalPrincipal | undefined>
   return principalOf(session, link, context);
 }
 
+/** Account sessions share portal DTOs and commands, with a separate non-deliverable link
+ * for request/upload foreign keys. No token for this link is ever returned. */
+async function resolveAccountPortal(req: Request): Promise<PortalPrincipal | undefined> {
+  const session = await auth.api.getSession({
+    headers: fromNodeHeaders(req.headers),
+    query: { disableRefresh: true },
+  });
+  const user = session ? await loadActiveUser(session.user.id) : undefined;
+
+  if (!session || !user || user.role !== 'tenant')
+    throw new BaseError('forbidden', 403, 'forbidden');
+  if (user.mustChangePassword)
+    throw new BaseError('must_change_password', 403, 'must_change_password');
+  const contractId = req.header('X-Stay-Contract') ?? queryText(req.query, 'accountContract') ?? '';
+
+  if (
+    !user.contractIds.includes(contractId) ||
+    !canAccessRecord(user, 'read', 'Contract', { contractId })
+  )
+    throw new BaseError('forbidden', 403, 'forbidden');
+  const tenant = await TenantModel.findOne({ where: { userId: user.id } });
+  const context = await contractContext(contractId);
+
+  if (!tenant || !context || !portalOpen(context.contract, context.occupants, tenant.id))
+    throw new BaseError('forbidden', 403, 'forbidden');
+  const existingLink = await TenantPortalLinkModel.findOne({
+    where: { accountUserId: user.id, contractId },
+  });
+  const link =
+    existingLink ??
+    (await auditedCommand(
+      { action: 'create', resourceType: 'tenant_account_portal', resourceId: tenant.id },
+      () =>
+        auditedTransaction(async (transaction) => {
+          const [link, created] = await TenantPortalLinkModel.findOrCreate({
+            where: { accountUserId: user.id, contractId },
+            defaults: {
+              buildingId: context.contract.buildingId,
+              accountUserId: user.id,
+              contractId,
+              tenantId: tenant.id,
+              tokenHash: sha256(randomBytes(32).toString('hex')),
+              createdBy: user.id,
+            },
+            transaction,
+          });
+
+          if (created)
+            await recordAudit(
+              {
+                actorId: user.id,
+                action: 'tenant.account_portal',
+                resourceType: 'tenant_account_portal',
+                resourceId: tenant.id,
+                changes: { contractId },
+              },
+              transaction,
+            );
+          return link;
+        }),
+    ));
+
+  return {
+    accountUserId: user.id,
+    sessionId: session.session.id,
+    sessionExpiresAt: new Date(session.session.expiresAt),
+    linkId: link.id,
+    tenantId: tenant.id,
+    contractId,
+    buildingId: context.contract.buildingId,
+    ability: user,
+  };
+}
+
 /**
  * Tenant portal guard (ST-25): 401 `portal_session_invalid` without a valid portal session;
  * cookie writes must come from an allowed web origin (same CSRF guard as staff routes).
  */
 export async function portalSessionRequired(req: Request, _res: Response, next: NextFunction) {
   try {
-    const principal = await resolvePortal(req);
+    assertCookieOrigin(req);
+    const principal =
+      req.header('X-Stay-Contract') || queryText(req.query, 'accountContract')
+        ? await resolveAccountPortal(req)
+        : await resolvePortal(req);
 
     if (!principal) throw new BaseError('portal_session_invalid', 401, 'portal_session_invalid');
     req.portal = principal;
-    assertCookieOrigin(req);
     next();
   } catch (error) {
     next(error);

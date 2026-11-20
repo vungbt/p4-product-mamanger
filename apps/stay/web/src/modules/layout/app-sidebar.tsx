@@ -29,7 +29,7 @@ export function useAppSidebar(): SidebarProps {
 
   const entry = (route: (typeof routes)[number]): SidebarEntry => ({
     id: route.name,
-    label: routeLabels[route.name] ?? route.name,
+    label: route.label ?? routeLabels[route.name] ?? route.name,
     icon: route.icon,
     href: route.path,
     exact: route.exact,

@@ -1,4 +1,4 @@
-import { createAuthRequired } from '@p4/server-core';
+import { BaseError, createAuthRequired } from '@p4/server-core';
 import { fromNodeHeaders } from 'better-auth/node';
 import { auth } from '@/configs/better-auth.js';
 import { loadActiveUser } from '@/modules/me/me.service.js';
@@ -12,7 +12,13 @@ export const authRequired = createAuthRequired({
       query: { disableRefresh: true },
     });
 
-    return session ? loadActiveUser(session.user.id) : undefined;
+    const user = session ? await loadActiveUser(session.user.id) : undefined;
+
+    if (user?.mustChangePassword && req.path !== '/me')
+      throw new BaseError('must_change_password', 403, 'must_change_password');
+    if (user?.role === 'tenant' && !['/me', '/me/capabilities'].includes(req.path))
+      throw new BaseError('forbidden', 403, 'forbidden');
+    return user;
   },
   assertRequest: assertCookieOrigin,
 });

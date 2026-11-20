@@ -88,6 +88,7 @@
   "auth": {
     "title": "Đăng nhập",
     "subtitle": "Đăng nhập để quản lý nhà trọ của bạn",
+    "identifier": "Email hoặc số điện thoại",
     "email": "Email",
     "emailPlaceholder": "ban@vidu.com",
     "emailInvalid": "Email không hợp lệ",

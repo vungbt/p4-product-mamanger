@@ -63,10 +63,10 @@ export function buildingMutationOptions(sdk: StaySdk, client: QueryClient) {
  * `GET /api/buildings`: the buildings the user may read (managers: assigned ones), paginated.
  * The header building selector can use `{ pageSize: 100 }`.
  */
-export function useBuildings(query?: BuildingListQuery) {
+export function useBuildings(query?: BuildingListQuery, options?: { enabled?: boolean }) {
   const sdk = useStaySdk();
 
-  return useQuery(buildingQueryOptions(sdk).list(query));
+  return useQuery({ ...buildingQueryOptions(sdk).list(query), ...options });
 }
 
 /** `GET /api/buildings/:id`; 404 also means "outside your buildings". */

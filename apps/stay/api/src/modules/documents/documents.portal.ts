@@ -6,9 +6,11 @@ import {
   type PortalDocument,
   type PortalDocumentSummary,
 } from '@stay/shared';
+import { parseDocument } from 'htmlparser2';
 import { Op, QueryTypes, type Transaction } from 'sequelize';
 import {
   ContractDocumentModel,
+  ContractOccupantModel,
   DocumentFileModel,
   type DocumentSignerModel,
   sequelize,
@@ -92,19 +94,58 @@ async function portalDocumentRow(portal: PortalPrincipal, id: string, transactio
   return row;
 }
 
+/** Account dashboards withhold an original containing another occupant's identifiers.
+ * Never change signed content silently. Legacy links keep their named-signer policy. */
+async function documentPrivacyRestricted(
+  portal: PortalPrincipal,
+  row: ContractDocumentModel,
+): Promise<boolean> {
+  if (!portal.accountUserId) return false;
+  const occupants = await ContractOccupantModel.findAll({ where: { contractId: row.contractId } });
+  const tenants = await TenantModel.findAll({
+    where: { id: occupants.map((occupant) => occupant.tenantId) },
+  });
+  const mine = tenants.find((tenant) => tenant.id === portal.tenantId);
+  const privateValues = tenants
+    .filter((tenant) => tenant.id !== portal.tenantId)
+    .flatMap((tenant) => [tenant.phone, tenant.idNumber]);
+
+  if (row.dataSnapshot['ben_thue.ho_ten'] !== mine?.fullName)
+    privateValues.push(
+      row.dataSnapshot['ben_thue.cccd'] ?? null,
+      row.dataSnapshot['ben_thue.sdt'] ?? null,
+    );
+  for (const value of row.dataSnapshot['nguoi_o.danh_sach']?.match(/\d{12}/g) ?? [])
+    if (value !== mine?.idNumber) privateValues.push(value);
+  // Decode entities and join text nodes so whitespace or inline markup cannot expose a
+  // formatted version of an identifier that the plain snapshot check would miss.
+  const textOf = (nodes: ReturnType<typeof parseDocument>['children']): string =>
+    nodes
+      .map((node) =>
+        node.type === 'text' ? node.data : 'children' in node ? textOf(node.children) : '',
+      )
+      .join('');
+  const digits = textOf(parseDocument(row.bodyHtml).children).replace(/\D/g, '');
+
+  return privateValues.some((value) => Boolean(value && digits.includes(value.replace(/\D/g, ''))));
+}
+
 async function portalDocumentDto(portal: PortalPrincipal, row: ContractDocumentModel) {
+  const privacyRestricted = await documentPrivacyRestricted(portal, row);
   const signers = await documentSigners([row.id]);
   const mine = signers.find((signer) => signer.tenantId === portal.tenantId);
 
   return {
     ...summaryOf(row, signers, portal),
     // CCCD of the parties is in the body: only signers read it (st-30.md "Bảo mật").
-    bodyHtml: mine ? row.bodyHtml : null,
+    privacyRestricted,
+    awaitingMe: !privacyRestricted && summaryOf(row, signers, portal).awaitingMe,
+    bodyHtml: mine && !privacyRestricted ? row.bodyHtml : null,
     myName: mine?.name ?? null,
     expiresAt: mine?.expiresAt?.toISOString() ?? null,
     lockedUntil:
       mine?.lockedUntil && mine.lockedUntil > new Date() ? mine.lockedUntil.toISOString() : null,
-    hasPdf: Boolean(row.pdfFileId) && Boolean(mine),
+    hasPdf: Boolean(row.pdfFileId) && Boolean(mine) && !privacyRestricted,
     signers: signers.map((signer) => ({
       name: signer.name,
       role: signer.role,
@@ -128,7 +169,12 @@ export async function portalDocument(
   const mine = signers.find((signer) => signer.tenantId === portal.tenantId);
   const open = effectiveStatus(row, signers);
 
-  if (mine && mine.status === 'pending' && (open === 'sent' || open === 'viewed')) {
+  if (
+    mine &&
+    mine.status === 'pending' &&
+    (open === 'sent' || open === 'viewed') &&
+    !(await documentPrivacyRestricted(portal, row))
+  ) {
     await sequelize.transaction(async (transaction) => {
       const [updated] = await sequelize.query(
         `UPDATE document_signers SET status = 'viewed', viewed_at = now(), updated_at = now()
@@ -244,6 +290,8 @@ export async function signPortalDocument(
   const failure = await auditedTransaction(async (transaction) => {
     const row = await portalDocumentRow(portal, id, transaction);
     const signers = await documentSigners([row.id]);
+    if (await documentPrivacyRestricted(portal, row))
+      throw new BaseError('document_privacy_restricted', 403, 'document_privacy_restricted');
     const signer = signers.find((item) => item.tenantId === portal.tenantId);
     const status = effectiveStatus(row, signers);
 
@@ -334,6 +382,8 @@ export async function rejectPortalDocument(
   await auditedTransaction(async (transaction) => {
     const row = await portalDocumentRow(portal, id, transaction);
     const signers = await documentSigners([row.id]);
+    if (await documentPrivacyRestricted(portal, row))
+      throw new BaseError('document_privacy_restricted', 403, 'document_privacy_restricted');
     const signer = signers.find((item) => item.tenantId === portal.tenantId);
     const status = effectiveStatus(row, signers);
 
@@ -362,6 +412,8 @@ export async function portalDocumentPdf(portal: PortalPrincipal, id: string, act
   const signers = await documentSigners([row.id]);
   const mine = signers.find((signer) => signer.tenantId === portal.tenantId);
 
+  if (await documentPrivacyRestricted(portal, row))
+    throw new BaseError('document_privacy_restricted', 403, 'document_privacy_restricted');
   if (!mine || !row.pdfFileId) throw new NotFound('document_not_found');
   const file = await DocumentFileModel.findByPk(row.pdfFileId, { rejectOnEmpty: true });
 

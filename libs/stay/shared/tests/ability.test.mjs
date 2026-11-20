@@ -112,3 +112,16 @@ test('permission groups restrict writes and never permit building prices, void o
   }
   assert.equal(kit.canOn(ability, 'update', 'MeterReading', { buildingId: 'b-3' }), false);
 });
+
+test('only operations managers issue tenant credentials within their buildings', () => {
+  const operations = kit.defineAbilityFor({ ...manager, permissionGroups: ['operations'] });
+  const readings = kit.defineAbilityFor({ ...manager, permissionGroups: ['readings'] });
+
+  assert.equal(kit.canOn(operations, 'issue', 'Tenant', { buildingId: 'b-1' }), true);
+  assert.equal(kit.canOn(operations, 'issue', 'Tenant', { buildingId: 'b-other' }), false);
+  assert.equal(kit.canOn(readings, 'issue', 'Tenant', { buildingId: 'b-1' }), false);
+  assert.equal(
+    kit.canOn(kit.defineAbilityFor(tenant), 'issue', 'Tenant', { buildingId: 'b-1' }),
+    false,
+  );
+});

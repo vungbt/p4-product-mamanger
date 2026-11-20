@@ -4,10 +4,10 @@ import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
-import { auth } from '@/configs/better-auth.js';
 import { env } from '@/configs/env.js';
 import { i18nMiddleware } from '@/configs/i18n.js';
 import { mountOpenApiDocs } from '@/configs/openapi-docs.js';
+import { tenantAuth } from '@/configs/tenant-auth.js';
 import { logUnexpectedErrors } from '@/middlewares/error-log.middleware.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
 import apiRouter from '@/modules/index.js';
@@ -27,7 +27,7 @@ export function createApp() {
 
   // Better Auth reads the raw body: mount it before express.json().
   app.use('/api/auth/sign-in', rateLimit('stay-sign-in', env.signInRateLimit));
-  app.all('/api/auth/*', toNodeHandler(auth));
+  app.all('/api/auth/*', toNodeHandler(tenantAuth));
 
   app.use(express.json({ limit: '1mb' }));
 
