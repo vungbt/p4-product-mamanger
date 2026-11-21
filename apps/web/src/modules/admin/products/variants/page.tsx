@@ -173,7 +173,7 @@ export default function VariantPage() {
         </div>
         <div className="w-44">
           <Select
-            value={params.status ?? t('adminProducts.all')}
+            value={params.status ?? 'all'}
             options={[
               { value: 'all', label: t('adminProducts.all') },
               { value: 'active', label: t('adminProductForm.variantActive') },
@@ -212,7 +212,7 @@ export default function VariantPage() {
           }
         }}
         rowId={(row) => row.id}
-        caption={t('adminProducts.variantSection')}
+        caption={t('adminProductForm.variantSection')}
         emptyText={t('adminProducts.noMatches')}
       />
     </div>

@@ -125,7 +125,8 @@
     "product-edit": "Edit",
     "admin-orders": "Orders",
     "product-categories": "Categories",
-    "product-detail": "Product details"
+    "product-detail": "Product details",
+    "product-variants": "SKUs and variants"
   },
   "storefront": {
     "footerTagline": "Simple shopping — clear management.",
