@@ -34,7 +34,8 @@ RUN pnpm install --frozen-lockfile --filter @stay/api... --prod --ignore-scripts
 
 # Runtime: Node only — no pnpm, corepack, store or build cache.
 FROM node:22-alpine AS production
-ENV NODE_ENV=production
+ARG GIT_SHA=dev
+ENV NODE_ENV=production APP_VERSION=$GIT_SHA
 RUN apk add --no-cache wget
 WORKDIR /app
 COPY --from=prod-deps /app ./

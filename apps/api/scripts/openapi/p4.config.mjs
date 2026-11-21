@@ -58,7 +58,15 @@ export default {
             description: 'Service sẵn sàng',
             content: {
               'application/json': {
-                schema: { type: 'object', properties: { status: { type: 'string' } } },
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string' },
+                    ...(openPath === '/health'
+                      ? { service: { type: 'string' }, version: { type: 'string' } }
+                      : {}),
+                  },
+                },
               },
             },
           },

@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FlashSaleProductCard } from '.';
 
+const SAMPLE_IMAGE_URL = new URL('../../assets/story-keyboard.webp', import.meta.url).href;
+
 const meta = {
   title: 'Components/FlashSaleProductCard',
   component: FlashSaleProductCard,
@@ -43,7 +45,7 @@ export const Default: Story = {
     originalPrice: 2000000,
     salePrice: 1752000,
     image: {
-      url: 'https://philong.com.vn/media/lib/04-03-2024/ban-phim-co-khong-day-edra-ek398l-philong2.jpg',
+      url: SAMPLE_IMAGE_URL,
     },
     stock: 30,
     sold: 120,
@@ -62,7 +64,7 @@ export const WithoutSale: Story = {
     originalPrice: 2000000,
     salePrice: 1000000,
     image: {
-      url: 'https://philong.com.vn/media/lib/04-03-2024/ban-phim-co-khong-day-edra-ek398l-philong2.jpg',
+      url: SAMPLE_IMAGE_URL,
     },
     stock: 30,
     sold: 120,
@@ -82,7 +84,7 @@ export const WidthDescription: Story = {
     originalPrice: 2000000,
     salePrice: 1000000,
     image: {
-      url: 'https://philong.com.vn/media/lib/04-03-2024/ban-phim-co-khong-day-edra-ek398l-philong2.jpg',
+      url: SAMPLE_IMAGE_URL,
     },
     stock: 0,
     sold: 120,
@@ -100,7 +102,7 @@ export const InGrid: Story = {
     originalPrice: 2000000,
     salePrice: 1752000,
     image: {
-      url: 'https://philong.com.vn/media/lib/04-03-2024/ban-phim-co-khong-day-edra-ek398l-philong2.jpg',
+      url: SAMPLE_IMAGE_URL,
     },
     stock: 30,
     sold: 120,
@@ -120,7 +122,7 @@ export const InGrid: Story = {
           originalPrice={2000000}
           salePrice={variant.salePrice}
           image={{
-            url: 'https://philong.com.vn/media/lib/04-03-2024/ban-phim-co-khong-day-edra-ek398l-philong2.jpg',
+            url: SAMPLE_IMAGE_URL,
           }}
           stock={30}
           sold={120}

@@ -3,7 +3,7 @@ import { fn } from 'storybook/test';
 import { ProductCard } from '.';
 
 const SAMPLE_IMAGE = {
-  url: 'https://philong.com.vn/media/lib/04-03-2024/ban-phim-co-khong-day-edra-ek398l-philong2.jpg',
+  url: new URL('../../assets/story-keyboard.webp', import.meta.url).href,
 };
 
 const atNaturalSize: Decorator = (Story) => (

@@ -16835,6 +16835,7 @@ export interface operations {
             database?: 'up' | 'down';
             service?: string;
             status?: string;
+            version?: string;
           };
         };
       };

@@ -37,9 +37,21 @@ export function createApp() {
   app.get('/health', (_req, res) => {
     sequelize
       .authenticate()
-      .then(() => res.json({ status: 'ok', service: '@stay/api', database: 'up' }))
+      .then(() =>
+        res.json({
+          status: 'ok',
+          service: '@stay/api',
+          version: process.env.APP_VERSION ?? 'dev',
+          database: 'up',
+        }),
+      )
       .catch(() =>
-        res.status(503).json({ status: 'unavailable', service: '@stay/api', database: 'down' }),
+        res.status(503).json({
+          status: 'unavailable',
+          service: '@stay/api',
+          version: process.env.APP_VERSION ?? 'dev',
+          database: 'down',
+        }),
       );
   });
 

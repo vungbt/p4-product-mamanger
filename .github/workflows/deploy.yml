@@ -1,0 +1,169 @@
+name: Deploy
+
+# Deploys after CI passes on main: the API workflow ships the P4 and Stay APIs, the Frontend
+# workflow ships the P4 and Stay web apps. Each target deploys only when its files changed since
+# the commit tagged deployed/<target>; run it manually to force a target.
+on:
+  workflow_run:
+    workflows: [API, Frontend]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Target to deploy
+        type: choice
+        options: [p4-api, p4-web, stay-api, stay-web]
+
+permissions:
+  contents: write
+
+jobs:
+  plan:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.plan.outputs.sha }}
+      targets: ${{ steps.plan.outputs.targets }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+      - id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          WORKFLOW: ${{ github.event.workflow_run.name }}
+          INPUT_TARGET: ${{ inputs.target }}
+        run: |
+          git fetch origin +refs/heads/main:refs/remotes/origin/main --quiet
+          sha=$(git rev-parse HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT" != workflow_dispatch ] && [ "$sha" != "$(git rev-parse origin/main)" ]; then
+            echo "Skipping stale trigger $sha: origin/main is $(git rev-parse origin/main)"
+            echo 'targets=[]' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          shared="package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json"
+          declare -A paths=(
+            [p4-api]="apps/api libs/ability libs/server-core libs/shared libs/processes libs/realtime docker-compose.yml deploy/backup/p4-db-backup.sh scripts/deploy.prod.sh scripts/lib deploy/remote .github/workflows/deploy.yml $shared"
+            [stay-api]="apps/stay/api libs/ability libs/server-core libs/shared libs/stay/shared libs/stay/billing docker-compose.stay.yml deploy/backup/stay-db-backup.sh scripts/deploy.stay.sh scripts/lib deploy/remote .github/workflows/deploy.yml $shared"
+            [p4-web]="apps/web libs :!libs/stay scripts/deploy.web.sh scripts/lib deploy/remote .github/workflows/deploy.yml $shared"
+            [stay-web]="apps/stay/web libs scripts/deploy.stay.sh scripts/lib deploy/remote .github/workflows/deploy.yml $shared"
+          )
+          if [ "$EVENT" = workflow_dispatch ]; then
+            candidates="$INPUT_TARGET"
+          elif [ "$WORKFLOW" = API ]; then
+            candidates="p4-api stay-api"
+          else
+            candidates="p4-web stay-web"
+          fi
+
+          git fetch --tags --force --quiet
+          targets=()
+          for t in $candidates; do
+            tag="deployed/$t"
+            if [ "$EVENT" = workflow_dispatch ] || ! git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              targets+=("$t")
+            elif ! git diff --quiet "$tag" HEAD -- ${paths[$t]}; then
+              targets+=("$t")
+            else
+              echo "$t: no changes since $(git rev-parse --short "$tag")"
+            fi
+          done
+
+          echo "targets=$(printf '%s\n' "${targets[@]}" | jq -R . | jq -sc 'map(select(. != ""))')" >> "$GITHUB_OUTPUT"
+          echo "Deploying: ${targets[*]:-nothing}"
+
+  deploy:
+    needs: plan
+    if: needs.plan.outputs.targets != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.plan.outputs.targets) }}
+    concurrency:
+      group: deploy-${{ matrix.target }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
+      # Recheck after acquiring the target concurrency slot: main may advance while queued.
+      - name: Check queued deploy is current
+        id: current
+        env:
+          EVENT: ${{ github.event_name }}
+          EXPECTED_SHA: ${{ needs.plan.outputs.sha }}
+        run: |
+          tip=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$EVENT" != workflow_dispatch ] && [ "$EXPECTED_SHA" != "$tip" ]; then
+            echo "Skipping stale queued deploy $EXPECTED_SHA: origin/main is $tip"
+            echo 'deploy=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'deploy=true' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: pnpm/action-setup@v4
+        if: steps.current.outputs.deploy == 'true' && endsWith(matrix.target, '-web')
+      - uses: actions/setup-node@v4
+        if: steps.current.outputs.deploy == 'true' && endsWith(matrix.target, '-web')
+        with:
+          node-version: 22
+          cache: pnpm
+      - if: steps.current.outputs.deploy == 'true' && endsWith(matrix.target, '-web')
+        run: pnpm install --frozen-lockfile
+
+      - name: SSH access
+        if: steps.current.outputs.deploy == 'true'
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<'EOF'
+          Host couponlinkh
+            HostName 140.82.33.237
+            User root
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+          Host stay-prod
+            HostName 45.117.178.128
+            User root
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+          EOF
+
+      - name: Deploy ${{ matrix.target }}
+        if: steps.current.outputs.deploy == 'true'
+        env:
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.P4_VITE_GOOGLE_CLIENT_ID }}
+        run: |
+          case "${{ matrix.target }}" in
+            p4-api)   ./scripts/deploy.prod.sh ;;
+            p4-web)   ./scripts/deploy.web.sh ;;
+            stay-api) ./scripts/deploy.stay.sh --api ;;
+            stay-web) ./scripts/deploy.stay.sh --web ;;
+          esac
+
+      - name: Verify public release
+        if: steps.current.outputs.deploy == 'true'
+        env:
+          EXPECTED_SHA: ${{ needs.plan.outputs.sha }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          case "$TARGET" in
+            p4-api)   kind=api; url=https://p4-api.itclabs.site/health ;;
+            stay-api) kind=api; url=https://stay-api.itclabs.site/health ;;
+            p4-web)   kind=web; url=https://p4.itclabs.site/index.html ;;
+            stay-web) kind=web; url=https://stay.itclabs.site/index.html ;;
+          esac
+          bash deploy/remote/verify.sh "$kind" "$url?version=$EXPECTED_SHA" "$EXPECTED_SHA"
+
+      - name: Mark deployed
+        if: steps.current.outputs.deploy == 'true'
+        run: git push --force origin "${{ needs.plan.outputs.sha }}:refs/tags/deployed/${{ matrix.target }}"

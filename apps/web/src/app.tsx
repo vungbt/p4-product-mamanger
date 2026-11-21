@@ -12,6 +12,7 @@ import { createBrowserRouter, Link, RouterProvider, useLocation } from 'react-ro
 import { API_BASE_URL } from '@/constants/constants';
 import { AuthProvider } from '@/contexts/auth-context';
 import CapabilityAbilityProvider from '@/libraries/capability-ability-provider';
+import { cloudinaryImageUrl } from '@/libraries/cloudinary-image';
 import { UnsavedChangesProvider } from '@/libraries/forms/unsaved-changes';
 import { uiTheme } from '@/libraries/ui-theme';
 import RouteConfigs from '@/routing/config.route';
@@ -28,8 +29,12 @@ function useRouterAdapter() {
   return { pathname: useLocation().pathname };
 }
 
-function WebImage({ alt, ...props }: UiImageProps) {
-  return <img decoding="async" loading="lazy" {...props} alt={alt} />;
+function WebImage({ src, alt, width, ...props }: UiImageProps) {
+  const deliveryUrl = cloudinaryImageUrl(src, width === undefined ? undefined : width * 2);
+
+  return (
+    <img decoding="async" loading="lazy" {...props} src={deliveryUrl} width={width} alt={alt} />
+  );
 }
 
 function Root() {

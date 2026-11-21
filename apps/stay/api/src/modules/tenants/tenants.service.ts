@@ -169,8 +169,13 @@ function searchWhere(q: string | undefined): WhereOptions<TenantAttributes> {
     where(cast(col('TenantModel.full_name'), 'text'), { [Op.iLike]: pattern }),
   ];
 
-  if (/^\+?\d{3,}$/.test(digits))
-    conditions.push({ phone: { [Op.like]: `%${digits.replace(/^\+?84/, '0')}%` } });
+  if (/^\+?\d{3,}$/.test(digits)) {
+    // A partial search starting with 84 is not an international phone number.
+    const phone =
+      /^\+84/.test(digits) || /^84\d{9,}$/.test(digits) ? digits.replace(/^\+?84/, '0') : digits;
+
+    conditions.push({ phone: { [Op.like]: `%${phone}%` } });
+  }
   if (/^\d{4}$/.test(digits)) conditions.push({ idNumber: { [Op.like]: `%${digits}` } });
   return { [Op.or]: conditions };
 }

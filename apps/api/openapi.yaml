@@ -33943,6 +33943,10 @@ paths:
                 properties:
                   status:
                     type: string
+                  service:
+                    type: string
+                  version:
+                    type: string
       x-platform: operations
       x-resource: operations
       x-sdk:
