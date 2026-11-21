@@ -30,8 +30,9 @@ const formatted = spawnSync(
 );
 if (formatted.status !== 0) throw new Error('Cannot format the generated SDK contract.');
 const generated = addCodeSpacing(formatted.stdout);
+const normalize = (s) => s.replace(/\r\n/g, '\n');
 if (process.argv.includes('--check')) {
   const existing = await readFile(target, 'utf8');
-  if (existing !== generated)
+  if (normalize(existing) !== normalize(generated))
     throw new Error('SDK contract is stale. Run pnpm --filter @p4/api-sdk generate.');
 } else await writeFile(target, generated);
