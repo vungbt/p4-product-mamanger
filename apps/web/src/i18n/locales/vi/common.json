@@ -1,5 +1,7 @@
 {
-  "selects": { "loadFailed": "Không thể tải dữ liệu." },
+  "selects": {
+    "loadFailed": "Không thể tải dữ liệu."
+  },
   "unsavedChanges": {
     "title": "Thay đổi chưa lưu",
     "description": "Rời trang và bỏ các thay đổi chưa lưu?",
@@ -125,7 +127,8 @@
     "product-edit": "Chỉnh sửa",
     "admin-orders": "Đơn hàng",
     "product-categories": "Danh mục",
-    "product-detail": "Chi tiết sản phẩm"
+    "product-detail": "Chi tiết sản phẩm",
+    "product-variants": "SKU và biến thể"
   },
   "storefront": {
     "footerTagline": "Mua sắm đơn giản — quản lý rõ ràng.",
@@ -277,6 +280,7 @@
     "empty": "Không có trang phù hợp"
   },
   "adminProducts": {
+    "all": "Tất cả",
     "name": "Sản phẩm",
     "category": "Danh mục",
     "price": "Giá",

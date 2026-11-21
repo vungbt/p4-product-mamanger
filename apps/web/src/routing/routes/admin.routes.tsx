@@ -9,6 +9,7 @@ const AdminProductDetailScreen = lazy(() => import('@/modules/admin/products/det
 const AdminProductFormScreen = lazy(() => import('@/modules/admin/products/form-page'));
 const AdminCategoriesScreen = lazy(() => import('@/modules/admin/categories/page'));
 const AdminOrdersScreen = lazy(() => import('@/modules/admin/orders/page'));
+const AdminProductVariantsScreen = lazy(() => import('@/modules/admin/products/variants/page'));
 const AdminLayout = lazy(() => import('@/modules/admin/layout/layout'));
 
 export const adminLoginRoute: IRoute = {
@@ -61,6 +62,14 @@ export const adminPortalRoutes: IRoute[] = [
             ability: { action: 'read', subject: 'Catalog' },
             label: 'Categories',
             component: AdminCategoriesScreen,
+            exact: true,
+          },
+          {
+            path: ROUTES.admin['product-variants'],
+            name: 'product-variants',
+            ability: { action: 'read', subject: 'Catalog' },
+            label: 'SKU and Variants',
+            component: AdminProductVariantsScreen,
             exact: true,
           },
           {
