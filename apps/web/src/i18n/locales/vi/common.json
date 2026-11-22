@@ -332,6 +332,8 @@
     "description": "Mô tả",
     "noDescription": "Chưa có mô tả.",
     "variants": "SKU và biến thể",
+    "variantsSubtitle": "Quản lý toàn bộ SKU và tồn kho biến thể.",
+    "searchVariants": "Tìm theo SKU hoặc mã vạch...",
     "variantsHint": "Mỗi size và màu được bán như một SKU riêng.",
     "variantsFailed": "Không tải được danh sách SKU.",
     "noVariants": "Chưa có SKU. Sản phẩm cần ít nhất một SKU đang bán mới xuất bản được.",
