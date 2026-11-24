@@ -1,13 +1,20 @@
 import { type DataTableState, useDebouncedCallback } from '@itclabs/react-ui';
-import { keepPreviousData, useGetAdminVariants } from '@p4/api-sdk/react';
-import { getErrorMessage } from '@p4/api-sdk/shared';
+import { keepPreviousData, useGetAdminVariants, useGetShopConfig } from '@p4/api-sdk/react';
+import { getErrorMessage, type operations } from '@p4/api-sdk/shared';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
 import { DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS, SEARCH_DEBOUNCE_MS } from '@/constants/list';
 import useQueryParam from '@/hooks/use-query-param';
 
-export const sortFields = ['sku', 'price', 'onHand', 'reserved', 'createdAt'] as const;
+type AdminVariantsQuery = NonNullable<operations['get_api_admin_variants']['parameters']['query']>;
+
+export const sortFields: NonNullable<AdminVariantsQuery['sortBy']>[] = [
+  'sku',
+  'price',
+  'onHand',
+  'createdAt',
+];
 
 export type SortField = (typeof sortFields)[number];
 
@@ -42,6 +49,9 @@ export default function useVariantsPage() {
   const globalFilter = params.q ?? '';
 
   const [search, setSearch] = useState(globalFilter);
+
+  const shopConfig = useGetShopConfig();
+  const currency = shopConfig.data?.data?.currency ?? 'VND';
 
   const state: DataTableState = {
     sorting: [{ id: sortBy, desc: sortOrder === 'desc' }],
@@ -102,8 +112,10 @@ export default function useVariantsPage() {
 
   const changeTableState = (next: DataTableState) => {
     const sorting = next.sorting[0];
-    const nextSortBy = sortFields.find((f) => f === sorting?.id) ?? 'createdAt';
-    const nextSortOrder = sorting?.desc ? 'desc' : 'asc';
+    const nextSortBy = sorting
+      ? (sortFields.find((f) => f === sorting.id) ?? 'createdAt')
+      : 'createdAt';
+    const nextSortOrder = sorting?.desc === false ? 'asc' : 'desc';
 
     const sortChanged = nextSortBy !== sortBy || nextSortOrder !== sortOrder;
     const sizeChanged = next.pagination.pageSize !== pageSize;
@@ -118,7 +130,7 @@ export default function useVariantsPage() {
     });
   };
 
-  const resetOrRefresh = () => {
+  const refresh = () => {
     void query.refetch();
   };
 
@@ -127,14 +139,17 @@ export default function useVariantsPage() {
     rowCount: query.data?.meta?.total ?? 0,
     state,
     search,
+    currency,
     status,
     loading: query.isPending,
     refreshing: query.isFetching && !query.isPending,
-    error: query.isError ? getErrorMessage(query.error, t('adminProducts.loadFailed')) : undefined,
+    error: query.isError
+      ? getErrorMessage(query.error, t('adminProducts.variantsFailed'))
+      : undefined,
     changeSearch,
     clearSearch,
     changeStatus,
     changeTableState,
-    resetOrRefresh,
+    refresh,
   };
 }

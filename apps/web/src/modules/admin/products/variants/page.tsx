@@ -33,11 +33,12 @@ export default function VariantPage() {
     loading,
     refreshing,
     error,
+    currency,
     changeSearch,
     clearSearch,
     changeStatus,
     changeTableState,
-    resetOrRefresh,
+    refresh,
   } = useVariantsPage();
 
   const columns = useMemo<ColumnDef<InventoryBalance, unknown>[]>(
@@ -56,10 +57,10 @@ export default function VariantPage() {
                 <UiImage
                   src={thumbnail}
                   alt={item.sku}
-                  className="size-10 rounded border border-line object-cover"
+                  className="size-10 rounded border border-canvas object-cover"
                 />
               ) : (
-                <div className="flex size-10 items-center justify-center rounded border border-line bg-surface-muted text-muted">
+                <div className="flex size-10 items-center justify-center rounded border border-canvas text-muted">
                   <Icon name="tag" className="size-5" />
                 </div>
               )}
@@ -89,7 +90,7 @@ export default function VariantPage() {
         header: t('adminProducts.price'),
         cell: ({ row }) => (
           <span className="tabular-nums font-medium text-ink">
-            {formatCurrency(row.original.price, 'VND')}
+            {formatCurrency(row.original.price, currency)}
           </span>
         ),
       },
@@ -104,7 +105,7 @@ export default function VariantPage() {
             <div className="text-ui-sm">
               <div className="tabular-nums font-medium text-ink">{formatNumber(onHand)}</div>
               {reserved > 0 && (
-                <div className="text-ui-xs text-muted">
+                <div className="text-xs text-muted">
                   {t('adminProducts.variant.reserved')}: {formatNumber(reserved)}
                 </div>
               )}
@@ -142,7 +143,7 @@ export default function VariantPage() {
         ),
       },
     ],
-    [t, formatCurrency, formatNumber, navigate],
+    [t, formatCurrency, formatNumber, navigate, currency],
   );
 
   return (
@@ -150,7 +151,7 @@ export default function VariantPage() {
       <p className="text-ui-sm text-muted">{t('adminProducts.variantsSubtitle')}</p>
 
       <div className="overflow-hidden rounded-panel border border-line bg-surface shadow-panel">
-        <div className="flex flex-wrap items-center gap-3 border-b border-line p-3">
+        <div className="flex flex-wrap items-center gap-3 border-line p-3">
           <div className="w-full sm:w-72">
             <Input
               placeholder={t('adminProducts.searchVariants')}
@@ -164,7 +165,7 @@ export default function VariantPage() {
                       variant="ghost"
                       size="sm"
                       label={t('adminProducts.clearSearch')}
-                      className="size-5 rounded p-0.5 text-muted hover:bg-hover-strong hover:text-ink [&_svg]:stroke-[1.5]"
+                      className="size-5 p-0.5 text-muted hover:bg-hover-strong hover:text-ink [&_svg]:stroke-[1.5]"
                       iconClassName="size-4"
                       onClick={clearSearch}
                     />
@@ -192,8 +193,8 @@ export default function VariantPage() {
               variant="secondary"
               size="sm"
               label={t('adminProducts.refresh')}
-              loading={(loading || refreshing) && !search && !status}
-              onClick={resetOrRefresh}
+              loading={refreshing}
+              onClick={refresh}
             />
           </Tooltip>
         </div>
@@ -205,7 +206,7 @@ export default function VariantPage() {
           rowCount={rowCount}
           loading={loading}
           error={error}
-          onRetry={resetOrRefresh}
+          onRetry={refresh}
           state={state}
           onStateChange={changeTableState}
           rowId={(row) => row.id}
