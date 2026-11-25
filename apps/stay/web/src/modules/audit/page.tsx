@@ -11,6 +11,7 @@ import {
   Pagination,
   Select,
   Tag,
+  Timeline,
   Tooltip,
 } from '@itclabs/react-ui';
 import { useAuditLogs } from '@stay/sdk/react';
@@ -45,6 +46,7 @@ const filterFields = ['actorId', 'action', 'resourceType', 'resourceId', 'from',
 
 function SearchField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const { t } = useTranslation();
+
   const [draft, setDraft] = useState(value);
 
   useEffect(() => {
@@ -127,6 +129,7 @@ function AuditSummary({ total, sample }: { total: number; sample: AuditEntry[] }
 /** One entry as a sentence: who did what to which record, when, and how much changed. */
 function AuditItem({ entry, onOpen }: { entry: AuditEntry; onOpen: () => void }) {
   const { t } = useTranslation();
+
   const verb = verbMeta(entry.action);
   const target = auditTarget(entry);
   const changed = fieldChanges(entry.changes).length;
@@ -134,7 +137,7 @@ function AuditItem({ entry, onOpen }: { entry: AuditEntry; onOpen: () => void })
   const sentence = `${actor} ${verb.label.toLowerCase()} ${resourceLabel(entry.resourceType)} ${target.name}`;
 
   return (
-    <li className="flex min-w-0 items-start gap-3 px-4 py-3" data-testid="audit-entry">
+    <div className="flex min-w-0 items-start gap-3" data-testid="audit-entry">
       <Avatar alt="" fallback={initials(actor)} size="sm" className="mt-0.5 shrink-0" />
       <div className="grid min-w-0 flex-1 gap-1">
         <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-ink">
@@ -179,7 +182,7 @@ function AuditItem({ entry, onOpen }: { entry: AuditEntry; onOpen: () => void })
         label={`${t('audit.details')}: ${sentence}`}
         onClick={onOpen}
       />
-    </li>
+    </div>
   );
 }
 
@@ -193,14 +196,18 @@ function groupByDay(entries: AuditEntry[]) {
     if (last?.key === key) last.entries.push(entry);
     else groups.push({ key, entries: [entry] });
   }
+
   return groups;
 }
 
 /** O-26 audit log: summary cards, filters, entries grouped by day and a detail dialog. */
 export default function AuditPage() {
   const { t } = useTranslation();
+
   const [params, setParams] = useSearchParams();
+
   const { buildingId, buildings, selectBuilding } = useActiveBuilding();
+
   const previousBuilding = useRef<string | null>(null);
 
   const page = Math.max(1, Number(params.get('page')) || 1);
@@ -217,7 +224,9 @@ export default function AuditPage() {
     sortBy: 'createdAt',
     sortOrder,
   };
+
   const logs = useAuditLogs(query);
+
   const sample = useAuditLogs({
     ...filters,
     page: 1,
@@ -225,6 +234,7 @@ export default function AuditPage() {
     sortBy: 'createdAt',
     sortOrder: 'desc',
   });
+
   const selected = params.get('entry');
 
   const update = (values: Record<string, string>, resetPage = true) => {
@@ -239,6 +249,7 @@ export default function AuditPage() {
         next.delete('page');
         next.delete('entry');
       }
+
       return next;
     });
   };
@@ -261,6 +272,7 @@ export default function AuditPage() {
           const next = latestSearchParams();
 
           next.set('buildingId', buildingId);
+
           return next;
         },
         { replace: true },
@@ -284,6 +296,7 @@ export default function AuditPage() {
         next.set('buildingId', buildingId);
         next.delete('page');
         next.delete('entry');
+
         return next;
       },
       { replace: true },
@@ -291,6 +304,7 @@ export default function AuditPage() {
   }, [buildingId, buildings, params, selectBuilding, setParams]);
 
   const sampleRows = sample.data?.data ?? [];
+
   const actorOptions = useMemo(() => {
     const options = new Map<string, string>();
 
@@ -299,8 +313,10 @@ export default function AuditPage() {
     const current = params.get('actorId');
 
     if (current && !options.has(current)) options.set(current, current);
+
     return [...options].map(([value, label]) => ({ value, label }));
   }, [sampleRows, params]);
+
   const actionOptions = useMemo(() => {
     const options = new Map<string, string>();
 
@@ -309,10 +325,12 @@ export default function AuditPage() {
     const current = params.get('action');
 
     if (current && !options.has(current)) options.set(current, current);
+
     return [...options]
       .map(([value, label]) => ({ value, label }))
       .sort((a, b) => a.label.localeCompare(b.label, 'vi'));
   }, [sampleRows, params]);
+
   const resourceOptions = Object.keys(RESOURCE_LABELS).map((value) => ({
     value,
     label: resourceLabel(value).replace(/^./, (letter) => letter.toUpperCase()),
@@ -418,15 +436,16 @@ export default function AuditPage() {
                   {dayLabel(group.key)}
                   <span className="font-normal"> · {group.entries.length} thay đổi</span>
                 </h2>
-                <ol className="divide-y divide-line overflow-hidden rounded-panel border border-line bg-surface">
-                  {group.entries.map((entry) => (
-                    <AuditItem
-                      key={entry.id}
-                      entry={entry}
-                      onOpen={() => update({ entry: entry.id }, false)}
-                    />
-                  ))}
-                </ol>
+                <Timeline
+                  showStatus={false}
+                  items={group.entries.map((entry) => ({
+                    id: entry.id,
+                    state: 'completed',
+                    title: (
+                      <AuditItem entry={entry} onOpen={() => update({ entry: entry.id }, false)} />
+                    ),
+                  }))}
+                />
               </section>
             ))}
           </section>

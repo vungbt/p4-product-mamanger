@@ -1,4 +1,4 @@
-import { Button, Tag } from '@itclabs/react-ui';
+import { Button, EmptyState, Tag } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { usePortalCancelClaim, usePortalInvoice } from '@stay/sdk/react';
 import { getErrorMessage } from '@stay/sdk/shared';
@@ -73,7 +73,9 @@ function Claims({ claims }: { claims: PortalPaymentClaim[] }) {
  */
 export default function PortalInvoicePage() {
   const { id = '' } = useParams();
+
   const invoice = usePortalInvoice(id);
+
   const [claiming, setClaiming] = useState(false);
 
   if (isNotFound(invoice.error))
@@ -96,7 +98,11 @@ export default function PortalInvoicePage() {
             <InvoiceCard invoice={data} copyable />
             <PortalSection title="Lịch sử thanh toán" testId="portal-payments">
               {data.payments.length === 0 ? (
-                <p className="text-muted">Chưa có khoản thanh toán nào được ghi nhận.</p>
+                <EmptyState
+                  size="compact"
+                  appearance="plain"
+                  title={<>Chưa có khoản thanh toán nào được ghi nhận.</>}
+                />
               ) : (
                 <ul className="grid gap-2">
                   {data.payments.map((payment) => (

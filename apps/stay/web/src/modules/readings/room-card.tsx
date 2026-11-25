@@ -2,15 +2,23 @@ import {
   Button,
   Checkbox,
   Form,
+  FormGrid,
+  FormLayout,
+  FormSection,
   IconButton,
-  Input,
+  NumberInput,
   Tag,
   type TagTone,
   useAppForm,
 } from '@itclabs/react-ui';
 import { useSaveReadings, useStaySdk } from '@stay/sdk/react';
 import { createUploadApi, getErrorMessage } from '@stay/sdk/shared';
-import { METER_READING_MAX, type ReadingMeter, type ReadingRoom } from '@stay/shared';
+import {
+  METER_READING_MAX,
+  type ReadingMeter,
+  type ReadingRoom,
+  STAY_UPLOAD_MAX_BYTES,
+} from '@stay/shared';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as v from 'valibot';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
@@ -25,6 +33,7 @@ function problem(draft: Draft, meter: ReadingMeter) {
   if (!Number.isSafeInteger(value) || value < 0 || value > METER_READING_MAX)
     return 'Nhập số nguyên không âm.';
   if (value < meter.previous) return 'Số mới phải lớn hơn hoặc bằng số cũ.';
+
   return null;
 }
 
@@ -45,17 +54,29 @@ export function ReadingRoomCard({
   onPending: (id: string, pending: boolean) => void;
 }) {
   const key = `stay:readings:${accountId}:${buildingId}:${period}:${room.roomId}`;
+
   const [drafts, setDrafts] = useState<Record<string, Draft>>(() => readDrafts(key));
+
   const [online, setOnline] = useState(navigator.onLine);
+
   const [saving, setSaving] = useState(false);
+
   const [storageError, setStorageError] = useState(false);
+
   const [uploading, setUploading] = useState(false);
+
   const [replacing, setReplacing] = useState<ReadingMeter | null>(null);
+
   const busy = useRef(false);
+
   const latest = useRef(drafts);
+
   const save = useSaveReadings();
+
   const sdk = useStaySdk();
+
   const uploader = useMemo(() => createUploadApi(sdk, { baseUrl: window.location.origin }), [sdk]);
+
   const form = useAppForm({ defaultValues: { electricity: '', water: '' } });
 
   const draftFor = useCallback(
@@ -70,6 +91,7 @@ export function ReadingRoomCard({
       },
     [drafts],
   );
+
   const dirty = Object.values(drafts).some((draft) => draft.dirty);
   useUnsavedChanges(dirty || uploading);
 
@@ -95,8 +117,10 @@ export function ReadingRoomCard({
       );
     };
     const disconnected = () => setOnline(false);
+
     window.addEventListener('online', connected);
     window.addEventListener('offline', disconnected);
+
     return () => {
       window.removeEventListener('online', connected);
       window.removeEventListener('offline', disconnected);
@@ -116,6 +140,7 @@ export function ReadingRoomCard({
         return [];
       const consumption = Number(draft.value) - meter.previous + meter.carriedConsumption;
       if (meter.average !== null && consumption > 2 * meter.average && !draft.confirmed) return [];
+
       return [{ meter, draft }];
     });
     if (!pending.length) return;
@@ -181,6 +206,7 @@ export function ReadingRoomCard({
   useEffect(() => {
     if (!dirty || !online || saving || uploading || replacing) return;
     const timer = window.setTimeout(() => void submit(), 700);
+
     return () => window.clearTimeout(timer);
   }, [dirty, drafts, online, saving, uploading, replacing, submit]);
 
@@ -189,6 +215,7 @@ export function ReadingRoomCard({
       ...latest.current,
       [meter.meterId]: { ...draftFor(meter), ...patch, dirty: true, error: null },
     });
+
   const hasError = room.meters.some(
     (meter) => draftFor(meter).error || (draftFor(meter).dirty && problem(draftFor(meter), meter)),
   );
@@ -253,7 +280,7 @@ export function ReadingRoomCard({
           if (
             event.key !== 'Enter' ||
             !(event.target instanceof HTMLInputElement) ||
-            event.target.type !== 'number'
+            !event.target.hasAttribute('data-reading-input')
           )
             return;
           event.preventDefault();
@@ -263,18 +290,24 @@ export function ReadingRoomCard({
           inputs[inputs.indexOf(event.target) + 1]?.focus();
         }}
       >
-        {room.meters.map((meter) => (
-          <MeterRow
-            key={meter.meterId}
-            meter={meter}
-            roomCode={room.code}
-            draft={draftFor(meter)}
-            busy={{ saving, uploading, online }}
-            onChange={(patch) => change(meter, patch)}
-            onPhoto={(file) => void upload(meter, file)}
-            onReplace={() => setReplacing(meter)}
-          />
-        ))}
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              {room.meters.map((meter) => (
+                <MeterRow
+                  key={meter.meterId}
+                  meter={meter}
+                  roomCode={room.code}
+                  draft={draftFor(meter)}
+                  busy={{ saving, uploading, online }}
+                  onChange={(patch) => change(meter, patch)}
+                  onPhoto={(file) => void upload(meter, file)}
+                  onReplace={() => setReplacing(meter)}
+                />
+              ))}
+            </FormGrid>
+          </FormSection>
+        </FormLayout>
       </Form>
       {hasError ? (
         <Button
@@ -336,7 +369,7 @@ function MeterRow({
   onPhoto: (file: File) => void;
   onReplace: () => void;
 }) {
-  const photoInput = useRef<HTMLInputElement>(null);
+  const uploadForm = useAppForm({ defaultValues: { uploadFiles: [] as File[] } });
 
   const label = meter.kind === 'electricity' ? 'Điện' : 'Nước';
   const name = label.toLowerCase();
@@ -350,18 +383,18 @@ function MeterRow({
 
   return (
     <div className="grid min-w-0 gap-1.5 border-t border-line pt-3 first:border-t-0 first:pt-0">
-      <div className="flex min-w-0 items-start gap-2">
+      <div className="flex min-w-0 flex-wrap items-start gap-2">
         <div className="flex h-control-md w-20 shrink-0 flex-col justify-center">
           <p className="text-ui-sm font-semibold text-ink">{label}</p>
           <p className="text-ui-sm text-muted">Cũ {meter.previous}</p>
         </div>
-        <Input
-          type="number"
+        <NumberInput
           inputMode="numeric"
           min={meter.previous}
           max={METER_READING_MAX}
           step={1}
-          value={draft.value}
+          controls={false}
+          value={draft.value === '' ? null : Number(draft.value)}
           placeholder={locked ? 'Đã khoá' : 'Số mới'}
           disabled={locked || busy.uploading}
           data-reading-input
@@ -369,28 +402,31 @@ function MeterRow({
           endAddon={unit}
           rootClassName="min-w-0 flex-1"
           error={error || draft.error}
-          onChange={(event) => onChange({ value: event.target.value, confirmed: false })}
+          onValueChange={(value) =>
+            onChange({ value: value === null ? '' : String(value), confirmed: false })
+          }
         />
-        <IconButton
-          icon="camera"
-          variant={hasPhoto ? 'secondary' : 'ghost'}
-          label={`${hasPhoto ? 'Đổi' : 'Thêm'} ảnh đồng hồ ${name} (tuỳ chọn)`}
-          disabled={locked || !busy.online || busy.saving || busy.uploading}
-          onClick={() => photoInput.current?.click()}
-        />
-        <input
-          ref={photoInput}
-          type="file"
-          hidden
-          tabIndex={-1}
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
 
-            event.target.value = '';
-            if (file) onPhoto(file);
+        <uploadForm.AppField
+          name="uploadFiles"
+          listeners={{
+            onChange: ({ value: files }) => {
+              const file = files[0];
+              if (file) onPhoto(file);
+              else onChange({ photoFileId: null });
+            },
           }}
-        />
+        >
+          {(field) => (
+            <field.UploadField
+              disabled={locked || !busy.online || busy.saving || busy.uploading}
+              accept="image/jpeg,image/png,image/webp"
+              label={`${hasPhoto ? 'Đổi' : 'Thêm'} ảnh đồng hồ ${name} (tuỳ chọn)`}
+              maxBytes={STAY_UPLOAD_MAX_BYTES}
+              className="w-full order-last"
+            />
+          )}
+        </uploadForm.AppField>
         <IconButton
           icon="wrench"
           variant="ghost"

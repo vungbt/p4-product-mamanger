@@ -125,7 +125,8 @@
     "product-edit": "Edit",
     "admin-orders": "Orders",
     "product-categories": "Categories",
-    "product-detail": "Product details"
+    "product-detail": "Product details",
+    "product-variants": "SKUs and variants"
   },
   "storefront": {
     "footerTagline": "Simple shopping — clear management.",
@@ -277,6 +278,7 @@
     "empty": "No matching pages"
   },
   "adminProducts": {
+    "all": "All",
     "name": "Product",
     "category": "Category",
     "price": "Price",
@@ -328,6 +330,8 @@
     "description": "Description",
     "noDescription": "No description.",
     "variants": "SKUs and variants",
+    "variantsSubtitle": "Manage all SKUs and variant inventory.",
+    "searchVariants": "Search by SKU or barcode...",
     "variantsHint": "Each size and color is sold as its own SKU.",
     "variantsFailed": "Could not load SKUs.",
     "noVariants": "No SKUs yet. A product needs an active SKU before it can be published.",

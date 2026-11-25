@@ -1,4 +1,15 @@
-import { Button, Form, FormField, FormSubmit, Input, useAppForm } from '@itclabs/react-ui';
+import {
+  Button,
+  Form,
+  FormActions,
+  FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
+  FormSubmit,
+  Input,
+  useAppForm,
+} from '@itclabs/react-ui';
 import { PortalSdkProvider, usePortalLookup, usePortalSignIn } from '@stay/sdk/react';
 import { ApiSdkError } from '@stay/sdk/shared';
 import { useEffect, useState } from 'react';
@@ -20,13 +31,17 @@ function signInMessage(error: unknown): string {
     return 'Bạn đã nhập sai quá nhiều lần. Link tạm khoá, vui lòng thử lại sau 15 phút.';
   if (error instanceof ApiSdkError && error.status === 401)
     return 'Link không còn hiệu lực hoặc 4 số cuối điện thoại không đúng.';
+
   return 'Không vào được cổng. Vui lòng thử lại.';
 }
 
 function EntryForm({ token }: { token: string }) {
   const lookup = usePortalLookup(token);
+
   const signIn = usePortalSignIn();
+
   const navigate = useNavigate();
+
   const [error, setError] = useState<string | null>(null);
 
   const form = useAppForm({
@@ -74,17 +89,25 @@ function EntryForm({ token }: { token: string }) {
           </p>
         </div>
         <Form noValidate form={form} schema={schema} className="grid gap-4" aria-label="Vào cổng">
-          <FormError message={error} />
-          <FormField name="phoneLast4" label="4 số cuối số điện thoại" required>
-            <Input inputMode="numeric" autoComplete="off" maxLength={4} />
-          </FormField>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button type="submit" loading={submitting}>
-                Vào cổng
-              </Button>
-            )}
-          </FormSubmit>
+          <FormLayout size="full">
+            <FormSection>
+              <FormGrid columns={1}>
+                <FormError message={error} />
+                <FormField name="phoneLast4" label="4 số cuối số điện thoại" required>
+                  <Input inputMode="numeric" autoComplete="off" maxLength={4} />
+                </FormField>
+              </FormGrid>
+            </FormSection>
+            <FormActions>
+              <FormSubmit form={form}>
+                {(submitting) => (
+                  <Button type="submit" loading={submitting}>
+                    Vào cổng
+                  </Button>
+                )}
+              </FormSubmit>
+            </FormActions>
+          </FormLayout>
         </Form>
       </div>
     </main>
@@ -94,6 +117,7 @@ function EntryForm({ token }: { token: string }) {
 /** T-02 `/p/:token`: greeting, then the occupant's last 4 phone digits → portal home (T-03). */
 export default function PortalEntryPage() {
   const { token = '' } = useParams();
+
   useGenericDocumentMeta(PORTAL_TITLE);
 
   return (

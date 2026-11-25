@@ -1,5 +1,6 @@
 'use client';
 
+export { keepPreviousData } from '@tanstack/react-query';
 export { useCapabilities } from './capabilities.js';
 export {
   categoryKeys,

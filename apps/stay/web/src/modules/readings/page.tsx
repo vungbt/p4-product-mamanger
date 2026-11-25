@@ -1,4 +1,4 @@
-import { Button, Icon, Progress, Select } from '@itclabs/react-ui';
+import { Button, EmptyState, Icon, Progress, Select } from '@itclabs/react-ui';
 import { useBuilding, useReadings } from '@stay/sdk/react';
 import {
   defaultReadingPeriod,
@@ -23,9 +23,13 @@ import { ReadingRoomCard } from './room-card';
 
 export default function ReadingsPage() {
   const { buildingId } = useActiveBuilding();
+
   const { user } = useAuth();
+
   const [params, setParams] = useSearchParams();
+
   const building = useBuilding(buildingId ?? '');
+
   const raw = params.get('period');
   const billing = building.data?.billing;
   // Without `?period=` open the consumption month being closed (`next` mode: until its
@@ -54,6 +58,7 @@ export default function ReadingsPage() {
           const next = latestSearchParams();
           if (value) next.set(field, value);
           else next.delete(field);
+
           return next;
         })
       }
@@ -75,14 +80,19 @@ function BuildingReadings({
   filter: (field: string, value: string) => void;
 }) {
   const query = useReadings(buildingId, period);
+
   const navigate = useNavigate();
+
   const canBill = useCanOn('create', 'Invoice', { buildingId });
+
   const [pending, setPending] = useState<Record<string, boolean>>({});
+
   const onPending = useCallback(
     (id: string, value: boolean) =>
       setPending((previous) => (previous[id] === value ? previous : { ...previous, [id]: value })),
     [],
   );
+
   const rooms = query.data?.rooms ?? [];
   const complete = rooms.filter(
     (room) =>
@@ -92,7 +102,9 @@ function BuildingReadings({
   ).length;
   const unsynced = Object.values(pending).filter(Boolean).length;
   const invoicePeriod = nextPeriod(period);
+
   const displayPeriod = (value: string) => `${value.slice(5)}/${value.slice(0, 4)}`;
+
   const grid: ReadingGrid | undefined = query.data;
   const next = grid?.readingDayMonth === 'next';
   const readOn = grid
@@ -179,7 +191,11 @@ function BuildingReadings({
           ) : query.isError ? (
             <LoadError error={query.error} onRetry={() => void query.refetch()} />
           ) : !rooms.length ? (
-            <p>Chưa có phòng có hợp đồng hiệu lực trong kỳ này.</p>
+            <EmptyState
+              size="compact"
+              appearance="plain"
+              title={<>Chưa có phòng có hợp đồng hiệu lực trong kỳ này.</>}
+            />
           ) : (
             <div className="grid min-w-0 gap-4 lg:grid-cols-2">
               {rooms.map((room) => (

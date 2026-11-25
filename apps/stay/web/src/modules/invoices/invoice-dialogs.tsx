@@ -3,7 +3,11 @@ import {
   Dialog,
   Drawer,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   NumberInput,
   Select,
@@ -45,6 +49,7 @@ export function Overlay({
   const onOpenChange = (open: boolean) => {
     if (!open) onClose();
   };
+
   const classNames = { content: 'max-h-[90dvh] overflow-y-auto', body: 'min-w-0' };
 
   return mobile ? (
@@ -100,7 +105,9 @@ export function InvoiceLineDialog({
   onReload: () => void;
 }) {
   const add = useAddInvoiceLine();
+
   const [error, setError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
 
   const form = useAppForm({
@@ -141,6 +148,7 @@ export function InvoiceLineDialog({
   });
 
   const dirty = useFormDirty(form);
+
   useUnsavedChanges(dirty);
 
   const close = () => {
@@ -162,41 +170,53 @@ export function InvoiceLineDialog({
         className="grid min-w-0 gap-4"
         aria-label="Phụ thu / giảm trừ"
       >
-        <FormError message={error} />
-        {conflict ? (
-          <ConflictAlert
-            onReload={() => {
-              setConflict(false);
-              onReload();
-            }}
-          />
-        ) : null}
-        <FormField name="type" label="Loại" required>
-          <Select
-            options={[
-              { value: 'surcharge', label: 'Phụ thu' },
-              { value: 'discount', label: 'Giảm trừ' },
-            ]}
-          />
-        </FormField>
-        <FormField name="amount" label="Số tiền" required>
-          <NumberInput min={1} max={1_000_000_000} step={1} inputMode="numeric" endAddon="₫" />
-        </FormField>
-        <FormField name="reason" label="Lý do" required>
-          <Textarea maxLength={255} />
-        </FormField>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="secondary" disabled={add.isPending} onClick={close}>
-            Huỷ
-          </Button>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button type="submit" loading={submitting}>
-                Thêm dòng
-              </Button>
-            )}
-          </FormSubmit>
-        </div>
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              <FormError message={error} />
+              {conflict ? (
+                <ConflictAlert
+                  onReload={() => {
+                    setConflict(false);
+                    onReload();
+                  }}
+                />
+              ) : null}
+              <FormField name="type" label="Loại" required>
+                <Select
+                  options={[
+                    { value: 'surcharge', label: 'Phụ thu' },
+                    { value: 'discount', label: 'Giảm trừ' },
+                  ]}
+                />
+              </FormField>
+              <FormField name="amount" label="Số tiền" required>
+                <NumberInput
+                  min={1}
+                  max={1_000_000_000}
+                  step={1}
+                  inputMode="numeric"
+                  endAddon="₫"
+                />
+              </FormField>
+              <FormField name="reason" label="Lý do" required>
+                <Textarea maxLength={255} />
+              </FormField>
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <Button variant="secondary" disabled={add.isPending} onClick={close}>
+              Huỷ
+            </Button>
+            <FormSubmit form={form}>
+              {(submitting) => (
+                <Button type="submit" loading={submitting}>
+                  Thêm dòng
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </Overlay>
   );
@@ -222,7 +242,9 @@ export function VoidInvoiceDialog({
   onReload: () => void;
 }) {
   const voidInvoice = useVoidInvoice();
+
   const [error, setError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
 
   const form = useAppForm({
@@ -253,6 +275,7 @@ export function VoidInvoiceDialog({
   });
 
   const dirty = useFormDirty(form);
+
   useUnsavedChanges(dirty);
 
   const close = () => {
@@ -274,30 +297,36 @@ export function VoidInvoiceDialog({
         className="grid min-w-0 gap-4"
         aria-label="Void hoá đơn"
       >
-        <FormError message={error} />
-        {conflict ? (
-          <ConflictAlert
-            onReload={() => {
-              setConflict(false);
-              onReload();
-            }}
-          />
-        ) : null}
-        <FormField name="reason" label="Lý do void" required>
-          <Textarea maxLength={2000} />
-        </FormField>
-        <div className="flex flex-wrap justify-end gap-2">
-          <Button variant="secondary" disabled={voidInvoice.isPending} onClick={close}>
-            Huỷ
-          </Button>
-          <FormSubmit form={form}>
-            {(submitting) => (
-              <Button type="submit" variant="danger" loading={submitting}>
-                Void hoá đơn
-              </Button>
-            )}
-          </FormSubmit>
-        </div>
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              <FormError message={error} />
+              {conflict ? (
+                <ConflictAlert
+                  onReload={() => {
+                    setConflict(false);
+                    onReload();
+                  }}
+                />
+              ) : null}
+              <FormField name="reason" label="Lý do void" required>
+                <Textarea maxLength={2000} />
+              </FormField>
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <Button variant="secondary" disabled={voidInvoice.isPending} onClick={close}>
+              Huỷ
+            </Button>
+            <FormSubmit form={form}>
+              {(submitting) => (
+                <Button type="submit" variant="danger" loading={submitting}>
+                  Void hoá đơn
+                </Button>
+              )}
+            </FormSubmit>
+          </FormActions>
+        </FormLayout>
       </Form>
     </Overlay>
   );
