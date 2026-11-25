@@ -10,16 +10,23 @@ const unformatted = astToString(await openapiTS(source, { alphabetize: true }));
 const formatted = spawnSync(
   'pnpm',
   ['-w', 'exec', 'biome', 'format', `--stdin-file-path=${fileURLToPath(target)}`],
-  { input: unformatted, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 },
+  {
+    input: unformatted,
+    encoding: 'utf8',
+    maxBuffer: 20 * 1024 * 1024,
+    shell: process.platform === 'win32',
+  },
 );
 
 if (formatted.status !== 0) throw new Error('Cannot format the generated SDK contract.');
 
 const generated = formatted.stdout;
 
+const normalize = (s) => s.replace(/\r\n/g, '\n');
+
 if (process.argv.includes('--check')) {
   const existing = await readFile(target, 'utf8').catch(() => '');
 
-  if (existing !== generated)
+  if (normalize(existing) !== normalize(generated))
     throw new Error('Stay SDK contract is stale. Run pnpm --filter @stay/sdk generate.');
 } else await writeFile(target, generated);

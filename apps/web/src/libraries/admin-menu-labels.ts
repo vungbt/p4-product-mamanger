@@ -17,6 +17,7 @@ export function useAdminMenuLabels(): Record<string, string> {
       'admin-orders': t('menu.admin-orders'),
       'product-categories': t('menu.product-categories'),
       'product-detail': t('menu.product-detail'),
+      'product-variants': t('menu.product-variants'),
     }),
     [t],
   );
