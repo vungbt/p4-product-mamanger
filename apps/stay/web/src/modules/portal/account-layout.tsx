@@ -40,7 +40,7 @@ export default function TenantAccountLayout() {
     <TenantContractContext.Provider
       value={{ contracts: options, contractId: contractId ?? '', selectContract: setSelected }}
     >
-      <ScopedShell key={contractId ?? ''} contractId={contractId ?? ''} />
+      <ScopedShell key={`${user?.id}:${contractId ?? ''}`} contractId={contractId ?? ''} />
     </TenantContractContext.Provider>
   );
 }

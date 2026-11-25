@@ -1,18 +1,19 @@
-import { Button } from '@itclabs/react-ui';
+import { Button, Dialog } from '@itclabs/react-ui';
 import { toast } from '@itclabs/react-ui/toast';
 import { unwrap } from '@stay/sdk/shared';
 import { useState } from 'react';
 import { getStaySdk } from '@/libraries/session/session';
-import { Overlay } from '@/modules/invoices/invoice-dialogs';
 
 type Credentials = { login: string; password: string; appUrl: string };
 
 export function TenantCredentialsAction({
   id,
+  phone,
   email,
   accountIssued,
 }: {
   id: string;
+  phone: string;
   email: string | null;
   accountIssued: boolean;
 }) {
@@ -23,7 +24,7 @@ export function TenantCredentialsAction({
   const [issued, setIssued] = useState(accountIssued);
 
   const message = credentials
-    ? `Chào bạn! Đăng nhập Stay tại ${credentials.appUrl}\nSố điện thoại: ${credentials.login}\nMật khẩu tạm thời: ${credentials.password}\nVui lòng đổi mật khẩu ngay lần đăng nhập đầu tiên.`
+    ? `Chào bạn! Đăng nhập Stay tại ${credentials.appUrl}\nTài khoản: ${credentials.login}\nMật khẩu tạm thời: ${credentials.password}\nVui lòng đổi mật khẩu ngay lần đăng nhập đầu tiên.`
     : '';
 
   const issue = async () => {
@@ -75,13 +76,16 @@ export function TenantCredentialsAction({
         {issued ? 'Cấp lại mật khẩu' : 'Cấp tài khoản'}
       </Button>
       {credentials ? (
-        <Overlay
+        <Dialog
+          open
           title="Thông tin đăng nhập"
           description="Mật khẩu chỉ hiển thị lần này. Đóng để xoá khỏi màn hình."
-          onClose={() => setCredentials(null)}
+          onOpenChange={(open) => {
+            if (!open) setCredentials(null);
+          }}
         >
           <dl className="grid gap-2">
-            <dt>Số điện thoại đăng nhập</dt>
+            <dt>Tài khoản đăng nhập</dt>
             <dd>{credentials.login}</dd>
             <dt>Mật khẩu tạm thời</dt>
             <dd data-testid="temporary-password" className="font-mono">
@@ -92,7 +96,7 @@ export function TenantCredentialsAction({
             <Button
               variant="secondary"
               onClick={() => {
-                window.location.href = `sms:${credentials.login}?body=${encodeURIComponent(message)}`;
+                window.location.href = `sms:${phone}?body=${encodeURIComponent(message)}`;
               }}
             >
               Gửi SMS
@@ -101,11 +105,7 @@ export function TenantCredentialsAction({
               variant="secondary"
               onClick={() => {
                 void copy();
-                window.open(
-                  `https://zalo.me/${credentials.login}`,
-                  '_blank',
-                  'noopener,noreferrer',
-                );
+                window.open(`https://zalo.me/${phone}`, '_blank', 'noopener,noreferrer');
               }}
             >
               Gửi Zalo
@@ -117,7 +117,7 @@ export function TenantCredentialsAction({
             ) : null}
             <Button onClick={() => void copy()}>Sao chép</Button>
           </div>
-        </Overlay>
+        </Dialog>
       ) : null}
     </>
   );

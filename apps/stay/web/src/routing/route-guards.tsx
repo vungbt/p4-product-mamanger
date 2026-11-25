@@ -43,6 +43,7 @@ function FullPageSpinner() {
 /** Signed-out visitors go to the login page, which brings them back here afterwards. */
 export function RequireAuth() {
   const { user, isRestoring } = useAuth();
+
   const location = useLocation();
 
   if (isRestoring && !user) return <FullPageSpinner />;
@@ -65,6 +66,7 @@ export function RequireAuth() {
 /** The login page: already signed-in users continue to the page they wanted. */
 export function GuestOnly() {
   const { user, isRestoring } = useAuth();
+
   const location = useLocation();
 
   if (isRestoring && !user) return <FullPageSpinner />;
@@ -83,8 +85,11 @@ export function RequireAbility({
   children: ReactNode;
 }) {
   const { t } = useTranslation();
+
   const { user } = useAuth();
+
   const capabilities = useCapabilities(user?.id);
+
   const allowed = useCanOpen(ability);
 
   if (capabilities.isPending) return <PageSpinner />;

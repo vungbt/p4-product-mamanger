@@ -2,13 +2,13 @@ import { randomInt, randomUUID } from 'node:crypto';
 import { BaseError } from '@p4/server-core';
 import type { StayUser } from '@stay/shared';
 import { compare, hash } from 'bcryptjs';
-import { QueryTypes } from 'sequelize';
+import { QueryTypes, type Transaction } from 'sequelize';
 import { emailEnabled } from '@/configs/env.js';
-import { sequelize, UserModel } from '@/sequelize/models/index.js';
+import { webOrigin } from '@/modules/invoices/invoices.share.js';
+import { renderEmailLayout } from '@/modules/notifications/email-layout.js';
+import { smtpTransport } from '@/modules/notifications/notifications.transports.js';
+import { sequelize, TenantModel, UserModel } from '@/sequelize/models/index.js';
 import { auditedTransaction, setAuditChanges } from '@/shared/audit.js';
-import { webOrigin } from '../invoices/invoices.share.js';
-import { renderEmailLayout } from '../notifications/email-layout.js';
-import { smtpTransport } from '../notifications/notifications.transports.js';
 import { findAccessibleTenant } from './tenants.service.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
@@ -18,6 +18,15 @@ export interface TenantCredentials {
   login: string;
   password: string;
   appUrl: string;
+}
+
+async function loginIdentifier(tenant: TenantModel, email: string, transaction: Transaction) {
+  const profiles = await TenantModel.count({
+    where: { phone: tenant.phone, archivedAt: null },
+    transaction,
+  });
+
+  return profiles === 1 ? tenant.phone : email;
 }
 
 export async function issueTenantCredentials(
@@ -32,19 +41,37 @@ export async function issueTenantCredentials(
 
     if (!userId) {
       userId = randomUUID();
-      await UserModel.create(
+      // Old profiles can share an email with another profile or a staff user. Never
+      // attach that existing account; fall back to this tenant's private identifier.
+      const inserted = await sequelize.query<{ id: string }>(
+        `INSERT INTO users(id,email,display_name,role,must_change_password)
+         VALUES(:id,:email,:name,'tenant',true)
+         ON CONFLICT (lower(email)) DO NOTHING RETURNING id`,
         {
-          id: userId,
-          email: tenant.email?.toLowerCase() || `tenant-${tenant.id}@accounts.stay.invalid`,
-          displayName: tenant.fullName,
-          emailVerified: false,
-          avatarUrl: null,
-          role: 'tenant',
-          accountStatus: 'active',
-          mustChangePassword: true,
+          replacements: {
+            id: userId,
+            email: tenant.email?.toLowerCase() || `tenant-${tenant.id}@accounts.stay.invalid`,
+            name: tenant.fullName,
+          },
+          type: QueryTypes.SELECT,
+          transaction,
         },
-        { transaction },
       );
+
+      if (!inserted.length)
+        await UserModel.create(
+          {
+            id: userId,
+            email: `tenant-${userId}@accounts.stay.invalid`,
+            displayName: tenant.fullName,
+            emailVerified: false,
+            avatarUrl: null,
+            role: 'tenant',
+            accountStatus: 'active',
+            mustChangePassword: true,
+          },
+          { transaction },
+        );
       await tenant.update({ userId }, { transaction });
     }
 
@@ -79,7 +106,7 @@ export async function issueTenantCredentials(
     });
     setAuditChanges({ tenantId: id, userId, buildingId: tenant.buildingId });
     return {
-      login: tenant.phone,
+      login: await loginIdentifier(tenant, account.email, transaction),
       password,
       appUrl: `${webOrigin(undefined)}/login`,
     };
@@ -114,11 +141,12 @@ export async function emailTenantCredentials(user: StayUser, id: string, passwor
     if (!emailEnabled()) throw new BaseError('mail_unavailable', 503, 'mail_unavailable');
     setAuditChanges({ tenantId: id, buildingId: tenant.buildingId, delivery: 'requested' });
     const subject = '[Stay] Tài khoản người thuê';
+    const login = await loginIdentifier(tenant, account.email, transaction);
     const message = renderEmailLayout({
       subject,
       tone: 'account',
       title: 'Tài khoản Stay của bạn',
-      body: `Đăng nhập bằng số điện thoại ${tenant.phone}.\nMật khẩu tạm thời: ${password}\nVui lòng đổi mật khẩu ngay lần đăng nhập đầu tiên.`,
+      body: `Đăng nhập bằng ${login}.\nMật khẩu tạm thời: ${password}\nVui lòng đổi mật khẩu ngay lần đăng nhập đầu tiên.`,
       action: { label: 'Đăng nhập', url: `${webOrigin(undefined)}/login` },
       footer: 'Chủ trọ đã cấp tài khoản này cho bạn.',
     });

@@ -7,13 +7,13 @@ import {
   stayAbilityKit,
 } from '@stay/shared';
 import { abilityOf } from '@/middlewares/ability.middleware.js';
+import { contractContext, portalOpen } from '@/modules/portal/portal.access.js';
 import {
   BuildingMemberModel,
   ContractOccupantModel,
   TenantModel,
   UserModel,
 } from '@/sequelize/models/index.js';
-import { contractContext, portalOpen } from '../portal/portal.access.js';
 
 /** The request user of an active account, with its building/contract scope; else `undefined`. */
 export async function loadActiveUser(id: string): Promise<StayUser | undefined> {

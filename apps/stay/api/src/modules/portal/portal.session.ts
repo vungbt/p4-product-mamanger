@@ -17,6 +17,7 @@ import { env } from '@/configs/env.js';
 import { canAccessRecord } from '@/middlewares/ability.middleware.js';
 import { assertCookieOrigin } from '@/middlewares/cookie-origin.js';
 import { rateLimit } from '@/middlewares/rate-limit.middleware.js';
+import { loadActiveUser } from '@/modules/me/me.service.js';
 import {
   BuildingModel,
   RoomModel,
@@ -29,7 +30,6 @@ import { auditedCommand, auditedTransaction, recordAudit } from '@/shared/audit.
 import { formBody } from '@/shared/input.js';
 import type { PortalPrincipal } from '@/types/express.js';
 import { contractFactsAt } from '../contracts/contracts.resolvers.js';
-import { loadActiveUser } from '../me/me.service.js';
 import {
   contractContext,
   type LinkContext,

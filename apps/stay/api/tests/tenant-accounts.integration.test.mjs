@@ -231,6 +231,31 @@ describe('tenant accounts and shared dashboard', { skip: !base }, () => {
     assert.equal(restricted.privacyRestricted, true);
     assert.equal(restricted.bodyHtml, null);
     assert.equal(restricted.awaitingMe, false);
+    // Sent bodies are frozen, so the international format gets its own document.
+    const internationalHtml = `<p>Other occupant phone +84 ${b.phone.slice(1)}</p>`;
+    const international = await ContractDocumentModel.create({
+      buildingId: building.id,
+      contractId: a.contract.id,
+      landlordUserId: ok(await call(owner, 'GET', '/me')).user.id,
+      kind: 'contract',
+      code: `AC-${suffix}-84`,
+      title: 'Private legal original (+84)',
+      status: 'sent',
+      bodyHtml: internationalHtml,
+      dataSha256: createHash('sha256').update(internationalHtml).digest('hex'),
+      dataSnapshot: { 'ben_thue.ho_ten': b.tenant.fullName, 'ben_thue.sdt': b.phone },
+    });
+    await DocumentSignerModel.create({
+      documentId: international.id,
+      role: 'tenant',
+      tenantId: a.tenant.id,
+      name: a.tenant.fullName,
+    });
+    assert.equal(
+      ok(await call(signed, 'GET', `/portal/documents/${international.id}`, undefined, scope))
+        .privacyRestricted,
+      true,
+    );
     assert.equal(
       (await call(signed, 'GET', `/portal/documents/${document.id}/pdf`, undefined, scope)).status,
       403,
@@ -261,7 +286,7 @@ describe('tenant accounts and shared dashboard', { skip: !base }, () => {
       409,
     );
 
-    // The occupant trigger also provisions a pre-migration profile before issuing passwords.
+    // Adding an occupant keeps existing profiles lazy until staff issue credentials.
     const occupant = await TenantModel.create({
       buildingId: building.id,
       fullName: `Occupant ${suffix}`,
@@ -277,8 +302,40 @@ describe('tenant accounts and shared dashboard', { skip: !base }, () => {
       fromDate: '2044-01-01',
     });
     await occupant.reload();
-    assert.ok(occupant.userId);
+    assert.equal(occupant.userId, null);
+    ok(await call(owner, 'POST', `/tenants/${occupant.id}/credentials`));
+    await occupant.reload();
     assert.equal((await UserModel.findByPk(occupant.userId)).role, 'tenant');
+
+    // Existing production profiles may reuse a staff email. Credential issue must
+    // provision an independent user without changing the staff account.
+    const ownerId = ok(await call(owner, 'GET', '/me')).user.id;
+    const beforeCollision = occupant.userId;
+    await occupant.update({ userId: null });
+    await UserModel.destroy({ where: { id: beforeCollision } });
+    await occupant.update({ email: 'owner@stay.local' });
+    ok(await call(owner, 'POST', `/tenants/${occupant.id}/credentials`));
+    await occupant.reload();
+    assert.notEqual(occupant.userId, ownerId);
+    assert.equal(
+      (await UserModel.findByPk(occupant.userId)).email,
+      `tenant-${occupant.userId}@accounts.stay.invalid`,
+    );
+    await occupant.update({ fullName: `Renamed ${suffix}` });
+    assert.equal((await UserModel.findByPk(ownerId)).role, 'owner');
+    await occupant.update({ phone: b.phone });
+    const duplicatePhoneCredentials = ok(
+      await call(owner, 'POST', `/tenants/${occupant.id}/credentials`),
+    );
+    assert.equal(
+      duplicatePhoneCredentials.login,
+      (await UserModel.findByPk(occupant.userId)).email,
+    );
+    const duplicatePhoneSession = await login(
+      duplicatePhoneCredentials.login,
+      duplicatePhoneCredentials.password,
+    );
+    assert.equal(ok(await call(duplicatePhoneSession, 'GET', '/me')).user.id, occupant.userId);
 
     const imported = ok(
       await call(

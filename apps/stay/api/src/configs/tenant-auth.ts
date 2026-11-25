@@ -3,6 +3,7 @@ import { normalizePhone } from '@stay/shared';
 import { fromNodeHeaders } from 'better-auth/node';
 import { TenantModel, UserModel } from '@/sequelize/models/index.js';
 import { auth } from './better-auth.js';
+import { isBlockedPassword } from './production.js';
 
 /** Better Auth still owns password verification, sessions, errors and auth audit. The
  * identifier is resolved inside the rate-limited handler, never through a public lookup. */
@@ -36,6 +37,17 @@ export const tenantAuth = {
         .catch(() => null);
 
       if (body && typeof body === 'object' && 'email' in body && typeof body.email === 'string') {
+        // Better Auth hashes an unknown user's password, but our hash policy rejects
+        // public passwords. Substitute an unguessable value so both paths still run
+        // the usual bcrypt work, return the same error and pass through auth audit.
+        const password =
+          'password' in body &&
+          typeof body.password === 'string' &&
+          isBlockedPassword(body.password)
+            ? `blocked-${randomUUID()}`
+            : 'password' in body
+              ? body.password
+              : undefined;
         const identifier = body.email.trim().toLowerCase();
         const phone = normalizePhone(identifier);
         let email = identifier;
@@ -44,14 +56,17 @@ export const tenantAuth = {
           const tenants = phone
             ? await TenantModel.findAll({ where: { phone, archivedAt: null }, limit: 2 })
             : [];
-          const account =
-            tenants.length === 1 && tenants[0]?.userId
-              ? await UserModel.findOne({ where: { id: tenants[0].userId, role: 'tenant' } })
-              : null;
+          // Keep the same lookup work for unknown, ambiguous and known phones.
+          const account = await UserModel.findOne({
+            where: {
+              id: tenants.length === 1 ? (tenants[0]?.userId ?? randomUUID()) : randomUUID(),
+              role: 'tenant',
+            },
+          });
 
           email = account?.email ?? `unknown-${randomUUID()}@accounts.stay.invalid`;
         }
-        request = new Request(request, { body: JSON.stringify({ ...body, email }) });
+        request = new Request(request, { body: JSON.stringify({ ...body, email, password }) });
       }
     }
 

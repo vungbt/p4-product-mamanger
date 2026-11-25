@@ -81,6 +81,7 @@ function CurrentInvoice({ invoice }: { invoice: PortalInvoiceSummary }) {
 /** Open maintenance reports, own pending requests and claims, with the two entry buttons. */
 function OpenRequests({ open }: { open: PortalOpenRequests }) {
   const navigate = useNavigate();
+
   const rows = [
     { count: open.maintenance, label: 'báo hỏng đang mở', to: portalPaths.maintenance },
     { count: open.requests, label: 'yêu cầu chờ duyệt', to: portalPaths.requests },
@@ -146,7 +147,9 @@ function LatestNotifications() {
 /** T-03 `/p`: current invoice and payment, debt, notices, open requests, contact. */
 export default function PortalHomePage() {
   const { t } = useTranslation('portalDocuments');
+
   const documents = usePortalDocuments();
+
   const me = usePortalMe();
 
   const awaiting = (documents.data ?? []).filter((row) => row.awaitingMe);

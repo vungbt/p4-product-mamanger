@@ -182,7 +182,9 @@ export default function TenantProfilePage() {
           <ContactLinks phone={data.phone} name={data.fullName} />
           {active && canIssue ? (
             <TenantCredentialsAction
+              key={data.id}
               id={data.id}
+              phone={data.phone}
               email={data.email}
               accountIssued={data.accountIssued}
             />

@@ -685,6 +685,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -729,6 +731,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: update
       parameters:
         - name: id
@@ -787,6 +791,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -826,6 +832,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -869,6 +877,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: update
       requestBody:
         required: true
@@ -923,6 +933,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: create
       requestBody:
         required: true
@@ -976,6 +988,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: delete
       requestBody:
         required: true
@@ -10447,6 +10461,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -10493,6 +10509,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       parameters:
         - name: id
@@ -10546,6 +10564,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: confirm
       parameters:
         - name: id
@@ -10631,6 +10651,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: reject
       parameters:
         - name: id
@@ -10699,6 +10721,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       parameters:
         - name: id
@@ -10934,6 +10958,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: logout
       responses:
         "200":
@@ -10974,6 +11000,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -11018,6 +11046,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -11067,6 +11097,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       parameters:
         - name: id
@@ -11120,6 +11152,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -11166,6 +11200,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -11212,6 +11248,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -11262,6 +11300,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: create
       parameters:
         - name: id
@@ -11342,6 +11382,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: cancel
       parameters:
         - name: id
@@ -11397,6 +11439,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -11445,6 +11489,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: create
       requestBody:
         required: true
@@ -11499,6 +11545,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: cancel
       parameters:
         - name: id
@@ -11554,6 +11602,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: read
       responses:
         "200":
@@ -11604,6 +11654,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: create
       requestBody:
         required: true
@@ -11658,6 +11710,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: cancel
       parameters:
         - name: id
@@ -11714,6 +11768,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: create
       requestBody:
         required: true
@@ -11768,6 +11824,8 @@ paths:
         **Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).
       security:
         - portalSession: []
+        - sessionCookie: []
+        - bearerAuth: []
       x-audit-action: complete
       parameters:
         - name: id

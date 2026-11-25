@@ -165,7 +165,7 @@ export async function idNumberOwner(
 export async function readTenantInput(
   body: FormBody,
   user: StayUser,
-  existing?: { id: string; idNumber: string | null; userId?: string | null },
+  existing?: { id: string; idNumber: string | null; userId?: string | null; email?: string | null },
 ): Promise<TenantFields> {
   const keepIdNumber = existing !== undefined && body.data.idNumber === undefined;
   const fields = normalizeTenantFields(
@@ -186,7 +186,7 @@ export async function readTenantInput(
       : null;
 
   if (duplicate) body.invalid('idNumber', 'id_number_taken');
-  if (fields.email && !body.errors.email) {
+  if (fields.email && fields.email !== existing?.email && !body.errors.email) {
     const taken = await UserModel.findOne({
       where: {
         [Op.and]: [

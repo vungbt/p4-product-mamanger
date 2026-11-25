@@ -68,6 +68,7 @@ try {
     'Sign in with email or a normalized Vietnamese phone number and password. Unknown phone and wrong password return the same error; rate limited.';
   signIn.requestBody.content['application/json'].schema.properties.email.description =
     'Email or Vietnamese phone (0xxxxxxxxx / +84xxxxxxxxx); resolved on the server.';
+  delete signIn.requestBody.content['application/json'].schema.properties.email.format;
 
   // Account tenants reuse portal services. Native links still use the portal cookie.
   for (const [url, item] of Object.entries(spec.paths)) {
@@ -75,11 +76,6 @@ try {
       continue;
     for (const operation of Object.values(item)) {
       if (!operation?.responses) continue;
-      operation.security = [
-        ...(operation.security ?? []),
-        { sessionCookie: [] },
-        { bearerAuth: [] },
-      ];
       operation.parameters ??= [];
       operation.parameters.push({
         name: 'X-Stay-Contract',
@@ -388,7 +384,7 @@ try {
     if (!url.startsWith('/api/portal/') || portalPublic.has(url)) continue;
     for (const [method, operation] of Object.entries(item)) {
       if (portalPublic.has(`${method} ${url}`)) continue;
-      operation.security = [{ portalSession: [] }];
+      operation.security = [{ portalSession: [] }, { sessionCookie: [] }, { bearerAuth: [] }];
       operation.description = operation.description.replace(
         '**Công khai.**',
         '**Yêu cầu phiên cổng người thuê** (cookie `stay_portal_session`).',

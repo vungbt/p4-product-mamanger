@@ -127,7 +127,15 @@ async function documentPrivacyRestricted(
       .join('');
   const digits = textOf(parseDocument(row.bodyHtml).children).replace(/\D/g, '');
 
-  return privateValues.some((value) => Boolean(value && digits.includes(value.replace(/\D/g, ''))));
+  return privateValues.some((value) => {
+    const identifier = value?.replace(/\D/g, '');
+
+    if (!identifier) return false;
+    return (
+      digits.includes(identifier) ||
+      (/^0\d{9}$/.test(identifier) && digits.includes(`84${identifier.slice(1)}`))
+    );
+  });
 }
 
 async function portalDocumentDto(portal: PortalPrincipal, row: ContractDocumentModel) {
