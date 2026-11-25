@@ -49,7 +49,9 @@ const DRAFT_TABLE_ID = 'draft-list';
  */
 export default function BillingRunPage() {
   const { buildingId } = useActiveBuilding();
+
   const [params, setParams] = useSearchParams();
+
   const raw = params.get('period');
   const period = isPeriod(raw) ? raw : todayIsoDate().slice(0, 7);
 
@@ -80,9 +82,13 @@ export default function BillingRunPage() {
 
 function BillingRun({ buildingId, period }: { buildingId: string; period: string }) {
   const preview = useBillingPreview(buildingId, period);
+
   const createDrafts = useCreateInvoiceDrafts();
+
   const canCreate = useCanOn('create', 'Invoice', { buildingId });
+
   const canShare = useCanOn('update', 'Invoice', { buildingId });
+
   const [error, setError] = useState<string | null>(null);
 
   const data = preview.data;
@@ -229,6 +235,7 @@ function ReasonCell({ row }: { row: BillingPreviewRow }) {
 
 function InvoiceCell({ row }: { row: BillingPreviewRow }) {
   if (!row.invoiceId || !row.invoiceStatus) return <span className="text-muted">—</span>;
+
   return (
     <Link className="text-accent underline" to={invoicePath(row.invoiceId)}>
       {INVOICE_STATUS_LABELS[row.invoiceStatus]}
@@ -307,14 +314,20 @@ function PreviewRows({ rows }: { rows: BillingPreviewRow[] }) {
 
 function Drafts({ buildingId, period }: { buildingId: string; period: string }) {
   const canIssue = useCanOn('issue', 'Invoice', { buildingId });
+
   const issue = useIssueInvoices();
+
   const [state, setState] = useState<DataTableState>({
     sorting: [],
     pagination: { pageIndex: 0, pageSize: INVOICE_RUN_PAGE_SIZE },
   });
+
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
+
   const [confirm, setConfirm] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+
   const query = useInvoices({
     buildingId,
     period,
@@ -338,6 +351,7 @@ function Drafts({ buildingId, period }: { buildingId: string; period: string }) 
 
       if (on) next.add(id);
       else next.delete(id);
+
       return next;
     });
 

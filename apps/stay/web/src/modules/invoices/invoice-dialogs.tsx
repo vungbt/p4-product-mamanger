@@ -49,6 +49,7 @@ export function Overlay({
   const onOpenChange = (open: boolean) => {
     if (!open) onClose();
   };
+
   const classNames = { content: 'max-h-[90dvh] overflow-y-auto', body: 'min-w-0' };
 
   return mobile ? (
@@ -104,7 +105,9 @@ export function InvoiceLineDialog({
   onReload: () => void;
 }) {
   const add = useAddInvoiceLine();
+
   const [error, setError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
 
   const form = useAppForm({
@@ -145,6 +148,7 @@ export function InvoiceLineDialog({
   });
 
   const dirty = useFormDirty(form);
+
   useUnsavedChanges(dirty);
 
   const close = () => {
@@ -238,7 +242,9 @@ export function VoidInvoiceDialog({
   onReload: () => void;
 }) {
   const voidInvoice = useVoidInvoice();
+
   const [error, setError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
 
   const form = useAppForm({
@@ -269,6 +275,7 @@ export function VoidInvoiceDialog({
   });
 
   const dirty = useFormDirty(form);
+
   useUnsavedChanges(dirty);
 
   const close = () => {

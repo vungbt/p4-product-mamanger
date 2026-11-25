@@ -60,8 +60,11 @@ export function DepositEntryDialog({
   onClose: () => void;
 }) {
   const create = useCreateDeposit();
+
   const [error, setError] = useState<string | null>(null);
+
   const [key] = useState(() => crypto.randomUUID());
+
   const form = useAppForm({
     defaultValues: {
       type,
@@ -99,8 +102,11 @@ export function DepositEntryDialog({
       }
     },
   });
+
   const dirty = useFormDirty(form);
+
   const selectedType = useFormValue(form, (state) => state.values.type);
+
   const { prompt } = useUnsavedChanges(dirty);
 
   const close = () => {

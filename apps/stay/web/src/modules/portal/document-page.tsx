@@ -69,6 +69,7 @@ function SigningDocument({ data }: { data: PortalDocument }) {
     observer.observe(element);
     element.addEventListener('scroll', update);
     update();
+
     return () => {
       observer.disconnect();
       element.removeEventListener('scroll', update);

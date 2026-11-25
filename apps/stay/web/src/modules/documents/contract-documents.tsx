@@ -33,12 +33,19 @@ export const documentPath = (contractId: string, id: string) =>
 
 export function ContractDocuments({ contract }: { contract: StayContract }) {
   const { t } = useTranslation('documents');
+
   const query = useContractDocuments(contract.id);
+
   const templates = useContractTemplates({ buildingId: contract.buildingId, kind: 'contract' });
+
   const create = useCreateContractDocument();
+
   const navigate = useNavigate();
+
   const canUpdate = useCanOn('update', 'Contract', { buildingId: contract.buildingId });
+
   const [creating, setCreating] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const form = useAppForm({

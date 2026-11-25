@@ -30,7 +30,11 @@ import {
   useUpdateContractDocument,
 } from '@stay/sdk/react';
 import { createDocumentApi, getErrorMessage } from '@stay/sdk/shared';
-import { type ContractDocumentDetail, DOCUMENT_FINAL_STATUSES } from '@stay/shared';
+import {
+  type ContractDocumentDetail,
+  DOCUMENT_FINAL_STATUSES,
+  DOCUMENT_SCAN_MAX_BYTES,
+} from '@stay/shared';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -194,6 +198,7 @@ function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
   const [linksOpen, setLinksOpen] = useState(false);
 
   const [coSigners, setCoSigners] = useState<string[]>([]);
+
   const paperForm = useAppForm({ defaultValues: { uploadFiles: [] as File[] } });
 
   const [paperFile, setPaperFile] = useState<File | null>(null);
@@ -433,7 +438,7 @@ function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
           type="date"
           onSubmit={async (signedOn) => {
             if (!paperFile) throw new Error(t('required'));
-            if (paperFile.size > 10_485_760) throw new Error(t('fileTooLarge'));
+            if (paperFile.size > DOCUMENT_SCAN_MAX_BYTES) throw new Error(t('fileTooLarge'));
             await paper.mutateAsync({
               id: data.id,
               body: { version: data.version, signedOn, file: paperFile },
@@ -453,7 +458,7 @@ function DocumentDetail({ data }: { data: ContractDocumentDetail }) {
               <field.UploadField
                 label={t('paperFile')}
                 accept="application/pdf,image/png,image/jpeg"
-                maxBytes={10485760}
+                maxBytes={DOCUMENT_SCAN_MAX_BYTES}
               />
             )}
           </paperForm.AppField>

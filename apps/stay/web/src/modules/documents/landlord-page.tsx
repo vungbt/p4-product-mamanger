@@ -15,7 +15,7 @@ import {
 import { toast } from '@itclabs/react-ui/toast';
 import { useLandlordProfile, useUpdateLandlordProfile } from '@stay/sdk/react';
 import { getErrorMessage } from '@stay/sdk/shared';
-import type { LandlordProfile } from '@stay/shared';
+import { type LandlordProfile, SIGNATURE_IMAGE_MAX_BYTES } from '@stay/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
@@ -41,10 +41,15 @@ export function readDataUrl(file: File): Promise<string> {
 
 function LandlordForm({ profile }: { profile: LandlordProfile }) {
   const { t } = useTranslation('documents');
+
   const update = useUpdateLandlordProfile();
+
   const [error, setError] = useState<string | null>(null);
+
   const [signature, setSignature] = useState(profile.signatureImage);
+
   const [savedSignature, setSavedSignature] = useState(profile.signatureImage);
+
   const [version, setVersion] = useState(profile.version);
 
   const signatureForm = useAppForm({ defaultValues: { uploadFiles: [] as File[] } });
@@ -81,6 +86,7 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
   });
 
   const dirty = useFormDirty(form);
+
   const { prompt } = useUnsavedChanges(dirty || signature !== savedSignature);
 
   return (
@@ -93,31 +99,27 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
         <FormError message={error} />
         <FormSection variant="card" title={t('landlord')}>
           <FormGrid>
-            {(
-              [
-                'fullName',
-                'birthDate',
-                'idNumber',
-                'idIssuedAt',
-                'idIssuedBy',
-                'permanentAddress',
-                'phone',
-              ] as const
-            ).map((field) => (
-              <FormField
-                key={field}
-                name={field}
-                label={t(field)}
-                required={field === 'fullName'}
-                {...(field === 'birthDate' || field === 'idIssuedAt' ? DATE_FIELD : {})}
-              >
-                {field === 'birthDate' || field === 'idIssuedAt' ? (
-                  <DatePicker />
-                ) : (
-                  <Input type={field === 'phone' ? 'tel' : 'text'} />
-                )}
-              </FormField>
-            ))}
+            <FormField name="fullName" label={t('fullName')} required>
+              <Input />
+            </FormField>
+            <FormField name="birthDate" label={t('birthDate')} {...DATE_FIELD}>
+              <DatePicker />
+            </FormField>
+            <FormField name="idNumber" label={t('idNumber')}>
+              <Input />
+            </FormField>
+            <FormField name="idIssuedAt" label={t('idIssuedAt')} {...DATE_FIELD}>
+              <DatePicker />
+            </FormField>
+            <FormField name="idIssuedBy" label={t('idIssuedBy')}>
+              <Input />
+            </FormField>
+            <FormField name="permanentAddress" label={t('permanentAddress')}>
+              <Input />
+            </FormField>
+            <FormField name="phone" label={t('phone')}>
+              <Input type="tel" />
+            </FormField>
           </FormGrid>
         </FormSection>
         <FormSection variant="card" title={t('signature')}>
@@ -130,8 +132,11 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
                   void (async (files) => {
                     const file = files[0];
 
-                    if (!file) return;
-                    if (file.size > 200_000) {
+                    if (!file) {
+                      setSignature(null);
+                      return;
+                    }
+                    if (file.size > SIGNATURE_IMAGE_MAX_BYTES) {
                       setError(t('fileTooLarge'));
                       return;
                     }
@@ -148,7 +153,7 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
                 <field.UploadField
                   label={t('signatureUpload')}
                   accept="image/png,image/jpeg"
-                  maxBytes={200000}
+                  maxBytes={SIGNATURE_IMAGE_MAX_BYTES}
                 />
               )}
             </signatureForm.AppField>
@@ -170,6 +175,7 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
 
 export default function LandlordPage() {
   const { t } = useTranslation('documents');
+
   const query = useLandlordProfile();
 
   return (

@@ -106,17 +106,24 @@ type RoomFormProps = {
 /** O-09 fields; meters only when creating (replacing a meter is ST-13). */
 function RoomForm({ room, buildingId, onReload }: RoomFormProps) {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
+
   const create = useCreateRoom();
+
   const update = useUpdateRoom();
+
   const [formError, setFormError] = useState<string | null>(null);
+
   const [stale, setStale] = useState(false);
+
   const [dirty, setDirty] = useState(false);
 
   const isNew = !room;
 
   const schema = useMemo(() => {
     const required = t('rooms.form.required');
+
     const whole = (min: number, max: number) =>
       v.pipe(
         v.number(required),
@@ -399,9 +406,13 @@ function RoomForm({ room, buildingId, onReload }: RoomFormProps) {
 /** O-09 Form phòng: `/rooms/new` creates in the active building, `/rooms/:id/edit` edits. */
 export default function RoomFormPage() {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
+
   const { id = '' } = useParams();
+
   const { building, buildingId } = useActiveBuilding();
+
   const query = useRoom(id);
 
   const room = query.data;

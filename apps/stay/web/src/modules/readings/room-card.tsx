@@ -13,7 +13,12 @@ import {
 } from '@itclabs/react-ui';
 import { useSaveReadings, useStaySdk } from '@stay/sdk/react';
 import { createUploadApi, getErrorMessage } from '@stay/sdk/shared';
-import { METER_READING_MAX, type ReadingMeter, type ReadingRoom } from '@stay/shared';
+import {
+  METER_READING_MAX,
+  type ReadingMeter,
+  type ReadingRoom,
+  STAY_UPLOAD_MAX_BYTES,
+} from '@stay/shared';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as v from 'valibot';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
@@ -28,6 +33,7 @@ function problem(draft: Draft, meter: ReadingMeter) {
   if (!Number.isSafeInteger(value) || value < 0 || value > METER_READING_MAX)
     return 'Nhập số nguyên không âm.';
   if (value < meter.previous) return 'Số mới phải lớn hơn hoặc bằng số cũ.';
+
   return null;
 }
 
@@ -48,17 +54,29 @@ export function ReadingRoomCard({
   onPending: (id: string, pending: boolean) => void;
 }) {
   const key = `stay:readings:${accountId}:${buildingId}:${period}:${room.roomId}`;
+
   const [drafts, setDrafts] = useState<Record<string, Draft>>(() => readDrafts(key));
+
   const [online, setOnline] = useState(navigator.onLine);
+
   const [saving, setSaving] = useState(false);
+
   const [storageError, setStorageError] = useState(false);
+
   const [uploading, setUploading] = useState(false);
+
   const [replacing, setReplacing] = useState<ReadingMeter | null>(null);
+
   const busy = useRef(false);
+
   const latest = useRef(drafts);
+
   const save = useSaveReadings();
+
   const sdk = useStaySdk();
+
   const uploader = useMemo(() => createUploadApi(sdk, { baseUrl: window.location.origin }), [sdk]);
+
   const form = useAppForm({ defaultValues: { electricity: '', water: '' } });
 
   const draftFor = useCallback(
@@ -73,6 +91,7 @@ export function ReadingRoomCard({
       },
     [drafts],
   );
+
   const dirty = Object.values(drafts).some((draft) => draft.dirty);
   useUnsavedChanges(dirty || uploading);
 
@@ -98,8 +117,10 @@ export function ReadingRoomCard({
       );
     };
     const disconnected = () => setOnline(false);
+
     window.addEventListener('online', connected);
     window.addEventListener('offline', disconnected);
+
     return () => {
       window.removeEventListener('online', connected);
       window.removeEventListener('offline', disconnected);
@@ -119,6 +140,7 @@ export function ReadingRoomCard({
         return [];
       const consumption = Number(draft.value) - meter.previous + meter.carriedConsumption;
       if (meter.average !== null && consumption > 2 * meter.average && !draft.confirmed) return [];
+
       return [{ meter, draft }];
     });
     if (!pending.length) return;
@@ -184,6 +206,7 @@ export function ReadingRoomCard({
   useEffect(() => {
     if (!dirty || !online || saving || uploading || replacing) return;
     const timer = window.setTimeout(() => void submit(), 700);
+
     return () => window.clearTimeout(timer);
   }, [dirty, drafts, online, saving, uploading, replacing, submit]);
 
@@ -192,6 +215,7 @@ export function ReadingRoomCard({
       ...latest.current,
       [meter.meterId]: { ...draftFor(meter), ...patch, dirty: true, error: null },
     });
+
   const hasError = room.meters.some(
     (meter) => draftFor(meter).error || (draftFor(meter).dirty && problem(draftFor(meter), meter)),
   );
@@ -369,6 +393,7 @@ function MeterRow({
           min={meter.previous}
           max={METER_READING_MAX}
           step={1}
+          controls={false}
           value={draft.value === '' ? null : Number(draft.value)}
           placeholder={locked ? 'Đã khoá' : 'Số mới'}
           disabled={locked || busy.uploading}
@@ -397,7 +422,7 @@ function MeterRow({
               disabled={locked || !busy.online || busy.saving || busy.uploading}
               accept="image/jpeg,image/png,image/webp"
               label={`${hasPhoto ? 'Đổi' : 'Thêm'} ảnh đồng hồ ${name} (tuỳ chọn)`}
-              maxBytes={10485760}
+              maxBytes={STAY_UPLOAD_MAX_BYTES}
               className="w-full order-last"
             />
           )}

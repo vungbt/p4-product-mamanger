@@ -81,6 +81,7 @@ function MaintenanceCard({ item }: { item: PortalMaintenance }) {
 /** T-08 `/p/maintenance`: reports of the room with status and the owner's reply. */
 export default function PortalMaintenancePage() {
   const list = usePortalMaintenance();
+
   const navigate = useNavigate();
 
   return (

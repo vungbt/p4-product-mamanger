@@ -44,8 +44,11 @@ function CategoryForm({
   onReload: () => void;
 }) {
   const create = useCreateExpenseCategory();
+
   const update = useUpdateExpenseCategory();
+
   const [error, setError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
 
   const form = useAppForm({
@@ -79,6 +82,7 @@ function CategoryForm({
   });
 
   const dirty = useFormDirty(form);
+
   const { prompt } = useUnsavedChanges(dirty);
 
   return (
@@ -131,6 +135,7 @@ function CategoryForm({
 
 export default function ExpenseCategoriesPage() {
   const categories = useExpenseCategories();
+
   const [editing, setEditing] = useState<StayExpenseCategory | 'new' | null>(null);
 
   return (

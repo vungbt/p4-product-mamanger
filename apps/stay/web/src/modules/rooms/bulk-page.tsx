@@ -93,18 +93,28 @@ function newKey() {
 /** O-10 Tạo nhanh nhiều phòng: floors × rooms from a code template, previewed before creating. */
 export default function RoomBulkPage() {
   const { t } = useTranslation();
+
   const navigate = useNavigate();
+
   const { building, buildingId } = useActiveBuilding();
+
   const preview = usePreviewBulkRooms();
+
   const create = useBulkCreateRooms();
+
   const { formatCurrency } = useFormatters();
+
   const [batch, setBatch] = useState<Batch | null>(null);
+
   const [formError, setFormError] = useState<string | null>(null);
+
   const [createError, setCreateError] = useState<string | null>(null);
+
   const [dirty, setDirty] = useState(false);
 
   const schema = useMemo(() => {
     const required = t('rooms.form.required');
+
     const whole = (min: number, max: number) =>
       v.pipe(
         v.number(required),

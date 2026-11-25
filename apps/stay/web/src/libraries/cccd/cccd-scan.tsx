@@ -26,6 +26,7 @@ function cameraErrorKey(error: unknown): string {
 
   if (name === 'NotAllowedError' || name === 'SecurityError') return 'tenants.scan.denied';
   if (name === 'NotFoundError' || name === 'OverconstrainedError') return 'tenants.scan.noCamera';
+
   return 'tenants.scan.cameraFailed';
 }
 
@@ -67,6 +68,7 @@ export function CccdScanButton({
     }
     setOpen(false);
     onScannedRef.current(result.data);
+
     return true;
   };
 

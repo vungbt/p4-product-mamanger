@@ -71,11 +71,17 @@ export function ExpenseForm({
   onReload: () => void;
 }) {
   const create = useCreateExpense();
+
   const update = useUpdateExpense();
+
   const sdk = useStaySdk();
+
   const [file, setFile] = useState<File | null>(null);
+
   const [error, setError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
+
   const uploader = useMemo(() => createUploadApi(sdk, { baseUrl: window.location.origin }), [sdk]);
 
   const form = useAppForm({
@@ -145,6 +151,7 @@ export function ExpenseForm({
   });
 
   const dirty = useFormDirty(form);
+
   const { prompt } = useUnsavedChanges(dirty || Boolean(file));
 
   return (
@@ -207,7 +214,7 @@ export function ExpenseForm({
                   <field.UploadField
                     label="Ảnh hoá đơn"
                     accept="image/jpeg,image/png,image/webp"
-                    maxBytes={10485760}
+                    maxBytes={STAY_UPLOAD_MAX_BYTES}
                   />
                 )}
               </form.AppField>

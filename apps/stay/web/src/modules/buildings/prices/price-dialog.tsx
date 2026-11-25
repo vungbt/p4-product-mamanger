@@ -42,10 +42,13 @@ function PriceForm({
   onDone: () => void;
 }) {
   const { t } = useTranslation('buildings');
+
   const setPrice = useSetBuildingPrice();
+
   const [formError, setFormError] = useState<string | null>(null);
 
   const today = todayIsoDate();
+
   const schema = useMemo(
     () => ({
       effectiveFrom: v.pipe(
@@ -107,7 +110,9 @@ function PriceForm({
   });
 
   const dirty = useFormDirty(form);
+
   const date = useFormValue(form, (state) => state.values.effectiveFrom);
+
   const { prompt } = useUnsavedChanges(dirty);
 
   return (

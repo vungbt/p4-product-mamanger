@@ -25,9 +25,13 @@ import { forgetEmail, readRememberedEmail, rememberEmail } from './remembered-em
 /** C-01: after sign-in `GuestOnly` returns to the page the user wanted (default Tổng quan). */
 export default function LoginPage() {
   const { t } = useTranslation();
+
   const { signIn, expired } = useAuth();
+
   const [savedEmail] = useState(readRememberedEmail);
+
   const [remember, setRemember] = useState(Boolean(savedEmail));
+
   const [formError, setFormError] = useState<string | null>(null);
 
   const schema = useMemo(
@@ -41,12 +45,14 @@ export default function LoginPage() {
   const errorMessage = (error: unknown) => {
     if (!(error instanceof LoginError) || error.reason === 'failed') return t('auth.failed');
     if (error.reason === 'invalid') return t('auth.invalidCredentials');
+
     return t('auth.tooManyAttempts', {
       count: Math.max(1, Math.ceil((error.retryAfterSeconds ?? 60) / 60)),
     });
   };
 
   const navigate = useNavigate();
+
   const form = useAppForm({
     defaultValues: { email: savedEmail, password: '' },
     onSubmit: async ({ value }) => {

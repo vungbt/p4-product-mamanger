@@ -68,11 +68,15 @@ export function ClaimForm({
   onDone: () => void;
 }) {
   const claim = usePortalClaimPayment();
+
   const upload = usePortalUploadImage();
+
   const [file, setFile] = useState<File | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   // One key per form: a double tap or a retried submit never sends two claims.
   const [key] = useState(() => crypto.randomUUID());
+
   const [receiptFileId, setReceiptFileId] = useState<string | null>(null);
 
   const form = useAppForm({
@@ -135,6 +139,7 @@ export function ClaimForm({
   });
 
   const dirty = useFormDirty(form);
+
   const { prompt } = useUnsavedChanges(dirty || Boolean(file));
 
   return (
@@ -172,7 +177,7 @@ export function ClaimForm({
                     id="portal-claim-receipt"
                     accept="image/jpeg,image/png,image/webp"
                     label="Ảnh biên lai"
-                    maxBytes={10485760}
+                    maxBytes={STAY_UPLOAD_MAX_BYTES}
                   />
                 )}
               </form.AppField>

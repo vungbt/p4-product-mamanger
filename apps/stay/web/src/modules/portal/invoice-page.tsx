@@ -73,7 +73,9 @@ function Claims({ claims }: { claims: PortalPaymentClaim[] }) {
  */
 export default function PortalInvoicePage() {
   const { id = '' } = useParams();
+
   const invoice = usePortalInvoice(id);
+
   const [claiming, setClaiming] = useState(false);
 
   if (isNotFound(invoice.error))

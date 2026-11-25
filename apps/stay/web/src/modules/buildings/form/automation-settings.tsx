@@ -39,11 +39,14 @@ type AutomationValues = Omit<StayAutomationSettings, 'readingReminderDaysBefore'
 
 function AutomationForm({ id, settings }: { id: string; settings: StayAutomationSettings }) {
   const update = useUpdateAutomationSettings(id);
+
   const [error, setError] = useState('');
+
   const defaultValues: AutomationValues = {
     ...settings,
     readingReminderDaysBefore: String(settings.readingReminderDaysBefore),
   };
+
   const form = useAppForm({
     defaultValues,
     onSubmit: async ({ value }) => {

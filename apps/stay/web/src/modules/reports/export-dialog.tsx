@@ -34,7 +34,9 @@ const schema = v.pipe(
 
 export function ExportDialog({ range, onClose }: { range: ReportRange; onClose: () => void }) {
   const sdk = useStaySdk();
+
   const [error, setError] = useState<string | null>(null);
+
   const form = useAppForm({
     defaultValues: { sheets: choices.map((c) => c.value) as ReportExport['sheets'] },
     onSubmit: async ({ value }) => {

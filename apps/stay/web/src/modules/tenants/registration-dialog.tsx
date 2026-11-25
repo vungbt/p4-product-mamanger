@@ -32,7 +32,9 @@ export function RegistrationDialog({
   onClose: () => void;
 }) {
   const registration = useRegisterResident();
+
   const [error, setError] = useState<string | null>(null);
+
   const today = todayIsoDate();
 
   const form = useAppForm({

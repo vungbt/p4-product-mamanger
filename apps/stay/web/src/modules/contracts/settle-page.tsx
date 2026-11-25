@@ -37,6 +37,7 @@ import {
   type InvoiceShareLink,
   type ManualPaymentMethod,
   MOVE_OUT_FEE_REASON,
+  STAY_UPLOAD_MAX_BYTES,
   type StayContract,
 } from '@stay/shared';
 import { useEffect, useMemo, useState } from 'react';
@@ -124,8 +125,11 @@ function draftInvoices(error: unknown): { invoiceId: string; period: string }[] 
 /** O-24 Thanh lý hợp đồng (owner): readings → surcharges → server summary → confirm. */
 export default function ContractSettlePage() {
   const { id = '' } = useParams();
+
   const query = useContract(id);
+
   const building = useBuilding(query.data?.buildingId ?? '');
+
   const [result, setResult] = useState<ContractSettlementResult | null>(null);
 
   if (result) return <SettlementDone result={result} />;
@@ -188,17 +192,25 @@ function SettlementForm({
   onDone: (result: ContractSettlementResult) => void;
 }) {
   const sdk = useStaySdk();
+
   const uploader = useMemo(() => createUploadApi(sdk, { baseUrl: window.location.origin }), [sdk]);
+
   const settle = useSettleContract();
+
   const [step, setStep] = useState(0);
+
   const [uploading, setUploading] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+
   const [confirming, setConfirming] = useState(false);
+
   const [key] = useState(() => crypto.randomUUID());
 
   const today = todayIsoDate();
   const kinds = meteredKinds(contract);
   const notice = contract.noticeDate && contract.noticeDate <= today ? contract.noticeDate : null;
+
   const readingSchema = (kind: MeterKind) =>
     kinds.includes(kind)
       ? v.pipe(
@@ -207,6 +219,7 @@ function SettlementForm({
           v.minValue(0, 'Chỉ số không âm.'),
         )
       : v.nullable(v.number());
+
   const schema = {
     moveOutDate: v.pipe(
       v.string(),
@@ -237,8 +250,11 @@ function SettlementForm({
     },
     listeners: clearServerErrorOnChange,
   });
+
   const values = useFormValue(form, (state) => state.values);
+
   const dirty = useFormDirty(form);
+
   const { allowNavigation } = useUnsavedChanges(dirty);
 
   const body: ContractSettlementInput = {
@@ -252,7 +268,9 @@ function SettlementForm({
       reason: row.reason.trim(),
     })),
   };
+
   const preview = useSettlementPreview(contract.id, body, step === 2);
+
   const drafts = draftInvoices(preview.error);
 
   // Field errors of the server computation go back to steps 1–2 (all steps stay mounted).
@@ -268,6 +286,7 @@ function SettlementForm({
     const results = await Promise.all(
       names.map((name) => {
         form.setFieldMeta(name, (meta) => ({ ...meta, isTouched: true }));
+
         return form.validateField(name, 'change');
       }),
     );
@@ -407,7 +426,7 @@ function SettlementForm({
                           label={label}
                           accept="image/jpeg,image/png,image/webp"
                           disabled={uploading}
-                          maxBytes={10485760}
+                          maxBytes={STAY_UPLOAD_MAX_BYTES}
                         />
                       )}
                     </form.AppField>
@@ -583,6 +602,7 @@ function SettlementForm({
 function resultText(summary: Pick<ContractSettlementPreview, 'ownerRefunds' | 'tenantPays'>) {
   if (summary.ownerRefunds > 0) return `Chủ trọ hoàn ${formatVnd(summary.ownerRefunds)}`;
   if (summary.tenantPays > 0) return `Người thuê trả thêm ${formatVnd(summary.tenantPays)}`;
+
   return 'Không bên nào phải trả thêm';
 }
 
@@ -693,7 +713,9 @@ function SettlementSummary({ summary }: { summary: ContractSettlementPreview }) 
 /** After settling: the invoice, its share link (ST-16) and where things went. */
 function SettlementDone({ result }: { result: ContractSettlementResult }) {
   const [sharing, setSharing] = useState(false);
+
   const [link, setLink] = useState<InvoiceShareLink | null>(null);
+
   const { invoice, contract } = result;
 
   return (

@@ -20,6 +20,7 @@ import {
   MAINTENANCE_SEVERITIES,
   type MaintenanceCategory,
   type MaintenanceSeverity,
+  STAY_UPLOAD_MAX_BYTES,
 } from '@stay/shared';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -49,9 +50,13 @@ const schema = {
 /** T-08 `/p/maintenance/new`: hạng mục, mức độ, mô tả, tối đa 5 ảnh. */
 export default function PortalMaintenanceNewPage() {
   const create = usePortalCreateMaintenance();
+
   const upload = usePortalUploadImage();
+
   const navigate = useNavigate();
+
   const [files, setFiles] = useState<File[]>([]);
+
   const [error, setError] = useState<string | null>(null);
 
   const form = useAppForm({
@@ -101,6 +106,7 @@ export default function PortalMaintenanceNewPage() {
   });
 
   const dirty = useFormDirty(form);
+
   const { prompt, allowNavigation } = useUnsavedChanges(dirty || files.length > 0);
 
   return (
@@ -155,7 +161,7 @@ export default function PortalMaintenanceNewPage() {
                       multiple
                       accept="image/jpeg,image/png,image/webp"
                       label={`Ảnh (tối đa ${MAINTENANCE_MAX_PHOTOS})`}
-                      maxBytes={10485760}
+                      maxBytes={STAY_UPLOAD_MAX_BYTES}
                       maxFiles={MAINTENANCE_MAX_PHOTOS}
                     />
                   )}

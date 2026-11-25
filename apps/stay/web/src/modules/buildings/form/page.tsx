@@ -520,7 +520,7 @@ function BuildingForm({
 
           <Section title={t('form.bankTitle')} description={t('form.bankDescription')}>
             <FormGrid columns={3}>
-              <div className="grid content-start gap-4 lg:col-span-2">
+              <FormGridItem span={2} className="grid content-start gap-4">
                 <FormField
                   name="bankBin"
                   label={t('form.bank')}
@@ -549,7 +549,7 @@ function BuildingForm({
                     <Input maxLength={50} autoComplete="off" hint={t('form.bankAccountNameHint')} />
                   </FormField>
                 </FormGrid>
-              </div>
+              </FormGridItem>
               <VietQrPreview
                 bin={values.bankBin}
                 account={values.bankAccount}

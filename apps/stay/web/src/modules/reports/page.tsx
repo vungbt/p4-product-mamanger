@@ -51,6 +51,7 @@ export default function ReportsPage() {
         next.set('from', from);
         next.set('to', to);
         next.set(key, value);
+
         return next;
       },
       { replace: true },

@@ -26,6 +26,7 @@ import { ROUTES } from '@/routing/route-configs';
  */
 export default function NotificationsBell() {
   const client = useQueryClient();
+
   const live = useNotificationStream(NOTIFICATION_STREAMS.staff, {
     onReady: () => void client.invalidateQueries({ queryKey: notificationKeys.list() }),
     onEvent: (event) => {
@@ -33,11 +34,17 @@ export default function NotificationsBell() {
       toast.info(event.title, { description: event.body });
     },
   });
+
   const query = useNotifications({ refetchInterval: live ? POLL_CONNECTED_MS : POLL_FALLBACK_MS });
+
   const settings = useNotificationSettings();
+
   const push = usePushSubscription();
+
   const { selectBuilding } = useActiveBuilding();
+
   const markRead = useMarkNotificationRead();
+
   const [open, setOpen] = useState(false);
 
   useAutoPush('staff', settings.data, (subscription) => push.subscribe.mutateAsync(subscription));

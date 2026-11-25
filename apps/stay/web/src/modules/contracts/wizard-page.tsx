@@ -38,6 +38,7 @@ import {
   type ContractInput,
   isIsoDate,
   maskIdNumber,
+  STAY_UPLOAD_MAX_BYTES,
   type StayContract,
   type StayRoomDetail,
 } from '@stay/shared';
@@ -92,9 +93,11 @@ function QuickTenant({
   onCreated: (id: string) => void;
 }) {
   const create = useCreateTenant();
+
   const [error, setError] = useState<string | null>(null);
   // Card details read from the CCCD QR, saved with the new tenant.
   const [card, setCard] = useState<CccdQrData | null>(null);
+
   const form = useAppForm({
     defaultValues: {
       fullName: '',
@@ -131,6 +134,7 @@ function QuickTenant({
       }
     },
   });
+
   const dirty = useFormValue(form, (s) => !s.isDefaultValue);
 
   useUnsavedChanges(dirty);
@@ -195,6 +199,7 @@ function VehicleChoices({
   const tenant = useTenant(tenantId);
 
   if (tenant.isError) return <LoadError error={tenant.error} retry={() => void tenant.refetch()} />;
+
   return (
     <>
       {tenant.data?.vehicles.map((vehicle) => (
@@ -227,24 +232,43 @@ function Wizard({
   initialRoom?: StayRoomDetail;
 }) {
   const navigate = useNavigate();
+
   const [params, setParams] = useSearchParams();
+
   const [saved, setSaved] = useState(draft);
+
   const [step, setStep] = useState(Math.min(4, Math.max(0, Number(params.get('step')) || 0)));
+
   const [dirty, setDirty] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+
   const [stale, setStale] = useState(false);
+
   const [confirm, setConfirm] = useState(false);
+
   const [tenantSearch, setTenantSearch] = useState('');
+
   const [roomSearch, setRoomSearch] = useState('');
+
   const sdk = useStaySdk();
+
   const uploader = useMemo(() => createUploadApi(sdk, { baseUrl: window.location.origin }), [sdk]);
+
   const [uploading, setUploading] = useState(false);
+
   const [createKey] = useState(() => crypto.randomUUID());
+
   const create = useCreateContract();
+
   const update = useUpdateContract();
+
   const activate = useActivateContract();
+
   const preview = useMoveInPreview(step === 4 ? (saved?.id ?? '') : '');
+
   const guard = useUnsavedChanges(dirty);
+
   const initial: ContractInput = draft ?? {
     roomId,
     startDate: todayIsoDate(),
@@ -259,10 +283,12 @@ function Wizard({
     depositNote: null,
     initialElectric: (() => {
       const m = initialRoom?.meters.find((m) => m.kind === 'electricity');
+
       return m?.latestReading ?? m?.initialReading ?? 0;
     })(),
     initialWater: (() => {
       const m = initialRoom?.meters.find((m) => m.kind === 'water');
+
       return m?.latestReading ?? m?.initialReading ?? 0;
     })(),
     note: null,
@@ -271,6 +297,7 @@ function Wizard({
     serviceIds: initialRoom?.defaultServices.filter((s) => s.active).map((s) => s.id) ?? [],
     vehicleIds: [],
   };
+
   const photoForm = useAppForm({ defaultValues: { electric: [] as File[], water: [] as File[] } });
 
   const form = useAppForm({
@@ -298,6 +325,7 @@ function Wizard({
             const next = latestSearchParams();
             next.set('draftId', contract.id);
             next.set('step', String(Math.min(step + 1, 4)));
+
             return next;
           },
           { replace: true },
@@ -318,6 +346,7 @@ function Wizard({
       }
     },
   });
+
   const value = useFormValue(form, (s) => s.values);
 
   const rooms = useRooms(buildingId, {
@@ -651,49 +680,56 @@ function Wizard({
                   </FormField>
                 </>
               )}
-              {step === 3 &&
-                (['initialElectricPhotoFileId', 'initialWaterPhotoFileId'] as const).map(
-                  (field) => (
-                    <FormField
-                      key={field}
-                      name={field}
-                      label={
-                        field === 'initialElectricPhotoFileId'
-                          ? 'Ảnh đồng hồ điện (tuỳ chọn)'
-                          : 'Ảnh đồng hồ nước (tuỳ chọn)'
-                      }
-                    >
-                      {() => (
-                        <div className="grid gap-2">
-                          <photoForm.AppField
-                            name={field === 'initialElectricPhotoFileId' ? 'electric' : 'water'}
-                            listeners={{
-                              onChange: ({ value: files }) => {
-                                const file = files[0];
-                                if (file) void uploadPhoto(field, file);
-                                else form.setFieldValue(field, null);
-                              },
-                            }}
-                          >
-                            {(uploadField) => (
-                              <uploadField.UploadField
-                                accept="image/jpeg,image/png,image/webp"
-                                disabled={uploading}
-                                label={
-                                  field === 'initialElectricPhotoFileId'
-                                    ? 'Ảnh đồng hồ điện (tuỳ chọn)'
-                                    : 'Ảnh đồng hồ nước (tuỳ chọn)'
-                                }
-                                maxBytes={10485760}
-                              />
-                            )}
-                          </photoForm.AppField>
-                          {value[field] && <p className="text-ui-sm text-muted">Đã tải ảnh</p>}
-                        </div>
-                      )}
-                    </FormField>
-                  ),
-                )}
+              {step === 3 && (
+                <>
+                  <photoForm.AppField
+                    name="electric"
+                    listeners={{
+                      onChange: ({ value: files }) => {
+                        const file = files[0];
+
+                        if (file) void uploadPhoto('initialElectricPhotoFileId', file);
+                        else form.setFieldValue('initialElectricPhotoFileId', null);
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <field.UploadField
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={uploading}
+                        label="Ảnh đồng hồ điện (tuỳ chọn)"
+                        maxBytes={STAY_UPLOAD_MAX_BYTES}
+                      />
+                    )}
+                  </photoForm.AppField>
+                  {value.initialElectricPhotoFileId && (
+                    <p className="text-ui-sm text-muted">Đã tải ảnh</p>
+                  )}
+                  <photoForm.AppField
+                    name="water"
+                    listeners={{
+                      onChange: ({ value: files }) => {
+                        const file = files[0];
+
+                        if (file) void uploadPhoto('initialWaterPhotoFileId', file);
+                        else form.setFieldValue('initialWaterPhotoFileId', null);
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <field.UploadField
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={uploading}
+                        label="Ảnh đồng hồ nước (tuỳ chọn)"
+                        maxBytes={STAY_UPLOAD_MAX_BYTES}
+                      />
+                    )}
+                  </photoForm.AppField>
+                  {value.initialWaterPhotoFileId && (
+                    <p className="text-ui-sm text-muted">Đã tải ảnh</p>
+                  )}
+                </>
+              )}
               {step === 4 && saved && (
                 <>
                   <p>
@@ -761,13 +797,18 @@ function Wizard({
 
 export default function ContractWizardPage() {
   const { buildingId } = useActiveBuilding();
+
   const [params] = useSearchParams();
+
   const draftId = params.get('draftId') ?? '';
+
   const query = useContract(draftId);
+
   const selected = useRoom(params.get('roomId') ?? '');
   // A draft saved by this wizard only updates the URL: keep the mounted wizard and its unsaved
   // step state. Only opening an existing draft (or another one) loads and remounts.
   const [initialDraftId] = useState(draftId);
+
   const createdHere = !initialDraftId && Boolean(draftId);
   const loadsDraft = Boolean(draftId) && !createdHere;
 
@@ -785,6 +826,7 @@ export default function ContractWizardPage() {
     return <Alert>Hợp đồng này không còn là bản nháp.</Alert>;
   if (!draftId && selected.data && selected.data.status !== 'vacant')
     return <Alert>Chọn một phòng trống để tạo hợp đồng.</Alert>;
+
   return (
     <Wizard
       key={`${buildingId}-${loadsDraft ? draftId : 'new'}`}

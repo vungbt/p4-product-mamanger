@@ -5,6 +5,7 @@ import {
   Dialog,
   Drawer,
   Form,
+  FormActions,
   FormField,
   FormGrid,
   FormLayout,
@@ -82,6 +83,7 @@ export function ContractChangeDialog({
   onClose: () => void;
 }) {
   const change = useChangeContract();
+
   const detail = useContract(contract.id);
 
   const [roomSearch, setRoomSearch] = useState('');
@@ -100,10 +102,15 @@ export function ContractChangeDialog({
   });
 
   const services = useServices();
+
   const [error, setError] = useState<string | null>(null);
+
   const [confirmClose, setConfirmClose] = useState(false);
+
   const [key] = useState(() => crypto.randomUUID());
+
   const mobile = useMediaQuery('(max-width: 639px)');
+
   const form = useAppForm({
     defaultValues: {
       effectiveDate: todayIsoDate(),
@@ -141,10 +148,15 @@ export function ContractChangeDialog({
       }
     },
   });
+
   const values = useFormValue(form, (s) => s.values);
+
   const dirty = useFormDirty(form);
+
   const { prompt } = useUnsavedChanges(dirty);
+
   const vehicleTenant = useTenant(values.vehicleTenantId);
+
   const body: ContractChangeInput = {
     version: contract.version,
     effectiveDate: values.effectiveDate,
@@ -182,7 +194,9 @@ export function ContractChangeDialog({
     body.initialWater = values.initialWater;
   }
   const command = { id: contract.id, kind, body, occupantId: values.occupantId };
+
   const preview = useContractChangePreview(command, dirty);
+
   const serverCause = preview.error ?? change.error;
   const conflict = isVersionConflict(serverCause);
 
@@ -194,12 +208,14 @@ export function ContractChangeDialog({
   }, [serverCause, form]);
 
   const Overlay = mobile ? Drawer : Dialog;
+
   const close = () => {
     if (!change.isPending) {
       if (dirty) setConfirmClose(true);
       else onClose();
     }
   };
+
   const people = contract.occupants
     .filter(
       (o) => o.fromDate <= values.effectiveDate && (!o.toDate || o.toDate > values.effectiveDate),
@@ -382,19 +398,19 @@ export function ContractChangeDialog({
                 {error}
               </p>
             )}
-            <div className="flex justify-end gap-2">
-              <Button variant="secondary" onClick={close}>
-                Huỷ
-              </Button>
-              <Button
-                type="submit"
-                loading={change.isPending}
-                disabled={!preview.data || preview.isFetching || Boolean(preview.error)}
-              >
-                Lưu thay đổi
-              </Button>
-            </div>
           </FormGrid>
+          <FormActions>
+            <Button variant="secondary" onClick={close}>
+              Huỷ
+            </Button>
+            <Button
+              type="submit"
+              loading={change.isPending}
+              disabled={!preview.data || preview.isFetching || Boolean(preview.error)}
+            >
+              Lưu thay đổi
+            </Button>
+          </FormActions>
         </FormLayout>
       </Form>
       <AlertDialog

@@ -89,14 +89,21 @@ function toValues(settings: StaySettings): BillingValues {
 
 function BillingForm({ settings, onReload }: { settings: StaySettings; onReload: () => void }) {
   const { t } = useTranslation('settings');
+
   const update = useUpdateStaySettings();
+
   const [formError, setFormError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
 
   const dayOptions = useMemo(() => billingDayOptions(t), [t]);
+
   const monthOptions = useMemo(() => readingDayMonthOptions(t), [t]);
+
   const graceOptions = useMemo(() => graceDaysOptions(t), [t]);
+
   const roundingOptions = useMemo(() => roundingUnitOptions(), []);
+
   const schema = useMemo(() => {
     const required = v.pipe(v.string(), v.minLength(1, t('validation.required')));
 
@@ -172,7 +179,9 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
   });
 
   const dirty = useFormDirty(form);
+
   const values = useFormValue(form, (state) => state.values);
+
   const { prompt } = useUnsavedChanges(dirty);
 
   const preview = billingPreview({
@@ -275,7 +284,9 @@ function BillingForm({ settings, onReload }: { settings: StaySettings; onReload:
 /** O-03 Cài đặt: kỳ thu — system billing defaults that buildings inherit. */
 export default function BillingSettingsPage() {
   const { t } = useTranslation('settings');
+
   const query = useStaySettings();
+
   const [reloads, setReloads] = useState(0);
 
   const reload = async () => {

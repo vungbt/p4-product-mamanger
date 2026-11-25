@@ -20,9 +20,13 @@ const schema = { password: v.pipe(v.string(), v.minLength(8, 'Mật khẩu tối
 
 export default function ResetPasswordPage() {
   const [params] = useSearchParams();
+
   const [error, setError] = useState<string | null>(null);
+
   const [saved, setSaved] = useState(false);
+
   const token = params.get('token');
+
   const form = useAppForm({
     defaultValues: { password: '' },
     onSubmit: async ({ value }) => {

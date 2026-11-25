@@ -46,8 +46,11 @@ export function ReplacementDialog({
   onReplaced: () => void;
 }) {
   const mutation = useReplaceMeter();
+
   const [error, setError] = useState<string | null>(null);
+
   const attempt = useRef({ payload: '', key: crypto.randomUUID() });
+
   const form = useAppForm({
     defaultValues: {
       finalReading: meter.current?.reading ?? meter.previous,
@@ -74,6 +77,7 @@ export function ReplacementDialog({
       }
     },
   });
+
   useUnsavedChanges(useFormDirty(form));
 
   return (

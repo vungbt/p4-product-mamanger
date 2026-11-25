@@ -44,20 +44,35 @@ type MenuAction = ContractChangeKind | 'notice' | 'cancel-notice' | 'settle';
 
 export default function ContractDetailPage() {
   const { t } = useTranslation('documents');
+
   const { id = '' } = useParams();
+
   const query = useContract(id);
+
   const cancel = useCancelContract();
+
   const cancelNotice = useCancelNotice();
+
   const navigate = useNavigate();
+
   const [params, setParams] = useSearchParams();
+
   const [change, setChange] = useState<ContractChangeKind | null>(null);
+
   const [confirm, setConfirm] = useState(false);
+
   const [noticeOpen, setNoticeOpen] = useState(false);
+
   const [confirmCancelNotice, setConfirmCancelNotice] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+
   const data = query.data;
+
   const canUpdate = useCanOn('update', 'Contract', { buildingId: data?.buildingId });
+
   const canSettle = useCanAccess('settle', 'Contract');
+
   const tab = TABS.includes(params.get('tab') ?? '') ? params.get('tab') : 'Tổng quan';
 
   useRoomBuilding(data?.buildingId);
@@ -178,6 +193,7 @@ export default function ContractDetailPage() {
                 () => {
                   const next = latestSearchParams();
                   next.set('tab', label);
+
                   return next;
                 },
                 { replace: true },

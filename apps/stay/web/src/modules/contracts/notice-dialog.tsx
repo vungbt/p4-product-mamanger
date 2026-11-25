@@ -42,7 +42,9 @@ export function NoticeDialog({
   onReload: () => void;
 }) {
   const notice = useGiveNotice();
+
   const [error, setError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
 
   const today = todayIsoDate();
@@ -94,6 +96,7 @@ export function NoticeDialog({
   });
 
   const dirty = useFormDirty(form);
+
   useUnsavedChanges(dirty);
 
   const close = () => {

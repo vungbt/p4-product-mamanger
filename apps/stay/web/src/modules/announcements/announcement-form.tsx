@@ -144,6 +144,7 @@ export function AnnouncementDialog({
 
       if (checked) next.add(id);
       else next.delete(id);
+
       return next;
     });
 
@@ -190,7 +191,7 @@ export function AnnouncementDialog({
                 {rooms.isPending ? (
                   <LoadingRows rows={2} />
                 ) : (
-                  <FormGrid columns={2}>
+                  <FormGrid columns={2} className="max-h-56 overflow-y-auto">
                     {(rooms.data?.data ?? []).map((room) => (
                       <Checkbox
                         key={room.id}

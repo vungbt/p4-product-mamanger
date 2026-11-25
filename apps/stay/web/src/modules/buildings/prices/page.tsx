@@ -63,12 +63,19 @@ function PriceHistory({ item }: { item: BuildingServicePrice }) {
 /** O-06 Đơn giá của toà: default vs building price per service, dated overrides and history. */
 export default function BuildingPricesPage() {
   const { t } = useTranslation('buildings');
+
   const { t: ts } = useTranslation('settings');
+
   const { id = '' } = useParams();
+
   const { reportMissingBuilding } = useActiveBuilding();
+
   const building = useBuilding(id);
+
   const prices = useBuildingPrices(id);
+
   const [action, setAction] = useState<PriceAction | null>(null);
+
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const missing = isNotFound(building.error) || isNotFound(prices.error);

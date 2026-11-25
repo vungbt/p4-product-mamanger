@@ -14,6 +14,7 @@ import {
 import { useStaySdk } from '@stay/sdk/react';
 import { ApiSdkError, getErrorMessage, unwrap } from '@stay/sdk/shared';
 import type { DocumentFileCheck, DocumentVerification } from '@stay/shared';
+import { DOCUMENT_SCAN_MAX_BYTES } from '@stay/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -119,7 +120,7 @@ export default function VerifyDocumentPage() {
                   value={file ? [file] : []}
                   label={t('verify.file')}
                   accept="application/pdf"
-                  maxBytes={10485760}
+                  maxBytes={DOCUMENT_SCAN_MAX_BYTES}
                   onValueChange={(files) => {
                     setFile(files[0] ?? null);
                     setCheck(null);
@@ -131,7 +132,7 @@ export default function VerifyDocumentPage() {
                     loading={comparing}
                     onClick={async () => {
                       if (!file) return;
-                      if (file.size > 10_485_760) {
+                      if (file.size > DOCUMENT_SCAN_MAX_BYTES) {
                         setError(t('verify.error'));
                         return;
                       }

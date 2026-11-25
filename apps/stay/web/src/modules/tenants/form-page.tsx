@@ -306,6 +306,7 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
     };
 
     window.addEventListener('beforeunload', warn);
+
     return () => window.removeEventListener('beforeunload', warn);
   }, [pendingChanges]);
 
@@ -326,6 +327,16 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
     } catch {
       setUploads((current) => ({ ...current, [side]: { status: 'error', name: file.name } }));
     }
+  };
+
+  const removeUpload = (side: DocumentSide) => {
+    setUploads((current) => {
+      const next = { ...current };
+
+      delete next[side];
+
+      return next;
+    });
   };
 
   const clearError = (field: string) => () =>
@@ -527,14 +538,14 @@ function TenantForm({ tenant, onReload }: { tenant?: TenantDetail; onReload: () 
                 label={t('tenants.documents.front')}
                 state={uploads.id_front}
                 onPick={(side, file) => void pick(side, file)}
-                onRemove={(side) => setUploads((current) => ({ ...current, [side]: undefined }))}
+                onRemove={removeUpload}
               />
               <DocumentPicker
                 side="id_back"
                 label={t('tenants.documents.back')}
                 state={uploads.id_back}
                 onPick={(side, file) => void pick(side, file)}
-                onRemove={(side) => setUploads((current) => ({ ...current, [side]: undefined }))}
+                onRemove={removeUpload}
               />
             </FormGrid>
           </FormSection>

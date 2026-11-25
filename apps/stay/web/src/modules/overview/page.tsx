@@ -44,6 +44,7 @@ export default function OverviewPage() {
         const next = latestSearchParams();
 
         next.set('period', value);
+
         return next;
       },
       { replace: true },

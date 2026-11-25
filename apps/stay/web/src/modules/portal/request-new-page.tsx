@@ -165,8 +165,11 @@ function payloadOf(type: TenantRequestType, values: Values): TenantRequestPayloa
 
 function RequestForm({ type }: { type: TenantRequestType }) {
   const create = usePortalCreateRequest();
+
   const navigate = useNavigate();
+
   const [error, setError] = useState<string | null>(null);
+
   const config = TYPE_FORMS[type];
 
   const form = useAppForm({
@@ -210,7 +213,9 @@ function RequestForm({ type }: { type: TenantRequestType }) {
   });
 
   const dirty = useFormDirty(form);
+
   const { allowNavigation } = useUnsavedChanges(dirty);
+
   const label = (field: Field) => config.labels[field] ?? field;
 
   return (

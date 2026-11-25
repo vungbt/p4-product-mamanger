@@ -5,6 +5,7 @@ import {
   FormActions,
   FormField,
   FormGrid,
+  FormGridItem,
   FormLayout,
   FormSection,
   Icon,
@@ -25,7 +26,11 @@ import {
   useUpdateContractTemplate,
 } from '@stay/sdk/react';
 import { getErrorMessage } from '@stay/sdk/shared';
-import { type ContractTemplateDetail, unknownTemplateVariables } from '@stay/shared';
+import {
+  type ContractTemplateDetail,
+  DOCX_IMPORT_MAX_BYTES,
+  unknownTemplateVariables,
+} from '@stay/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
@@ -41,24 +46,40 @@ import { DocumentEditor } from './editor';
 
 function TemplateForm({ template }: { template: ContractTemplateDetail }) {
   const { t } = useTranslation('documents');
+
   const variables = useTemplateVariables();
+
   const contracts = useContracts({
     buildingId: template.buildingId ?? undefined,
     pageSize: OPTIONS_PAGE_SIZE,
   });
+
   const save = useSaveContractTemplateVersion();
+
   const rename = useUpdateContractTemplate();
+
   const preview = usePreviewContractTemplate();
+
   const importWord = useImportDocx();
+
   const desktop = useIsDesktop();
+
   const [body, setBody] = useState(template.bodyHtml);
+
   const [savedBody, setSavedBody] = useState(template.bodyHtml);
+
   const [current, setCurrent] = useState(template);
+
   const [error, setError] = useState<string | null>(null);
+
   const [notice, setNotice] = useState('');
+
   const [contractId, setContractId] = useState('');
+
   const [versionId, setVersionId] = useState<string | null>(null);
+
   const [insert, setInsert] = useState<{ text: string; sequence: number }>();
+
   const old = useContractTemplateVersion(versionId);
 
   const importForm = useAppForm({ defaultValues: { uploadFiles: [] as File[] } });
@@ -94,8 +115,11 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
       }
     },
   });
+
   const dirty = useFormDirty(form);
+
   const { prompt } = useUnsavedChanges(dirty || body !== savedBody);
+
   const unknown = unknownTemplateVariables(body);
 
   return (
@@ -125,7 +149,7 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
                     const file = files[0];
 
                     if (!file) return;
-                    if (file.size > 5_242_880) {
+                    if (file.size > DOCX_IMPORT_MAX_BYTES) {
                       setError(t('fileTooLarge'));
                       return;
                     }
@@ -148,7 +172,7 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
                   label={t('import')}
                   accept=".docx"
                   disabled={importWord.isPending}
-                  maxBytes={5242880}
+                  maxBytes={DOCX_IMPORT_MAX_BYTES}
                 />
               )}
             </importForm.AppField>
@@ -160,9 +184,9 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
             </Alert>
           )}
           <FormGrid columns={3}>
-            <div className="min-w-0 lg:col-span-2">
+            <FormGridItem span={2}>
               <DocumentEditor value={body} onChange={setBody} insert={insert} readOnly={!desktop} />
-            </div>
+            </FormGridItem>
             {desktop && (
               <aside className="grid max-h-96 gap-2 overflow-y-auto" aria-label={t('variables')}>
                 {variables.data?.map((variable) => (
@@ -305,7 +329,9 @@ function TemplateForm({ template }: { template: ContractTemplateDetail }) {
 
 export default function TemplatePage() {
   const { id = '' } = useParams();
+
   const { t } = useTranslation('documents');
+
   const query = useContractTemplate(id);
 
   return (
