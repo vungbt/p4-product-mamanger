@@ -2,7 +2,9 @@ import { EmptyState } from '@itclabs/react-ui';
 import { usePortalContract } from '@stay/sdk/react';
 import type { ContractStatus, VehicleType } from '@stay/shared';
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { displayDate, formatVnd } from '@/libraries/format';
+import { portalDocumentPaths } from './documents-ui';
 import { PortalQuery, PortalSection } from './portal-ui';
 
 const STATUS_LABELS: Record<ContractStatus, string> = {
@@ -38,6 +40,9 @@ export default function PortalContractPage() {
 
   return (
     <>
+      <Link to={portalDocumentPaths.list} className="font-semibold text-accent">
+        Văn bản cần ký
+      </Link>
       <h1 className="text-heading font-bold">Hợp đồng của tôi</h1>
       <PortalQuery query={contract}>
         {(data) => (

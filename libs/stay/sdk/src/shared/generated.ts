@@ -551,7 +551,7 @@ export interface paths {
     put?: never;
     /**
      * Sign in with email and password
-     * @description Sign in with email and password
+     * @description Sign in with email or a normalized Vietnamese phone number and password. Unknown phone and wrong password return the same error; rate limited.
      */
     post: operations['auth_post__sign_in_email'];
     delete?: never;
@@ -3876,6 +3876,48 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/tenants/{id}/credentials': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Cấp tài khoản / cấp lại mật khẩu người thuê
+     * @description issue Tenant, trong phạm vi toà. Trả mật khẩu một lần; thu hồi phiên và buộc đổi mật khẩu.
+     *
+     *     **Quyền:** `issue:Tenant`.
+     */
+    post: operations['post_api_tenants_id_credentials'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/tenants/{id}/credentials/email': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Gửi thông tin đăng nhập qua SMTP
+     * @description **Quyền:** `issue:Tenant`.
+     */
+    post: operations['post_api_tenants_id_credentials_email'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/tenants/{id}/documents': {
     parameters: {
       query?: never;
@@ -5121,6 +5163,7 @@ export interface components {
       myName: string | null;
       /** @enum {string|null} */
       myStatus: 'pending' | 'rejected' | 'signed' | 'viewed' | null;
+      privacyRestricted?: boolean;
       sentAt: string | null;
       signers: {
         name: string;
@@ -6272,6 +6315,7 @@ export interface components {
       version: number;
     };
     StayTenantDetail: {
+      accountIssued: boolean;
       archivedAt: string | null;
       birthDate: string | null;
       buildingId: string;
@@ -6341,9 +6385,15 @@ export interface components {
       email: string;
       emailVerified: boolean;
       id: string;
+      mustChangePassword?: boolean;
+      occupiedContracts?: {
+        code: string;
+        id: string;
+      }[];
       permissionGroups?: ('billing' | 'operations' | 'payments' | 'readings')[];
       /** @enum {string} */
       role: 'manager' | 'owner' | 'tenant';
+      tenantId?: string;
     };
     TemplatePreview: {
       html: string;
@@ -9139,7 +9189,7 @@ export interface operations {
         'application/json': {
           /** @description Callback URL to use as a redirect for email verification */
           callbackURL?: string;
-          /** @description Email of the user */
+          /** @description Email or Vietnamese phone (0xxxxxxxxx / +84xxxxxxxxx); resolved on the server. */
           email: string;
           /** @description Password of the user */
           password: string;
@@ -14134,7 +14184,10 @@ export interface operations {
   get_api_portal_contract: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14167,7 +14220,10 @@ export interface operations {
   get_api_portal_documents: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14200,7 +14256,10 @@ export interface operations {
   get_api_portal_documents_id: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path: {
         id: string;
       };
@@ -14235,8 +14294,14 @@ export interface operations {
   };
   get_api_portal_documents_id_pdf: {
     parameters: {
-      query?: never;
-      header?: never;
+      query?: {
+        /** @description Contract selector for a browser PDF download with a Better Auth cookie. */
+        accountContract?: string;
+      };
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path: {
         id: string;
       };
@@ -14269,7 +14334,10 @@ export interface operations {
   post_api_portal_documents_id_reject: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path: {
         id: string;
       };
@@ -14313,7 +14381,10 @@ export interface operations {
   post_api_portal_documents_id_sign: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path: {
         id: string;
       };
@@ -14363,7 +14434,10 @@ export interface operations {
   get_api_portal_invoices: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14396,7 +14470,10 @@ export interface operations {
   get_api_portal_invoices_id: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path: {
         id: string;
       };
@@ -14435,6 +14512,8 @@ export interface operations {
       header?: {
         /** @description Tuỳ chọn; mỗi lần mở form dùng một key, bấm lại dùng lại key. */
         'Idempotency-Key'?: string;
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
       };
       path: {
         id: string;
@@ -14524,7 +14603,10 @@ export interface operations {
   get_api_portal_maintenance: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14557,7 +14639,10 @@ export interface operations {
   post_api_portal_maintenance: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14596,7 +14681,10 @@ export interface operations {
   post_api_portal_maintenance_id_cancel: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path: {
         id: string;
       };
@@ -14633,7 +14721,10 @@ export interface operations {
   get_api_portal_me: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14666,7 +14757,10 @@ export interface operations {
   get_api_portal_notices: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14699,7 +14793,10 @@ export interface operations {
   get_api_portal_notification_settings: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14732,7 +14829,10 @@ export interface operations {
   put_api_portal_notification_settings: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14771,7 +14871,10 @@ export interface operations {
   get_api_portal_notifications: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14804,7 +14907,10 @@ export interface operations {
   post_api_portal_notifications_id_read: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path: {
         id: string;
       };
@@ -14843,7 +14949,10 @@ export interface operations {
   get_api_portal_notifications_stream: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14873,7 +14982,10 @@ export interface operations {
   post_api_portal_payment_claims_id_cancel: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path: {
         id: string;
       };
@@ -14910,7 +15022,10 @@ export interface operations {
   post_api_portal_push_subscriptions: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14949,7 +15064,10 @@ export interface operations {
   delete_api_portal_push_subscriptions: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -14990,7 +15108,10 @@ export interface operations {
   get_api_portal_requests: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -15023,7 +15144,10 @@ export interface operations {
   post_api_portal_requests: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -15062,7 +15186,10 @@ export interface operations {
   post_api_portal_requests_id_cancel: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path: {
         id: string;
       };
@@ -15180,7 +15307,10 @@ export interface operations {
   post_api_portal_uploads: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -15219,7 +15349,10 @@ export interface operations {
   post_api_portal_uploads_id_complete: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path: {
         id: string;
       };
@@ -15256,7 +15389,10 @@ export interface operations {
   get_api_portal_usage: {
     parameters: {
       query?: never;
-      header?: never;
+      header?: {
+        /** @description Contract selected by a signed-in tenant account; CASL and current occupancy checked on every request. */
+        'X-Stay-Contract'?: string;
+      };
       path?: never;
       cookie?: never;
     };
@@ -16390,6 +16526,79 @@ export interface operations {
           };
         };
       };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_tenants_id_credentials: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              appUrl: string;
+              login: string;
+              password: string;
+            };
+            message?: string;
+          };
+        };
+      };
+      401: components['responses']['Unauthorized'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      429: components['responses']['RateLimited'];
+    };
+  };
+  post_api_tenants_id_credentials_email: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': {
+          password: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Thành công */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': {
+            data: {
+              sent: boolean;
+            };
+            message?: string;
+          };
+        };
+      };
+      400: components['responses']['ValidationError'];
       401: components['responses']['Unauthorized'];
       403: components['responses']['Forbidden'];
       404: components['responses']['NotFound'];

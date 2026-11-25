@@ -30,6 +30,7 @@ async function mockApi(page: Page, role?: StayRole) {
   };
   let mode: 'data' | 'empty' | 'error' = 'data';
   const queries: URLSearchParams[] = [];
+  const unmockedRequests: string[] = [];
 
   await page.route('**/api/**', async (route) => {
     const url = new URL(route.request().url());
@@ -60,6 +61,34 @@ async function mockApi(page: Page, role?: StayRole) {
         meta: { page: 1, pageSize: 100, total: 2, totalPages: 1 },
       };
     else if (role && path === '/api/notifications') body = { data: { items: [], unreadCount: 0 } };
+    else if (role && path === '/api/me/notification-settings')
+      body = {
+        data: {
+          email: true,
+          push: true,
+          mutedGroups: [],
+          emailAvailable: false,
+          hasEmail: true,
+          pushPublicKey: null,
+          pushSubscriptions: 0,
+        },
+      };
+    else if (role && path === '/api/notifications/stream')
+      return route.fulfill({ contentType: 'text/event-stream', body: ': fixture stream\n\n' });
+    else if (role && path === '/api/requests')
+      body = {
+        data: [],
+        meta: {
+          page: 1,
+          pageSize: 1,
+          total: 0,
+          totalPages: 0,
+          counts: ['pending', 'in_progress', 'done', 'rejected', 'cancelled'].map((status) => ({
+            status,
+            count: 0,
+          })),
+        },
+      };
     else if (path === `/api/audit-logs/${entry.id}`) body = { data: entry };
     else if (path === '/api/audit-logs') {
       queries.push(url.searchParams);
@@ -76,11 +105,18 @@ async function mockApi(page: Page, role?: StayRole) {
                 totalPages: mode === 'empty' ? 1 : 2,
               },
             };
-    } else return route.fallback();
+    } else {
+      if (role) unmockedRequests.push(route.request().url());
+      return route.fallback();
+    }
     await route.fulfill({ status, json: body });
   });
   return {
     queries,
+    unmockedRequests,
+    setRole: (next: StayRole) => {
+      user.role = next;
+    },
     setMode: (next: typeof mode) => {
       mode = next;
     },
@@ -153,29 +189,17 @@ test('empty, error and retry states', async ({ page }) => {
 });
 
 // Only this role-switching test fixtures identity and capabilities.
-test('manager can open audit; tenant has no audit menu or access', async ({ browser, baseURL }) => {
-  for (const role of ['manager', 'tenant'] as const) {
-    const context = await browser.newContext({
-      baseURL,
-      locale: 'vi-VN',
-      storageState: { cookies: [], origins: [] },
-    });
-
-    try {
-      const page = await context.newPage();
-
-      await mockApi(page, role);
-      await page.goto('/audit');
-      if (role === 'manager') {
-        await expect(page.getByRole('heading', { name: 'Lịch sử thay đổi' })).toBeVisible();
-      } else {
-        await expect(
-          page.getByRole('heading', { name: 'Bạn không có quyền xem trang này' }),
-        ).toBeVisible();
-        await expect(page.getByRole('link', { name: 'Lịch sử thay đổi' })).toHaveCount(0);
-      }
-    } finally {
-      await context.close();
-    }
-  }
+test('manager can open audit; tenant has no audit menu or access', async ({ page }) => {
+  const api = await mockApi(page, 'manager');
+  await page.goto('/audit');
+  await expect(page.getByRole('heading', { name: 'Lịch sử thay đổi' })).toBeVisible();
+  // Keep identity and shell routes installed across reload: background session refreshes
+  // must never reach the real API for this cookie-less, fixture-only identity.
+  api.setRole('tenant');
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: 'Bạn không có quyền xem trang này' }),
+  ).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Lịch sử thay đổi' })).toHaveCount(0);
+  expect(api.unmockedRequests).toEqual([]);
 });

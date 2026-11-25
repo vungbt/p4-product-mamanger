@@ -2,6 +2,8 @@ import type { RouteAuditPolicies } from '@p4/server-core';
 
 // Tenant audit rows never hold personal values: see `auditFacts` in tenants.service.ts.
 export const auditPolicies = {
+  'POST /tenants/:id/credentials': { action: 'reset_password', resourceType: 'tenant' },
+  'POST /tenants/:id/credentials/email': { action: 'update', resourceType: 'tenant' },
   'GET /tenants': {
     action: 'read',
     resourceType: 'tenant',

@@ -13,6 +13,7 @@ import {
   InputPassword,
   useAppForm,
 } from '@itclabs/react-ui';
+import { normalizePhone } from '@stay/shared';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -36,7 +37,16 @@ export default function LoginPage() {
 
   const schema = useMemo(
     () => ({
-      email: v.pipe(v.string(), v.trim(), v.email(t('auth.emailInvalid'))),
+      email: v.pipe(
+        v.string(),
+        v.trim(),
+        v.check(
+          (value) =>
+            normalizePhone(value) !== null ||
+            v.safeParse(v.pipe(v.string(), v.email()), value).success,
+          t('auth.emailInvalid'),
+        ),
+      ),
       password: v.pipe(v.string(), v.minLength(8, t('auth.passwordMin'))),
     }),
     [t],
@@ -92,9 +102,9 @@ export default function LoginPage() {
                     <Alert tone="info">{t('auth.sessionExpired')}</Alert>
                   ) : null}
 
-                  <FormField name="email" label={t('auth.email')} required className="mb-0">
+                  <FormField name="email" label={t('auth.identifier')} required className="mb-0">
                     <Input
-                      type="email"
+                      type="text"
                       icon="mail"
                       inputMode="email"
                       autoComplete="username"
@@ -125,7 +135,10 @@ export default function LoginPage() {
                       size="sm"
                       className="text-accent"
                       onClick={() => {
-                        const email = form.getFieldValue('email').trim();
+                        const identifier = form.getFieldValue('email').trim();
+                        const email = v.safeParse(v.pipe(v.string(), v.email()), identifier).success
+                          ? identifier
+                          : '';
 
                         navigate(
                           email

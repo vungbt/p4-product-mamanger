@@ -3,6 +3,7 @@ import { DataTypes, Model, type Optional, type Sequelize } from 'sequelize';
 /** One portal link of an occupant (ST-25). Only the SHA-256 hash of the token is stored. */
 export interface TenantPortalLinkAttributes {
   id: string;
+  accountUserId?: string | null;
   buildingId: string;
   contractId: string;
   tenantId: string;
@@ -35,6 +36,7 @@ export class TenantPortalLinkModel
   implements TenantPortalLinkAttributes
 {
   declare id: string;
+  declare accountUserId: string | null;
   declare buildingId: string;
   declare contractId: string;
   declare tenantId: string;
@@ -52,6 +54,7 @@ export class TenantPortalLinkModel
 export function initTenantPortalLinkModel(sequelize: Sequelize) {
   TenantPortalLinkModel.init(
     {
+      accountUserId: { type: DataTypes.UUID, allowNull: true },
       id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
       buildingId: { type: DataTypes.UUID, allowNull: false },
       contractId: { type: DataTypes.UUID, allowNull: false },

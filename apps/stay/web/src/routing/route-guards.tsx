@@ -43,6 +43,7 @@ function FullPageSpinner() {
 /** Signed-out visitors go to the login page, which brings them back here afterwards. */
 export function RequireAuth() {
   const { user, isRestoring } = useAuth();
+
   const location = useLocation();
 
   if (isRestoring && !user) return <FullPageSpinner />;
@@ -55,12 +56,17 @@ export function RequireAuth() {
     return <Navigate to={ROUTES.login} replace state={state} />;
   }
 
+  if (user.mustChangePassword && location.pathname !== '/account/password')
+    return <Navigate to="/account/password" replace />;
+  if (user.role === 'tenant' && location.pathname === '/') return <Navigate to="/my" replace />;
+
   return <Outlet />;
 }
 
 /** The login page: already signed-in users continue to the page they wanted. */
 export function GuestOnly() {
   const { user, isRestoring } = useAuth();
+
   const location = useLocation();
 
   if (isRestoring && !user) return <FullPageSpinner />;
@@ -72,13 +78,18 @@ export function GuestOnly() {
 export function RequireAbility({
   ability,
   children,
+  tenantOnly = false,
 }: {
+  tenantOnly?: boolean;
   ability: AbilityCheck;
   children: ReactNode;
 }) {
   const { t } = useTranslation();
+
   const { user } = useAuth();
+
   const capabilities = useCapabilities(user?.id);
+
   const allowed = useCanOpen(ability);
 
   if (capabilities.isPending) return <PageSpinner />;
@@ -99,5 +110,6 @@ export function RequireAbility({
     );
   }
 
-  return allowed ? children : <ForbiddenPage />;
+  if (tenantOnly) return user?.role === 'tenant' && allowed ? children : <ForbiddenPage />;
+  return user?.role !== 'tenant' && allowed ? children : <ForbiddenPage />;
 }

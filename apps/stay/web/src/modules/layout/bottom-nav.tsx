@@ -8,7 +8,7 @@ import type { StayRoute } from '@/routing/route-configs';
 import { useMenuRoutes } from '@/routing/use-routes';
 
 const itemClass =
-  'flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-control px-1 text-eyebrow font-medium';
+  'flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-control px-1 text-eyebrow font-medium';
 
 function ItemContent({ icon, label, badge }: { icon: IconName; label: ReactNode; badge?: number }) {
   return (
@@ -53,7 +53,7 @@ export default function BottomNav() {
     >
       <ItemContent
         icon={route.icon}
-        label={routeLabels[route.name] ?? route.name}
+        label={route.label ?? routeLabels[route.name] ?? route.name}
         badge={route.name === 'requests' ? pending : undefined}
       />
     </NavLink>
