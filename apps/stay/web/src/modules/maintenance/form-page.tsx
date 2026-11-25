@@ -12,6 +12,7 @@ import {
   Textarea,
   useAppForm,
 } from '@itclabs/react-ui';
+import { MediaGallery } from '@itclabs/react-ui/media-gallery';
 import {
   useMaintenanceDetail,
   useMaintenanceMutations,
@@ -46,8 +47,11 @@ const FIELDS = ['roomId', 'title', 'description'] as const;
 
 export default function MaintenanceFormPage() {
   const { id = '' } = useParams();
+
   const { t } = useTranslation('maintenance');
+
   const { buildingId } = useActiveBuilding();
+
   const query = useMaintenanceDetail(id);
 
   if (id && query.isPending) return <LoadingRows />;
@@ -57,23 +61,32 @@ export default function MaintenanceFormPage() {
   const scope = job?.buildingId ?? buildingId;
 
   if (!scope) return <p>{t('chooseBuilding')}</p>;
+
   return <JobForm key={`${scope}-${id}-${job?.version ?? 0}`} buildingId={scope} job={job} />;
 }
 
 function JobForm({ buildingId, job }: { buildingId: string; job?: StayMaintenance }) {
   const { t } = useTranslation('maintenance');
+
   const navigate = useNavigate();
+
   const rooms = useRooms(buildingId, { pageSize: OPTIONS_PAGE_SIZE });
+
   const { create, update } = useMaintenanceMutations();
+
   const sdk = useStaySdk();
+
   const [files, setFiles] = useState<File[]>([]);
+
   const [photoIds, setPhotoIds] = useState(job?.photos.map((photo) => photo.fileId) ?? []);
+
   const [error, setError] = useState<string | null>(null);
 
   const uploader = useMemo(() => createUploadApi(sdk, { baseUrl: window.location.origin }), [sdk]);
 
   const form = useAppForm({
     defaultValues: {
+      uploadFiles: [] as File[],
       roomId: job?.roomId ?? '',
       title: job?.title ?? '',
       description: job?.description ?? '',
@@ -101,6 +114,7 @@ function JobForm({ buildingId, job }: { buildingId: string; job?: StayMaintenanc
           );
         setPhotoIds(attached);
         setFiles([]);
+        form.setFieldValue('uploadFiles', []);
         const body = {
           title: value.title.trim(),
           description: value.description.trim(),
@@ -132,11 +146,13 @@ function JobForm({ buildingId, job }: { buildingId: string; job?: StayMaintenanc
   });
 
   const dirty = useFormDirty(form);
+
   const { prompt, allowNavigation } = useUnsavedChanges(
     dirty ||
       files.length > 0 ||
       photoIds.join() !== (job?.photos.map((photo) => photo.fileId).join() ?? ''),
   );
+
   const schema = {
     roomId: v.pipe(v.string(), v.minLength(1, t('required'))),
     title: v.pipe(v.string(), v.trim(), v.minLength(1, t('required')), v.maxLength(200)),
@@ -166,16 +182,26 @@ function JobForm({ buildingId, job }: { buildingId: string; job?: StayMaintenanc
               <FormField name="description" label={t('jobDescription')}>
                 <Textarea maxLength={2000} rows={4} />
               </FormField>
-              <label htmlFor="maintenance-photos" className="grid gap-2">
-                {t('photos')}
-                <Input
-                  id="maintenance-photos"
-                  type="file"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(event) => setFiles([...(event.target.files ?? [])])}
-                />
-              </label>
+
+              <form.AppField
+                name="uploadFiles"
+                listeners={{
+                  onChange: ({ value: files }) => {
+                    setFiles(files);
+                  },
+                }}
+              >
+                {(field) => (
+                  <field.UploadField
+                    id="maintenance-photos"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp"
+                    label={t('photos')}
+                    maxBytes={STAY_UPLOAD_MAX_BYTES}
+                    maxFiles={Math.max(0, MAINTENANCE_MAX_PHOTOS - photoIds.length)}
+                  />
+                )}
+              </form.AppField>
               {files.map((file) => (
                 <p key={file.name}>{file.name}</p>
               ))}
@@ -185,10 +211,10 @@ function JobForm({ buildingId, job }: { buildingId: string; job?: StayMaintenanc
                   .map((photo) => (
                     <li key={photo.fileId}>
                       {photo.url ? (
-                        <img
-                          src={photo.url}
-                          alt={t('photo')}
-                          className="size-24 rounded-control object-cover"
+                        <MediaGallery
+                          items={[{ id: photo.fileId, src: photo.url, alt: t('photo') }]}
+                          thumbnails="none"
+                          className="w-24"
                         />
                       ) : null}
                       <Button

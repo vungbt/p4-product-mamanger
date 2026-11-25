@@ -1,13 +1,25 @@
-import { Alert, Button, Form, FormField, Input, useAppForm } from '@itclabs/react-ui';
+import {
+  Alert,
+  Button,
+  Form,
+  FormActions,
+  FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
+  Input,
+  UploadField,
+  useAppForm,
+} from '@itclabs/react-ui';
 import { useStaySdk } from '@stay/sdk/react';
 import { ApiSdkError, getErrorMessage, unwrap } from '@stay/sdk/shared';
 import type { DocumentFileCheck, DocumentVerification } from '@stay/shared';
+import { DOCUMENT_SCAN_MAX_BYTES } from '@stay/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import * as v from 'valibot';
 import { useGenericDocumentMeta } from '@/libraries/document-meta';
-import { FormActions, FormGrid, FormLayout, FormSection } from '@/libraries/forms/layout';
 import { FormError } from '@/libraries/forms/page-states';
 import { DocumentStatusTag } from '@/modules/portal/documents-ui';
 
@@ -65,22 +77,22 @@ export default function VerifyDocumentPage() {
           schema={{ code: v.pipe(v.string(), v.trim(), v.minLength(1, t('sign.required'))) }}
         >
           <FormLayout>
-            <FormSection title={t('verify.title')}>
+            <FormSection variant="card" title={t('verify.title')}>
               <FormGrid>
                 <FormField name="code" label={t('verify.code')} required>
                   <Input autoComplete="off" />
                 </FormField>
               </FormGrid>
-              <FormActions>
-                <Button type="submit">{t('verify.check')}</Button>
-              </FormActions>
             </FormSection>
+            <FormActions>
+              <Button type="submit">{t('verify.check')}</Button>
+            </FormActions>
           </FormLayout>
         </Form>
         <FormError message={error} />
         {result && (
           <>
-            <FormSection title={result.code}>
+            <FormSection variant="card" title={result.code}>
               <DocumentStatusTag status={result.status} />
               <p>
                 {t('verify.building')}: {result.buildingName}
@@ -102,14 +114,15 @@ export default function VerifyDocumentPage() {
               {result.pdfSha256 && <p className="break-all">SHA-256: {result.pdfSha256}</p>}
             </FormSection>
             {result.pdfSha256 ? (
-              <FormSection title={t('verify.fileTitle')}>
+              <FormSection variant="card" title={t('verify.fileTitle')}>
                 <p>{t('verify.fileHint')}</p>
-                <Input
-                  type="file"
+                <UploadField
+                  value={file ? [file] : []}
                   label={t('verify.file')}
                   accept="application/pdf"
-                  onChange={(event) => {
-                    setFile(event.target.files?.[0] ?? null);
+                  maxBytes={DOCUMENT_SCAN_MAX_BYTES}
+                  onValueChange={(files) => {
+                    setFile(files[0] ?? null);
                     setCheck(null);
                   }}
                 />
@@ -119,7 +132,7 @@ export default function VerifyDocumentPage() {
                     loading={comparing}
                     onClick={async () => {
                       if (!file) return;
-                      if (file.size > 10_485_760) {
+                      if (file.size > DOCUMENT_SCAN_MAX_BYTES) {
                         setError(t('verify.error'));
                         return;
                       }

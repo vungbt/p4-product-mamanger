@@ -1,4 +1,16 @@
-import { Button, DataTable, Form, FormField, Icon, Select, useAppForm } from '@itclabs/react-ui';
+import {
+  Button,
+  DataTable,
+  Form,
+  FormActions,
+  FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
+  Icon,
+  Select,
+  useAppForm,
+} from '@itclabs/react-ui';
 import {
   useContractDocuments,
   useContractTemplates,
@@ -12,7 +24,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import * as v from 'valibot';
 import { useCanOn } from '@/libraries/ability';
 import { FilterBar } from '@/libraries/filter-bar';
-import { FormActions, FormGrid, FormLayout, FormSection } from '@/libraries/forms/layout';
 import { FormError } from '@/libraries/forms/page-states';
 import { Refreshing } from '@/libraries/list-table';
 import { DocumentStatusTag, documentDate } from '@/modules/portal/documents-ui';
@@ -22,12 +33,19 @@ export const documentPath = (contractId: string, id: string) =>
 
 export function ContractDocuments({ contract }: { contract: StayContract }) {
   const { t } = useTranslation('documents');
+
   const query = useContractDocuments(contract.id);
+
   const templates = useContractTemplates({ buildingId: contract.buildingId, kind: 'contract' });
+
   const create = useCreateContractDocument();
+
   const navigate = useNavigate();
+
   const canUpdate = useCanOn('update', 'Contract', { buildingId: contract.buildingId });
+
   const [creating, setCreating] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const form = useAppForm({
@@ -62,7 +80,7 @@ export function ContractDocuments({ contract }: { contract: StayContract }) {
           schema={{ templateId: v.pipe(v.string(), v.minLength(1, t('required'))) }}
         >
           <FormLayout>
-            <FormSection title={t('newDocument')}>
+            <FormSection variant="card" title={t('newDocument')}>
               <FormGrid>
                 <FormField name="templateId" label={t('chooseTemplate')} required>
                   <Select
@@ -78,12 +96,12 @@ export function ContractDocuments({ contract }: { contract: StayContract }) {
               {templates.isError && (
                 <FormError message={getErrorMessage(templates.error, t('failed'))} />
               )}
-              <FormActions>
-                <Button type="submit" loading={create.isPending}>
-                  {t('newDocument')}
-                </Button>
-              </FormActions>
             </FormSection>
+            <FormActions>
+              <Button type="submit" loading={create.isPending}>
+                {t('newDocument')}
+              </Button>
+            </FormActions>
           </FormLayout>
         </Form>
       )}

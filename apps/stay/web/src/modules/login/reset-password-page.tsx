@@ -1,4 +1,15 @@
-import { Button, Form, FormField, FormSubmit, InputPassword, useAppForm } from '@itclabs/react-ui';
+import {
+  Button,
+  Form,
+  FormActions,
+  FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
+  FormSubmit,
+  InputPassword,
+  useAppForm,
+} from '@itclabs/react-ui';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import * as v from 'valibot';
@@ -9,9 +20,13 @@ const schema = { password: v.pipe(v.string(), v.minLength(8, 'Mật khẩu tối
 
 export default function ResetPasswordPage() {
   const [params] = useSearchParams();
+
   const [error, setError] = useState<string | null>(null);
+
   const [saved, setSaved] = useState(false);
+
   const token = params.get('token');
+
   const form = useAppForm({
     defaultValues: { password: '' },
     onSubmit: async ({ value }) => {
@@ -40,17 +55,25 @@ export default function ResetPasswordPage() {
           <p role="alert">Link không hợp lệ hoặc đã hết hạn.</p>
         ) : (
           <Form form={form} schema={schema} className="grid gap-4">
-            <FormError message={error} />
-            <FormField name="password" label="Mật khẩu mới" required>
-              <InputPassword autoComplete="new-password" />
-            </FormField>
-            <FormSubmit form={form}>
-              {(submitting) => (
-                <Button type="submit" loading={submitting}>
-                  Lưu mật khẩu
-                </Button>
-              )}
-            </FormSubmit>
+            <FormLayout size="full">
+              <FormSection>
+                <FormGrid columns={1}>
+                  <FormError message={error} />
+                  <FormField name="password" label="Mật khẩu mới" required>
+                    <InputPassword autoComplete="new-password" />
+                  </FormField>
+                </FormGrid>
+              </FormSection>
+              <FormActions>
+                <FormSubmit form={form}>
+                  {(submitting) => (
+                    <Button type="submit" loading={submitting}>
+                      Lưu mật khẩu
+                    </Button>
+                  )}
+                </FormSubmit>
+              </FormActions>
+            </FormLayout>
           </Form>
         )}
         <Link to="/login">Đăng nhập</Link>

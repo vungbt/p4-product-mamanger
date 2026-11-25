@@ -1,7 +1,12 @@
 import {
   Button,
+  DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Input,
   Skeleton,
@@ -10,11 +15,11 @@ import {
 import { toast } from '@itclabs/react-ui/toast';
 import { useLandlordProfile, useUpdateLandlordProfile } from '@stay/sdk/react';
 import { getErrorMessage } from '@stay/sdk/shared';
-import type { LandlordProfile } from '@stay/shared';
+import { type LandlordProfile, SIGNATURE_IMAGE_MAX_BYTES } from '@stay/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as v from 'valibot';
-import { FormActions, FormGrid, FormLayout, FormSection } from '@/libraries/forms/layout';
+import { DATE_FIELD } from '@/libraries/forms/date-field';
 import { FormError, LoadError } from '@/libraries/forms/page-states';
 import { useUnsavedChanges } from '@/libraries/forms/unsaved-changes';
 import { useFormDirty } from '@/libraries/forms/use-form-value';
@@ -36,11 +41,18 @@ export function readDataUrl(file: File): Promise<string> {
 
 function LandlordForm({ profile }: { profile: LandlordProfile }) {
   const { t } = useTranslation('documents');
+
   const update = useUpdateLandlordProfile();
+
   const [error, setError] = useState<string | null>(null);
+
   const [signature, setSignature] = useState(profile.signatureImage);
+
   const [savedSignature, setSavedSignature] = useState(profile.signatureImage);
+
   const [version, setVersion] = useState(profile.version);
+
+  const signatureForm = useAppForm({ defaultValues: { uploadFiles: [] as File[] } });
 
   const form = useAppForm({
     defaultValues: {
@@ -74,6 +86,7 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
   });
 
   const dirty = useFormDirty(form);
+
   const { prompt } = useUnsavedChanges(dirty || signature !== savedSignature);
 
   return (
@@ -84,54 +97,67 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
       <FormLayout>
         {prompt}
         <FormError message={error} />
-        <FormSection title={t('landlord')}>
+        <FormSection variant="card" title={t('landlord')}>
           <FormGrid>
-            {(
-              [
-                'fullName',
-                'birthDate',
-                'idNumber',
-                'idIssuedAt',
-                'idIssuedBy',
-                'permanentAddress',
-                'phone',
-              ] as const
-            ).map((field) => (
-              <FormField key={field} name={field} label={t(field)} required={field === 'fullName'}>
-                <Input
-                  type={
-                    field === 'birthDate' || field === 'idIssuedAt'
-                      ? 'date'
-                      : field === 'phone'
-                        ? 'tel'
-                        : 'text'
-                  }
-                />
-              </FormField>
-            ))}
+            <FormField name="fullName" label={t('fullName')} required>
+              <Input />
+            </FormField>
+            <FormField name="birthDate" label={t('birthDate')} {...DATE_FIELD}>
+              <DatePicker />
+            </FormField>
+            <FormField name="idNumber" label={t('idNumber')}>
+              <Input />
+            </FormField>
+            <FormField name="idIssuedAt" label={t('idIssuedAt')} {...DATE_FIELD}>
+              <DatePicker />
+            </FormField>
+            <FormField name="idIssuedBy" label={t('idIssuedBy')}>
+              <Input />
+            </FormField>
+            <FormField name="permanentAddress" label={t('permanentAddress')}>
+              <Input />
+            </FormField>
+            <FormField name="phone" label={t('phone')}>
+              <Input type="tel" />
+            </FormField>
           </FormGrid>
         </FormSection>
-        <FormSection title={t('signature')}>
-          <SignaturePad label={t('signature')} value={signature} onChange={setSignature} />
-          <Input
-            type="file"
-            label={t('signatureUpload')}
-            accept="image/png,image/jpeg"
-            onChange={async (event) => {
-              const file = event.target.files?.[0];
+        <FormSection variant="card" title={t('signature')}>
+          <FormGrid columns={1}>
+            <SignaturePad label={t('signature')} value={signature} onChange={setSignature} />
+            <signatureForm.AppField
+              name="uploadFiles"
+              listeners={{
+                onChange: ({ value: files }) => {
+                  void (async (files) => {
+                    const file = files[0];
 
-              if (!file) return;
-              if (file.size > 200_000) {
-                setError(t('fileTooLarge'));
-                return;
-              }
-              try {
-                setSignature(await readDataUrl(file));
-              } catch (cause) {
-                setError(getErrorMessage(cause, t('failed')));
-              }
-            }}
-          />
+                    if (!file) {
+                      setSignature(null);
+                      return;
+                    }
+                    if (file.size > SIGNATURE_IMAGE_MAX_BYTES) {
+                      setError(t('fileTooLarge'));
+                      return;
+                    }
+                    try {
+                      setSignature(await readDataUrl(file));
+                    } catch (cause) {
+                      setError(getErrorMessage(cause, t('failed')));
+                    }
+                  })(files);
+                },
+              }}
+            >
+              {(field) => (
+                <field.UploadField
+                  label={t('signatureUpload')}
+                  accept="image/png,image/jpeg"
+                  maxBytes={SIGNATURE_IMAGE_MAX_BYTES}
+                />
+              )}
+            </signatureForm.AppField>
+          </FormGrid>
         </FormSection>
         <FormActions>
           <FormSubmit form={form}>
@@ -149,6 +175,7 @@ function LandlordForm({ profile }: { profile: LandlordProfile }) {
 
 export default function LandlordPage() {
   const { t } = useTranslation('documents');
+
   const query = useLandlordProfile();
 
   return (

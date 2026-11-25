@@ -1,4 +1,4 @@
-import { Alert, Button, Dialog, Icon } from '@itclabs/react-ui';
+import { Alert, Button, Dialog, Icon, UploadField } from '@itclabs/react-ui';
 import { type CccdQrData, type CccdQrError, parseCccdQr } from '@stay/shared';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,7 @@ function cameraErrorKey(error: unknown): string {
 
   if (name === 'NotAllowedError' || name === 'SecurityError') return 'tenants.scan.denied';
   if (name === 'NotFoundError' || name === 'OverconstrainedError') return 'tenants.scan.noCamera';
+
   return 'tenants.scan.cameraFailed';
 }
 
@@ -67,6 +68,7 @@ export function CccdScanButton({
     }
     setOpen(false);
     onScannedRef.current(result.data);
+
     return true;
   };
 
@@ -211,21 +213,16 @@ export function CccdScanButton({
             )}
           </div>
           <div className="grid gap-1.5">
-            <label htmlFor={fileId} className="text-ui-sm font-medium text-ink">
-              {t('tenants.scan.pickPhoto')}
-            </label>
-            <input
+            <UploadField
               id={fileId}
-              type="file"
               accept="image/*"
-              className="text-ui-sm text-muted file:mr-3 file:rounded-control file:border file:border-line file:bg-surface file:px-3 file:py-2 file:text-ink"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-
-                event.target.value = '';
+              data-testid="cccd-scan-file"
+              label={t('tenants.scan.pickPhoto')}
+              maxBytes={Number.MAX_SAFE_INTEGER}
+              onValueChange={(files) => {
+                const file = files[0];
                 if (file) void readPhoto(file);
               }}
-              data-testid="cccd-scan-file"
             />
             <p className="text-ui-sm text-muted">{t('tenants.scan.pickPhotoHint')}</p>
           </div>

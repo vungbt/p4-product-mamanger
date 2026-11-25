@@ -1,7 +1,11 @@
 import {
   Button,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   Icon,
   IconButton,
@@ -40,8 +44,11 @@ function CategoryForm({
   onReload: () => void;
 }) {
   const create = useCreateExpenseCategory();
+
   const update = useUpdateExpenseCategory();
+
   const [error, setError] = useState<string | null>(null);
+
   const [conflict, setConflict] = useState(false);
 
   const form = useAppForm({
@@ -75,6 +82,7 @@ function CategoryForm({
   });
 
   const dirty = useFormDirty(form);
+
   const { prompt } = useUnsavedChanges(dirty);
 
   return (
@@ -87,40 +95,47 @@ function CategoryForm({
       className="grid gap-4 rounded-panel border border-line bg-surface p-4"
       aria-label="Danh mục chi phí"
     >
-      {prompt}
-      <FormError message={error} />
-      {conflict ? <ConflictAlert onReload={onReload} /> : null}
-      <FormField name="name" label="Tên danh mục" required>
-        <Input maxLength={120} />
-      </FormField>
-      <FormField name="active">
-        <Switch label="Đang hoạt động" />
-      </FormField>
-      <p className="text-muted">Tắt danh mục để ngừng sử dụng; chi phí cũ vẫn được giữ.</p>
-      <div className="flex justify-end gap-2">
-        <Button
-          variant="secondary"
-          onClick={() => {
-            form.reset();
-            onDone();
-          }}
-        >
-          Huỷ
-        </Button>
-        <FormSubmit form={form}>
-          {(submitting) => (
-            <Button type="submit" loading={submitting}>
-              Lưu danh mục
-            </Button>
-          )}
-        </FormSubmit>
-      </div>
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            {prompt}
+            <FormError message={error} />
+            {conflict ? <ConflictAlert onReload={onReload} /> : null}
+            <FormField name="name" label="Tên danh mục" required>
+              <Input maxLength={120} />
+            </FormField>
+            <FormField name="active">
+              <Switch label="Đang hoạt động" />
+            </FormField>
+            <p className="text-muted">Tắt danh mục để ngừng sử dụng; chi phí cũ vẫn được giữ.</p>
+          </FormGrid>
+        </FormSection>
+        <FormActions>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              form.reset();
+              onDone();
+            }}
+          >
+            Huỷ
+          </Button>
+          <FormSubmit form={form}>
+            {(submitting) => (
+              <Button type="submit" loading={submitting}>
+                Lưu danh mục
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }
 
 export default function ExpenseCategoriesPage() {
   const categories = useExpenseCategories();
+
   const [editing, setEditing] = useState<StayExpenseCategory | 'new' | null>(null);
 
   return (

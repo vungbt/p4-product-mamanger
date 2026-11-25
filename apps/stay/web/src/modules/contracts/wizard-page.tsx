@@ -5,11 +5,16 @@ import {
   Checkbox,
   DatePicker,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   Input,
   NumberInput,
   Select,
   Skeleton,
+  Stepper,
   Textarea,
   useAppForm,
 } from '@itclabs/react-ui';
@@ -33,6 +38,7 @@ import {
   type ContractInput,
   isIsoDate,
   maskIdNumber,
+  STAY_UPLOAD_MAX_BYTES,
   type StayContract,
   type StayRoomDetail,
 } from '@stay/shared';
@@ -87,11 +93,16 @@ function QuickTenant({
   onCreated: (id: string) => void;
 }) {
   const create = useCreateTenant();
+
   const [error, setError] = useState<string | null>(null);
   // Card details read from the CCCD QR, saved with the new tenant.
   const [card, setCard] = useState<CccdQrData | null>(null);
+
   const form = useAppForm({
-    defaultValues: { fullName: '', phone: '' },
+    defaultValues: {
+      fullName: '',
+      phone: '',
+    },
     onSubmit: async ({ value }) => {
       setError(null);
       try {
@@ -123,6 +134,7 @@ function QuickTenant({
       }
     },
   });
+
   const dirty = useFormValue(form, (s) => !s.isDefaultValue);
 
   useUnsavedChanges(dirty);
@@ -137,34 +149,40 @@ function QuickTenant({
       }}
       className="grid gap-3 rounded-panel border border-line bg-surface p-4"
     >
-      <h2 id="quick-tenant-heading" className="font-semibold">
-        Tạo nhanh người thuê
-      </h2>
-      {error && <Alert tone="danger">{error}</Alert>}
-      <div>
-        <CccdScanButton
-          onScanned={(data) => {
-            setCard(data);
-            if (data.fullName) form.setFieldValue('fullName', data.fullName);
-          }}
-        />
-      </div>
-      {card ? (
-        <Alert tone="success" role="status" data-testid="quick-tenant-cccd">
-          Đã đọc CCCD {maskIdNumber(card.idNumber)}
-          {card.birthDate ? `, sinh ${displayDate(card.birthDate)}` : ''}: số CCCD, ngày sinh, giới
-          tính, địa chỉ và ngày cấp sẽ lưu cùng người thuê. Nhập số điện thoại rồi thêm.
-        </Alert>
-      ) : null}
-      <FormField name="fullName" label="Họ tên" required>
-        <Input />
-      </FormField>
-      <FormField name="phone" label="Số điện thoại" required>
-        <Input inputMode="tel" />
-      </FormField>
-      <Button type="submit" loading={create.isPending}>
-        Thêm người thuê
-      </Button>
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            <h2 id="quick-tenant-heading" className="font-semibold">
+              Tạo nhanh người thuê
+            </h2>
+            {error && <Alert tone="danger">{error}</Alert>}
+            <div>
+              <CccdScanButton
+                onScanned={(data) => {
+                  setCard(data);
+                  if (data.fullName) form.setFieldValue('fullName', data.fullName);
+                }}
+              />
+            </div>
+            {card ? (
+              <Alert tone="success" role="status" data-testid="quick-tenant-cccd">
+                Đã đọc CCCD {maskIdNumber(card.idNumber)}
+                {card.birthDate ? `, sinh ${displayDate(card.birthDate)}` : ''}: số CCCD, ngày sinh,
+                giới tính, địa chỉ và ngày cấp sẽ lưu cùng người thuê. Nhập số điện thoại rồi thêm.
+              </Alert>
+            ) : null}
+            <FormField name="fullName" label="Họ tên" required>
+              <Input />
+            </FormField>
+            <FormField name="phone" label="Số điện thoại" required>
+              <Input inputMode="tel" />
+            </FormField>
+            <Button type="submit" loading={create.isPending}>
+              Thêm người thuê
+            </Button>
+          </FormGrid>
+        </FormSection>
+      </FormLayout>
     </Form>
   );
 }
@@ -181,6 +199,7 @@ function VehicleChoices({
   const tenant = useTenant(tenantId);
 
   if (tenant.isError) return <LoadError error={tenant.error} retry={() => void tenant.refetch()} />;
+
   return (
     <>
       {tenant.data?.vehicles.map((vehicle) => (
@@ -213,24 +232,43 @@ function Wizard({
   initialRoom?: StayRoomDetail;
 }) {
   const navigate = useNavigate();
+
   const [params, setParams] = useSearchParams();
+
   const [saved, setSaved] = useState(draft);
+
   const [step, setStep] = useState(Math.min(4, Math.max(0, Number(params.get('step')) || 0)));
+
   const [dirty, setDirty] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+
   const [stale, setStale] = useState(false);
+
   const [confirm, setConfirm] = useState(false);
+
   const [tenantSearch, setTenantSearch] = useState('');
+
   const [roomSearch, setRoomSearch] = useState('');
+
   const sdk = useStaySdk();
+
   const uploader = useMemo(() => createUploadApi(sdk, { baseUrl: window.location.origin }), [sdk]);
+
   const [uploading, setUploading] = useState(false);
+
   const [createKey] = useState(() => crypto.randomUUID());
+
   const create = useCreateContract();
+
   const update = useUpdateContract();
+
   const activate = useActivateContract();
+
   const preview = useMoveInPreview(step === 4 ? (saved?.id ?? '') : '');
+
   const guard = useUnsavedChanges(dirty);
+
   const initial: ContractInput = draft ?? {
     roomId,
     startDate: todayIsoDate(),
@@ -245,10 +283,12 @@ function Wizard({
     depositNote: null,
     initialElectric: (() => {
       const m = initialRoom?.meters.find((m) => m.kind === 'electricity');
+
       return m?.latestReading ?? m?.initialReading ?? 0;
     })(),
     initialWater: (() => {
       const m = initialRoom?.meters.find((m) => m.kind === 'water');
+
       return m?.latestReading ?? m?.initialReading ?? 0;
     })(),
     note: null,
@@ -257,6 +297,9 @@ function Wizard({
     serviceIds: initialRoom?.defaultServices.filter((s) => s.active).map((s) => s.id) ?? [],
     vehicleIds: [],
   };
+
+  const photoForm = useAppForm({ defaultValues: { electric: [] as File[], water: [] as File[] } });
+
   const form = useAppForm({
     defaultValues: initial,
     listeners: {
@@ -282,6 +325,7 @@ function Wizard({
             const next = latestSearchParams();
             next.set('draftId', contract.id);
             next.set('step', String(Math.min(step + 1, 4)));
+
             return next;
           },
           { replace: true },
@@ -302,6 +346,7 @@ function Wizard({
       }
     },
   });
+
   const value = useFormValue(form, (s) => s.values);
 
   const rooms = useRooms(buildingId, {
@@ -391,17 +436,11 @@ function Wizard({
   return (
     <div className="grid min-w-0 max-w-4xl gap-5">
       <h1 className="text-heading font-bold">Tạo hợp đồng</h1>
-      <ol className="flex flex-wrap gap-2" aria-label="Các bước">
-        {STEPS.map((label, i) => (
-          <li
-            key={label}
-            aria-current={step === i ? 'step' : undefined}
-            className={step === i ? 'font-semibold text-accent' : 'text-muted'}
-          >
-            {i + 1}. {label}
-          </li>
-        ))}
-      </ol>
+      <Stepper
+        aria-label="Các bước"
+        steps={STEPS.map((label, index) => ({ id: String(index), label }))}
+        currentStep={String(step)}
+      />
       <p className="text-ui-sm text-muted">
         {saved ? `${saved.code} · Đã lưu nháp` : 'Lưu bản nháp ở mỗi bước.'}
       </p>
@@ -427,296 +466,320 @@ function Wizard({
         }}
         className="grid gap-4 rounded-panel border border-line bg-surface p-4 sm:p-5"
       >
-        <h2 className="text-section font-semibold">
-          Bước {step + 1}: {STEPS[step]}
-        </h2>
-        {step === 0 && (
-          <>
-            <FormField name="roomId">
-              {(field) => (
-                <Select
-                  label="Phòng"
-                  required
-                  value={value.roomId}
-                  options={[
-                    ...(rooms.data?.data ?? []).map((r) => ({ value: r.id, label: r.code })),
-                    ...(room.data && !rooms.data?.data.some((r) => r.id === room.data.id)
-                      ? [{ value: room.data.id, label: room.data.code }]
-                      : []),
-                  ]}
-                  selectedOptions={
-                    room.data ? [{ value: room.data.id, label: room.data.code }] : []
-                  }
-                  searchMode="server"
-                  searchDebounceMs={SEARCH_DEBOUNCE_MS}
-                  onSearchChange={setRoomSearch}
-                  loading={rooms.isPending}
-                  optionsError={rooms.isError ? 'Không thể tải phòng' : undefined}
-                  onRetryOptions={() => void rooms.refetch()}
-                  onValueChange={(id) => {
-                    selectRoom(id);
-                    field.handleBlur();
-                  }}
-                />
-              )}
-            </FormField>
-            <FormField name="startDate" label="Ngày nhận phòng" required {...DATE_FIELD}>
-              <DatePicker clearable={false} />
-            </FormField>
-            <Select
-              label="Thời hạn"
-              options={[
-                { value: '6', label: '6 tháng' },
-                { value: '12', label: '12 tháng' },
-                { value: 'custom', label: 'Tuỳ chọn ngày kết thúc' },
-              ]}
-              onValueChange={(months) => {
-                if (months === '6' || months === '12') {
-                  const date = new Date(`${value.startDate}T00:00:00Z`);
-                  if (!Number.isNaN(date.getTime())) {
-                    date.setUTCMonth(date.getUTCMonth() + Number(months));
-                    date.setUTCDate(date.getUTCDate() - 1);
-                    form.setFieldValue('endDate', date.toISOString().slice(0, 10));
-                    setDirty(true);
-                  }
-                }
-              }}
-            />
-            <FormField name="endDate" label="Ngày kết thúc" {...DATE_FIELD}>
-              <DatePicker {...(value.startDate ? { minDate: value.startDate } : {})} />
-            </FormField>
-            <FormField name="rent" label="Giá thuê chốt" required>
-              <NumberInput min={0} controls={false} endAddon="₫" />
-            </FormField>
-            <FormField name="note" label="Ghi chú điều khoản">
-              <Textarea rows={3} maxLength={2000} />
-            </FormField>
-          </>
-        )}
-        {step === 1 && (
-          <>
-            <FormField name="occupantIds">
-              {(field) => (
-                <Select
-                  label="Người ở trong phòng"
-                  multiple
-                  value={value.occupantIds}
-                  options={(tenants.data?.data ?? []).map((t) => ({
-                    value: t.id,
-                    label: `${t.fullName} · ${t.phone}`,
-                  }))}
-                  selectedOptions={(saved?.occupants ?? []).map((o) => ({
-                    value: o.tenantId,
-                    label: o.fullName,
-                  }))}
-                  searchMode="server"
-                  searchDebounceMs={SEARCH_DEBOUNCE_MS}
-                  onSearchChange={setTenantSearch}
-                  loading={tenants.isPending}
-                  onValueChange={(ids) => {
-                    field.handleChange(ids);
-                    if (!value.primaryTenantId || !ids.includes(value.primaryTenantId))
-                      form.setFieldValue('primaryTenantId', ids[0] ?? null);
-                    form.setFieldValue('vehicleIds', []);
-                  }}
-                />
-              )}
-            </FormField>
-            <FormField name="primaryTenantId" label="Người đại diện" required>
-              <Select
-                options={value.occupantIds.map((id) => ({
-                  value: id,
-                  label:
-                    tenants.data?.data.find((t) => t.id === id)?.fullName ??
-                    saved?.occupants.find((o) => o.tenantId === id)?.fullName ??
-                    id,
-                }))}
-              />
-            </FormField>
-            {value.occupantIds.length > (room.data?.maxOccupants ?? 20) && (
-              <Alert tone="warning">
-                Số người vượt giới hạn {room.data?.maxOccupants} người của phòng.
-              </Alert>
-            )}
-          </>
-        )}
-        {step === 2 && (
-          <>
-            {prices.isError ? (
-              <LoadError error={prices.error} retry={() => void prices.refetch()} />
-            ) : (
-              <FormField name="serviceIds" label="Dịch vụ">
-                {(field) => (
-                  <div className="grid gap-3">
-                    {prices.data?.items
-                      .filter((s) => s.active)
-                      .map((s) => (
-                        <Checkbox
-                          key={s.serviceId}
-                          label={`${s.name} · ${formatVnd(s.price)}/${s.unit}`}
-                          hint={s.description ?? undefined}
-                          checked={value.serviceIds.includes(s.serviceId)}
-                          onCheckedChange={(checked) =>
-                            field.handleChange(
-                              checked === true
-                                ? [...value.serviceIds, s.serviceId]
-                                : value.serviceIds.filter((id) => id !== s.serviceId),
-                            )
-                          }
-                        />
-                      ))}
-                  </div>
-                )}
-              </FormField>
-            )}
-            <FormField name="vehicleIds" label="Xe tính phí">
-              {(field) => (
-                <div className="grid gap-3">
-                  {value.occupantIds.map((id) => (
-                    <VehicleChoices
-                      key={id}
-                      tenantId={id}
-                      selected={value.vehicleIds}
-                      onChange={field.handleChange}
-                    />
-                  ))}
-                  {!value.occupantIds.length && <p>Chọn người ở trước khi chọn xe.</p>}
-                </div>
-              )}
-            </FormField>
-          </>
-        )}
-        {step === 3 && (
-          <>
-            <FormField name="depositAmount" label="Tiền cọc">
-              <NumberInput min={0} controls={false} endAddon="₫" />
-            </FormField>
-            <FormField name="depositCollected">
-              {(field) => (
-                <Checkbox
-                  label="Đã thu cọc"
-                  checked={value.depositCollected}
-                  onCheckedChange={(checked) => field.handleChange(checked === true)}
-                />
-              )}
-            </FormField>
-            {value.depositCollected && (
-              <>
-                <FormField name="depositMethod" label="Phương thức thu">
+        <FormLayout size="full">
+          <FormSection>
+            <FormGrid columns={1}>
+              <h2 className="text-section font-semibold">
+                Bước {step + 1}: {STEPS[step]}
+              </h2>
+              {step === 0 && (
+                <>
+                  <FormField name="roomId">
+                    {(field) => (
+                      <Select
+                        label="Phòng"
+                        required
+                        value={value.roomId}
+                        options={[
+                          ...(rooms.data?.data ?? []).map((r) => ({ value: r.id, label: r.code })),
+                          ...(room.data && !rooms.data?.data.some((r) => r.id === room.data.id)
+                            ? [{ value: room.data.id, label: room.data.code }]
+                            : []),
+                        ]}
+                        selectedOptions={
+                          room.data ? [{ value: room.data.id, label: room.data.code }] : []
+                        }
+                        searchMode="server"
+                        searchDebounceMs={SEARCH_DEBOUNCE_MS}
+                        onSearchChange={setRoomSearch}
+                        loading={rooms.isPending}
+                        optionsError={rooms.isError ? 'Không thể tải phòng' : undefined}
+                        onRetryOptions={() => void rooms.refetch()}
+                        onValueChange={(id) => {
+                          selectRoom(id);
+                          field.handleBlur();
+                        }}
+                      />
+                    )}
+                  </FormField>
+                  <FormField name="startDate" label="Ngày nhận phòng" required {...DATE_FIELD}>
+                    <DatePicker clearable={false} />
+                  </FormField>
                   <Select
+                    label="Thời hạn"
                     options={[
-                      { value: 'cash', label: 'Tiền mặt' },
-                      { value: 'bank_transfer', label: 'Chuyển khoản' },
-                      { value: 'other', label: 'Khác' },
+                      { value: '6', label: '6 tháng' },
+                      { value: '12', label: '12 tháng' },
+                      { value: 'custom', label: 'Tuỳ chọn ngày kết thúc' },
                     ]}
-                  />
-                </FormField>
-                <FormField name="depositDate" label="Ngày thu cọc" required {...DATE_FIELD}>
-                  <DatePicker clearable={false} />
-                </FormField>
-                <FormField name="depositNote" label="Ghi chú thu cọc">
-                  <Textarea rows={2} />
-                </FormField>
-              </>
-            )}
-            <Button variant="secondary" onClick={applyMeters}>
-              Lấy chỉ số gần nhất
-            </Button>
-            <p className="text-ui-sm text-muted">
-              {room.data?.meters
-                .map(
-                  (m) =>
-                    `${m.kind === 'electricity' ? 'Điện' : 'Nước'}: tối thiểu ${m.latestReading ?? m.initialReading}`,
-                )
-                .join(' · ')}
-            </p>
-            <FormField name="initialElectric" label="Số điện nhận phòng" required>
-              <NumberInput min={0} controls={false} />
-            </FormField>
-            <FormField name="initialWater" label="Số nước nhận phòng" required>
-              <NumberInput min={0} controls={false} />
-            </FormField>
-          </>
-        )}
-        {step === 3 &&
-          (['initialElectricPhotoFileId', 'initialWaterPhotoFileId'] as const).map((field) => (
-            <FormField
-              key={field}
-              name={field}
-              label={
-                field === 'initialElectricPhotoFileId'
-                  ? 'Ảnh đồng hồ điện (tuỳ chọn)'
-                  : 'Ảnh đồng hồ nước (tuỳ chọn)'
-              }
-            >
-              {() => (
-                <div className="grid gap-2">
-                  <Input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    disabled={uploading}
-                    aria-label={
-                      field === 'initialElectricPhotoFileId'
-                        ? 'Ảnh đồng hồ điện (tuỳ chọn)'
-                        : 'Ảnh đồng hồ nước (tuỳ chọn)'
-                    }
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) void uploadPhoto(field, file);
+                    onValueChange={(months) => {
+                      if (months === '6' || months === '12') {
+                        const date = new Date(`${value.startDate}T00:00:00Z`);
+                        if (!Number.isNaN(date.getTime())) {
+                          date.setUTCMonth(date.getUTCMonth() + Number(months));
+                          date.setUTCDate(date.getUTCDate() - 1);
+                          form.setFieldValue('endDate', date.toISOString().slice(0, 10));
+                          setDirty(true);
+                        }
+                      }
                     }}
                   />
-                  {value[field] && <p className="text-ui-sm text-muted">Đã tải ảnh</p>}
-                </div>
+                  <FormField name="endDate" label="Ngày kết thúc" {...DATE_FIELD}>
+                    <DatePicker {...(value.startDate ? { minDate: value.startDate } : {})} />
+                  </FormField>
+                  <FormField name="rent" label="Giá thuê chốt" required>
+                    <NumberInput min={0} controls={false} endAddon="₫" />
+                  </FormField>
+                  <FormField name="note" label="Ghi chú điều khoản">
+                    <Textarea rows={3} maxLength={2000} />
+                  </FormField>
+                </>
               )}
-            </FormField>
-          ))}
-        {step === 4 && saved && (
-          <>
-            <p>
-              Phòng {saved.roomCode} · {displayDate(saved.startDate)} –{' '}
-              {saved.endDate ? displayDate(saved.endDate) : 'Không xác định'}
-            </p>
-            <p>
-              Giá thuê {formatVnd(saved.rent)} · Cọc {formatVnd(saved.depositAmount)} (
-              {saved.depositCollected ? 'đã thu' : 'chưa thu'})
-            </p>
-            <p>
-              {saved.occupants
-                .map((o) => `${o.fullName}${o.isPrimary ? ' (đại diện)' : ''}`)
-                .join(', ')}
-            </p>
-            <MoveInPreview id={saved.id} />
-          </>
-        )}
-        <div className="flex flex-wrap justify-end gap-2">
-          {step > 0 && (
-            <Button variant="secondary" onClick={() => setStep((s) => s - 1)}>
-              Quay lại
+              {step === 1 && (
+                <>
+                  <FormField name="occupantIds">
+                    {(field) => (
+                      <Select
+                        label="Người ở trong phòng"
+                        multiple
+                        value={value.occupantIds}
+                        options={(tenants.data?.data ?? []).map((t) => ({
+                          value: t.id,
+                          label: `${t.fullName} · ${t.phone}`,
+                        }))}
+                        selectedOptions={(saved?.occupants ?? []).map((o) => ({
+                          value: o.tenantId,
+                          label: o.fullName,
+                        }))}
+                        searchMode="server"
+                        searchDebounceMs={SEARCH_DEBOUNCE_MS}
+                        onSearchChange={setTenantSearch}
+                        loading={tenants.isPending}
+                        onValueChange={(ids) => {
+                          field.handleChange(ids);
+                          if (!value.primaryTenantId || !ids.includes(value.primaryTenantId))
+                            form.setFieldValue('primaryTenantId', ids[0] ?? null);
+                          form.setFieldValue('vehicleIds', []);
+                        }}
+                      />
+                    )}
+                  </FormField>
+                  <FormField name="primaryTenantId" label="Người đại diện" required>
+                    <Select
+                      options={value.occupantIds.map((id) => ({
+                        value: id,
+                        label:
+                          tenants.data?.data.find((t) => t.id === id)?.fullName ??
+                          saved?.occupants.find((o) => o.tenantId === id)?.fullName ??
+                          id,
+                      }))}
+                    />
+                  </FormField>
+                  {value.occupantIds.length > (room.data?.maxOccupants ?? 20) && (
+                    <Alert tone="warning">
+                      Số người vượt giới hạn {room.data?.maxOccupants} người của phòng.
+                    </Alert>
+                  )}
+                </>
+              )}
+              {step === 2 && (
+                <>
+                  {prices.isError ? (
+                    <LoadError error={prices.error} retry={() => void prices.refetch()} />
+                  ) : (
+                    <FormField name="serviceIds" label="Dịch vụ">
+                      {(field) => (
+                        <div className="grid gap-3">
+                          {prices.data?.items
+                            .filter((s) => s.active)
+                            .map((s) => (
+                              <Checkbox
+                                key={s.serviceId}
+                                label={`${s.name} · ${formatVnd(s.price)}/${s.unit}`}
+                                hint={s.description ?? undefined}
+                                checked={value.serviceIds.includes(s.serviceId)}
+                                onCheckedChange={(checked) =>
+                                  field.handleChange(
+                                    checked === true
+                                      ? [...value.serviceIds, s.serviceId]
+                                      : value.serviceIds.filter((id) => id !== s.serviceId),
+                                  )
+                                }
+                              />
+                            ))}
+                        </div>
+                      )}
+                    </FormField>
+                  )}
+                  <FormField name="vehicleIds" label="Xe tính phí">
+                    {(field) => (
+                      <div className="grid gap-3">
+                        {value.occupantIds.map((id) => (
+                          <VehicleChoices
+                            key={id}
+                            tenantId={id}
+                            selected={value.vehicleIds}
+                            onChange={field.handleChange}
+                          />
+                        ))}
+                        {!value.occupantIds.length && <p>Chọn người ở trước khi chọn xe.</p>}
+                      </div>
+                    )}
+                  </FormField>
+                </>
+              )}
+              {step === 3 && (
+                <>
+                  <FormField name="depositAmount" label="Tiền cọc">
+                    <NumberInput min={0} controls={false} endAddon="₫" />
+                  </FormField>
+                  <FormField name="depositCollected">
+                    {(field) => (
+                      <Checkbox
+                        label="Đã thu cọc"
+                        checked={value.depositCollected}
+                        onCheckedChange={(checked) => field.handleChange(checked === true)}
+                      />
+                    )}
+                  </FormField>
+                  {value.depositCollected && (
+                    <>
+                      <FormField name="depositMethod" label="Phương thức thu">
+                        <Select
+                          options={[
+                            { value: 'cash', label: 'Tiền mặt' },
+                            { value: 'bank_transfer', label: 'Chuyển khoản' },
+                            { value: 'other', label: 'Khác' },
+                          ]}
+                        />
+                      </FormField>
+                      <FormField name="depositDate" label="Ngày thu cọc" required {...DATE_FIELD}>
+                        <DatePicker clearable={false} />
+                      </FormField>
+                      <FormField name="depositNote" label="Ghi chú thu cọc">
+                        <Textarea rows={2} />
+                      </FormField>
+                    </>
+                  )}
+                  <Button variant="secondary" onClick={applyMeters}>
+                    Lấy chỉ số gần nhất
+                  </Button>
+                  <p className="text-ui-sm text-muted">
+                    {room.data?.meters
+                      .map(
+                        (m) =>
+                          `${m.kind === 'electricity' ? 'Điện' : 'Nước'}: tối thiểu ${m.latestReading ?? m.initialReading}`,
+                      )
+                      .join(' · ')}
+                  </p>
+                  <FormField name="initialElectric" label="Số điện nhận phòng" required>
+                    <NumberInput min={0} controls={false} />
+                  </FormField>
+                  <FormField name="initialWater" label="Số nước nhận phòng" required>
+                    <NumberInput min={0} controls={false} />
+                  </FormField>
+                </>
+              )}
+              {step === 3 && (
+                <>
+                  <photoForm.AppField
+                    name="electric"
+                    listeners={{
+                      onChange: ({ value: files }) => {
+                        const file = files[0];
+
+                        if (file) void uploadPhoto('initialElectricPhotoFileId', file);
+                        else form.setFieldValue('initialElectricPhotoFileId', null);
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <field.UploadField
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={uploading}
+                        label="Ảnh đồng hồ điện (tuỳ chọn)"
+                        maxBytes={STAY_UPLOAD_MAX_BYTES}
+                      />
+                    )}
+                  </photoForm.AppField>
+                  {value.initialElectricPhotoFileId && (
+                    <p className="text-ui-sm text-muted">Đã tải ảnh</p>
+                  )}
+                  <photoForm.AppField
+                    name="water"
+                    listeners={{
+                      onChange: ({ value: files }) => {
+                        const file = files[0];
+
+                        if (file) void uploadPhoto('initialWaterPhotoFileId', file);
+                        else form.setFieldValue('initialWaterPhotoFileId', null);
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <field.UploadField
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={uploading}
+                        label="Ảnh đồng hồ nước (tuỳ chọn)"
+                        maxBytes={STAY_UPLOAD_MAX_BYTES}
+                      />
+                    )}
+                  </photoForm.AppField>
+                  {value.initialWaterPhotoFileId && (
+                    <p className="text-ui-sm text-muted">Đã tải ảnh</p>
+                  )}
+                </>
+              )}
+              {step === 4 && saved && (
+                <>
+                  <p>
+                    Phòng {saved.roomCode} · {displayDate(saved.startDate)} –{' '}
+                    {saved.endDate ? displayDate(saved.endDate) : 'Không xác định'}
+                  </p>
+                  <p>
+                    Giá thuê {formatVnd(saved.rent)} · Cọc {formatVnd(saved.depositAmount)} (
+                    {saved.depositCollected ? 'đã thu' : 'chưa thu'})
+                  </p>
+                  <p>
+                    {saved.occupants
+                      .map((o) => `${o.fullName}${o.isPrimary ? ' (đại diện)' : ''}`)
+                      .join(', ')}
+                  </p>
+                  <MoveInPreview id={saved.id} />
+                </>
+              )}
+            </FormGrid>
+          </FormSection>
+          <FormActions>
+            <Button variant="ghost" onClick={() => navigate('/contracts')}>
+              Về danh sách
             </Button>
-          )}
-          {step < 4 ? (
-            <Button
-              type="submit"
-              disabled={uploading}
-              loading={create.isPending || update.isPending}
-            >
-              Lưu nháp & tiếp tục
-            </Button>
-          ) : (
-            <Button
-              disabled={
-                dirty || !saved || preview.isPending || preview.isError || preview.isFetching
-              }
-              loading={activate.isPending}
-              onClick={() => setConfirm(true)}
-            >
-              Kích hoạt
-            </Button>
-          )}
-          <Button variant="ghost" onClick={() => navigate('/contracts')}>
-            Về danh sách
-          </Button>
-        </div>
+            {step > 0 && (
+              <Button variant="secondary" onClick={() => setStep((s) => s - 1)}>
+                Quay lại
+              </Button>
+            )}
+            {step < 4 ? (
+              <Button
+                type="submit"
+                disabled={uploading}
+                loading={create.isPending || update.isPending}
+              >
+                Lưu nháp & tiếp tục
+              </Button>
+            ) : (
+              <Button
+                disabled={
+                  dirty || !saved || preview.isPending || preview.isError || preview.isFetching
+                }
+                loading={activate.isPending}
+                onClick={() => setConfirm(true)}
+              >
+                Kích hoạt
+              </Button>
+            )}
+          </FormActions>
+        </FormLayout>
       </Form>
       {step === 1 && <QuickTenant buildingId={buildingId} onCreated={addTenant} />}
       <AlertDialog
@@ -734,13 +797,18 @@ function Wizard({
 
 export default function ContractWizardPage() {
   const { buildingId } = useActiveBuilding();
+
   const [params] = useSearchParams();
+
   const draftId = params.get('draftId') ?? '';
+
   const query = useContract(draftId);
+
   const selected = useRoom(params.get('roomId') ?? '');
   // A draft saved by this wizard only updates the URL: keep the mounted wizard and its unsaved
   // step state. Only opening an existing draft (or another one) loads and remounts.
   const [initialDraftId] = useState(draftId);
+
   const createdHere = !initialDraftId && Boolean(draftId);
   const loadsDraft = Boolean(draftId) && !createdHere;
 
@@ -758,6 +826,7 @@ export default function ContractWizardPage() {
     return <Alert>Hợp đồng này không còn là bản nháp.</Alert>;
   if (!draftId && selected.data && selected.data.status !== 'vacant')
     return <Alert>Chọn một phòng trống để tạo hợp đồng.</Alert>;
+
   return (
     <Wizard
       key={`${buildingId}-${loadsDraft ? draftId : 'new'}`}

@@ -1,4 +1,4 @@
-import { Button } from '@itclabs/react-ui';
+import { Button, EmptyState } from '@itclabs/react-ui';
 import { usePortalDocuments, usePortalInvoice, usePortalMe } from '@stay/sdk/react';
 import type { PortalInvoiceSummary, PortalOpenRequests } from '@stay/shared';
 import { useState } from 'react';
@@ -76,6 +76,7 @@ function CurrentInvoice({ invoice }: { invoice: PortalInvoiceSummary }) {
 /** Open maintenance reports, own pending requests and claims, with the two entry buttons. */
 function OpenRequests({ open }: { open: PortalOpenRequests }) {
   const navigate = useNavigate();
+
   const rows = [
     { count: open.maintenance, label: 'báo hỏng đang mở', to: portalPaths.maintenance },
     { count: open.requests, label: 'yêu cầu chờ duyệt', to: portalPaths.requests },
@@ -85,7 +86,11 @@ function OpenRequests({ open }: { open: PortalOpenRequests }) {
   return (
     <PortalSection title="Báo hỏng và yêu cầu" testId="portal-open-requests">
       {rows.length === 0 ? (
-        <p className="text-ui-sm text-muted">Không có báo hỏng hay yêu cầu nào đang chờ.</p>
+        <EmptyState
+          size="compact"
+          appearance="plain"
+          title={<>Không có báo hỏng hay yêu cầu nào đang chờ.</>}
+        />
       ) : (
         <ul className="grid gap-1">
           {rows.map((row) => (
@@ -110,7 +115,9 @@ function OpenRequests({ open }: { open: PortalOpenRequests }) {
 /** T-03 `/p`: current invoice and payment, debt, notices, open requests, contact. */
 export default function PortalHomePage() {
   const { t } = useTranslation('portalDocuments');
+
   const documents = usePortalDocuments();
+
   const me = usePortalMe();
 
   const awaiting = (documents.data ?? []).filter((row) => row.awaitingMe);
@@ -128,7 +135,11 @@ export default function PortalHomePage() {
             {data.currentInvoice ? (
               <CurrentInvoice invoice={data.currentInvoice} />
             ) : (
-              <p className="text-muted">Chưa có hoá đơn nào được phát hành.</p>
+              <EmptyState
+                size="compact"
+                appearance="plain"
+                title={<>Chưa có hoá đơn nào được phát hành.</>}
+              />
             )}
           </PortalSection>
 

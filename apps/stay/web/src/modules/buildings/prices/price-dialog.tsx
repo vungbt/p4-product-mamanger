@@ -4,7 +4,11 @@ import {
   DatePicker,
   Dialog,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   FormSubmit,
   NumberInput,
   useAppForm,
@@ -38,10 +42,13 @@ function PriceForm({
   onDone: () => void;
 }) {
   const { t } = useTranslation('buildings');
+
   const setPrice = useSetBuildingPrice();
+
   const [formError, setFormError] = useState<string | null>(null);
 
   const today = todayIsoDate();
+
   const schema = useMemo(
     () => ({
       effectiveFrom: v.pipe(
@@ -103,57 +110,69 @@ function PriceForm({
   });
 
   const dirty = useFormDirty(form);
+
   const date = useFormValue(form, (state) => state.values.effectiveFrom);
+
   const { prompt } = useUnsavedChanges(dirty);
 
   return (
     <Form form={form} schema={schema} className="grid gap-4" data-testid="price-form">
-      {prompt}
-      <FormError message={formError} />
+      <FormLayout size="full">
+        <FormSection>
+          <FormGrid columns={1}>
+            {prompt}
+            <FormError message={formError} />
 
-      <p className="text-ui-sm text-muted">
-        {t('prices.defaultIs', { price: formatVnd(item.defaultPrice), unit: item.unit })}
-      </p>
+            <p className="text-ui-sm text-muted">
+              {t('prices.defaultIs', { price: formatVnd(item.defaultPrice), unit: item.unit })}
+            </p>
 
-      {mode === 'set' ? (
-        <FormField name="price" label={t('prices.buildingPrice')} required className="mb-0">
-          <NumberInput
-            min={0}
-            max={MAX_PRICE}
-            step={1}
-            endAddon="₫"
-            inputMode="numeric"
-            autoFocus
-          />
-        </FormField>
-      ) : null}
-      <FormField name="effectiveFrom" label={t('prices.effectiveFrom')} required className="mb-0">
-        <DatePicker clearable={false} />
-      </FormField>
-
-      {date && date < today ? <Alert tone="warning">{t('prices.pastDate')}</Alert> : null}
-      <Alert tone="info">{t('prices.rule')}</Alert>
-
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button variant="secondary" onClick={onDone}>
-          {t('cancel')}
-        </Button>
-        <FormSubmit form={form}>
-          {(isSubmitting) => (
-            <Button
-              type="submit"
-              variant={mode === 'set' ? 'primary' : 'danger'}
-              loading={isSubmitting}
+            {mode === 'set' ? (
+              <FormField name="price" label={t('prices.buildingPrice')} required className="mb-0">
+                <NumberInput
+                  min={0}
+                  max={MAX_PRICE}
+                  step={1}
+                  endAddon="₫"
+                  inputMode="numeric"
+                  autoFocus
+                />
+              </FormField>
+            ) : null}
+            <FormField
+              name="effectiveFrom"
+              label={t('prices.effectiveFrom')}
+              required
+              className="mb-0"
             >
-              {isSubmitting
-                ? t('saving')
-                : mode === 'set'
-                  ? t('prices.setSubmit')
-                  : t('prices.resetSubmit')}
-            </Button>
-          )}
-        </FormSubmit>
-      </div>
+              <DatePicker clearable={false} />
+            </FormField>
+
+            {date && date < today ? <Alert tone="warning">{t('prices.pastDate')}</Alert> : null}
+            <Alert tone="info">{t('prices.rule')}</Alert>
+          </FormGrid>
+        </FormSection>
+        <FormActions>
+          <Button variant="secondary" onClick={onDone}>
+            {t('cancel')}
+          </Button>
+          <FormSubmit form={form}>
+            {(isSubmitting) => (
+              <Button
+                type="submit"
+                variant={mode === 'set' ? 'primary' : 'danger'}
+                loading={isSubmitting}
+              >
+                {isSubmitting
+                  ? t('saving')
+                  : mode === 'set'
+                    ? t('prices.setSubmit')
+                    : t('prices.resetSubmit')}
+              </Button>
+            )}
+          </FormSubmit>
+        </FormActions>
+      </FormLayout>
     </Form>
   );
 }

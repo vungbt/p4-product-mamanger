@@ -5,9 +5,12 @@ import {
   DatePicker,
   EmptyState,
   Form,
+  FormActions,
   FormField,
+  FormGrid,
+  FormLayout,
+  FormSection,
   IconButton,
-  Input,
   NumberInput,
   Select,
   Skeleton,
@@ -34,6 +37,7 @@ import {
   type InvoiceShareLink,
   type ManualPaymentMethod,
   MOVE_OUT_FEE_REASON,
+  STAY_UPLOAD_MAX_BYTES,
   type StayContract,
 } from '@stay/shared';
 import { useEffect, useMemo, useState } from 'react';
@@ -121,8 +125,11 @@ function draftInvoices(error: unknown): { invoiceId: string; period: string }[] 
 /** O-24 Thanh lý hợp đồng (owner): readings → surcharges → server summary → confirm. */
 export default function ContractSettlePage() {
   const { id = '' } = useParams();
+
   const query = useContract(id);
+
   const building = useBuilding(query.data?.buildingId ?? '');
+
   const [result, setResult] = useState<ContractSettlementResult | null>(null);
 
   if (result) return <SettlementDone result={result} />;
@@ -185,17 +192,25 @@ function SettlementForm({
   onDone: (result: ContractSettlementResult) => void;
 }) {
   const sdk = useStaySdk();
+
   const uploader = useMemo(() => createUploadApi(sdk, { baseUrl: window.location.origin }), [sdk]);
+
   const settle = useSettleContract();
+
   const [step, setStep] = useState(0);
+
   const [uploading, setUploading] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+
   const [confirming, setConfirming] = useState(false);
+
   const [key] = useState(() => crypto.randomUUID());
 
   const today = todayIsoDate();
   const kinds = meteredKinds(contract);
   const notice = contract.noticeDate && contract.noticeDate <= today ? contract.noticeDate : null;
+
   const readingSchema = (kind: MeterKind) =>
     kinds.includes(kind)
       ? v.pipe(
@@ -204,6 +219,7 @@ function SettlementForm({
           v.minValue(0, 'Chỉ số không âm.'),
         )
       : v.nullable(v.number());
+
   const schema = {
     moveOutDate: v.pipe(
       v.string(),
@@ -220,6 +236,8 @@ function SettlementForm({
 
   const form = useAppForm({
     defaultValues: {
+      electricUploads: [] as File[],
+      waterUploads: [] as File[],
       moveOutDate: notice ?? today,
       finalElectric: null as number | null,
       finalWater: null as number | null,
@@ -232,8 +250,11 @@ function SettlementForm({
     },
     listeners: clearServerErrorOnChange,
   });
+
   const values = useFormValue(form, (state) => state.values);
+
   const dirty = useFormDirty(form);
+
   const { allowNavigation } = useUnsavedChanges(dirty);
 
   const body: ContractSettlementInput = {
@@ -247,7 +268,9 @@ function SettlementForm({
       reason: row.reason.trim(),
     })),
   };
+
   const preview = useSettlementPreview(contract.id, body, step === 2);
+
   const drafts = draftInvoices(preview.error);
 
   // Field errors of the server computation go back to steps 1–2 (all steps stay mounted).
@@ -263,6 +286,7 @@ function SettlementForm({
     const results = await Promise.all(
       names.map((name) => {
         form.setFieldMeta(name, (meta) => ({ ...meta, isTouched: true }));
+
         return form.validateField(name, 'change');
       }),
     );
@@ -348,182 +372,212 @@ function SettlementForm({
         className="grid min-w-0 gap-4 rounded-panel border border-line bg-surface p-4 sm:p-5"
         aria-label="Thanh lý hợp đồng"
       >
-        <section hidden={step !== 0} aria-label={STEPS[0].label} className="grid min-w-0 gap-4">
-          <h2 className="text-section font-semibold">1. {STEPS[0].label}</h2>
-          {contract.noticeDate ? (
-            <p className="text-ui-sm text-muted">
-              Ngày dự kiến đã báo: {displayDate(contract.noticeDate)}
-            </p>
-          ) : null}
-          <FormField name="moveOutDate" label="Ngày trả phòng" required {...DATE_FIELD}>
-            <DatePicker minDate={contract.startDate} maxDate={today} clearable={false} />
-          </FormField>
-          <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-            {kinds.includes('electricity') ? (
-              <FormField name="finalElectric" label="Chỉ số điện cuối" required>
-                <NumberInput min={0} max={999_999_999} controls={false} endAddon="kWh" />
-              </FormField>
+        <FormLayout size="full">
+          <FormSection
+            title={<>1. {STEPS[0].label}</>}
+            variant="card"
+            hidden={step !== 0}
+            aria-label={STEPS[0].label}
+          >
+            {contract.noticeDate ? (
+              <p className="text-ui-sm text-muted">
+                Ngày dự kiến đã báo: {displayDate(contract.noticeDate)}
+              </p>
             ) : null}
-            {kinds.includes('water') ? (
-              <FormField name="finalWater" label="Chỉ số nước cuối" required>
-                <NumberInput min={0} max={999_999_999} controls={false} endAddon="m³" />
-              </FormField>
-            ) : null}
-          </div>
-          <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-            {PHOTO_FIELDS.filter((field) =>
-              kinds.includes(field === 'electricPhotoFileId' ? 'electricity' : 'water'),
-            ).map((field) => {
-              const label =
-                field === 'electricPhotoFileId'
-                  ? 'Ảnh đồng hồ điện (tuỳ chọn)'
-                  : 'Ảnh đồng hồ nước (tuỳ chọn)';
-
-              return (
-                <div key={field} className="grid min-w-0 gap-2">
-                  <Input
-                    type="file"
-                    label={label}
-                    accept="image/jpeg,image/png,image/webp"
-                    disabled={uploading}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-
-                      if (file) void uploadPhoto(field, file);
-                    }}
-                  />
-                  {values[field] ? <p className="text-ui-sm text-muted">Đã tải ảnh</p> : null}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <section hidden={step !== 1} aria-label={STEPS[1].label} className="grid min-w-0 gap-4">
-          <h2 className="text-section font-semibold">2. Phụ thu thanh lý</h2>
-          <p className="text-ui-sm text-muted">
-            Hư hỏng, dọn dẹp…: mỗi dòng có số tiền và lý do. Bỏ qua nếu không có.
-          </p>
-          {moveOutFee > 0 ? (
-            <p className="text-ui-sm text-muted" data-testid="settle-move-out-fee">
-              Phí khấu hao cơ sở vật chất của toà ({formatVnd(moveOutFee)}) đã được thêm sẵn; sửa số
-              tiền hoặc xoá dòng nếu không thu.
-            </p>
-          ) : null}
-          {values.surcharges.map((_, index) => (
-            <fieldset
-              // Rows are addressed by position, like their field names.
-              key={index}
-              className="grid min-w-0 gap-3 rounded-control border border-line p-3"
-              aria-label={`Phụ thu ${index + 1}`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <legend className="font-semibold">Phụ thu {index + 1}</legend>
-                <IconButton
-                  icon="delete"
-                  variant="ghost"
-                  size="sm"
-                  label={`Xoá phụ thu ${index + 1}`}
-                  onClick={() => form.removeFieldValue('surcharges', index)}
-                />
-              </div>
-              <FormField
-                name={`surcharges[${index}].amount`}
-                label="Số tiền"
-                required
-                validators={issues(amountSchema)}
-              >
-                <NumberInput min={1} max={1_000_000_000} step={1} endAddon="₫" />
-              </FormField>
-              <FormField
-                name={`surcharges[${index}].reason`}
-                label="Lý do"
-                required
-                validators={issues(reasonSchema)}
-              >
-                <Textarea maxLength={500} rows={2} />
-              </FormField>
-            </fieldset>
-          ))}
-          <div>
-            <Button
-              variant="secondary"
-              disabled={values.surcharges.length >= MAX_SURCHARGES}
-              onClick={() => form.pushFieldValue('surcharges', { amount: null, reason: '' })}
-            >
-              Thêm phụ thu
-            </Button>
-          </div>
-        </section>
-
-        <section hidden={step !== 2} aria-label={STEPS[2].label} className="grid min-w-0 gap-4">
-          <h2 className="text-section font-semibold">3. Tổng hợp</h2>
-          {preview.isFetching ? (
-            <Skeleton className="h-48" />
-          ) : summary ? (
-            <>
-              <SettlementSummary summary={summary} />
-              {summary.depositRefunded > 0 ? (
-                <FormField name="refundMethod" label="Phương thức hoàn cọc" required>
-                  <Select options={MANUAL_PAYMENT_METHOD_OPTIONS} />
+            <FormField name="moveOutDate" label="Ngày trả phòng" required {...DATE_FIELD}>
+              <DatePicker minDate={contract.startDate} maxDate={today} clearable={false} />
+            </FormField>
+            <FormGrid columns={2}>
+              {kinds.includes('electricity') ? (
+                <FormField name="finalElectric" label="Chỉ số điện cuối" required>
+                  <NumberInput min={0} max={999_999_999} controls={false} endAddon="kWh" />
                 </FormField>
               ) : null}
-            </>
-          ) : drafts.length ? (
-            <Alert tone="warning" role="alert" data-testid="settle-drafts">
-              Hợp đồng còn hoá đơn nháp. Phát hành hoặc void trước khi thanh lý:{' '}
-              {drafts.map((draft, index) => (
-                <span key={draft.invoiceId}>
-                  {index ? ', ' : ''}
-                  <Link className="font-semibold text-accent" to={`/invoices/${draft.invoiceId}`}>
-                    kỳ {displayPeriod(draft.period)}
-                  </Link>
-                </span>
-              ))}
-            </Alert>
-          ) : preview.error ? (
-            <Alert
-              tone="danger"
-              role="alert"
-              data-testid="settle-preview-error"
-              action={
-                <Button variant="secondary" size="sm" onClick={() => setStep(0)}>
-                  Sửa bước 1
-                </Button>
-              }
-            >
-              {getErrorMessage(preview.error, 'Không tính được thanh lý.')}
-            </Alert>
-          ) : null}
-        </section>
+              {kinds.includes('water') ? (
+                <FormField name="finalWater" label="Chỉ số nước cuối" required>
+                  <NumberInput min={0} max={999_999_999} controls={false} endAddon="m³" />
+                </FormField>
+              ) : null}
+            </FormGrid>
+            <FormGrid columns={2}>
+              {PHOTO_FIELDS.filter((field) =>
+                kinds.includes(field === 'electricPhotoFileId' ? 'electricity' : 'water'),
+              ).map((field) => {
+                const label =
+                  field === 'electricPhotoFileId'
+                    ? 'Ảnh đồng hồ điện (tuỳ chọn)'
+                    : 'Ảnh đồng hồ nước (tuỳ chọn)';
 
-        <div className="flex flex-wrap justify-between gap-2 border-t border-line pt-4">
-          {step > 0 ? (
-            <Button variant="secondary" onClick={() => setStep(step - 1)}>
-              Quay lại
-            </Button>
-          ) : (
-            <Link
-              className="inline-flex items-center font-semibold text-accent"
-              to={`/contracts/${contract.id}`}
-            >
-              Về hợp đồng
-            </Link>
-          )}
-          {step < 2 ? (
-            <Button disabled={uploading} onClick={() => void next()}>
-              Tiếp tục
-            </Button>
-          ) : (
-            <Button
-              disabled={!summary || preview.isFetching}
-              loading={settle.isPending}
-              onClick={() => setConfirming(true)}
-            >
-              Xác nhận thanh lý
-            </Button>
-          )}
-        </div>
+                return (
+                  <div key={field} className="grid min-w-0 gap-2">
+                    <form.AppField
+                      name={field === 'electricPhotoFileId' ? 'electricUploads' : 'waterUploads'}
+                      listeners={{
+                        onChange: ({ value: files }) => {
+                          const file = files[0];
+
+                          if (file) void uploadPhoto(field, file);
+                          else form.setFieldValue(field, '');
+                        },
+                      }}
+                    >
+                      {(field) => (
+                        <field.UploadField
+                          label={label}
+                          accept="image/jpeg,image/png,image/webp"
+                          disabled={uploading}
+                          maxBytes={STAY_UPLOAD_MAX_BYTES}
+                        />
+                      )}
+                    </form.AppField>
+                    {values[field] ? <p className="text-ui-sm text-muted">Đã tải ảnh</p> : null}
+                  </div>
+                );
+              })}
+            </FormGrid>
+          </FormSection>
+
+          <FormSection
+            title={<>2. Phụ thu thanh lý</>}
+            variant="card"
+            hidden={step !== 1}
+            aria-label={STEPS[1].label}
+          >
+            <FormGrid columns={1}>
+              <p className="text-ui-sm text-muted">
+                Hư hỏng, dọn dẹp…: mỗi dòng có số tiền và lý do. Bỏ qua nếu không có.
+              </p>
+              {moveOutFee > 0 ? (
+                <p className="text-ui-sm text-muted" data-testid="settle-move-out-fee">
+                  Phí khấu hao cơ sở vật chất của toà ({formatVnd(moveOutFee)}) đã được thêm sẵn;
+                  sửa số tiền hoặc xoá dòng nếu không thu.
+                </p>
+              ) : null}
+              {values.surcharges.map((_, index) => (
+                <fieldset
+                  // Rows are addressed by position, like their field names.
+                  key={index}
+                  className="grid min-w-0 gap-3 rounded-control border border-line p-3"
+                  aria-label={`Phụ thu ${index + 1}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <legend className="font-semibold">Phụ thu {index + 1}</legend>
+                    <IconButton
+                      icon="delete"
+                      variant="ghost"
+                      size="sm"
+                      label={`Xoá phụ thu ${index + 1}`}
+                      onClick={() => form.removeFieldValue('surcharges', index)}
+                    />
+                  </div>
+                  <FormField
+                    name={`surcharges[${index}].amount`}
+                    label="Số tiền"
+                    required
+                    validators={issues(amountSchema)}
+                  >
+                    <NumberInput min={1} max={1_000_000_000} step={1} endAddon="₫" />
+                  </FormField>
+                  <FormField
+                    name={`surcharges[${index}].reason`}
+                    label="Lý do"
+                    required
+                    validators={issues(reasonSchema)}
+                  >
+                    <Textarea maxLength={500} rows={2} />
+                  </FormField>
+                </fieldset>
+              ))}
+              <div>
+                <Button
+                  variant="secondary"
+                  disabled={values.surcharges.length >= MAX_SURCHARGES}
+                  onClick={() => form.pushFieldValue('surcharges', { amount: null, reason: '' })}
+                >
+                  Thêm phụ thu
+                </Button>
+              </div>
+            </FormGrid>
+          </FormSection>
+
+          <FormSection
+            title={<>3. Tổng hợp</>}
+            variant="card"
+            hidden={step !== 2}
+            aria-label={STEPS[2].label}
+          >
+            <FormGrid columns={1}>
+              {preview.isFetching ? (
+                <Skeleton className="h-48" />
+              ) : summary ? (
+                <>
+                  <SettlementSummary summary={summary} />
+                  {summary.depositRefunded > 0 ? (
+                    <FormField name="refundMethod" label="Phương thức hoàn cọc" required>
+                      <Select options={MANUAL_PAYMENT_METHOD_OPTIONS} />
+                    </FormField>
+                  ) : null}
+                </>
+              ) : drafts.length ? (
+                <Alert tone="warning" role="alert" data-testid="settle-drafts">
+                  Hợp đồng còn hoá đơn nháp. Phát hành hoặc void trước khi thanh lý:{' '}
+                  {drafts.map((draft, index) => (
+                    <span key={draft.invoiceId}>
+                      {index ? ', ' : ''}
+                      <Link
+                        className="font-semibold text-accent"
+                        to={`/invoices/${draft.invoiceId}`}
+                      >
+                        kỳ {displayPeriod(draft.period)}
+                      </Link>
+                    </span>
+                  ))}
+                </Alert>
+              ) : preview.error ? (
+                <Alert
+                  tone="danger"
+                  role="alert"
+                  data-testid="settle-preview-error"
+                  action={
+                    <Button variant="secondary" size="sm" onClick={() => setStep(0)}>
+                      Sửa bước 1
+                    </Button>
+                  }
+                >
+                  {getErrorMessage(preview.error, 'Không tính được thanh lý.')}
+                </Alert>
+              ) : null}
+            </FormGrid>
+          </FormSection>
+
+          <FormActions separator>
+            {step > 0 ? (
+              <Button variant="secondary" onClick={() => setStep(step - 1)}>
+                Quay lại
+              </Button>
+            ) : (
+              <Link
+                className="inline-flex items-center font-semibold text-accent"
+                to={`/contracts/${contract.id}`}
+              >
+                Về hợp đồng
+              </Link>
+            )}
+            {step < 2 ? (
+              <Button disabled={uploading} onClick={() => void next()}>
+                Tiếp tục
+              </Button>
+            ) : (
+              <Button
+                disabled={!summary || preview.isFetching}
+                loading={settle.isPending}
+                onClick={() => setConfirming(true)}
+              >
+                Xác nhận thanh lý
+              </Button>
+            )}
+          </FormActions>
+        </FormLayout>
       </Form>
       {summary ? (
         <AlertDialog
@@ -548,6 +602,7 @@ function SettlementForm({
 function resultText(summary: Pick<ContractSettlementPreview, 'ownerRefunds' | 'tenantPays'>) {
   if (summary.ownerRefunds > 0) return `Chủ trọ hoàn ${formatVnd(summary.ownerRefunds)}`;
   if (summary.tenantPays > 0) return `Người thuê trả thêm ${formatVnd(summary.tenantPays)}`;
+
   return 'Không bên nào phải trả thêm';
 }
 
@@ -605,7 +660,11 @@ function SettlementSummary({ summary }: { summary: ContractSettlementPreview }) 
           })}
         </ul>
       ) : (
-        <p className="text-muted">Không có khoản nào trên hoá đơn thanh lý.</p>
+        <EmptyState
+          size="compact"
+          appearance="plain"
+          title={<>Không có khoản nào trên hoá đơn thanh lý.</>}
+        />
       )}
       <dl className="grid min-w-0 divide-y divide-line">
         <Row label="Điện nước cuối" value={summary.utilitiesTotal} testId="settle-utilities" />
@@ -654,7 +713,9 @@ function SettlementSummary({ summary }: { summary: ContractSettlementPreview }) 
 /** After settling: the invoice, its share link (ST-16) and where things went. */
 function SettlementDone({ result }: { result: ContractSettlementResult }) {
   const [sharing, setSharing] = useState(false);
+
   const [link, setLink] = useState<InvoiceShareLink | null>(null);
+
   const { invoice, contract } = result;
 
   return (

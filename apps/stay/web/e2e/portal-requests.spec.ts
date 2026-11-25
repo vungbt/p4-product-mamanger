@@ -122,8 +122,13 @@ for (const width of [1280, 375]) {
     await expect(claimForm.getByRole('spinbutton', { name: /Số tiền đã chuyển/ })).toHaveValue(
       new RegExp(money(rented.invoice.total).replaceAll('.', '\\.?')),
     );
+    // UploadField labels both the visible picker button and its hidden file input.
+    await expect(
+      claimForm.getByRole('button', { name: 'Ảnh biên lai', exact: true }),
+    ).toBeVisible();
     await claimForm
-      .getByLabel('Ảnh biên lai')
+      .locator('input[type="file"]')
+      .and(claimForm.getByLabel('Ảnh biên lai', { exact: true }))
       .setInputFiles({ name: 'bien-lai.png', mimeType: 'image/png', buffer: PNG });
     await claimForm.getByRole('button', { name: 'Gửi xác nhận', exact: true }).click();
     await expect(claimForm).toBeHidden();
