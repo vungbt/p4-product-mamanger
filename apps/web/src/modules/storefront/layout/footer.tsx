@@ -1,4 +1,5 @@
 import { Icon } from '@itclabs/react-ui';
+import { useGetNavigationPlacement, useGetShopConfig } from '@p4/api-sdk/react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants/constants';
@@ -43,12 +44,31 @@ const SOCIAL_LINKS = [
 export default function StorefrontFooter() {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
+
+  const shopQuery = useGetShopConfig();
+
+  const navQuery = useGetNavigationPlacement({
+    params: { path: { placement: 'footer' } },
+  });
+
+  const shop = shopQuery.data?.data;
+
+  const email = shop?.supportEmail || 'support@p4.demo';
+
+  const phone = shop?.supportPhone || t('storefront.footerPhone');
+
+  const footerItems = navQuery.data?.data?.items ?? [];
+
   return (
     <footer className="mt-auto border-t border-line bg-surface text-ink">
       <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <BrandLogo variant="header" height={40} />
-          <p className="mt-4 text-control text-muted">{t('storefront.footerTagline')}</p>
+          <p className="mt-4 text-control text-muted">
+            {shop?.name
+              ? `${shop.name} — ${t('storefront.footerTagline')}`
+              : t('storefront.footerTagline')}
+          </p>
         </div>
         <address className="space-y-3 text-control not-italic">
           <p className="flex items-start gap-2">
@@ -60,28 +80,50 @@ export default function StorefrontFooter() {
           </p>
           <p className="flex items-center gap-2">
             <Icon name="phone" />
-            <a href="tel:+84901234567">{t('storefront.footerPhone')}</a>
+            <a href={`tel:${phone}`}>{phone}</a>
           </p>
           <p className="flex items-center gap-2">
             <Icon name="mail" />
-            <a href="mailto:support@p4.demo">support@p4.demo</a>
+            <a href={`mailto:${email}`}>{email}</a>
           </p>
         </address>
         <nav aria-label={t('storefront.footerShop')} className="space-y-3 text-control">
           <h2 className="font-semibold">{t('storefront.footerShop')}</h2>
-          <Link className="block hover:text-accent" to={ROUTES.storefront.shop}>
-            {t('menu.shop')}
-          </Link>
-          <Link className="block hover:text-accent" to={ROUTES.storefront.cart}>
-            {t('menu.cart')}
-          </Link>
+          {footerItems.length > 0 ? (
+            footerItems.map((item) =>
+              /^https?:\/\//i.test(item.href) ? (
+                <a
+                  key={item.id}
+                  className="block hover:text-accent"
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <Link key={item.id} className="block hover:text-accent" to={item.href}>
+                  {item.label}
+                </Link>
+              ),
+            )
+          ) : (
+            <>
+              <Link className="block hover:text-accent" to={ROUTES.storefront.shop}>
+                {t('menu.shop')}
+              </Link>
+              <Link className="block hover:text-accent" to={ROUTES.storefront.cart}>
+                {t('menu.cart')}
+              </Link>
+            </>
+          )}
         </nav>
         <div className="space-y-3 text-control">
           <h2 className="font-semibold">{t('storefront.footerSupport')}</h2>
-          <a className="block hover:text-accent" href="mailto:support@p4.demo">
+          <a className="block hover:text-accent" href={`mailto:${email}`}>
             {t('storefront.footerContact')}
           </a>
-          <a className="block hover:text-accent" href="mailto:support@p4.demo?subject=FAQ">
+          <a className="block hover:text-accent" href={`mailto:${email}?subject=FAQ`}>
             {t('storefront.footerFaq')}
           </a>
           <div className="flex gap-3">

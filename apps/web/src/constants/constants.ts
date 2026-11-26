@@ -15,6 +15,8 @@ export const ROUTES = {
     register: '/register',
     password: '/account/password',
     shop: '/shop',
+    collections: '/collections',
+    collectionDetail: (slug: string) => `/collections/${slug}`,
     cart: '/cart',
   },
   admin: {

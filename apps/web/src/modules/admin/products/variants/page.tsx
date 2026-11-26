@@ -1,13 +1,11 @@
 import {
   type ColumnDef,
   DataTable,
-  Icon,
   IconButton,
   Input,
   Select,
   StatusTag,
   Tooltip,
-  UiImage,
   useFormatters,
 } from '@itclabs/react-ui';
 import type { InventoryBalance } from '@p4/shared';
@@ -49,21 +47,9 @@ export default function VariantPage() {
         header: t('adminProducts.sku'),
         cell: ({ row }) => {
           const item = row.original;
-          const thumbnail = item.images?.[0]?.url;
 
           return (
             <div className="flex items-center gap-3">
-              {thumbnail ? (
-                <UiImage
-                  src={thumbnail}
-                  alt={item.sku}
-                  className="size-10 rounded border border-canvas object-cover"
-                />
-              ) : (
-                <div className="flex size-10 items-center justify-center rounded border border-canvas text-muted">
-                  <Icon name="tag" className="size-5" />
-                </div>
-              )}
               <div className="min-w-0">
                 <div className="font-medium text-ink">{item.sku}</div>
                 {item.barcode && <div className="text-ui-sm text-muted">{item.barcode}</div>}

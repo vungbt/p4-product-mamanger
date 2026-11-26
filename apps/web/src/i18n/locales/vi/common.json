@@ -28,6 +28,8 @@
     "settings": "Cài đặt",
     "settingsSoon": "Trang cài đặt sẽ sớm có.",
     "notifications": "Thông báo",
+    "retry": "Thử lại",
+    "clear": "Xoá",
     "collapseSidebar": "Thu gọn menu",
     "expandSidebar": "Mở rộng menu",
     "toggleMenu": "Mở menu",
@@ -144,7 +146,33 @@
     "footerPhone": "+84 90 123 4567",
     "footerEmailLabel": "Email",
     "cart": "Giỏ hàng",
-    "searchPlaceholder": "Tìm sản phẩm..."
+    "searchPlaceholder": "Tìm sản phẩm...",
+    "viewAll": "Xem tất cả",
+    "homeLoadFailed": "Không tải được trang chủ.",
+    "home": {
+      "title": "Góc làm việc gọn gàng, giảm đến 25%",
+      "description": "Bàn phím cơ, chuột không dây, hub USB-C và đèn bàn — 124 sản phẩm chính hãng, bảo hành 12 tháng.",
+      "shopNow": "Mua sắm ngay",
+      "sale": "Xem khuyến mãi"
+    },
+    "collections": {
+      "title": "Bộ sưu tập",
+      "subtitle": "Khám phá các bộ sưu tập sản phẩm nổi bật.",
+      "searchPlaceholder": "Tìm bộ sưu tập...",
+      "sortNewest": "Mới nhất",
+      "sortOldest": "Cũ nhất",
+      "sortNameAsc": "Tên A–Z",
+      "sortNameDesc": "Tên Z–A",
+      "productCount": "{{count}} sản phẩm",
+      "loadFailed": "Không tải được danh sách bộ sưu tập.",
+      "emptyTitle": "Chưa có bộ sưu tập nào",
+      "emptyDescription": "Hiện chưa có bộ sưu tập phù hợp để hiển thị.",
+      "notFoundTitle": "Không tìm thấy bộ sưu tập",
+      "notFoundDescription": "Bộ sưu tập này không tồn tại hoặc đã ngừng hiển thị.",
+      "backToList": "Tất cả bộ sưu tập",
+      "emptyProductsTitle": "Bộ sưu tập chưa có sản phẩm",
+      "emptyProductsDescription": "Các sản phẩm đang được cập nhật, mời bạn ghé xem cửa hàng."
+    }
   },
   "lang": {
     "vi": "VI",
