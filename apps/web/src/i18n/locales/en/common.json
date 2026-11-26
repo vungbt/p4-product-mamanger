@@ -26,6 +26,7 @@
     "settings": "Settings",
     "settingsSoon": "Settings page coming soon.",
     "notifications": "Notifications",
+    "retry": "Retry",
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
     "toggleMenu": "Toggle menu",
@@ -142,7 +143,33 @@
     "footerPhone": "+84 90 123 4567",
     "footerEmailLabel": "Email",
     "cart": "Cart",
-    "searchPlaceholder": "Search products..."
+    "searchPlaceholder": "Search products...",
+    "viewAll": "View all",
+    "homeLoadFailed": "Could not load home page.",
+    "home": {
+      "title": "Clean desk setup, up to 25% off",
+      "description": "Mechanical keyboards, wireless mice, USB-C hubs and desk lamps — 124 authentic products with 12-month warranty.",
+      "shopNow": "Shop now",
+      "sale": "View deals"
+    },
+    "collections": {
+      "title": "Collections",
+      "subtitle": "Explore curated product collections.",
+      "searchPlaceholder": "Search collections...",
+      "sortNewest": "Newest",
+      "sortOldest": "Oldest",
+      "sortNameAsc": "Name A–Z",
+      "sortNameDesc": "Name Z–A",
+      "productCount": "{{count}} products",
+      "loadFailed": "Could not load collections.",
+      "emptyTitle": "No collections yet",
+      "emptyDescription": "There are no matching collections to display right now.",
+      "notFoundTitle": "Collection not found",
+      "notFoundDescription": "This collection does not exist or is no longer available.",
+      "backToList": "All collections",
+      "emptyProductsTitle": "No products in this collection",
+      "emptyProductsDescription": "Products are being updated. Feel free to browse the shop."
+    }
   },
   "lang": {
     "vi": "VI",

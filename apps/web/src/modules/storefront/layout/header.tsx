@@ -1,4 +1,13 @@
-import { Button, IconButton, Input, Navbar } from '@itclabs/react-ui';
+import {
+  Button,
+  IconButton,
+  Input,
+  Navbar,
+  type NavbarItem,
+  type NavbarLink,
+} from '@itclabs/react-ui';
+import { useGetNavigationPlacement, useGetShopConfig } from '@p4/api-sdk/react';
+import type { NavigationItem } from '@p4/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -9,38 +18,74 @@ import LanguageSwitcher from '@/libraries/language-switcher';
 import UserAccountMenu from '@/libraries/user-account-menu';
 import RouteConfigs from '@/routing/config.route';
 import { buildMenuItems, getPortalMenuRoutes } from '@/routing/route.types';
+
+type NavbarDropdownItem = Extract<NavbarItem, { type: 'dropdown' }>;
+
+function toNavbarNode(item: NavigationItem): NavbarLink | NavbarDropdownItem {
+  if (item.children.length > 0) {
+    return {
+      type: 'dropdown',
+      id: item.id,
+      label: item.label,
+      children: item.children.map(toNavbarNode),
+    };
+  }
+
+  return {
+    type: 'link',
+    id: item.id,
+    label: item.label,
+    href: item.href,
+    exact: item.href === ROUTES.storefront.home,
+  };
+}
+
 export default function StorefrontHeader() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const items = buildMenuItems(getPortalMenuRoutes(RouteConfigs, 'storefront-portal')).flatMap(
-    (item) =>
-      item.type === 'item'
-        ? [
-            {
-              id: item.name,
-              label: t(`menu.${item.name}`, { defaultValue: item.label }),
-              href: item.path,
-              exact: true,
-            },
-          ]
-        : [],
+
+  const navQuery = useGetNavigationPlacement({
+    params: { path: { placement: 'header' } },
+  });
+
+  const shopQuery = useGetShopConfig();
+
+  const shopName = shopQuery.data?.data?.name || t('app.storefront');
+
+  const defaultItems = buildMenuItems(
+    getPortalMenuRoutes(RouteConfigs, 'storefront-portal'),
+  ).flatMap((item) =>
+    item.type === 'item'
+      ? [
+          {
+            id: item.name,
+            label: t(`menu.${item.name}`, { defaultValue: item.label }),
+            href: item.path,
+            exact: true,
+          },
+        ]
+      : [],
   );
+
+  const apiItems = navQuery.data?.data?.items ?? [];
+  const items = apiItems.length > 0 ? apiItems.map(toNavbarNode) : defaultItems;
+
   return (
     <Navbar
       className="flex-none"
       data-testid="storefront-navbar"
       brand={
-        <Link to={ROUTES.storefront.home} aria-label={t('app.storefront')}>
+        <Link to={ROUTES.storefront.home} aria-label={shopName}>
           <BrandLogo variant="header" height={36} className="hidden sm:block" />
           <BrandLogo variant="mark" height={36} className="sm:hidden" />
         </Link>
       }
       items={items}
       currentPath={pathname}
-      navigationLabel={t('app.storefront')}
+      navigationLabel={shopName}
       actions={
         <>
           <LanguageSwitcher />

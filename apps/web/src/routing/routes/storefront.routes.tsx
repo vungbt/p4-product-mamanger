@@ -7,6 +7,8 @@ const StorefrontRegisterScreen = lazy(() => import('@/modules/storefront/registe
 const StorefrontPasswordScreen = lazy(() => import('@/modules/storefront/password/page'));
 const HomeScreen = lazy(() => import('@/modules/storefront/home/page'));
 const ShopScreen = lazy(() => import('@/modules/storefront/shop/page'));
+const CollectionsScreen = lazy(() => import('@/modules/storefront/collections/page'));
+const CollectionDetailScreen = lazy(() => import('@/modules/storefront/collections/detail-page'));
 const CartScreen = lazy(() => import('@/modules/storefront/cart/page'));
 const StorefrontLayout = lazy(() => import('@/modules/storefront/layout/layout'));
 
@@ -61,6 +63,23 @@ export const storefrontPortalRoutes: IRoute[] = [
         iconName: 'store',
         component: ShopScreen,
         exact: true,
+      },
+      {
+        path: ROUTES.storefront.collections,
+        name: 'collections',
+        label: 'Collections',
+        iconName: 'layers',
+        component: CollectionsScreen,
+        exact: true,
+        hideInMenu: true,
+      },
+      {
+        path: '/collections/:slug',
+        name: 'collection-detail',
+        label: 'Collection',
+        component: CollectionDetailScreen,
+        exact: true,
+        hideInMenu: true,
       },
       {
         path: ROUTES.storefront.cart,
